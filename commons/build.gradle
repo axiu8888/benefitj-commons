@@ -1,0 +1,8 @@
+
+
+subprojects {
+    ext.artifactPrefix = ""
+    //ext.groupId = "com.benefitj"
+    //ext.artifactId = "${project.name}"
+    //ext.versionId = "${version}"
+}

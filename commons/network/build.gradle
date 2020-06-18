@@ -1,0 +1,24 @@
+apply from: "${getRootDir()}/base.gradle"
+
+group = "network"
+
+dependencies {
+	compile fileTree(dir: 'libs', include: ['*.jar'])
+
+	// OkHttp + RxJava + Retrofit
+	compileOnly "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
+	compileOnly "com.squareup.okhttp3:okhttp:${okHttpVersion}"
+	compileOnly "com.squareup.okhttp3:logging-interceptor:${okHttpVersion}"
+	compileOnly "com.squareup.retrofit2:retrofit:${retrofitVersion}"
+	compileOnly "com.squareup.retrofit2:adapter-rxjava2:${retrofitVersion}"
+	compileOnly "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
+	compileOnly "com.squareup.retrofit2:converter-gson:${retrofitVersion}"
+	compileOnly "com.squareup.retrofit2:converter-scalars:${retrofitVersion}"
+	compileOnly "com.squareup.retrofit2:converter-moshi:${retrofitVersion}"
+
+	testCompileOnly 'com.alibaba:fastjson:1.2.62'
+
+	testCompileOnly project(":commons:core")
+
+}
+

@@ -1,0 +1,28 @@
+pluginManagement {
+	repositories {
+		gradlePluginPortal()
+	}
+}
+
+rootProject.name = 'benefitj'
+
+/**
+ * 常用工具的依赖
+ */
+include ":commons:core" // 常用工具
+include ":commons:pipeline" // pipeline
+include ":commons:network" // HTTP请求，OkHttp + Retrofit + RxJava
+include ":commons:consistent-hash" // 一致性Hash
+include ":commons:frameworks" // 一些库的工具
+include ":commons:interpolator" // 插值器
+include ":commons:netty" // netty
+include ":commons:eventbus" // EventBus
+include ":commons:all" // 全部的依赖
+
+include ":spring" // Spring
+/**
+ * InfluxDB的依赖
+ */
+include ":spring-data-influxdb" // InfluxDB
+
+

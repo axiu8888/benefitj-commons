@@ -1,0 +1,11 @@
+apply from: "${getRootDir()}/base.gradle"
+
+group = "eventbus"
+
+description = "EventBus"
+
+dependencies {
+
+//    compileOnly project(":commons:core")
+    compileOnly 'com.google.guava:guava:29.0-jre'
+}
