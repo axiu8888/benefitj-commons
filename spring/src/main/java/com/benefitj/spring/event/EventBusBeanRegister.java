@@ -1,7 +1,7 @@
 package com.benefitj.spring.event;
 
-import com.benefitj.frameworks.event.EventAdapter;
-import com.benefitj.frameworks.event.EventBusPoster;
+import com.benefitj.event.EventAdapter;
+import com.benefitj.event.EventBusPoster;
 import com.benefitj.spring.ApplicationListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,11 +14,9 @@ import org.springframework.context.event.ContextClosedEvent;
 import java.util.Map;
 
 /**
- * 注册EventBus，如果有多个EventBusPoster，请自行处理
+ * 注册EventBus，如果有多个EventBusPoster，需自行处理
  */
 public class EventBusBeanRegister extends ApplicationListenerAdapter implements ApplicationListener {
-
-  private final Logger logger = LoggerFactory.getLogger(EventBusBeanRegister.class);
 
   private EventBusPoster poster;
 

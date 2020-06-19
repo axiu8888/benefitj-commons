@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Lazy;
 import java.lang.annotation.*;
 
 /**
- * EventBusPoster
+ * EventBus注册
  */
 @Import({EventBusConfiguration.class})
 @Lazy
@@ -14,5 +14,4 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface EnableAutoEventBusPoster {
-  // ~
 }
