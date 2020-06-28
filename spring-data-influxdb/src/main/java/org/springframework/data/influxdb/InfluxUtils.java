@@ -8,6 +8,8 @@ import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.influxdb.annotations.InfluxIgnore;
 import org.springframework.data.influxdb.annotations.InfluxTagNullable;
 import org.springframework.data.influxdb.annotations.InfluxTimestamp;
@@ -34,6 +36,10 @@ public final class InfluxUtils {
   public static final Map<Class, LineProtocolConverter> LINE_PROTOCOL_CONVERTERS = new ConcurrentHashMap<>();
 
   private static final boolean TIME_COLUMN;
+  private static volatile boolean TIME_METHOD_ERROR = false;
+  private static volatile Method TIME_METHOD = null;
+
+  private static final Logger log = LoggerFactory.getLogger(InfluxUtils.class);
 
   static {
     boolean timeColumn;
@@ -172,6 +178,17 @@ public final class InfluxUtils {
    * @param <T>  类型
    * @return 返回 Point
    */
+  public static <T> Point toPoint(T item) {
+    return ((PointConverter<T>) getPointConverter(item.getClass())).convert(item);
+  }
+
+  /**
+   * 转换成 Point
+   *
+   * @param item ITEM
+   * @param <T>  类型
+   * @return 返回 Point
+   */
   public static <T> Point toPoint(AbstractConverter<T, ?> converter, T item) {
     if (item instanceof Point) {
       return (Point) item;
@@ -179,8 +196,27 @@ public final class InfluxUtils {
 
     final Point.Builder builder = Point.measurement(converter.getMeasurement());
     // 设置时间戳
-    long timestamp = getTimestamp(converter.getTimestamp(), item);
-    builder.time(timestamp, converter.getTimestampUnit());
+    Long timestamp = getTimestamp(converter.getTimestamp(), item);
+    if (TIME_METHOD_ERROR) {
+      try {
+        TIME_METHOD.invoke(builder, timestamp, converter.getTimestampUnit());
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new IllegalStateException(e);
+      }
+    } else {
+      try {
+        builder.time(timestamp, converter.getTimestampUnit());
+      } catch (NoSuchMethodError e) {
+        try {
+          TIME_METHOD = builder.getClass().getDeclaredMethod("time", long.class, TimeUnit.class);
+          TIME_METHOD_ERROR = true;
+          TIME_METHOD.invoke(builder, timestamp, converter.getTimestampUnit());
+        } catch (Exception ee) {
+          throw new IllegalStateException(ee);
+        }
+        log.warn("throw: {}", e.getMessage());
+      }
+    }
 
     // TAG
     final Map<String, ColumnProperty> tags = converter.getTags();
@@ -232,10 +268,9 @@ public final class InfluxUtils {
             return Stream.of(((Point) t).lineProtocol());
           } else if (t instanceof Collection) {
             return toLineProtocol((Collection) t).stream();
+          } else {
+            return Stream.of(toPoint(t).lineProtocol());
           }
-          return Stream.of((getPointConverter((Class<Object>) t.getClass()))
-              .convert(t)
-              .lineProtocol());
         })
         .collect(Collectors.toList());
   }
