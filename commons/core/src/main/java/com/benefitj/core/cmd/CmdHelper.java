@@ -35,10 +35,14 @@ public class CmdHelper {
     return WINDOWS;
   }
 
-  private final AtomicReference<Object> sign = new AtomicReference<>();
+  private final AtomicReference<Thread> sign = new AtomicReference<>();
   private final AtomicInteger aliveProcess = new AtomicInteger();
 
   private final Object lock = new Object();
+  /**
+   * 超时时长，5分钟
+   */
+  private long timeout = 300_000;
   /**
    * 最大子进程数
    */
@@ -178,7 +182,7 @@ public class CmdHelper {
     final CmdResponse response = new CmdResponse(uuid());
     cb.onStart(response);
     try {
-      return tryLockCall(timeout, start, () -> {
+      return safeCall(timeout, start, () -> {
         String[] envparams = envp != null && !envp.isEmpty() ? envp.toArray(new String[0]) : null;
         response.setCmd(cmd);
         response.setCtxDir(dir);
@@ -188,7 +192,7 @@ public class CmdHelper {
         response.setProcess(process);
         cb.onCallAfter(process, response);
         // 强制结束
-        scheduleTimeout(response, timeout - (now() - start) + 5);
+        scheduleTimeout(response, timeout - (now() - start));
         cb.onWaitForBefore(process, response);
         try {
           // 等待
@@ -209,9 +213,6 @@ public class CmdHelper {
     } catch (Exception e) {
       throw new IllegalStateException(e);
     } finally {
-      aliveProcess.decrementAndGet();
-      // 唤醒等待的线程
-      lock(Object::notify);
       cb.onFinish(response);
     }
   }
@@ -260,22 +261,21 @@ public class CmdHelper {
    * @param timeout  超时时长
    */
   protected void scheduleTimeout(CmdResponse response, long timeout) {
-    if (timeout > 0) {
-      final CmdResponseFuture crf = new CmdResponseFuture(response, (id, f) -> {
-        getWaitForFutures().remove(id);
-        final CmdResponse cr = f.getOriginal();
-        final Process p = cr.getProcess();
-        if (p != null) {
-          p.destroyForcibly();
-          getDestroyListener().onDestroy(p, cr);
-        }
-        // 唤醒等待的线程
-        lock(Object::notify);
-      });
-      getWaitForFutures().put(response.getId(), crf);
-      ScheduledFuture<?> sf = schedule(crf, timeout, TimeUnit.MILLISECONDS);
-      crf.setFuture(sf);
-    }
+    timeout = timeout > 0 ? timeout : getTimeout();
+    final CmdResponseFuture crf = new CmdResponseFuture(response, (id, f) -> {
+      getWaitForFutures().remove(id);
+      final CmdResponse cr = f.getOriginal();
+      final Process p = cr.getProcess();
+      if (p != null) {
+        p.destroyForcibly();
+        getDestroyListener().onDestroy(p, cr);
+      }
+      // 唤醒等待的线程
+      lock(Object::notify);
+    });
+    getWaitForFutures().put(response.getId(), crf);
+    ScheduledFuture<?> sf = schedule(crf, timeout, TimeUnit.MILLISECONDS);
+    crf.setFuture(sf);
   }
 
   /**
@@ -285,25 +285,34 @@ public class CmdHelper {
    * @param start   开始时间
    * @return 返回是否加锁
    */
-  private <V> V tryLockCall(long timeout, long start, Callable<V> call) throws Exception {
-    final AtomicReference<Object> sign = this.sign;
+  private <V> V safeCall(long timeout, long start, Callable<V> call) throws Exception {
+    final AtomicReference<Thread> sign = this.sign;
     int maxProcess = getMaxCallNum();
     final Thread current = Thread.currentThread();
     for (;;) {
       if (sign.compareAndSet(null, current)) {
         // 执行的命令未达到最大值
         if (aliveProcess.get() < maxProcess) {
-          aliveProcess.incrementAndGet();
-          sign.set(null);
-          return call.call();
+          try {
+            aliveProcess.incrementAndGet();
+            // 释放锁
+            sign.set(null);
+            return call.call();
+          } finally {
+            aliveProcess.decrementAndGet();
+            // 唤醒等待的线程
+            lock(Object::notify);
+          }
         }
       }
 
-      lock((lock) -> {
-        sign.set(null);
-        // 等待时长
-        sign.wait(Math.max(timeout - (now() - start), 0));
-      });
+      if ((timeout - (now() - start)) > 0) {
+        lock((lock) -> {
+          sign.set(null);
+          // 等待时长
+          sign.wait(Math.max(timeout - (now() - start), 0));
+        });
+      }
       // 判断超时状态
       if (isTimeout(start, timeout)) {
         // 超时了，结束操作
@@ -323,6 +332,15 @@ public class CmdHelper {
     }
   }
 
+
+  public long getTimeout() {
+    return timeout;
+  }
+
+  public void setTimeout(long timeout) {
+    this.timeout = timeout;
+  }
+
   public int getMaxCallNum() {
     return maxCallNum;
   }
@@ -334,17 +352,17 @@ public class CmdHelper {
   public int getAliveProcess() {
     return aliveProcess.get();
   }
-
   protected static boolean isTimeout(long start, long timeout) {
     return timeout > 0 && ((now() - start) >= timeout);
   }
+
 
   protected static long now() {
     return System.currentTimeMillis();
   }
 
 
-  public interface LockObserver {
+  interface LockObserver {
     /**
      * 加锁中的处理
      *

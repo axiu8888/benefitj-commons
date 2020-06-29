@@ -46,6 +46,11 @@ public class EventListenerAdapter extends ApplicationListenerAdapter implements 
   }
 
   @Override
+  public void onApplicationStartedEvent(ApplicationStartedEvent event) {
+    apply(event, IApplicationStartedEventListener.class);
+  }
+
+  @Override
   public void onApplicationPreparedEvent(ApplicationPreparedEvent event) {
     apply(event, IApplicationPreparedEventListener.class);
   }

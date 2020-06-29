@@ -14,11 +14,10 @@ public class ShutdownHook extends Thread {
     return new ShutdownHook();
   }
 
-  public static final ShutdownHook INSTANCE = new ShutdownHook();
+  public static final ShutdownHook INSTANCE = new ShutdownHook("globalShutdownHook");
 
   static {
     // 注册销毁时的回调
-    INSTANCE.setName("globalShutdownHook");
     Runtime.getRuntime().addShutdownHook(INSTANCE);
   }
 
@@ -45,6 +44,10 @@ public class ShutdownHook extends Thread {
   private final List<Runnable> hooks = new CopyOnWriteArrayList<>();
 
   private ShutdownHook() {
+  }
+
+  private ShutdownHook(String name) {
+    super(name);
   }
 
   public List<Runnable> getHooks() {

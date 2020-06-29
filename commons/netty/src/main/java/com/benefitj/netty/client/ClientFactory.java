@@ -1,8 +1,11 @@
 package com.benefitj.netty.client;
 
+import com.benefitj.netty.NettyFactory;
+
 /**
- * 客户端工厂
+ * 客户端工厂，已过时，请使用{@link NettyFactory}
  */
+@Deprecated
 public class ClientFactory {
 
   /**

@@ -1,6 +1,9 @@
-package com.benefitj.netty.server;
+package com.benefitj.netty;
 
-import com.benefitj.netty.NettyFactory;
+import com.benefitj.netty.client.TcpNettyClient;
+import com.benefitj.netty.client.UdpNettyClient;
+import com.benefitj.netty.server.TcpNettyServer;
+import com.benefitj.netty.server.UdpNettyServer;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -10,10 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Netty的服务端工厂，已过时，请使用{@link NettyFactory}
+ * Netty 客户端/服务端实例
  */
-@Deprecated
-public class ServerFactory {
+public class NettyFactory {
 
   /**
    * 创建TCP的服务端
@@ -58,4 +60,20 @@ public class ServerFactory {
   public static UdpNettyServer newUdpServer() {
     return new UdpNettyServer();
   }
+
+
+  /**
+   * 创建TCP的客户端
+   */
+  public static TcpNettyClient newTcpClient() {
+    return new TcpNettyClient();
+  }
+
+  /**
+   * 创建UDP的客户端
+   */
+  public static UdpNettyClient newUdpClient() {
+    return new UdpNettyClient();
+  }
+
 }

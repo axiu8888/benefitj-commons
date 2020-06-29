@@ -25,6 +25,9 @@ public class ApplicationListenerAdapter implements ApplicationListener {
     } else if (event instanceof ApplicationStartingEvent) {
       // 应用启动中
       onApplicationStartingEvent((ApplicationStartingEvent) event);
+    } else if (event instanceof ApplicationStartedEvent) {
+      // 应用启动中
+      onApplicationStartedEvent((ApplicationStartedEvent) event);
     } else if (event instanceof ApplicationPreparedEvent) {
       // ApplicationPreparedEvent： 初始化完成
       onApplicationPreparedEvent((ApplicationPreparedEvent) event);
@@ -73,6 +76,15 @@ public class ApplicationListenerAdapter implements ApplicationListener {
    * @param event 事件
    */
   public void onApplicationStartingEvent(ApplicationStartingEvent event) {
+    // ~
+  }
+
+  /**
+   * 应用启动
+   *
+   * @param event 事件
+   */
+  public void onApplicationStartedEvent(ApplicationStartedEvent event) {
     // ~
   }
 

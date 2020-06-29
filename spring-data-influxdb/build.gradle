@@ -1,7 +1,7 @@
 apply from: "${getRootDir()}/base.gradle"
 
 group = 'org.springframework.data'
-version = '2.1.5-SNAPSHOT'
+version = '2.1.6-SNAPSHOT'
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
