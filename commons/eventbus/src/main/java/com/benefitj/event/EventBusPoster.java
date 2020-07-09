@@ -78,7 +78,7 @@ public class EventBusPoster {
     this.eventBus = eventBus;
   }
 
-  protected EventBus getEventBus() {
+  public EventBus getEventBus() {
     return eventBus;
   }
 
@@ -88,21 +88,21 @@ public class EventBusPoster {
     this.asyncEventBus = asyncEventBus;
   }
 
-  protected AsyncEventBus getAsyncEventBus() {
+  public AsyncEventBus getAsyncEventBus() {
     return asyncEventBus;
   }
 
-  protected Executor getAsyncExecutor() {
+  public Executor getAsyncExecutor() {
     return asyncExecutor;
   }
 
-  protected void setAsyncExecutor(Executor asyncExecutor) {
+  public void setAsyncExecutor(Executor asyncExecutor) {
     checkNotNull(asyncExecutor, "asyncEventBus");
     checkArgument(this.asyncExecutor == null, "The asyncExecutor is not null !");
     this.asyncExecutor = asyncExecutor;
   }
 
-  protected Class<?> getEventType() {
+  public Class<?> getEventType() {
     return eventType;
   }
 
