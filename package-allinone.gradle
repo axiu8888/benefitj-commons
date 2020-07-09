@@ -1,4 +1,5 @@
 
+apply plugin: 'maven'
 
 // 配置是否将代码打包到一个jar中
 def allInOne = true
@@ -39,11 +40,9 @@ sourceJar {
     }
 }
 
-apply plugin: 'maven'
-
 import java.util.concurrent.ConcurrentHashMap
 
-ext.groupId = getOrDefault(ext.groupId, "com.hsrg")
+ext.groupId = getOrDefault(ext.groupId, "com.benefitj")
 ext.artifactId = getOrDefault(ext.artifactId, "${archivesBaseName}")
 ext.versionId = getOrDefault(ext.versionId, "${version}")
 
@@ -69,7 +68,7 @@ uploadArchives {
                 }
             }
 
-            repository(url: "http://192.168.1.200:9001/repository/hsrg/") {
+            repository(url: "http://192.168.124.128:9001/repository/nexusCenter/") {
                 authentication(userName: "admin", password: "admin123")
             }
         }

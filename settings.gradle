@@ -23,6 +23,9 @@ include ":spring" // Spring
 /**
  * InfluxDB的依赖
  */
-include ":spring-data-influxdb" // InfluxDB
+include ":influxdb" // InfluxDB
+
+
+include ":examples" // examples
 
 

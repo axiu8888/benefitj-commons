@@ -1,5 +1,6 @@
 
 apply from: "${getRootDir()}/base.gradle"
+
 apply from: "${getRootDir()}/package-allinone.gradle"
 
 group = "all"
@@ -48,4 +49,3 @@ dependencies {
     // frameworks end *****************************************************/
 
 }
-

@@ -29,4 +29,9 @@ allprojects {
     group = 'com.benefitj'
     version = '0.1.0-SNAPSHOT'
 
+    ext.artifactPrefix = ""
+    ext.groupId = "com.benefitj"
+    ext.artifactId = "${project.name}"
+    ext.versionId = "${version}"
+
 }
