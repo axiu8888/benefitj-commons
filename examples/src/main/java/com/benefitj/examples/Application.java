@@ -2,7 +2,6 @@ package com.benefitj.examples;
 
 import com.benefitj.influxdb.spring.EnableAutoRxJavaInfluxDBConfiguration;
 import com.benefitj.influxdb.spring.EnableInfluxWriteManager;
-import com.benefitj.influxdb.template.InfluxDBTemplate;
 import com.benefitj.influxdb.template.RxJavaInfluxDBTemplate;
 import com.benefitj.spring.ctx.EnableSpringCtxInit;
 import com.benefitj.spring.listener.EnableSpringEventAutoListener;

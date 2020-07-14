@@ -2,9 +2,9 @@ apply from: "${getRootDir()}/base.gradle"
 
 group = "consistent-hash"
 
+description = "一致性hash"
+
 dependencies {
-	compile fileTree(dir: 'libs', include: ['*.jar'])
-	compileOnly fileTree(dir: 'libs-source', include: ['*.jar'])
 
 }
 

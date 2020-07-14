@@ -2,13 +2,11 @@ apply from: "${getRootDir()}/base.gradle"
 
 group = "interpolator"
 
+description = "插值器"
+
 dependencies {
-  compile fileTree(dir: 'libs', include: ['*.jar'])
-  testCompile("junit:junit:4.12")
 
   compile project(":commons:core")
 
 }
 
-// 暂不发布到仓库
-//apply from: "${rootProject.getProjectDir()}/upload.gradle"
