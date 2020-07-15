@@ -571,6 +571,26 @@ public class DateFmtter {
   }
 
   /**
+   * 格式化日期，{@link #_yMd}
+   *
+   * @param time 时间
+   * @return 返回格式化后的对象
+   */
+  public static String fmtDate(Object time) {
+    return fmt(time, _yMd);
+  }
+
+  /**
+   * 格式化日期，{@link #_yMd_UTC}
+   *
+   * @param time 时间
+   * @return 返回格式化后的对象
+   */
+  public static String fmtDateUtc(Object time) {
+    return fmt(time, _yMd_UTC);
+  }
+
+  /**
    * 转换为另一种格式
    *
    * @param dateStr     时间戳字符串
@@ -583,8 +603,7 @@ public class DateFmtter {
       Date date = parseOrThrows(dateStr, srcPattern);
       return fmt(date, destPattern);
     } catch (ParseException e) {
-      e.printStackTrace();
+      throw new IllegalStateException(e);
     }
-    return null;
   }
 }
