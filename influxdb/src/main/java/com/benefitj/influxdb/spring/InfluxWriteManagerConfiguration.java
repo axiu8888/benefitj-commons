@@ -1,10 +1,9 @@
 package com.benefitj.influxdb.spring;
 
+import com.benefitj.influxdb.file.LineFileFactory;
+import com.benefitj.influxdb.file.LineFileListener;
 import com.benefitj.influxdb.template.InfluxDBTemplate;
-import com.benefitj.influxdb.write.InfluxWriteManager;
-import com.benefitj.influxdb.write.InfluxDBWriteProperty;
-import com.benefitj.influxdb.write.AutoInfluxWriteListener;
-import com.benefitj.influxdb.write.SimpleInfluxWriteManager;
+import com.benefitj.influxdb.write.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,17 +26,41 @@ public class InfluxWriteManagerConfiguration {
   }
 
   /**
+   * 行协议文件工厂
+   */
+  @ConditionalOnMissingBean(LineFileFactory.class)
+  @Bean
+  public LineFileFactory lineFileFactory() {
+    return new DefaultLineFileFactory();
+  }
+
+  /**
+   * 行协议文件监听
+   */
+  @ConditionalOnMissingBean(LineFileListener.class)
+  @Bean
+  public LineFileListener lineFileListener(InfluxDBTemplate template) {
+    return new InfluxDBLineFileListener(template);
+  }
+
+
+  /**
    * 保存InfluxDB数据的管理实例
    *
-   * @param template template
-   * @param property 配置属性
+   * @param lineFileFactory  行协议文件工厂
+   * @param lineFileListener 行协议文件监听
+   * @param property         配置属性
    * @return 写入管理类实例
    */
   @ConditionalOnMissingBean(InfluxWriteManager.class)
   @Bean
-  public InfluxWriteManager influxWriteManager(InfluxDBTemplate template,
+  public InfluxWriteManager influxWriteManager(LineFileFactory lineFileFactory,
+                                               LineFileListener lineFileListener,
                                                InfluxDBWriteProperty property) {
-    return new SimpleInfluxWriteManager(template, property);
+    SimpleInfluxWriteManager manager = new SimpleInfluxWriteManager(property);
+    manager.setLineFileFactory(lineFileFactory);
+    manager.setLineFileListener(lineFileListener);
+    return manager;
   }
 
   /**

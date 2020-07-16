@@ -47,7 +47,7 @@ public class LineFileSlicer {
   /**
    * 监听Line文件
    */
-  private LineFileListener lineFileListener = LineFileListener.EMPTY_LISTENER;
+  private LineFileListener lineFileListener = LineFileListener.DISCARD_LISTENER;
   /**
    * 上次写入时间
    */
@@ -221,7 +221,7 @@ public class LineFileSlicer {
   }
 
   public void setLineFileListener(LineFileListener lineFileListener) {
-    this.lineFileListener = (lineFileListener != null ? lineFileListener : LineFileListener.EMPTY_LISTENER);
+    this.lineFileListener = (lineFileListener != null ? lineFileListener : LineFileListener.DISCARD_LISTENER);
   }
 
 }

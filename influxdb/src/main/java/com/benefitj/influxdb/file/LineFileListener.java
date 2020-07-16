@@ -15,10 +15,9 @@ public interface LineFileListener {
    */
   void onHandleLineFile(FileWriterPair pair, File file);
 
-
   /**
    * 空监听
    */
-  LineFileListener EMPTY_LISTENER = (pair, file) -> {};
+  LineFileListener DISCARD_LISTENER = (pair, file) -> {};
 
 }
