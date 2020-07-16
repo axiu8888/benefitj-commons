@@ -2,8 +2,11 @@ package com.benefitj.influxdb.write;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.io.File;
+
 @ConfigurationProperties(prefix = "com.benefitj.influxdb.write")
 public class InfluxDBWriteProperty {
+
   /**
    * 缓存大小(MB)
    */
@@ -88,4 +91,21 @@ public class InfluxDBWriteProperty {
   public void setSuffix(String suffix) {
     this.suffix = suffix;
   }
+
+
+  /**
+   * 默认配置
+   */
+  public static InfluxDBWriteProperty defaultProperty() {
+    String tmpDir = System.getProperties().getProperty("java.io.tmpdir");
+    File lineFile = new File(tmpDir, "/influxdb/lines");
+    InfluxDBWriteProperty p = new InfluxDBWriteProperty();
+    p.setCacheDir(lineFile.getAbsolutePath());
+    p.setCacheSize(50);
+    p.setDelay(10);
+    p.setLineFileCount(1);
+    p.setThreadCount(4);
+    return p;
+  }
+
 }

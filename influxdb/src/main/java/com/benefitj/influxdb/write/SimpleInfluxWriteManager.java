@@ -1,12 +1,8 @@
 package com.benefitj.influxdb.write;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.benefitj.influxdb.file.FileWriterPair;
 import com.benefitj.influxdb.file.LineFileFactory;
 import com.benefitj.influxdb.file.LineFileListener;
-import com.benefitj.influxdb.file.LineFileSlicer;
-import com.benefitj.influxdb.template.InfluxDBTemplate;
 
 import java.io.File;
 import java.util.Collection;
@@ -20,28 +16,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 简单的写入实现
  */
-public class SimpleInfluxWriteManager implements InfluxWriteManager, LineFileFactory, LineFileListener {
-
-  private static final Logger logger = LoggerFactory.getLogger(InfluxWriteManager.class);
+public class SimpleInfluxWriteManager implements InfluxWriteManager {
 
   public static final long MB = 1024 << 10;
-  /**
-   * 默认配置
-   */
-  private static final InfluxDBWriteProperty DEFAULT_PROPERTY;
-
-  static {
-    String tmpDir = System.getProperties().getProperty("java.io.tmpdir");
-    File lineFile = new File(tmpDir, "/influxdb/lines");
-    InfluxDBWriteProperty p = new InfluxDBWriteProperty();
-    p.setCacheDir(lineFile.getAbsolutePath());
-    p.setCacheSize(50);
-    p.setDelay(10);
-    p.setLineFileCount(1);
-    p.setThreadCount(4);
-    DEFAULT_PROPERTY = p;
-  }
-
   /**
    * executor
    */
@@ -50,19 +27,25 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager, LineFileFac
    * 缓存文件的引用
    */
   private final List<LineFileWriter> writers = new CopyOnWriteArrayList<>();
-  private final AtomicInteger writerDispatcher = new AtomicInteger(0);
-  /**
-   * InfluxDBTemplate
-   */
-  private InfluxDBTemplate template;
   /**
    * 配置
    */
   private InfluxDBWriteProperty property;
+  /**
+   * 写入分派器
+   */
+  private WriterDispatcher writerDispatcher = WriterDispatcher.newDispatcher();
 
-  public SimpleInfluxWriteManager(InfluxDBTemplate template,
-                                  InfluxDBWriteProperty property) {
-    this.template = template;
+  /**
+   * 创建line文件的工厂
+   */
+  private LineFileFactory lineFileFactory = new DefaultLineFileFactory();
+  /**
+   * 处理line文件的监听
+   */
+  private LineFileListener lineFileListener = EMPTY_LINE_FILE_LISTENER;
+
+  public SimpleInfluxWriteManager(InfluxDBWriteProperty property) {
     this.property = property;
 
     init();
@@ -86,32 +69,29 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager, LineFileFac
     writer.setDelay(property.getDelay() * 1000);
     writer.setMaxSize(property.getCacheSize() * MB);
     writer.setCacheDir(new File(property.getCacheDir()));
-    writer.setLineFileFactory(this);
-    writer.setLineFileListener(this);
+    writer.setLineFileFactory(getLineFileFactory());
+    writer.setLineFileListener(getLineFileListener());
     return writer;
   }
 
-  protected void offer(Runnable r) {
+  public void offer(Runnable r) {
     getExecutor().execute(r);
   }
 
-  protected List<LineFileWriter> getWriters() {
+  public List<LineFileWriter> getWriters() {
     return this.writers;
   }
 
-  @Override
-  public FileWriterPair create(File dir) {
-    return LineFileFactory.newFile(dir);
-  }
-
-  @Override
-  public void onHandleLineFile(FileWriterPair pair, File file) {
-    try {
-      if (file.length() > 0) {
-        getTemplate().write(file);
-      }
-    } finally {
-      file.delete();
+  /**
+   * 写入
+   *
+   * @param lines
+   */
+  protected void put0(List<String> lines) {
+    if (isNotEmpty(lines)) {
+      List<LineFileWriter> writers = this.getWriters();
+      LineFileWriter writer = writerDispatcher.dispatch(writers);
+      writer.write(lines);
     }
   }
 
@@ -123,8 +103,28 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager, LineFileFac
   @Override
   public void putAsync(List<String> lines) {
     if (isNotEmpty(lines)) {
-      offer(() -> putSync(lines));
+      offer(() -> put0(lines));
     }
+  }
+
+  @Override
+  public void setLineFileFactory(LineFileFactory factory) {
+    this.lineFileFactory = factory;
+  }
+
+  @Override
+  public LineFileFactory getLineFileFactory() {
+    return this.lineFileFactory;
+  }
+
+  @Override
+  public void setLineFileListener(LineFileListener listener) {
+    this.lineFileListener = listener;
+  }
+
+  @Override
+  public LineFileListener getLineFileListener() {
+    return this.lineFileListener;
   }
 
   /**
@@ -134,18 +134,7 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager, LineFileFac
    */
   @Override
   public void putSync(List<String> lines) {
-    if (isNotEmpty(lines)) {
-      List<LineFileWriter> writers = this.getWriters();
-      int index = writerDispatcher.getAndIncrement();
-      try {
-        LineFileWriter writer = writers.get(index % writers.size());
-        writer.write(lines);
-      } finally {
-        if (index > writers.size()) {
-          writerDispatcher.compareAndSet(index, 0);
-        }
-      }
-    }
+    put0(lines);
   }
 
   /**
@@ -200,87 +189,14 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager, LineFileFac
     }
   }
 
-
-  @Override
-  public InfluxDBTemplate getTemplate() {
-    return template;
-  }
-
   @Override
   public InfluxDBWriteProperty getProperty() {
     return property;
   }
 
-  public static class LineFileWriter extends LineFileSlicer {
-    /**
-     * 延迟上传的时间
-     */
-    private long delay;
-    /**
-     * 初始化时间
-     */
-    private long initializedTime = now();
-
-    public LineFileWriter() {
-    }
-
-    public LineFileWriter(File cacheDir, long maxSize) {
-      super(cacheDir, maxSize);
-    }
-
-    public LineFileWriter(File cacheDir, long maxSize, long delay) {
-      super(cacheDir, maxSize);
-      this.delay = delay;
-    }
-
-    public String getName() {
-      return getPair(true).getName();
-    }
-
-    public long getInitializedTime() {
-      return initializedTime;
-    }
-
-    public boolean isWritable(boolean force) {
-      long length = length();
-      if (length <= 0) {
-        return false;
-      }
-      if (force) {
-        return true;
-      }
-      if (length >= getMaxSize()) {
-        return true;
-      }
-      long now = now();
-      long delay = getDelay();
-      return (now - getInitializedTime() >= delay) || (now - getLastWriteTime() >= delay);
-    }
-
-    public long getDelay() {
-      return delay;
-    }
-
-    public void setDelay(long delay) {
-      this.delay = delay;
-    }
-
-    public void close() {
-      FileWriterPair pair = getPair();
-      if (pair != null) {
-        pair.close();
-      }
-    }
-  }
-
   protected static boolean isNotEmpty(Collection<?> c) {
     return c != null && !c.isEmpty();
   }
-
-  protected static long now() {
-    return System.currentTimeMillis();
-  }
-
 
   /**
    * The default thread factory
@@ -316,5 +232,13 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager, LineFileFac
       return t;
     }
   }
+
+
+  private static final LineFileListener EMPTY_LINE_FILE_LISTENER = new LineFileListener() {
+    @Override
+    public void onHandleLineFile(FileWriterPair pair, File file) {
+      // ~
+    }
+  };
 
 }

@@ -1,6 +1,7 @@
 package com.benefitj.influxdb.write;
 
-import com.benefitj.influxdb.template.InfluxDBTemplate;
+import com.benefitj.influxdb.file.LineFileFactory;
+import com.benefitj.influxdb.file.LineFileListener;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,6 +12,30 @@ import java.util.concurrent.Executor;
  * InfluxDB写入数据的管理类
  */
 public interface InfluxWriteManager {
+
+  /**
+   * 创建文件的工厂
+   *
+   * @param factory 工厂类
+   */
+  void setLineFileFactory(LineFileFactory factory);
+
+  /**
+   * 获取创建文件的工厂
+   */
+  LineFileFactory getLineFileFactory();
+
+  /**
+   * 处理文件的监听
+   *
+   * @param listener 监听
+   */
+  void setLineFileListener(LineFileListener listener);
+
+  /**
+   * 获取处理文件的监听
+   */
+  LineFileListener getLineFileListener();
 
   /**
    * 同步保存
@@ -76,11 +101,6 @@ public interface InfluxWriteManager {
    * 调度器
    */
   Executor getExecutor();
-
-  /**
-   * InfluxDB template
-   */
-  InfluxDBTemplate getTemplate();
 
   /**
    * 配置属性

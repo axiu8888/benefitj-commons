@@ -1,7 +1,7 @@
 package com.benefitj.influxdb.converter;
 
 import org.influxdb.dto.Point;
-import com.benefitj.influxdb.InfluxUtils;
+import com.benefitj.influxdb.InfluxPointUtils;
 
 /**
  * Point Converter Factory
@@ -15,7 +15,7 @@ public class PointConverterFactory extends AbstractConverterFactory<Point> {
 
   @Override
   public <T> PointConverter<T> getConverter(Class<T> type) {
-    return InfluxUtils.getPointConverter(type);
+    return InfluxPointUtils.getPointConverter(type);
   }
 
 }

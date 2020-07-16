@@ -6,7 +6,7 @@ import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.TimeUtil;
-import com.benefitj.influxdb.InfluxUtils;
+import com.benefitj.influxdb.InfluxPointUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.TypeVariable;
@@ -119,7 +119,7 @@ public class InfluxDBResultMapperPlus {
         continue;
       }
 
-      final Map<String, Field> fieldMap = InfluxUtils.getFieldMap(clazz, field -> !InfluxUtils.isStaticOrFinal(field));
+      final Map<String, Field> fieldMap = InfluxPointUtils.getFieldMap(clazz, field -> !InfluxPointUtils.isStaticOrFinal(field));
       final Map<String, Field> influxColumnAndFieldMap = new ConcurrentHashMap<>(fieldMap.size());
       fieldMap.forEach((fieldName, field) -> {
         if (field.isAnnotationPresent(Column.class)) {
@@ -217,7 +217,7 @@ public class InfluxDBResultMapperPlus {
 
       // 泛型字段
       if (field.getGenericType() instanceof TypeVariable) {
-        fieldType = InfluxUtils.getGenericSuperclassBounds(object.getClass());
+        fieldType = InfluxPointUtils.getGenericSuperclassBounds(object.getClass());
       }
 
       if (fieldValueModified(fieldType, field, object, value)

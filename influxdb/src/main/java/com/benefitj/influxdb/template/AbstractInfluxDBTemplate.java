@@ -12,7 +12,7 @@ import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.benefitj.influxdb.InfluxUtils;
+import com.benefitj.influxdb.InfluxPointUtils;
 import com.benefitj.influxdb.converter.Converter;
 import com.benefitj.influxdb.converter.PointConverterFactory;
 import org.springframework.util.Assert;
@@ -187,7 +187,7 @@ public abstract class AbstractInfluxDBTemplate<Influx extends BasicInfluxDB, Q>
    * @return 返回行协议数据
    */
   public <T> String lineProtocol(Collection<T> payload) {
-    List<String> lines = InfluxUtils.toLineProtocol(payload);
+    List<String> lines = InfluxPointUtils.toLineProtocol(payload);
     return String.join("\n", lines);
   }
 

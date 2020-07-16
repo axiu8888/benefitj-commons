@@ -1,7 +1,7 @@
 package com.benefitj.influxdb.converter;
 
 import org.influxdb.dto.Point;
-import com.benefitj.influxdb.InfluxUtils;
+import com.benefitj.influxdb.InfluxPointUtils;
 
 /**
  * InfluxDB Point 转换器
@@ -16,7 +16,7 @@ public class PointConverter<T> extends AbstractConverter<T, Point> {
 
   @Override
   public Point convert(T item) {
-    return InfluxUtils.toPoint(this, item);
+    return InfluxPointUtils.toPoint(this, item);
   }
 
 }

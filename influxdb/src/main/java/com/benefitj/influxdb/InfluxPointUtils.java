@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 /**
  * InfluxDB的工具类
  */
-public final class InfluxUtils {
+public final class InfluxPointUtils {
 
   public static final Map<Class, PointConverter> POINT_CONVERTERS = new ConcurrentHashMap<>();
   public static final Map<Class, LineProtocolConverter> LINE_PROTOCOL_CONVERTERS = new ConcurrentHashMap<>();
@@ -39,7 +39,7 @@ public final class InfluxUtils {
   private static volatile boolean TIME_METHOD_ERROR = false;
   private static volatile Method TIME_METHOD = null;
 
-  private static final Logger log = LoggerFactory.getLogger(InfluxUtils.class);
+  private static final Logger log = LoggerFactory.getLogger(InfluxPointUtils.class);
 
   static {
     boolean timeColumn;
@@ -94,8 +94,8 @@ public final class InfluxUtils {
     converter.setMeasurement(isNotBlank(measurement.name()) ? measurement.name() : type.getSimpleName());
 
     // 排除被static和final修饰的字段、忽略InfluxIgnore注解的字段
-    Map<String, Field> fieldMap = InfluxUtils.getFieldMap(type, field ->
-        !(InfluxUtils.isStaticOrFinal(field)
+    Map<String, Field> fieldMap = InfluxPointUtils.getFieldMap(type, field ->
+        !(InfluxPointUtils.isStaticOrFinal(field)
             || field.isAnnotationPresent(InfluxIgnore.class)));
 
     if (fieldMap.isEmpty()) {
@@ -221,7 +221,7 @@ public final class InfluxUtils {
     // TAG
     final Map<String, ColumnProperty> tags = converter.getTags();
     tags.forEach((tag, property) -> {
-      Object value = InfluxUtils.getFieldValue(property.getField(), item);
+      Object value = InfluxPointUtils.getFieldValue(property.getField(), item);
       // 检查是否允许tag为null，默认不允许
       if (!property.isTagNullable() && value == null) {
         throw new NullPointerException("tag is null.");
@@ -235,7 +235,7 @@ public final class InfluxUtils {
     // column
     final Map<String, ColumnProperty> columns = converter.getColumns();
     columns.forEach((name, property) -> {
-      Object value = InfluxUtils.getFieldValue(property.getField(), item);
+      Object value = InfluxPointUtils.getFieldValue(property.getField(), item);
       if (value instanceof Number) {
         builder.addField(name, (Number) value);
       } else if (value instanceof Boolean) {
@@ -387,7 +387,7 @@ public final class InfluxUtils {
    */
   public static long getTimestamp(ColumnProperty property, Object item) {
     // 设置时间戳
-    Object value = InfluxUtils.getFieldValue(property.getField(), item);
+    Object value = InfluxPointUtils.getFieldValue(property.getField(), item);
     if (value instanceof Date) {
       return ((Date) value).getTime();
     } else if (value instanceof Long) {

@@ -1,6 +1,6 @@
 package com.benefitj.influxdb.converter;
 
-import com.benefitj.influxdb.InfluxUtils;
+import com.benefitj.influxdb.InfluxPointUtils;
 
 /**
  * LineProtocol Converter Factory
@@ -14,7 +14,7 @@ public class LineProtocolConverterFactory extends AbstractConverterFactory<Strin
 
   @Override
   public <T> LineProtocolConverter<T> getConverter(Class<T> type) {
-    return InfluxUtils.getLineProtocolConverter(type);
+    return InfluxPointUtils.getLineProtocolConverter(type);
   }
 
 }

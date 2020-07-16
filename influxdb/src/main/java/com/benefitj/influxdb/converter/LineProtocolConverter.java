@@ -1,6 +1,6 @@
 package com.benefitj.influxdb.converter;
 
-import com.benefitj.influxdb.InfluxUtils;
+import com.benefitj.influxdb.InfluxPointUtils;
 
 /**
  * 行协议转换器
@@ -15,7 +15,7 @@ public class LineProtocolConverter<T> extends AbstractConverter<T, String> {
 
   @Override
   public String convert(T item) {
-    return InfluxUtils.toLineProtocol(this, item);
+    return InfluxPointUtils.toLineProtocol(this, item);
   }
 
 }
