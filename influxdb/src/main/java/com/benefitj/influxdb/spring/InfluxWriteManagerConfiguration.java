@@ -57,7 +57,7 @@ public class InfluxWriteManagerConfiguration {
   public InfluxWriteManager influxWriteManager(LineFileFactory lineFileFactory,
                                                LineFileListener lineFileListener,
                                                InfluxDBWriteProperty property) {
-    SimpleInfluxWriteManager manager = new SimpleInfluxWriteManager(property);
+    DefaultInfluxWriteManager manager = new DefaultInfluxWriteManager(property);
     manager.setLineFileFactory(lineFileFactory);
     manager.setLineFileListener(lineFileListener);
     return manager;

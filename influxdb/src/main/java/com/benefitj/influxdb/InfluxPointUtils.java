@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.benefitj.influxdb.annotations.InfluxIgnore;
 import com.benefitj.influxdb.annotations.InfluxTagNullable;
-import com.benefitj.influxdb.annotations.InfluxTimestamp;
 import com.benefitj.influxdb.converter.AbstractConverter;
 import com.benefitj.influxdb.converter.ColumnProperty;
 import com.benefitj.influxdb.converter.LineProtocolConverter;
@@ -24,6 +23,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,22 +35,11 @@ public final class InfluxPointUtils {
   public static final Map<Class, PointConverter> POINT_CONVERTERS = new ConcurrentHashMap<>();
   public static final Map<Class, LineProtocolConverter> LINE_PROTOCOL_CONVERTERS = new ConcurrentHashMap<>();
 
-  private static final boolean TIME_COLUMN;
   private static volatile boolean TIME_METHOD_ERROR = false;
   private static volatile Method TIME_METHOD = null;
 
   private static final Logger log = LoggerFactory.getLogger(InfluxPointUtils.class);
 
-  static {
-    boolean timeColumn;
-    try {
-      Class.forName("org.influxdb.annotation.TimeColumn");
-      timeColumn = true;
-    } catch (ClassNotFoundException e) {
-      timeColumn = false;
-    }
-    TIME_COLUMN = timeColumn;
-  }
 
   /**
    * 获取 Point 转换器
@@ -127,11 +116,7 @@ public final class InfluxPointUtils {
    * @return 返回是否为时间戳的判断
    */
   public static boolean isTimestamp(Field field) {
-    if (TIME_COLUMN) {
-      return field.isAnnotationPresent(TimeColumn.class)
-          || field.isAnnotationPresent(InfluxTimestamp.class);
-    }
-    return field.isAnnotationPresent(InfluxTimestamp.class);
+    return field.isAnnotationPresent(TimeColumn.class);
   }
 
   /**
@@ -250,6 +235,21 @@ public final class InfluxPointUtils {
       }
     });
     return builder.build();
+  }
+
+  /**
+   * 转换成行协议数据
+   *
+   * @param payload
+   * @return 返回 line protocol String
+   */
+  public static List<String> toLineProtocol(Object payload) {
+    if (payload instanceof Collection) {
+      return toLineProtocol((Collection)payload);
+    } else {
+      LineProtocolConverter<Object> converter = getLineProtocolConverter((Class<Object>) payload.getClass());
+      return Collections.singletonList(converter.convert(payload));
+    }
   }
 
   /**

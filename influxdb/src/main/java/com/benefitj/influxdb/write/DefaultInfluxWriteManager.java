@@ -7,22 +7,19 @@ import com.benefitj.influxdb.file.LineFileListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 简单的写入实现
  */
-public class SimpleInfluxWriteManager implements InfluxWriteManager {
+public class DefaultInfluxWriteManager implements InfluxWriteManager {
 
   public static final long MB = 1024 << 10;
   /**
    * executor
    */
-  private volatile Executor executor;
+  private volatile ExecutorService executor;
   /**
    * 缓存文件的引用
    */
@@ -44,24 +41,42 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager {
    * 处理line文件的监听
    */
   private LineFileListener lineFileListener = EMPTY_LINE_FILE_LISTENER;
+  /**
+   * 初始化状态
+   */
+  private volatile boolean initialized = false;
+  /**
+   * 线程的写入统计
+   */
+  private final ThreadLocal<AtomicInteger> writeCounter = ThreadLocal.withInitial(() -> new AtomicInteger(0));
 
-  public SimpleInfluxWriteManager(InfluxDBWriteProperty property) {
+  public DefaultInfluxWriteManager() {
+  }
+
+  public DefaultInfluxWriteManager(InfluxDBWriteProperty property) {
     this.property = property;
-
-    init();
   }
 
   /**
    * 注册销毁时的回调钩子
    */
-  protected void init() {
-    InfluxDBWriteProperty p = getProperty();
-    int lineFileCount = p.getLineFileCount();
-    for (int i = 0; i < lineFileCount; i++) {
-      LineFileWriter writer = newWriter(p);
-      getWriters().add(writer);
+  protected void checkAndInit() {
+    if (initialized) {
+      return;
     }
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> getWriters().forEach(LineFileWriter::close)));
+    synchronized (this) {
+      if(initialized) {
+        return;
+      }
+      InfluxDBWriteProperty p = getProperty();
+      int lineFileCount = p.getLineFileCount();
+      for (int i = 0; i < lineFileCount; i++) {
+        LineFileWriter writer = newWriter(p);
+        getWriters().add(writer);
+      }
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> getWriters().forEach(LineFileWriter::close)));
+      initialized = true;
+    }
   }
 
   protected LineFileWriter newWriter(InfluxDBWriteProperty property) {
@@ -89,9 +104,16 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager {
    */
   protected void put0(List<String> lines) {
     if (isNotEmpty(lines)) {
+      checkAndInit();
       List<LineFileWriter> writers = this.getWriters();
-      LineFileWriter writer = writerDispatcher.dispatch(writers);
-      writer.write(lines);
+      LineFileWriter writer = getWriterDispatcher().dispatch(writers);
+      final AtomicInteger counter = writeCounter.get();
+      try {
+        counter.incrementAndGet();
+        writer.write(lines);
+      } finally {
+        counter.decrementAndGet();
+      }
     }
   }
 
@@ -105,26 +127,6 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager {
     if (isNotEmpty(lines)) {
       offer(() -> put0(lines));
     }
-  }
-
-  @Override
-  public void setLineFileFactory(LineFileFactory factory) {
-    this.lineFileFactory = factory;
-  }
-
-  @Override
-  public LineFileFactory getLineFileFactory() {
-    return this.lineFileFactory;
-  }
-
-  @Override
-  public void setLineFileListener(LineFileListener listener) {
-    this.lineFileListener = listener;
-  }
-
-  @Override
-  public LineFileListener getLineFileListener() {
-    return this.lineFileListener;
   }
 
   /**
@@ -151,8 +153,8 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager {
    * 调度器
    */
   @Override
-  public Executor getExecutor() {
-    Executor e = this.executor;
+  public ExecutorService getExecutor() {
+    ExecutorService e = this.executor;
     if (e == null) {
       synchronized (this) {
         e = this.executor;
@@ -190,8 +192,44 @@ public class SimpleInfluxWriteManager implements InfluxWriteManager {
   }
 
   @Override
+  public int currentWriteCount() {
+    AtomicInteger counter = this.writeCounter.get();
+    return counter.get();
+  }
+
+  @Override
   public InfluxDBWriteProperty getProperty() {
     return property;
+  }
+
+  @Override
+  public void setLineFileFactory(LineFileFactory factory) {
+    this.lineFileFactory = factory;
+  }
+
+  @Override
+  public LineFileFactory getLineFileFactory() {
+    return this.lineFileFactory;
+  }
+
+  @Override
+  public void setLineFileListener(LineFileListener listener) {
+    this.lineFileListener = listener;
+  }
+
+  @Override
+  public LineFileListener getLineFileListener() {
+    return this.lineFileListener;
+  }
+
+  @Override
+  public WriterDispatcher getWriterDispatcher() {
+    return writerDispatcher;
+  }
+
+  @Override
+  public void setWriterDispatcher(WriterDispatcher writerDispatcher) {
+    this.writerDispatcher = writerDispatcher;
   }
 
   protected static boolean isNotEmpty(Collection<?> c) {
