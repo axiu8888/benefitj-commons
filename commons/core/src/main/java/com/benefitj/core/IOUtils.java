@@ -314,7 +314,17 @@ public class IOUtils {
    * @return 返回创建的文件输出流或Null(当文件不存在时)
    */
   public static FileOutputStream newFOS(File file) {
-    return tryThrow(() -> new FileOutputStream(file));
+    return newFOS(file, false);
+  }
+
+  /**
+   * 创建新的文件输出流
+   *
+   * @param file 文件
+   * @return 返回创建的文件输出流或Null(当文件不存在时)
+   */
+  public static FileOutputStream newFOS(File file, boolean append) {
+    return tryThrow(() -> new FileOutputStream(file, append));
   }
 
   /**
@@ -552,7 +562,19 @@ public class IOUtils {
    * @param file 文件
    */
   public static void write(InputStream is, File file, boolean close) {
-    FileOutputStream fos = newFOS(file);
+    write(is, file, false, close);
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param is     输入流
+   * @param file   文件
+   * @param append 是否为追加
+   * @param close  是否关闭流
+   */
+  public static void write(InputStream is, File file, boolean append, boolean close) {
+    FileOutputStream fos = newFOS(file, append);
     try {
       write(is, fos, 1024 << 4, close);
     } finally {
