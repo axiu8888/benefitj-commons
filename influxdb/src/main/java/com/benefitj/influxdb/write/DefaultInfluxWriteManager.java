@@ -1,6 +1,5 @@
 package com.benefitj.influxdb.write;
 
-import com.benefitj.influxdb.file.FileWriterPair;
 import com.benefitj.influxdb.file.LineFileFactory;
 import com.benefitj.influxdb.file.LineFileListener;
 
@@ -31,7 +30,7 @@ public class DefaultInfluxWriteManager implements InfluxWriteManager {
   /**
    * 写入分派器
    */
-  private WriterDispatcher writerDispatcher = WriterDispatcher.newDispatcher();
+  private WriterDispatcher writerDispatcher = WriterDispatcher.newRoundWriterDispatcher();
 
   /**
    * 创建line文件的工厂
@@ -40,7 +39,7 @@ public class DefaultInfluxWriteManager implements InfluxWriteManager {
   /**
    * 处理line文件的监听
    */
-  private LineFileListener lineFileListener = EMPTY_LINE_FILE_LISTENER;
+  private LineFileListener lineFileListener = LineFileListener.DISCARD_LISTENER;
   /**
    * 初始化状态
    */
@@ -61,21 +60,20 @@ public class DefaultInfluxWriteManager implements InfluxWriteManager {
    * 注册销毁时的回调钩子
    */
   protected void checkAndInit() {
-    if (initialized) {
-      return;
-    }
-    synchronized (this) {
-      if(initialized) {
-        return;
+    if (!initialized) {
+      synchronized (this) {
+        if(initialized) {
+          return;
+        }
+        InfluxDBWriteProperty p = getProperty();
+        int lineFileCount = p.getLineFileCount();
+        for (int i = 0; i < lineFileCount; i++) {
+          LineFileWriter writer = newWriter(p);
+          getWriters().add(writer);
+        }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> getWriters().forEach(LineFileWriter::close)));
+        initialized = true;
       }
-      InfluxDBWriteProperty p = getProperty();
-      int lineFileCount = p.getLineFileCount();
-      for (int i = 0; i < lineFileCount; i++) {
-        LineFileWriter writer = newWriter(p);
-        getWriters().add(writer);
-      }
-      Runtime.getRuntime().addShutdownHook(new Thread(() -> getWriters().forEach(LineFileWriter::close)));
-      initialized = true;
     }
   }
 
@@ -270,13 +268,5 @@ public class DefaultInfluxWriteManager implements InfluxWriteManager {
       return t;
     }
   }
-
-
-  private static final LineFileListener EMPTY_LINE_FILE_LISTENER = new LineFileListener() {
-    @Override
-    public void onHandleLineFile(FileWriterPair pair, File file) {
-      // ~
-    }
-  };
 
 }

@@ -49,10 +49,6 @@ public class InfluxDBProperty {
    * 批处理的响应数
    */
   private int batchActions = 100000;
-  /**
-   * 时间戳的字段名
-   */
-  private String timeFieldName = "time";
 
   public String getUrl() {
     return url;
@@ -140,14 +136,6 @@ public class InfluxDBProperty {
 
   public void setBatchActions(int batchActions) {
     this.batchActions = batchActions;
-  }
-
-  public String getTimeFieldName() {
-    return timeFieldName;
-  }
-
-  public void setTimeFieldName(String timeFieldName) {
-    this.timeFieldName = timeFieldName;
   }
 
 }

@@ -1,5 +1,8 @@
 package com.benefitj.influxdb.template;
 
+import com.benefitj.influxdb.InfluxPointUtils;
+import com.benefitj.influxdb.converter.Converter;
+import com.benefitj.influxdb.converter.PointConverterFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import org.influxdb.BasicInfluxDB;
@@ -12,9 +15,6 @@ import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.benefitj.influxdb.InfluxPointUtils;
-import com.benefitj.influxdb.converter.Converter;
-import com.benefitj.influxdb.converter.PointConverterFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -26,16 +26,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * 抽象的InfluxDBTemplate实现
  */
-public abstract class AbstractInfluxDBTemplate<Influx extends BasicInfluxDB, Q>
-        implements InfluxDBTemplate<Influx, Q> {
+public abstract class AbstractInfluxDBTemplate<Influx extends BasicInfluxDB, Q> implements InfluxDBTemplate<Influx, Q> {
 
   protected final Logger logger = LoggerFactory.getLogger(getClass());
-
   /**
    * InfluxDB的连接
    */
   private volatile Influx influxDB;
-
   /**
    * InfluxDB的属性配置
    */
@@ -112,9 +109,9 @@ public abstract class AbstractInfluxDBTemplate<Influx extends BasicInfluxDB, Q>
           return db;
         }
         final OkHttpClient.Builder client = new OkHttpClient.Builder()
-                .connectTimeout(prop.getConnectTimeout(), TimeUnit.SECONDS)
-                .writeTimeout(prop.getWriteTimeout(), TimeUnit.SECONDS)
-                .readTimeout(prop.getReadTimeout(), TimeUnit.SECONDS);
+            .connectTimeout(prop.getConnectTimeout(), TimeUnit.SECONDS)
+            .writeTimeout(prop.getWriteTimeout(), TimeUnit.SECONDS)
+            .readTimeout(prop.getReadTimeout(), TimeUnit.SECONDS);
 
         String url = prop.getUrl();
         String username = prop.getUsername();
@@ -191,7 +188,6 @@ public abstract class AbstractInfluxDBTemplate<Influx extends BasicInfluxDB, Q>
     return String.join("\n", lines);
   }
 
-
   /**
    * Write a single measurement to the database.
    *
@@ -206,7 +202,7 @@ public abstract class AbstractInfluxDBTemplate<Influx extends BasicInfluxDB, Q>
     } else if (payload instanceof Collection) {
       getInfluxDB().write(lineProtocol((Collection<?>) payload));
     } else if (payload instanceof File) {
-      write((File)payload);
+      write((File) payload);
     } else {
       getInfluxDB().write(getPointConverterFactory().convert(payload));
     }
