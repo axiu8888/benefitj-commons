@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- *
+ * HASH生成
  */
 public class MessageDigestHash implements HashFunction {
 
