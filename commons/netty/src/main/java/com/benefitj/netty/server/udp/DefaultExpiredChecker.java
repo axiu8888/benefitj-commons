@@ -6,11 +6,18 @@ import java.util.Map;
 /**
  * 超时检查
  */
-public class SimpleExpiredChecker<C extends UdpClient> implements ExpiredChecker<C> {
+public class DefaultExpiredChecker<C extends UdpClient> implements ExpiredChecker<C> {
+
+  /**
+   * 默认过期检查的实现
+   */
+  public static <C extends UdpClient> ExpiredChecker<C> newInstance() {
+    return new DefaultExpiredChecker<C>();
+  }
 
   private final ThreadLocal<Map<String, C>> localRemovalMap = ThreadLocal.withInitial(LinkedHashMap::new);
 
-  public SimpleExpiredChecker() {
+  public DefaultExpiredChecker() {
   }
 
   public Map<String, C> getRemovalMap() {

@@ -1,16 +1,22 @@
 package com.benefitj.netty.server.udp;
 
+import io.netty.channel.Channel;
+
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
 /**
- * UDP客户端
+ * 客户端
  */
 public class UdpClient {
   /**
    * 客户端ID
    */
   private final String id;
+  /**
+   * 客户端通道
+   */
+  private Channel channel;
   /**
    * 远程地址
    */
@@ -28,8 +34,33 @@ public class UdpClient {
     this.id = id;
   }
 
-  public UdpClient(String id, InetSocketAddress remoteAddress) {
+  public UdpClient(String id, Channel channel) {
     this(id);
+    this.channel = channel;
+  }
+
+  public UdpClient(String id, Channel channel, InetSocketAddress remoteAddress) {
+    this(id, channel);
+    this.remoteAddress = remoteAddress;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public Channel getChannel() {
+    return channel;
+  }
+
+  public void setChannel(Channel channel) {
+    this.channel = channel;
+  }
+
+  public InetSocketAddress getRemoteAddress() {
+    return remoteAddress;
+  }
+
+  public void setRemoteAddress(InetSocketAddress remoteAddress) {
     this.remoteAddress = remoteAddress;
   }
 
@@ -41,10 +72,9 @@ public class UdpClient {
     return onlineTime;
   }
 
-  public String getId() {
-    return id;
-  }
-
+  /**
+   * 最新接收数据包的时间
+   */
   public long getLastRecvTime() {
     return lastRecvTime;
   }
@@ -53,12 +83,11 @@ public class UdpClient {
     this.lastRecvTime = lastRecvTime;
   }
 
-  public InetSocketAddress getRemoteAddress() {
-    return remoteAddress;
-  }
-
-  public void setRemoteAddress(InetSocketAddress remoteAddress) {
-    this.remoteAddress = remoteAddress;
+  /**
+   * 设置当前时间为最新的接收数据包的时间
+   */
+  public void setLastRecvTimeNow() {
+    this.setLastRecvTime(now());
   }
 
   /**
@@ -76,7 +105,9 @@ public class UdpClient {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     UdpClient that = (UdpClient) o;
-    return Objects.equals(id, that.id) && Objects.equals(remoteAddress, that.remoteAddress);
+    return Objects.equals(id, that.id)
+        && Objects.equals(channel, that.channel)
+        && Objects.equals(remoteAddress, that.remoteAddress);
   }
 
   @Override
@@ -86,15 +117,11 @@ public class UdpClient {
 
   @Override
   public String toString() {
-    return "UdpClient{" +
-        "deviceId='" + id + '\'' +
-        ", lastRecvTime=" + lastRecvTime +
-        ", remoteAddress=" + remoteAddress +
-        '}';
+    return "UdpClient(" + id + "#" + remoteAddress + ")";
   }
 
 
-  private static long now() {
+  public static long now() {
     return System.currentTimeMillis();
   }
 }

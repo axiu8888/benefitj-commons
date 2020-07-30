@@ -6,24 +6,24 @@ import io.netty.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 现在设备检查
+ * 在线设备检查
  */
 public class OnlineClientChannelExecutor {
 
-  private UdpClientManager<?> manager;
+  private UdpClientManager<?> udpClientManager;
 
   private ScheduledFuture<?> expiredCheckerFuture;
 
   public OnlineClientChannelExecutor() {
   }
 
-  public OnlineClientChannelExecutor(UdpClientManager<?> manager) {
-    this.manager = manager;
+  public OnlineClientChannelExecutor(UdpClientManager<?> udpClientManager) {
+    this.udpClientManager = udpClientManager;
   }
 
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     if (getExpiredCheckerFuture() == null) {
-      final UdpClientManager<?> m = getManager();
+      final UdpClientManager<?> m = getUdpClientManager();
       long interval = m.getInterval();
       TimeUnit unit = m.getIntervalUnit();
       this.expiredCheckerFuture = ctx.executor()
@@ -39,12 +39,12 @@ public class OnlineClientChannelExecutor {
     }
   }
 
-  public void setManager(UdpClientManager<?> manager) {
-    this.manager = manager;
+  public void setUdpClientManager(UdpClientManager<?> udpClientManager) {
+    this.udpClientManager = udpClientManager;
   }
 
-  public UdpClientManager<?> getManager() {
-    return manager;
+  public UdpClientManager<?> getUdpClientManager() {
+    return udpClientManager;
   }
 
   public ScheduledFuture<?> getExpiredCheckerFuture() {

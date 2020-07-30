@@ -28,4 +28,14 @@ public interface ClientStateChangeListener<C extends UdpClient> {
     // ~
   }
 
+
+  /**
+   * 客户端监听
+   */
+  static <C extends UdpClient> ClientStateChangeListener<C> emptyListener() {
+    return new ClientStateChangeListener<C>() {
+      /* ignore */
+    };
+  }
+
 }

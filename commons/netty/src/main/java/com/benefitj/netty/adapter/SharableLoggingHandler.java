@@ -1,9 +1,11 @@
 package com.benefitj.netty.adapter;
 
+import com.benefitj.core.HexTools;
 import com.benefitj.netty.log.NettyLogger;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.commons.io.HexDump;
 
 /**
  * 打印日志
@@ -41,14 +43,10 @@ public class SharableLoggingHandler extends LocalCacheChannelInboundHandler<Byte
     try {
       if (isPrint() && msg.readableBytes() > 0) {
         byte[] data = read(msg, Math.max(0, Math.min(getReadMaxSize(), 1024)), true, true);
-        StringBuilder sb = new StringBuilder();
-        for (byte datum : data) {
-          sb.append(Integer.toHexString(Byte.toUnsignedInt(datum)));
-        }
-        log.info(sb.toString());
+        log.info(HexTools.byteToHex(data));
       }
     } finally {
-      ctx.fireChannelRead(msg);
+      ctx.fireChannelRead(msg.retain());
     }
   }
 

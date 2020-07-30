@@ -7,29 +7,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 采集器客户端管理
+ * 客户端管理
  */
-public class SimpleUdpClientManager<C extends UdpClient> implements UdpClientManager<C> {
-
-  /**
-   * 默认过期检查的实现
-   */
-  public static final ExpiredChecker DEFAULT_CHECKER = new SimpleExpiredChecker();
-  /**
-   * 客户端监听
-   */
-  public static final ClientStateChangeListener DEFAULT_LISTENER = new ClientStateChangeListener() {/* ignore */};
+public class DefaultUdpClientManager<C extends UdpClient> implements UdpClientManager<C> {
 
   /**
    * 延期检查的实现
    */
-  private ExpiredChecker<C> expiredChecker = DEFAULT_CHECKER;
+  private ExpiredChecker<C> expiredChecker = DefaultExpiredChecker.newInstance();
   /**
    * 移除监听
    */
-  private ClientStateChangeListener<C> listener = DEFAULT_LISTENER;
+  private ClientStateChangeListener<C> listener = ClientStateChangeListener.emptyListener() ;
   /**
-   * 采集器客户端
+   * 客户端
    */
   private final Map<String, C> clients = new ConcurrentHashMap<>();
   /**
@@ -45,10 +36,10 @@ public class SimpleUdpClientManager<C extends UdpClient> implements UdpClientMan
    */
   private TimeUnit intervalUnit = TimeUnit.MILLISECONDS;
 
-  public SimpleUdpClientManager() {
+  public DefaultUdpClientManager() {
   }
 
-  public SimpleUdpClientManager(ClientStateChangeListener listener) {
+  public DefaultUdpClientManager(ClientStateChangeListener<C> listener) {
     this.listener = listener;
   }
 
@@ -58,26 +49,26 @@ public class SimpleUdpClientManager<C extends UdpClient> implements UdpClientMan
 
   protected C addNewClient(String key, C value) {
     C oldClient = getClients().put(key, value);
-    getListener().onAddition(key, value, oldClient);
+    getStateChangeListener().onAddition(key, value, oldClient);
     return oldClient;
   }
 
   @Override
   public void expiredClient(String id) {
-    UdpClient client = remove(id);
+    C client = remove(id);
     if (client != null) {
-      getListener().onRemoval(id, client);
+      getStateChangeListener().onRemoval(id, client);
     }
   }
 
   @Override
-  public ClientStateChangeListener getListener() {
+  public ClientStateChangeListener<C> getStateChangeListener() {
     return listener;
   }
 
   @Override
-  public void setListener(ClientStateChangeListener listener) {
-    this.listener = (listener != null ? listener : DEFAULT_LISTENER);
+  public void setStateChangeListener(ClientStateChangeListener<C> listener) {
+    this.listener = (listener != null ? listener : ClientStateChangeListener.emptyListener() );
   }
 
   @Override
@@ -87,7 +78,10 @@ public class SimpleUdpClientManager<C extends UdpClient> implements UdpClientMan
 
   @Override
   public void setExpiredChecker(ExpiredChecker<C> checker) {
-    this.expiredChecker = (checker != null ? checker : DEFAULT_CHECKER);
+    if (checker == null) {
+      throw new IllegalArgumentException("checker must not null");
+    }
+    this.expiredChecker = checker;
   }
 
   @Override

@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * UDP 客户端管理类
+ * 远程客户端管理类
  */
 public interface UdpClientManager<C extends UdpClient> extends Map<String, C> {
 
@@ -18,14 +18,14 @@ public interface UdpClientManager<C extends UdpClient> extends Map<String, C> {
   /**
    * 获取客户端状态监听
    */
-  ClientStateChangeListener<C> getListener();
+  ClientStateChangeListener<C> getStateChangeListener();
 
   /**
    * 客户端状态监听
    *
    * @param listener 监听
    */
-  void setListener(ClientStateChangeListener<C> listener);
+  void setStateChangeListener(ClientStateChangeListener<C> listener);
 
   /**
    * 获取过期检查实现
