@@ -1,29 +1,34 @@
 package com.benefitj.netty.log;
 
-/** Netty日志 */
+/**
+ * Netty日志
+ */
 public class NettyLogger implements INettyLogger {
 
-  /** 实例 */
+  /**
+   * 实例
+   */
   public static final NettyLogger INSTANCE = new NettyLogger();
 
-  public NettyLogger() {}
-
   private INettyLogger logger;
+
+  public NettyLogger() {
+  }
 
   public void setLogger(INettyLogger logger) {
     this.logger = logger;
   }
 
   public INettyLogger getLogger() {
-    if (logger == null) {
+    INettyLogger l = this.logger;
+    if (l == null) {
       synchronized (this) {
-        if (logger != null) {
-          return logger;
+        if ((l = this.logger) == null) {
+          this.logger = (l = new DiscardNettyLogger());
         }
-        logger = new DiscardNettyLogger();
       }
     }
-    return logger;
+    return l;
   }
 
   @Override

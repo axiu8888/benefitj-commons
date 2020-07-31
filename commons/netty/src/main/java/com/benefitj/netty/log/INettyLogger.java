@@ -1,6 +1,8 @@
 package com.benefitj.netty.log;
 
-/** 日志接口，直接拷贝自LOG4J */
+/**
+ * 日志接口，直接拷贝自LOG4J
+ */
 public interface INettyLogger {
   /**
    * Log a message at the DEBUG level.
@@ -18,7 +20,7 @@ public interface INettyLogger {
    * level.
    *
    * @param format the format string
-   * @param arg the argument
+   * @param arg    the argument
    */
   void debug(String format, Object arg);
 
@@ -31,8 +33,8 @@ public interface INettyLogger {
    * level.
    *
    * @param format the format string
-   * @param arg1 the first argument
-   * @param arg2 the second argument
+   * @param arg1   the first argument
+   * @param arg2   the second argument
    */
   void debug(String format, Object arg1, Object arg2);
 
@@ -47,7 +49,7 @@ public interface INettyLogger {
    * The variants taking {@link #debug(String, Object) one} and {@link #debug(String, Object,
    * Object) two} arguments exist solely in order to avoid this hidden cost.
    *
-   * @param format the format string
+   * @param format    the format string
    * @param arguments a list of 3 or more arguments
    */
   void debug(String format, Object... arguments);
@@ -56,7 +58,7 @@ public interface INettyLogger {
    * Log an exception (throwable) at the DEBUG level with an accompanying message.
    *
    * @param msg the message accompanying the exception
-   * @param t the exception (throwable) to log
+   * @param t   the exception (throwable) to log
    */
   void debug(String msg, Throwable t);
 
@@ -75,7 +77,7 @@ public interface INettyLogger {
    * <p>This form avoids superfluous object creation when the logger is disabled for the INFO level.
    *
    * @param format the format string
-   * @param arg the argument
+   * @param arg    the argument
    */
   void info(String format, Object arg);
 
@@ -87,8 +89,8 @@ public interface INettyLogger {
    * <p>This form avoids superfluous object creation when the logger is disabled for the INFO level.
    *
    * @param format the format string
-   * @param arg1 the first argument
-   * @param arg2 the second argument
+   * @param arg1   the first argument
+   * @param arg2   the second argument
    */
   void info(String format, Object arg1, Object arg2);
 
@@ -103,7 +105,7 @@ public interface INettyLogger {
    * variants taking {@link #info(String, Object) one} and {@link #info(String, Object, Object) two}
    * arguments exist solely in order to avoid this hidden cost.
    *
-   * @param format the format string
+   * @param format    the format string
    * @param arguments a list of 3 or more arguments
    */
   void info(String format, Object... arguments);
@@ -112,7 +114,7 @@ public interface INettyLogger {
    * Log an exception (throwable) at the INFO level with an accompanying message.
    *
    * @param msg the message accompanying the exception
-   * @param t the exception (throwable) to log
+   * @param t   the exception (throwable) to log
    */
   void info(String msg, Throwable t);
 
@@ -131,7 +133,7 @@ public interface INettyLogger {
    * <p>This form avoids superfluous object creation when the logger is disabled for the WARN level.
    *
    * @param format the format string
-   * @param arg the argument
+   * @param arg    the argument
    */
   void warn(String format, Object arg);
 
@@ -146,7 +148,7 @@ public interface INettyLogger {
    * variants taking {@link #warn(String, Object) one} and {@link #warn(String, Object, Object) two}
    * arguments exist solely in order to avoid this hidden cost.
    *
-   * @param format the format string
+   * @param format    the format string
    * @param arguments a list of 3 or more arguments
    */
   void warn(String format, Object... arguments);
@@ -159,8 +161,8 @@ public interface INettyLogger {
    * <p>This form avoids superfluous object creation when the logger is disabled for the WARN level.
    *
    * @param format the format string
-   * @param arg1 the first argument
-   * @param arg2 the second argument
+   * @param arg1   the first argument
+   * @param arg2   the second argument
    */
   void warn(String format, Object arg1, Object arg2);
 
@@ -168,7 +170,7 @@ public interface INettyLogger {
    * Log an exception (throwable) at the WARN level with an accompanying message.
    *
    * @param msg the message accompanying the exception
-   * @param t the exception (throwable) to log
+   * @param t   the exception (throwable) to log
    */
   void warn(String msg, Throwable t);
 
@@ -188,7 +190,7 @@ public interface INettyLogger {
    * level.
    *
    * @param format the format string
-   * @param arg the argument
+   * @param arg    the argument
    */
   void error(String format, Object arg);
 
@@ -201,8 +203,8 @@ public interface INettyLogger {
    * level.
    *
    * @param format the format string
-   * @param arg1 the first argument
-   * @param arg2 the second argument
+   * @param arg1   the first argument
+   * @param arg2   the second argument
    */
   void error(String format, Object arg1, Object arg2);
 
@@ -217,7 +219,7 @@ public interface INettyLogger {
    * The variants taking {@link #error(String, Object) one} and {@link #error(String, Object,
    * Object) two} arguments exist solely in order to avoid this hidden cost.
    *
-   * @param format the format string
+   * @param format    the format string
    * @param arguments a list of 3 or more arguments
    */
   void error(String format, Object... arguments);
@@ -226,7 +228,7 @@ public interface INettyLogger {
    * Log an exception (throwable) at the ERROR level with an accompanying message.
    *
    * @param msg the message accompanying the exception
-   * @param t the exception (throwable) to log
+   * @param t   the exception (throwable) to log
    */
   void error(String msg, Throwable t);
 }

@@ -3,7 +3,9 @@ package com.benefitj.netty.log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** 默认的日志实现 */
+/**
+ * 默认的日志实现
+ */
 public class Log4jNettyLogger implements INettyLogger {
 
   private final Logger log = LoggerFactory.getLogger(Log4jNettyLogger.class);
@@ -94,7 +96,8 @@ public class Log4jNettyLogger implements INettyLogger {
   }
 
   @Override
-  public void error(String format, Object arg1, Object arg2) {}
+  public void error(String format, Object arg1, Object arg2) {
+  }
 
   @Override
   public void error(String format, Object... arguments) {
