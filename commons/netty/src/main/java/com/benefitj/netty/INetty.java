@@ -246,7 +246,7 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
    * @param c 消费者回调
    * @return 返回是否使用了通道
    */
-  boolean useServerChannel(Consumer<Channel> c);
+  boolean useServerChannel(NettyConsumer<Channel> c);
 
   /**
    * 是否已启动
@@ -345,92 +345,6 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
   default String getOsName() {
     String osName = System.getProperties().getProperty("os.name");
     return osName != null ? osName : "";
-  }
-
-  /**
-   * Represents an operation that accepts a single input argument and returns no result. Unlike most
-   * other functional interfaces, {@code Consumer} is expected to operate via side-effects.
-   *
-   * <p>This is a <a href="package-summary.html">functional interface</a> whose functional method is
-   * {@link #accept(Object)}.
-   *
-   * @param <T> the type of the input to the operation
-   * @since 1.8
-   */
-  @FunctionalInterface
-  interface Consumer<T> {
-
-    /**
-     * Performs this operation on the given argument.
-     *
-     * @param t the input argument
-     */
-    void accept(T t);
-
-    /**
-     * Returns a composed {@code Consumer} that performs, in sequence, this operation followed by
-     * the {@code after} operation. If performing either operation throws an exception, it is
-     * relayed to the caller of the composed operation. If performing this operation throws an
-     * exception, the {@code after} operation will not be performed.
-     *
-     * @param after the operation to perform after this operation
-     * @return a composed {@code Consumer} that performs in sequence this operation followed by the
-     * {@code after} operation
-     * @throws NullPointerException if {@code after} is null
-     */
-    default java.util.function.Consumer<T> andThen(java.util.function.Consumer<? super T> after) {
-      Objects.requireNonNull(after);
-      return (T t) -> {
-        accept(t);
-        after.accept(t);
-      };
-    }
-  }
-
-  /**
-   * Represents an operation that accepts two input arguments and returns no result. This is the
-   * two-arity specialization of {@link Consumer}. Unlike most other functional interfaces, {@code
-   * NettyBiConsumer} is expected to operate via side-effects.
-   *
-   * <p>This is a <a href="package-summary.html">functional interface</a> whose functional method is
-   * {@link #accept(Object, Object)}.
-   *
-   * @param <T> the type of the first argument to the operation
-   * @param <U> the type of the second argument to the operation
-   * @see Consumer
-   * @since 1.8
-   */
-  @FunctionalInterface
-  interface NettyBiConsumer<T, U> {
-
-    /**
-     * Performs this operation on the given arguments.
-     *
-     * @param t the first input argument
-     * @param u the second input argument
-     */
-    void accept(T t, U u);
-
-    /**
-     * Returns a composed {@code NettyBiConsumer} that performs, in sequence, this operation
-     * followed by the {@code after} operation. If performing either operation throws an exception,
-     * it is relayed to the caller of the composed operation. If performing this operation throws an
-     * exception, the {@code after} operation will not be performed.
-     *
-     * @param after the operation to perform after this operation
-     * @return a composed {@code NettyBiConsumer} that performs in sequence this operation followed
-     * by the {@code after} operation
-     * @throws NullPointerException if {@code after} is null
-     */
-    default java.util.function.BiConsumer<T, U> andThen(
-        java.util.function.BiConsumer<? super T, ? super U> after) {
-      Objects.requireNonNull(after);
-
-      return (l, r) -> {
-        accept(l, r);
-        after.accept(l, r);
-      };
-    }
   }
 
   GenericFutureListener<? extends Future<Void>> EMPTY_LISTENER = future -> { /*do nothing*/ };
