@@ -11,15 +11,32 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public class BiConsumerChannelInboundHandler<I> extends SimpleChannelInboundHandler<I> {
 
-  private final NettyBiConsumer<ChannelHandlerContext, I> consumer;
+  private NettyBiConsumer<ChannelHandlerContext, I> consumer;
+
+  public BiConsumerChannelInboundHandler(Class<? extends I> inboundMessageType) {
+    super(inboundMessageType);
+  }
 
   public BiConsumerChannelInboundHandler(NettyBiConsumer<ChannelHandlerContext, I> consumer) {
-    this.consumer = consumer;
+    this.setConsumer(consumer);
+  }
+
+  public BiConsumerChannelInboundHandler(Class<? extends I> inboundMessageType, NettyBiConsumer<ChannelHandlerContext, I> consumer) {
+    super(inboundMessageType);
+    this.setConsumer(consumer);
   }
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, I msg) throws Exception {
-    consumer.accept(ctx, msg);
+    getConsumer().accept(ctx, msg);
+  }
+
+  public NettyBiConsumer<ChannelHandlerContext, I> getConsumer() {
+    return consumer;
+  }
+
+  public void setConsumer(NettyBiConsumer<ChannelHandlerContext, I> consumer) {
+    this.consumer = consumer;
   }
 
 }
