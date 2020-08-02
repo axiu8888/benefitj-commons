@@ -10,9 +10,9 @@ import io.netty.util.AttributeKey;
 import java.util.Map;
 
 /**
- * TCP服务端
+ * 服务端
  */
-public interface ITcpNettyServer<S extends ITcpNettyServer<S>> extends INetty<ServerBootstrap, S> {
+public interface INettyServer<S extends INettyServer<S>> extends INetty<ServerBootstrap, S> {
 
   /**
    * 设置线程组

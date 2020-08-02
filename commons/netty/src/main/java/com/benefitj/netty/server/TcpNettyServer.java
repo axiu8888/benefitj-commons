@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * TCP 服务
  */
-public class TcpNettyServer extends AbstractNetty<ServerBootstrap, TcpNettyServer> implements ITcpNettyServer<TcpNettyServer> {
+public class TcpNettyServer extends AbstractNetty<ServerBootstrap, TcpNettyServer> implements INettyServer<TcpNettyServer> {
 
   public static final Map<ChannelOption<?>, Object> DEFAULT_OPTIONS;
   public static final Map<ChannelOption<?>, Object> DEFAULT_CHILD_OPTIONS;
@@ -60,11 +60,13 @@ public class TcpNettyServer extends AbstractNetty<ServerBootstrap, TcpNettyServe
   @Override
   public TcpNettyServer useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
-      this.group(new EpollEventLoopGroup(), new EpollEventLoopGroup());
+      this.executeWhileNotNull(bossGroup(), () -> this.group(new EpollEventLoopGroup()));
+      this.executeWhileNotNull(workerGroup(), () -> this.group(bossGroup(), new EpollEventLoopGroup()));
       this.channel(EpollServerSocketChannel.class);
       this.option(UnixChannelOption.SO_REUSEPORT, true);
     } else {
-      this.executeWhileNull(bossGroup(), () -> group(new NioEventLoopGroup(), new NioEventLoopGroup()));
+      this.executeWhileNotNull(bossGroup(), () -> this.group(new NioEventLoopGroup()));
+      this.executeWhileNotNull(workerGroup(), () -> this.group(bossGroup(), new NioEventLoopGroup()));
       this.executeWhileNull(channelFactory(), () -> channel(NioServerSocketChannel.class));
     }
 
