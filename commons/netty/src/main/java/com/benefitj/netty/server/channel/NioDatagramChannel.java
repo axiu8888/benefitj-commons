@@ -87,9 +87,13 @@ public class NioDatagramChannel extends AbstractChannel {
 		final RecyclableArrayList list = RecyclableArrayList.newInstance();
 		boolean freeList = true;
 		try {
-			ByteBuf buf;
-			while ((buf = (ByteBuf) buffer.current()) != null) {
-				list.add(buf.retain());
+			Object current;
+			while ((current = buffer.current()) != null) {
+				if (current instanceof DatagramPacket) {
+					list.add(((DatagramPacket)current).retain());
+				} else {
+					list.add(new DatagramPacket(((ByteBuf)current).retain(), remoteAddress()));
+				}
 				buffer.remove();
 			}
 			freeList = false;
@@ -107,7 +111,7 @@ public class NioDatagramChannel extends AbstractChannel {
 			public void run() {
 				try {
 					for (Object buf : list) {
-						parent().unsafe().write(new DatagramPacket((ByteBuf) buf, remoteAddress), voidPromise());
+						parent().unsafe().write(buf, voidPromise());
 					}
 					parent().unsafe().flush();
 				} finally {
@@ -133,12 +137,12 @@ public class NioDatagramChannel extends AbstractChannel {
 	}
 
 	@Override
-	protected SocketAddress remoteAddress0() {
+	protected InetSocketAddress remoteAddress0() {
 		return remoteAddress;
 	}
 
 	@Override
-	public SocketAddress remoteAddress() {
+	public InetSocketAddress remoteAddress() {
 		//return super.remoteAddress();
 		return remoteAddress0();
 	}

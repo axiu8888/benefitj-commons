@@ -113,7 +113,6 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel implemen
   @SuppressWarnings("deprecation")
   @Override
   protected int doReadMessages(List<Object> list) throws Exception {
-    DatagramChannel javaChannel = javaChannel();
     RecvByteBufAllocator.Handle allocatorHandle = unsafe().recvBufAllocHandle();
     ByteBuf buffer = allocatorHandle.allocate(config.getAllocator());
     allocatorHandle.attemptedBytesRead(buffer.writableBytes());
@@ -122,29 +121,29 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel implemen
       //read message
       ByteBuffer nioBuffer = buffer.internalNioBuffer(buffer.writerIndex(), buffer.writableBytes());
       int nioPos = nioBuffer.position();
-      InetSocketAddress inetSocketAddress = (InetSocketAddress) javaChannel.receive(nioBuffer);
-      if (inetSocketAddress == null) {
+      InetSocketAddress remote = (InetSocketAddress) javaChannel().receive(nioBuffer);
+      if (remote == null) {
         return 0;
       }
       allocatorHandle.lastBytesRead(nioBuffer.position() - nioPos);
       buffer.writerIndex(buffer.writerIndex() + allocatorHandle.lastBytesRead());
       //allocate new channel or use existing one and push message to it
-      NioDatagramChannel udpchannel = channels.get(inetSocketAddress);
-      if ((udpchannel == null) || !udpchannel.isOpen()) {
-        udpchannel = new NioDatagramChannel(this, inetSocketAddress);
-        NioDatagramChannel oldChannel = channels.put(inetSocketAddress, udpchannel);
-        list.add(udpchannel);
-        udpchannel.addBuffer(buffer);
+      NioDatagramChannel child = channels.get(remote);
+      if ((child == null) || !child.isOpen()) {
+        child = new NioDatagramChannel(this, remote);
+        NioDatagramChannel oldChannel = channels.put(remote, child);
+        list.add(child);
+        child.addBuffer(buffer);
         freeBuffer = false;
         if (oldChannel != null) {
           oldChannel.close();
         }
         return 1;
       } else {
-        udpchannel.addBuffer(buffer);
+        child.addBuffer(buffer);
         freeBuffer = false;
-        if (udpchannel.isRegistered()) {
-          udpchannel.read();
+        if (child.isRegistered()) {
+          child.read();
         }
         return 0;
       }
@@ -160,15 +159,14 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel implemen
 
   @Override
   protected boolean doWriteMessage(Object msg, ChannelOutboundBuffer buffer) throws Exception {
-    DatagramPacket dpacket = (DatagramPacket) msg;
-    InetSocketAddress recipient = dpacket.recipient();
-    ByteBuf byteBuf = dpacket.content();
-    int readableBytes = byteBuf.readableBytes();
+    DatagramPacket packet = (DatagramPacket) msg;
+    ByteBuf buf = packet.content();
+    int readableBytes = buf.readableBytes();
     if (readableBytes == 0) {
       return true;
     }
-    ByteBuffer internalNioBuffer = byteBuf.internalNioBuffer(byteBuf.readerIndex(), readableBytes);
-    return javaChannel().send(internalNioBuffer, recipient) > 0;
+    ByteBuffer internalNioBuffer = buf.internalNioBuffer(buf.readerIndex(), readableBytes);
+    return javaChannel().send(internalNioBuffer, packet.recipient()) > 0;
   }
 
   @Override
