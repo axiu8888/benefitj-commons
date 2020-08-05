@@ -302,6 +302,67 @@ public abstract class AbstractInfluxDBTemplate<Influx extends BasicInfluxDB, Q> 
   }
 
   /**
+   * Executes a query against the database.
+   *
+   * @param query the query to execute
+   * @return a List of time series data matching the query
+   */
+  public Q query(final String query) {
+    return this.query(createQuery(query));
+  }
+
+  /**
+   * Executes a query against the database.
+   *
+   * @param query the query to execute
+   * @return a List of time series data matching the query
+   */
+  @Override
+  public abstract Q query(final Query query);
+
+  /**
+   * Executes a query against the database.
+   *
+   * @param query    the query to execute
+   * @param timeUnit the time unit to be used for the query
+   * @return a List of time series data matching the query
+   */
+  public Q query(final String query, final TimeUnit timeUnit) {
+    return query(createQuery(query), timeUnit);
+  }
+
+  /**
+   * Executes a query against the database.
+   *
+   * @param query    the query to execute
+   * @param timeUnit the time unit to be used for the query
+   * @return a List of time series data matching the query
+   */
+  @Override
+  public abstract Q query(final Query query, final TimeUnit timeUnit);
+
+  /**
+   * Executes a query against the database.
+   *
+   * @param query     the query to execute
+   * @param chunkSize the number of QueryResults to process in one chunk
+   * @return a List of time series data matching the query
+   */
+  public Q query(String query, int chunkSize) throws IllegalStateException {
+    return query(createQuery(query), chunkSize);
+  }
+
+  /**
+   * Executes a query against the database.
+   *
+   * @param query     the query to execute
+   * @param chunkSize the number of QueryResults to process in one chunk
+   * @return a List of time series data matching the query
+   */
+  @Override
+  public abstract Q query(Query query, int chunkSize) throws IllegalStateException;
+
+  /**
    * @param query     the query to execute
    * @param chunkSize the number of QueryResults to process in one chunk
    * @param consumer  consumer

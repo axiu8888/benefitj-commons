@@ -1,15 +1,93 @@
-package com.benefitj.influxdb.query;
+package com.benefitj.influxdb.template.value;
 
+import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.TimeUtil;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 数值转换
  */
-public interface ValueConverter {
+public interface ValueConverter<C extends ValueConverter<C>> {
 
   String TIME = "time";
+
+  /**
+   * 设置序列
+   *
+   * @param series 序列
+   * @return 返回值转换器
+   */
+  C setSeries(QueryResult.Series series);
+
+  /**
+   * 获取序列
+   */
+  QueryResult.Series getSeries();
+
+  /**
+   * measurement name
+   */
+  String getName();
+
+  /**
+   * tag map
+   */
+  Map<String, String> getTags();
+
+  /**
+   * 获取 tag 的值
+   */
+  String getTag(String name);
+
+  /**
+   * column position
+   */
+  int getPosition(String column);
+
+  /**
+   * 获取列
+   */
+  List<String> getColumns();
+
+  /**
+   * 获取列名
+   */
+  String getColumn(int index);
+
+  /**
+   * value list
+   */
+  List<List<Object>> getValues();
+
+  /**
+   * 获取某个下标的值集合
+   *
+   * @param position 位置
+   * @return 返回对应位置上的值
+   */
+  List<Object> getValueList(int position);
+
+  /**
+   * 设置当前值的位置
+   */
+  C setPosition(int position);
+
+  /**
+   * 获取当前值的位置
+   */
+  int getPosition();
+
+  /**
+   * 获取值
+   *
+   * @param column       字段
+   * @param defaultValue 默认值
+   * @return 返回获取的值
+   */
+  <T> T getValue(List<Object> value, String column, T defaultValue);
 
   /**
    * 获取值
@@ -146,7 +224,8 @@ public interface ValueConverter {
    * @return 返回获取的值
    */
   default String getString(String column, String defaultValue) {
-    return (String) getValue(column, defaultValue);
+    Object value = getValue(column, defaultValue);
+    return value != null ? String.valueOf(value) : defaultValue;
   }
 
   /**

@@ -1,4 +1,4 @@
-package com.benefitj.influxdb.query;
+package com.benefitj.influxdb.template.value;
 
 import org.influxdb.dto.QueryResult;
 
@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 /**
  * 查询结果消费者
  */
-public interface QueryConsumer<C extends SimpleValueConverter> {
+public interface QueryConsumer<C extends DefaultValueConverter> {
 
   Predicate<QueryResult.Result> RESULT_FILTER = r -> r != null && r.getSeries() != null;
   Function<QueryResult.Result, Stream<QueryResult.Series>> SERIES_STREAM = r -> r.getSeries().stream();
@@ -32,10 +32,10 @@ public interface QueryConsumer<C extends SimpleValueConverter> {
    */
   default void onResultNext(QueryResult result) {
     result.getResults()
-            .stream()
-            .filter(RESULT_FILTER)
-            .flatMap(SERIES_STREAM)
-            .forEach(this::iterator);
+        .stream()
+        .filter(RESULT_FILTER)
+        .flatMap(SERIES_STREAM)
+        .forEach(this::iterator);
   }
 
   /**
@@ -91,17 +91,19 @@ public interface QueryConsumer<C extends SimpleValueConverter> {
     // ~
   }
 
-
+  /**
+   * 迭代序列数据
+   */
   default void iterator(QueryResult.Series series) {
     final C c = this.getConverter();
     int position = c.getPosition();
-    c.setupSeries(series);
+    c.setSeries(series);
     c.setPosition(0);
     this.onSeriesStart(series, c);
     int size = c.getValues().size();
     for (int i = 0; i < size; i++) {
       c.setPosition(i);
-      this.onSeriesNext(c.getValue(i), c, i);
+      this.onSeriesNext(c.getValueList(i), c, i);
     }
     this.onSeriesComplete(series, c);
     c.setPosition(position);

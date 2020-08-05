@@ -176,6 +176,17 @@ public interface InfluxDBTemplate<Influx extends BasicInfluxDB, Q> extends Initi
   void write(String database, String retentionPolicy, InfluxDB.ConsistencyLevel consistency, RequestBody batchPoints);
 
   /**
+   * new query object
+   *
+   * @param query query script
+   * @return new query
+   */
+  default Query createQuery(String query) {
+    return new Query(query, getDatabase());
+  }
+
+
+  /**
    * Executes a query against the database.
    *
    * @param query the query to execute

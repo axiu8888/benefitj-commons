@@ -1,7 +1,7 @@
 package com.benefitj.influxdb.template;
 
-import com.benefitj.influxdb.query.QueryConsumer;
-import com.benefitj.influxdb.query.SimpleValueConverter;
+import com.benefitj.influxdb.template.value.QueryConsumer;
+import com.benefitj.influxdb.template.value.DefaultValueConverter;
 import io.reactivex.subscribers.DefaultSubscriber;
 import org.influxdb.InfluxDBException;
 import org.influxdb.dto.QueryResult;
@@ -13,12 +13,11 @@ import java.util.List;
 /**
  * 查询的消费者
  */
-public abstract class RxJavaQuerySubscriber extends DefaultSubscriber<QueryResult>
-    implements QueryConsumer<SimpleValueConverter> {
+public abstract class RxJavaQuerySubscriber extends DefaultSubscriber<QueryResult> implements QueryConsumer<DefaultValueConverter> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RxJavaQuerySubscriber.class);
+  private static final Logger log = LoggerFactory.getLogger(RxJavaQuerySubscriber.class);
 
-  private SimpleValueConverter converter;
+  private DefaultValueConverter converter;
 
   public RxJavaQuerySubscriber() {
   }
@@ -36,7 +35,7 @@ public abstract class RxJavaQuerySubscriber extends DefaultSubscriber<QueryResul
   @Override
   public final void onNext(QueryResult result) {
     if (result.hasError()) {
-      LOGGER.debug("result error: {}", result.getError());
+      log.warn("result error: {}", result.getError());
     } else {
       this.onResultNext(result);
     }
@@ -102,7 +101,7 @@ public abstract class RxJavaQuerySubscriber extends DefaultSubscriber<QueryResul
    */
   @Override
   public void onQueryError(Throwable e) {
-    e.printStackTrace();
+    log.warn("onQueryError: " + e.getMessage());
   }
 
   /**
@@ -112,7 +111,7 @@ public abstract class RxJavaQuerySubscriber extends DefaultSubscriber<QueryResul
    * @param c      转换器对象
    */
   @Override
-  public void onSeriesStart(QueryResult.Series series, SimpleValueConverter c) {
+  public void onSeriesStart(QueryResult.Series series, DefaultValueConverter c) {
     // ~
   }
 
@@ -124,7 +123,7 @@ public abstract class RxJavaQuerySubscriber extends DefaultSubscriber<QueryResul
    * @param position  当前值的位置
    */
   @Override
-  public abstract void onSeriesNext(List<Object> values, SimpleValueConverter converter, int position);
+  public abstract void onSeriesNext(List<Object> values, DefaultValueConverter converter, int position);
 
   /**
    * 迭代Series的完成
@@ -133,7 +132,7 @@ public abstract class RxJavaQuerySubscriber extends DefaultSubscriber<QueryResul
    * @param c      转换器对象
    */
   @Override
-  public void onSeriesComplete(QueryResult.Series series, SimpleValueConverter c) {
+  public void onSeriesComplete(QueryResult.Series series, DefaultValueConverter c) {
     // ~
   }
 
@@ -141,31 +140,32 @@ public abstract class RxJavaQuerySubscriber extends DefaultSubscriber<QueryResul
    * 获取 SeriesConverter
    */
   @Override
-  public final SimpleValueConverter getConverter() {
-    SimpleValueConverter vc = this.converter;
-    if (vc == null) {
+  public final DefaultValueConverter getConverter() {
+    DefaultValueConverter c = this.converter;
+    if (c == null) {
       synchronized (this) {
-        if ((vc = this.converter) == null) {
-          vc = (this.converter = new SimpleValueConverter());
+        if ((c = this.converter) != null) {
+          return c;
         }
+        c = (this.converter = new DefaultValueConverter());
       }
     }
-    return vc;
+    return c;
   }
 
   @Override
   public final void iterator(QueryResult.Series series) {
-    final SimpleValueConverter c = this.getConverter();
-    int position = c.getPosition();
-    c.setupSeries(series);
+    final DefaultValueConverter c = this.getConverter();
+    final int index = c.getPosition();
+    c.setSeries(series);
     c.setPosition(0);
     this.onSeriesStart(series, c);
     int size = c.getValues().size();
     for (int i = 0; i < size; i++) {
       c.setPosition(i);
-      this.onSeriesNext(c.getValue(i), c, i);
+      this.onSeriesNext(c.getValueList(i), c, i);
     }
     this.onSeriesComplete(series, c);
-    c.setPosition(position);
+    c.setPosition(index);
   }
 }
