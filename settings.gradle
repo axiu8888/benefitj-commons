@@ -19,13 +19,6 @@ include ":commons:netty" // netty
 include ":commons:eventbus" // EventBus
 include ":commons:all" // 全部的依赖
 
-//include ":spring" // Spring，已过期，请使用 https://github.com/dingxiuan/springboot-doughnut
-/**
- * InfluxDB的依赖
- */
-include ":influxdb" // InfluxDB
-
-
 include ":examples" // examples
 
 

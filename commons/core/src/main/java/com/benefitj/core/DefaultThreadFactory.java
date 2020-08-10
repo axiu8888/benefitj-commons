@@ -19,9 +19,14 @@ public class DefaultThreadFactory implements ThreadFactory {
 
   public DefaultThreadFactory(String prefix, String suffix) {
     SecurityManager s = System.getSecurityManager();
-    group = (s != null) ? s.getThreadGroup() :
+    this.group = (s != null) ? s.getThreadGroup() :
             Thread.currentThread().getThreadGroup();
-    namePrefix = prefix + poolNumber.getAndIncrement() + suffix;
+    this.namePrefix = prefix + poolNumber.getAndIncrement() + suffix;
+  }
+
+  public DefaultThreadFactory(ThreadGroup group, String prefix, String suffix) {
+    this.group = group;
+    this.namePrefix = prefix + poolNumber.getAndIncrement() + suffix;
   }
 
   @Override

@@ -126,8 +126,8 @@ public class LocalCacheFactory {
    *
    * @return 返回 WeakHashMap 的缓存对象
    */
-  public static LocalMapCache<Integer, byte[]> newBytesWeakHashMapCache() {
-    return newBytesWeakHashMapCache(byte[]::new);
+  public static LocalMapCache<Integer, byte[]> newBytesWeakHashMapCache(Function<Integer, byte[]> absentFunction) {
+    return new LocalMapCache<>(WeakHashMap::new, absentFunction);
   }
 
   /**
@@ -135,8 +135,17 @@ public class LocalCacheFactory {
    *
    * @return 返回 WeakHashMap 的缓存对象
    */
-  public static LocalMapCache<Integer, byte[]> newBytesWeakHashMapCache(Function<Integer, byte[]> absentFunction) {
-    return new LocalMapCache<>(WeakHashMap::new, absentFunction);
+  public static LocalMapCache<Integer, byte[]> newBytesWeakHashMapCache() {
+    return new LocalMapCache<>(WeakHashMap::new, (Function<Integer, byte[]>) byte[]::new);
+  }
+
+  /**
+   * 创建 WeakHashMap 的缓存
+   *
+   * @return 返回 WeakHashMap 的缓存对象
+   */
+  public static LocalMapCache<Integer, byte[]> newNullableBytesWeakHashMapCache() {
+    return new LocalMapCache<>(WeakHashMap::new, null);
   }
 
 }

@@ -58,16 +58,20 @@ public class TreeSortHelper {
    * @param <ID> ID类型
    * @return 返回是否存在
    */
-  private static <ID> boolean checkId(ID id) {
+  private static <ID> boolean isExist(ID id) {
     boolean flag = id != null;
-    if (flag) {
-      if (id instanceof CharSequence) {
-        flag = ((CharSequence) id).length() > 0;
+    if (flag && (id instanceof CharSequence)) {
+      CharSequence idStr = (CharSequence) id;
+      int length = idStr.length();
+      for (int i = 0; i < length; i++) {
+        if (idStr.charAt(i) != ' ') {
+          return false;
+        }
       }
+      return true;
     }
     return flag;
   }
-
 
   /**
    * 树结点接口
@@ -143,7 +147,7 @@ public class TreeSortHelper {
      */
     default boolean addChild(N node) {
       if (node != null) {
-        if (!checkId(node.getParentId())) {
+        if (!isExist(node.getParentId())) {
           // 给子结点设置当前的ID为其父结点
           node.setParentId(getId());
         }
@@ -161,7 +165,7 @@ public class TreeSortHelper {
      * @return 是否添加成功
      */
     default boolean addChild(ID pid, N node) {
-      if (!checkId(pid)) {
+      if (!isExist(pid)) {
         return this.addChild(node);
       }
       final N child = getChild(pid);
@@ -298,7 +302,7 @@ public class TreeSortHelper {
     }
 
     public boolean hasParent() {
-      return checkId(tree.getParentId());
+      return isExist(tree.getParentId());
     }
 
     @Override

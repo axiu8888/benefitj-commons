@@ -18,6 +18,8 @@ public class EventLoop implements ScheduledExecutorService {
       = SingletonSupplier.of(() -> new GlobalEventLoop(PROCESSOR_SIZE, "-multi-"));
   private static final SingletonSupplier<EventLoop> SINGLE_EVENT_LOOP
       = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-single-"));
+  private static final SingletonSupplier<EventLoop> IO_EVENT_LOOP
+      = SingletonSupplier.of(() -> new GlobalEventLoop(128, "-IO-"));
 
   /**
    * 多线程事件
@@ -33,6 +35,13 @@ public class EventLoop implements ScheduledExecutorService {
     return SINGLE_EVENT_LOOP.get();
   }
 
+  /**
+   * IO事件，128个线程
+   */
+  public static EventLoop io() {
+    return IO_EVENT_LOOP.get();
+  }
+
   private final ScheduledExecutorService executor;
 
   public EventLoop(int corePoolSize) {
@@ -40,9 +49,7 @@ public class EventLoop implements ScheduledExecutorService {
   }
 
   public EventLoop(int corePoolSize, ThreadFactory threadFactory) {
-    this.executor = corePoolSize == 1
-        ? Executors.newSingleThreadScheduledExecutor(threadFactory)
-        : Executors.newScheduledThreadPool(corePoolSize, threadFactory);
+    this.executor = Executors.newScheduledThreadPool(corePoolSize, threadFactory);
   }
 
   protected ScheduledExecutorService getExecutor() {

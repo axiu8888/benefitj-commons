@@ -3,8 +3,8 @@ package com.benefitj.core;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -14,9 +14,6 @@ import java.util.function.Predicate;
  * 反射工具
  */
 public class ReflectUtils {
-
-  private static final Function<Class<?>, Field[]> FUNC_FIELDS = Class::getDeclaredFields;
-  private static final Function<Class<?>, Method[]> FUNC_METHODS = Class::getDeclaredMethods;
 
   /**
    * 判断是否为 Static和final的
@@ -88,7 +85,6 @@ public class ReflectUtils {
     return null;
   }
 
-
   /**
    * 设置是否可以访问
    *
@@ -97,9 +93,7 @@ public class ReflectUtils {
    */
   public static void setAccessible(AccessibleObject ao, boolean flag) {
     if (ao != null) {
-      if (!(flag && ao.isAccessible())) {
-        ao.setAccessible(flag);
-      }
+      ao.setAccessible(flag);
     }
   }
 
@@ -107,21 +101,39 @@ public class ReflectUtils {
    * 迭代Class
    *
    * @param type        类
-   * @param func        *
-   * @param interceptor 拦截器 -> 返回true表示停止循环
+   * @param call        *
    * @param filter      过滤器 -> 返回true表示符合要求，需要处理
    * @param consumer    消费者
-   * @return 返回存储字段的Map
+   * @param interceptor 拦截器 -> 返回true表示停止循环
    */
   public static <T> void foreach(final Class<?> type,
-                                 final Function<Class<?>, T[]> func,
-                                 final Predicate<T> interceptor,
+                                 final Function<Class<?>, T[]> call,
                                  final Predicate<T> filter,
-                                 final Consumer<T> consumer) {
+                                 final Consumer<T> consumer,
+                                 final Predicate<T> interceptor) {
+    foreach(type, call, filter, consumer, interceptor, true);
+  }
+
+  /**
+   * 迭代Class
+   *
+   * @param type        类
+   * @param call        *
+   * @param filter      过滤器 -> 返回true表示符合要求，需要处理
+   * @param consumer    消费者
+   * @param interceptor 拦截器 -> 返回true表示停止循环
+   * @param superclass  是否继续迭代父类
+   */
+  public static <T> void foreach(final Class<?> type,
+                                 final Function<Class<?>, T[]> call,
+                                 final Predicate<T> filter,
+                                 final Consumer<T> consumer,
+                                 final Predicate<T> interceptor,
+                                 boolean superclass) {
     if (type == null || type == Object.class) {
       return;
     }
-    T[] ts = func.apply(type);
+    T[] ts = call.apply(type);
     for (T field : ts) {
       if (filter != null) {
         if (filter.test(field)) {
@@ -134,38 +146,75 @@ public class ReflectUtils {
         return;
       }
     }
-    foreach(type.getSuperclass(), func, interceptor, filter, consumer);
+
+    if (superclass) {
+      foreach(type.getSuperclass(), call, filter, consumer, interceptor, superclass);
+    }
   }
 
+
   /**
-   * 获取存储类字段的Map
+   * 迭代 field
    *
    * @param type        类
-   * @param interceptor 拦截器
    * @param filter      过滤器
    * @param consumer    消费者
-   * @return 返回存储字段的Map
+   * @param interceptor 拦截器
    */
   public static void foreachField(Class<?> type,
-                                  Predicate<Field> interceptor,
                                   Predicate<Field> filter,
-                                  Consumer<Field> consumer) {
-    foreach(type, FUNC_FIELDS, interceptor, filter, consumer);
+                                  Consumer<Field> consumer,
+                                  Predicate<Field> interceptor) {
+    foreachField(type, filter, consumer, interceptor, true);
   }
 
   /**
-   * 迭代Class的Method
+   * 迭代 method
    *
    * @param type        类
-   * @param interceptor 拦截器
    * @param filter      过滤器
    * @param consumer    处理器
+   * @param interceptor 拦截器
+   * @param superclass  是否继续迭代父类
    */
   public static void foreachMethod(Class<?> type,
-                                   Predicate<Method> interceptor,
                                    Predicate<Method> filter,
-                                   Consumer<Method> consumer) {
-    foreach(type, FUNC_METHODS, interceptor, filter, consumer);
+                                   Consumer<Method> consumer,
+                                   Predicate<Method> interceptor,
+                                   boolean superclass) {
+    foreach(type, Class::getDeclaredMethods, filter, consumer, interceptor, superclass);
+  }
+
+  /**
+   * 迭代 field
+   *
+   * @param type        类
+   * @param filter      过滤器
+   * @param consumer    消费者
+   * @param interceptor 拦截器
+   * @param superclass  是否继续迭代父类
+   */
+  public static void foreachField(Class<?> type,
+                                  Predicate<Field> filter,
+                                  Consumer<Field> consumer,
+                                  Predicate<Field> interceptor,
+                                  boolean superclass) {
+    foreach(type, Class::getDeclaredFields, filter, consumer, interceptor, superclass);
+  }
+
+  /**
+   * 迭代 method
+   *
+   * @param type        类
+   * @param filter      过滤器
+   * @param consumer    处理器
+   * @param interceptor 拦截器
+   */
+  public static void foreachMethod(Class<?> type,
+                                   Predicate<Method> filter,
+                                   Consumer<Method> consumer,
+                                   Predicate<Method> interceptor) {
+    foreachMethod(type, filter, consumer, interceptor, true);
   }
 
   /**
@@ -190,9 +239,7 @@ public class ReflectUtils {
     if (isNonNull(type, field) && !field.isEmpty() && type != Object.class) {
       try {
         return type.getDeclaredField(field);
-      } catch (NoSuchFieldException e) {
-        /* ignore */
-      }
+      } catch (NoSuchFieldException e) {/* ~ */}
       return getField(type.getSuperclass(), field);
     }
     return null;
@@ -219,17 +266,27 @@ public class ReflectUtils {
 
   /**
    * 获取字段的值
+   *
+   * @param field 字段
+   * @param obj   原对象
+   * @param <V>   值类型
+   * @return 返回获取到的值
    */
   public static <V> V getFieldValue(Field field, Object obj) {
     try {
       setAccessible(field, true);
       return (V) field.get(obj);
-    } catch (IllegalAccessException ignore) {}
+    } catch (IllegalAccessException ignore) {/* ~ */}
     return null;
   }
 
   /**
    * 设置字段的值
+   *
+   * @param field 字段
+   * @param obj   对象
+   * @param value 值
+   * @return 返回是否设置成功
    */
   public static boolean setFieldValue(Field field, Object obj, Object value) {
     if (field != null && obj != null) {
@@ -237,7 +294,7 @@ public class ReflectUtils {
         setAccessible(field, true);
         field.set(obj, value);
         return true;
-      } catch (IllegalAccessException ignore) {}
+      } catch (IllegalAccessException ignore) {/* ~ */}
     }
     return false;
   }
@@ -245,38 +302,42 @@ public class ReflectUtils {
   /**
    * 获取指定注解的全部属性
    *
-   * @param clazz 注解
+   * @param klass           class
+   * @param annotationClass 注解
    * @return 返回获取的全部属性
    */
-  public static Field getFieldByAnnotation(
-      Class<?> clazz, Class<? extends Annotation> annotationClass) {
-    List<Field> fieldList = getFieldByAnnotation(clazz, annotationClass, true);
+  public static Field getFieldByAnnotation(Class<?> klass,
+                                           Class<? extends Annotation> annotationClass) {
+    List<Field> fieldList = getFieldByAnnotation(klass, annotationClass, true);
     return fieldList.isEmpty() ? null : fieldList.get(0);
   }
 
   /**
    * 获取指定注解的全部属性
    *
-   * @param clazz 注解
+   * @param klass           class
+   * @param annotationClass 注解
    * @return 返回获取的全部属性
    */
-  public static List<Field> getFieldByAnnotation(Class<?> clazz,
+  public static List<Field> getFieldByAnnotation(Class<?> klass,
                                                  Class<? extends Annotation> annotationClass,
                                                  boolean first) {
-    if (clazz == null || clazz == Object.class) {
+    if (klass == null || klass == Object.class) {
       return Collections.emptyList();
     }
-    List<Field> fieldList = new ArrayList<>();
-    for (Field field : clazz.getDeclaredFields()) {
+
+    final List<Field> fields = new LinkedList<>();
+    for (Field field : klass.getDeclaredFields()) {
       if (field.isAnnotationPresent(annotationClass)) {
-        fieldList.add(field);
+        fields.add(field);
         if (first) {
-          return fieldList;
+          return fields;
         }
       }
     }
-    fieldList.addAll(getFieldByAnnotation(clazz.getSuperclass(), annotationClass, first));
-    return fieldList;
+    List<Field> nextFields = getFieldByAnnotation(klass.getSuperclass(), annotationClass, first);
+    fields.addAll(nextFields);
+    return fields;
   }
 
   /**

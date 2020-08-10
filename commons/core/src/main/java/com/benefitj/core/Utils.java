@@ -28,6 +28,13 @@ public class Utils {
   }
 
   /**
+   * 获取当前时间的秒
+   */
+  public static long nowSecond() {
+    return System.currentTimeMillis() / 1000;
+  }
+
+  /**
    * 线程Sleep
    *
    * @param time sleep时间
