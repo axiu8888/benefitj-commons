@@ -2,16 +2,14 @@ package com.benefitj.netty.server.channel;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoop;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.ScheduledFuture;
 import io.netty.util.internal.RecyclableArrayList;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class NioDatagramChannel extends AbstractChannel {
@@ -22,7 +20,7 @@ public class NioDatagramChannel extends AbstractChannel {
 
 	private volatile boolean open = true;
 	private final AtomicReference<Boolean> reading = new AtomicReference<>(false);
-	private final ConcurrentLinkedQueue<ByteBuf> buffers = new ConcurrentLinkedQueue<>();
+	private final Queue<ByteBuf> byteBufQueue = new ConcurrentLinkedQueue<>();
 
 	protected NioDatagramChannel(NioDatagramServerChannel serverChannel, InetSocketAddress remoteAddress) {
 		super(serverChannel);
@@ -61,21 +59,21 @@ public class NioDatagramChannel extends AbstractChannel {
 	}
 
 	protected void addBuffer(ByteBuf buffer) {
-		buffers.add(buffer);
+		this.byteBufQueue.add(buffer);
 	}
 
 	@Override
 	protected void doBeginRead() throws Exception {
 		//is reading check, because the pipeline head context will call read again
-		if (reading.compareAndSet(false, true)) {
+		if (this.reading.compareAndSet(false, true)) {
 			try {
-				ByteBuf buffer;
-				while ((buffer = buffers.poll()) != null) {
-					pipeline().fireChannelRead(buffer);
+				ByteBuf buf;
+				while ((buf = this.byteBufQueue.poll()) != null) {
+					pipeline().fireChannelRead(buf);
 				}
 				pipeline().fireChannelReadComplete();
 			} finally {
-				reading.set(false);
+				this.reading.set(false);
 			}
 		}
 	}
@@ -84,7 +82,7 @@ public class NioDatagramChannel extends AbstractChannel {
 	protected void doWrite(ChannelOutboundBuffer buffer) throws Exception {
 		//transfer all messages that are ready to be written to list
 		final RecyclableArrayList list = RecyclableArrayList.newInstance();
-		boolean freeList = true;
+		boolean freeFlag = true;
 		try {
 			Object current;
 			while ((current = buffer.current()) != null) {
@@ -95,9 +93,9 @@ public class NioDatagramChannel extends AbstractChannel {
 				}
 				buffer.remove();
 			}
-			freeList = false;
+			freeFlag = false;
 		} finally {
-			if (freeList) {
+			if (freeFlag) {
 				for (Object obj : list) {
 					ReferenceCountUtil.safeRelease(obj);
 				}
@@ -105,17 +103,14 @@ public class NioDatagramChannel extends AbstractChannel {
 			}
 		}
 		//schedule a task that will write those entries
-		parent().eventLoop().execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					for (Object buf : list) {
-						parent().unsafe().write(buf, voidPromise());
-					}
-					parent().unsafe().flush();
-				} finally {
-					list.recycle();
+		parent().eventLoop().execute(() -> {
+			try {
+				for (Object buf : list) {
+					parent().unsafe().write(buf, voidPromise());
 				}
+				parent().unsafe().flush();
+			} finally {
+				list.recycle();
 			}
 		});
 	}

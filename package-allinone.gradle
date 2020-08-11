@@ -42,17 +42,13 @@ sourceJar {
 
 import java.util.concurrent.ConcurrentHashMap
 
-ext.groupId = getOrDefault(ext.groupId, "com.benefitj")
-ext.artifactId = getOrDefault(ext.artifactId, "${archivesBaseName}")
-ext.versionId = getOrDefault(ext.versionId, "${version}")
-
 //上传到nexus
 uploadArchives {
     repositories {
         mavenDeployer {
-            pom.groupId = "$groupId"
-            pom.artifactId = "$artifactId"
-            pom.version = "$versionId"
+            pom.groupId = "${groupId}"
+            pom.artifactId = "${artifactPrefix}${artifactId}"
+            pom.version = "${versionId}"
 
             if (allInOne) {
                 def allProjects = new ConcurrentHashMap<>()

@@ -99,13 +99,10 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel implemen
   }
 
   public void removeChannel(final Channel channel) {
-    eventLoop().submit(new Runnable() {
-      @Override
-      public void run() {
-        InetSocketAddress remote = (InetSocketAddress) channel.remoteAddress();
-        if (channels.get(remote) == channel) {
-          channels.remove(remote);
-        }
+    eventLoop().submit(() -> {
+      InetSocketAddress remote = (InetSocketAddress) channel.remoteAddress();
+      if (channels.get(remote) == channel) {
+        channels.remove(remote);
       }
     });
   }
