@@ -22,23 +22,23 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
   @Override
   public UdpNettyServer useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
-      this.executeWhileNull(bossGroup(), () -> this.group(new EpollEventLoopGroup()));
-      this.executeWhileNull(workerGroup(), () -> this.group(bossGroup(), new DefaultEventLoopGroup()));
+      this.executeWhileNull(bossGroup(), () ->
+          this.group(new EpollEventLoopGroup(1), new DefaultEventLoopGroup()));
       this.executeWhileNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
       this.option(UnixChannelOption.SO_REUSEPORT, true);
     } else {
-      this.executeWhileNull(bossGroup(), () -> this.group(new NioEventLoopGroup()));
-      this.executeWhileNull(workerGroup(), () -> this.group(bossGroup(), new DefaultEventLoopGroup()));
+      this.executeWhileNull(bossGroup(), () ->
+          this.group(new NioEventLoopGroup(1), new DefaultEventLoopGroup()));
       this.executeWhileNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
     }
     this.option(ChannelOption.SO_BROADCAST, true);
     this.option(ChannelOption.SO_REUSEADDR, true);
-
     Map<ChannelOption<?>, Object> options = new HashMap<>(10);
     options.putAll(options());
     // 默认8个KB
     options.putIfAbsent(ChannelOption.SO_RCVBUF, 1024 * 8);
-    options(options);
+    this.options(options);
+
     return self();
   }
 

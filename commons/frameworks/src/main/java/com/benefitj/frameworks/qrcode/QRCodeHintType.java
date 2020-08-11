@@ -12,6 +12,23 @@ import java.util.Map;
  * 生成二维码需要的类型: 如编码格式、形状、辨识度、外边距等
  */
 public class QRCodeHintType {
+
+  private static volatile Map<EncodeHintType, Object> DEFAULT_HINTS;
+
+  static {
+    HashMap<EncodeHintType, Object> map = new HashMap<>();
+    // 编码格式
+    map.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+    // 形状: 正方形、长方形、无
+    map.put(EncodeHintType.DATA_MATRIX_SHAPE, SymbolShapeHint.FORCE_NONE);
+    // 辨识度
+    map.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
+    // 外边距
+    map.put(EncodeHintType.MARGIN, 1);
+
+    DEFAULT_HINTS = Collections.unmodifiableMap(map);
+  }
+
   /**
    * 创建QRCodeHintType对象
    */
@@ -25,7 +42,7 @@ public class QRCodeHintType {
   private final Map<EncodeHintType, Object> hints = new HashMap<>();
 
   public QRCodeHintType() {
-    hints.putAll(Holder.DEFAULT_HINTS);
+    hints.putAll(DEFAULT_HINTS);
   }
 
   /**
@@ -94,21 +111,4 @@ public class QRCodeHintType {
     return (T) getHints().get(type);
   }
 
-  private static final class Holder {
-    private static volatile Map<EncodeHintType, Object> DEFAULT_HINTS;
-
-    static {
-      HashMap<EncodeHintType, Object> map = new HashMap<>();
-      // 编码格式
-      map.put(EncodeHintType.CHARACTER_SET, "UTF-8");
-      // 形状: 正方形、长方形、无
-      map.put(EncodeHintType.DATA_MATRIX_SHAPE, SymbolShapeHint.FORCE_NONE);
-      // 辨识度
-      map.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
-      // 外边距
-      map.put(EncodeHintType.MARGIN, 1);
-
-      DEFAULT_HINTS = Collections.unmodifiableMap(map);
-    }
-  }
 }

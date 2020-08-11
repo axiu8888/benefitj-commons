@@ -161,16 +161,15 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel implemen
   protected boolean doWriteMessage(Object msg, ChannelOutboundBuffer buffer) throws Exception {
     DatagramPacket packet = (DatagramPacket) msg;
     ByteBuf buf = packet.content();
-    int readableBytes = buf.readableBytes();
-    if (readableBytes == 0) {
+    if (buf.readableBytes() <= 0) {
       return true;
     }
-    ByteBuffer internalNioBuffer = buf.internalNioBuffer(buf.readerIndex(), readableBytes);
+    ByteBuffer internalNioBuffer = buf.internalNioBuffer(buf.readerIndex(), buf.readableBytes());
     return javaChannel().send(internalNioBuffer, packet.recipient()) > 0;
   }
 
   @Override
-  protected boolean doConnect(SocketAddress addr1, SocketAddress addr2) throws Exception {
+  protected boolean doConnect(SocketAddress remoteAddress, SocketAddress localAddress) throws Exception {
     throw new UnsupportedOperationException();
   }
 

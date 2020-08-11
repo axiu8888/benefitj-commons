@@ -2,6 +2,7 @@ package com.benefitj.netty.server.channel;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoop;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.ScheduledFuture;
@@ -22,8 +23,6 @@ public class NioDatagramChannel extends AbstractChannel {
 	private volatile boolean open = true;
 	private final AtomicReference<Boolean> reading = new AtomicReference<>(false);
 	private final ConcurrentLinkedQueue<ByteBuf> buffers = new ConcurrentLinkedQueue<>();
-
-	private volatile ScheduledFuture<?> idleTask;
 
 	protected NioDatagramChannel(NioDatagramServerChannel serverChannel, InetSocketAddress remoteAddress) {
 		super(serverChannel);
@@ -52,7 +51,7 @@ public class NioDatagramChannel extends AbstractChannel {
 
 	@Override
 	protected void doClose() throws Exception {
-		open = false;
+		this.open = false;
 		((NioDatagramServerChannel)parent()).removeChannel(this);
 	}
 
@@ -123,7 +122,9 @@ public class NioDatagramChannel extends AbstractChannel {
 
 	@Override
 	protected boolean isCompatible(EventLoop eventloop) {
-		return eventloop instanceof DefaultEventLoop;
+		//return eventloop instanceof DefaultEventLoop;
+		//return eventloop instanceof NioEventLoop;
+		return true;
 	}
 
 	@Override
