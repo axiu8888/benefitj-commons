@@ -69,6 +69,16 @@ public class ByteBufReadCache {
   }
 
   /**
+   * 读取数据，并重置读取标记
+   *
+   * @param data 数据
+   * @return 返回读取的数据
+   */
+  public byte[] readReset(ByteBuf data) {
+    return read(data, true, true);
+  }
+
+  /**
    * 读取数据
    *
    * @param data  数据
