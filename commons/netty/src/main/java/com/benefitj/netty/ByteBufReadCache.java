@@ -75,7 +75,18 @@ public class ByteBufReadCache {
    * @return 返回读取的数据
    */
   public byte[] readReset(ByteBuf data) {
-    return read(data, true, true);
+    return readReset(data, true);
+  }
+
+  /**
+   * 读取数据，并重置读取标记
+   *
+   * @param data  数据
+   * @param local 是否使用本地缓存
+   * @return 返回读取的数据
+   */
+  public byte[] readReset(ByteBuf data, boolean local) {
+    return read(data, local, true);
   }
 
   /**

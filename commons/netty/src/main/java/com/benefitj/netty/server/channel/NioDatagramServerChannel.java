@@ -8,7 +8,6 @@ import io.netty.channel.RecvByteBufAllocator;
 import io.netty.channel.nio.AbstractNioMessageChannel;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.ServerSocketChannel;
-import io.netty.channel.socket.ServerSocketChannelConfig;
 import io.netty.util.internal.PlatformDependent;
 
 import java.io.IOException;
@@ -22,6 +21,7 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * UDP 服务端通道
@@ -43,7 +43,7 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel implemen
   }
 
   @Override
-  public ServerSocketChannelConfig config() {
+  public DatagramServerChannelConfig config() {
     return config;
   }
 
@@ -90,9 +90,9 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel implemen
   @Override
   protected void doClose() throws Exception {
     try {
-			for (InetSocketAddress remote : channels.keySet()) {
-				channels.remove(remote).close();
-			}
+      for (InetSocketAddress remote : channels.keySet()) {
+        channels.remove(remote).doClose();
+      }
     } finally {
       javaChannel().close();
     }
@@ -127,19 +127,20 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel implemen
       //allocate new channel or use existing one and push message to it
       NioDatagramChannel child = channels.get(remote);
       if ((child == null) || !child.isOpen()) {
-        child = new NioDatagramChannel(this, remote);
+        child = newDatagramChannel(remote);
         NioDatagramChannel oldChannel = channels.put(remote, child);
         list.add(child);
         child.addBuffer(buffer);
         freeBuffer = false;
         if (oldChannel != null) {
-          oldChannel.close();
+          oldChannel.doClose();
         }
         return 1;
       } else {
         child.addBuffer(buffer);
         freeBuffer = false;
         if (child.isRegistered()) {
+          child.scheduleTimeout(this);
           child.read();
         }
         return 0;
@@ -178,6 +179,72 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel implemen
   @Override
   protected void doDisconnect() throws Exception {
     throw new UnsupportedOperationException();
+  }
+
+  /**
+   * 创建新的 Channel
+   *
+   * @param remote 远程地址
+   * @return 返回新的Channel
+   */
+  public NioDatagramChannel newDatagramChannel(InetSocketAddress remote) {
+    return new NioDatagramChannel(this, remote);
+  }
+
+  /**
+   * 判断是否读取超时
+   *
+   * @param time 时间
+   * @return 返回是否超时
+   */
+  public boolean isReadTimeout(long time) {
+    long timeout = config().readMillisTimeout();
+    return timeout > 0 && System.currentTimeMillis() - time >= timeout;
+  }
+
+  /**
+   * 判断是否写入超时
+   *
+   * @param time 时间
+   * @return 返回是否超时
+   */
+  public boolean isWriteTimeout(long time) {
+    long timeout = config().writeMillisTimeout();
+    return timeout > 0 && System.currentTimeMillis() - time >= timeout;
+  }
+
+  public long readTimeout() {
+    return this.config().readTimeout();
+  }
+
+  public NioDatagramServerChannel readTimeout(long readTimeout) {
+    this.config().readTimeout(readTimeout);
+    return this;
+  }
+
+  public long writeTimeout() {
+    return this.config().writeTimeout();
+  }
+
+  public NioDatagramServerChannel writeTimeout(long writeTimeout) {
+    this.config().writeTimeout(writeTimeout);
+    return this;
+  }
+
+  public TimeUnit timeoutUnit() {
+    return this.config().timeoutUnit();
+  }
+
+  public NioDatagramServerChannel timeoutUnit(TimeUnit timeoutUnit) {
+    this.config().timeoutUnit(timeoutUnit);
+    return this;
+  }
+
+  public NioDatagramServerChannel idle(long read, long write, TimeUnit unit) {
+    this.readTimeout(read);
+    this.writeTimeout(write);
+    this.timeoutUnit(unit);
+    return this;
   }
 
 }
