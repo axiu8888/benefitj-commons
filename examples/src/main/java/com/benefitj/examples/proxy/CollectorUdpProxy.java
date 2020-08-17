@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CollectorUdpProxy extends UdpNettyServer {
 
-  private final Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass().getSimpleName());
 
   private ByteBufReadCache cache = new ByteBufReadCache();
 

@@ -16,7 +16,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.UnaryOperator;
 
 /**
  * UDP客户端通道
@@ -103,6 +102,7 @@ public class NioDatagramChannel extends AbstractChannel {
   protected void doClose() throws Exception {
     this.open = false;
     ((NioDatagramServerChannel) parent()).removeChannel(this);
+    this.deregister();
     this.close();
   }
 
