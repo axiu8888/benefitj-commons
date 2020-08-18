@@ -33,6 +33,18 @@ public class CollectorUdpProxy extends UdpNettyServer {
         ch.pipeline()
             .addLast(new ChannelInboundHandlerAdapter() {
               @Override
+              public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+                super.channelRegistered(ctx);
+                log.info("channelRegistered, remote: {}", ctx.channel().remoteAddress());
+              }
+
+              @Override
+              public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+                super.handlerAdded(ctx);
+                log.info("handlerAdded, remote: {}", ctx.channel().remoteAddress());
+              }
+
+              @Override
               public void channelActive(ChannelHandlerContext ctx) throws Exception {
                 super.channelActive(ctx);
                 log.info("channelActive, remote: {}", ctx.channel().remoteAddress());
@@ -42,6 +54,18 @@ public class CollectorUdpProxy extends UdpNettyServer {
               public void channelInactive(ChannelHandlerContext ctx) throws Exception {
                 super.channelInactive(ctx);
                 log.info("channelInactive, remote: {}", ctx.channel().remoteAddress());
+              }
+
+              @Override
+              public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+                super.handlerRemoved(ctx);
+                log.info("handlerRemoved, remote: {}", ctx.channel().remoteAddress());
+              }
+
+              @Override
+              public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+                super.channelUnregistered(ctx);
+                log.info("channelUnregistered, remote: {}", ctx.channel().remoteAddress());
               }
             })
             .addLast(new BiConsumerChannelInboundHandler<>(ByteBuf.class, (ctx, msg) -> {

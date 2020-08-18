@@ -13,7 +13,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.TimeUnit;
 
 @EnableSpringCtxInit
 @EnableAutoApplicationListener
@@ -35,8 +34,8 @@ public class Application {
 
     @Override
     public void onApplicationReadyEvent(ApplicationReadyEvent event) {
+      udpProxy.readTimeout(5);
       udpProxy.localAddress(62014);
-      udpProxy.idle(20, 0, TimeUnit.SECONDS);
       udpProxy.start();
     }
 
