@@ -37,8 +37,6 @@ public class NioDatagramChannel extends AbstractChannel {
 
   private final AtomicReference<ScheduledFuture<?>> timeoutFutureRef = new AtomicReference<>();
 
-  private final Logger log = LoggerFactory.getLogger(getClass());
-
   protected NioDatagramChannel(NioDatagramServerChannel serverChannel, InetSocketAddress remoteAddress) {
     super(serverChannel);
     this.remoteAddress = remoteAddress;
@@ -52,6 +50,10 @@ public class NioDatagramChannel extends AbstractChannel {
   protected void scheduleTimeout(NioDatagramServerChannel serverChannel) {
     ScheduledFuture<?> timeoutFuture = this.eventLoop().scheduleAtFixedRate(() -> {
       if (serverChannel.isReadTimeout(this.lastReadTime)) {
+        ScheduledFuture<?> future = this.timeoutFutureRef.get();
+        if (future == null || future.isCancelled()) {
+          return;
+        }
         if (!isActive()) {
           this.timeoutFutureRef.getAndSet(null).cancel(true);
           return;
@@ -160,10 +162,11 @@ public class NioDatagramChannel extends AbstractChannel {
     parent().eventLoop().execute(() -> {
       try {
         this.lastWriteTime = System.currentTimeMillis();
+        Unsafe unsafe = parent().unsafe();
         for (Object buf : list) {
-          parent().unsafe().write(buf, voidPromise());
+          unsafe.write(buf, voidPromise());
         }
-        parent().unsafe().flush();
+        unsafe.flush();
       } finally {
         list.recycle();
       }

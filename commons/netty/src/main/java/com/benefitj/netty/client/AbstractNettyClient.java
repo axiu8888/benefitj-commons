@@ -46,10 +46,10 @@ public abstract class AbstractNettyClient<S extends AbstractNettyClient<S>> exte
       SocketAddress localAddress = config().localAddress();
       SocketAddress remoteAddress = config().remoteAddress();
       if (f.isSuccess()) {
-        log.info("Netty client start at localAddress: " + localAddress + ", remoteAddress: " + remoteAddress);
+        log.debug("Netty client start at localAddress: " + localAddress + ", remoteAddress: " + remoteAddress);
       } else {
         setServeChannel(null);
-        log.info("Netty client start failed at localAddress: " + localAddress + ", remoteAddress: " + remoteAddress);
+        log.debug("Netty client start failed at localAddress: " + localAddress + ", remoteAddress: " + remoteAddress);
       }
     });
   }
@@ -65,7 +65,7 @@ public abstract class AbstractNettyClient<S extends AbstractNettyClient<S>> exte
   @Override
   public S stop(GenericFutureListener<? extends Future<Void>>... listeners) {
     GenericFutureListener<? extends Future<Void>> l = f ->
-        log.info("Netty client stop at localAddress: " + config().localAddress()
+        log.debug("Netty client stop at localAddress: " + config().localAddress()
             + ", remoteAddress: " + config().remoteAddress());
     return super.stop(copyListeners(l, listeners));
   }

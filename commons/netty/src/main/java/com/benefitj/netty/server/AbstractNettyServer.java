@@ -42,9 +42,9 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
     return bootstrap.bind().addListener(f -> {
       SocketAddress socketAddress = bootstrap.config().localAddress();
       if (f.isSuccess()) {
-        log.info("Netty server started at localAddress: " + socketAddress);
+        log.debug("Netty server started at localAddress: " + socketAddress);
       } else {
-        log.info("Netty server start failed at localAddress: " + socketAddress);
+        log.debug("Netty server start failed at localAddress: " + socketAddress);
       }
     });
   }
@@ -52,7 +52,7 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
   @Override
   public S stop(GenericFutureListener<? extends Future<Void>>... listeners) {
     GenericFutureListener<? extends Future<Void>> l = f ->
-        log.info("Netty server stop at localAddress: " + config().localAddress());
+        log.debug("Netty server stop at localAddress: " + config().localAddress());
     super.stop(copyListeners(l, listeners));
     if (!isStopped()) {
       shutdownGracefully(workerGroup(), true);

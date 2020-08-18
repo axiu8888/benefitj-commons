@@ -385,7 +385,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
       try {
         c.accept(channel);
       } catch (Exception e) {
-        log.error("use server channel throws: " + e.getMessage(), e);
+        log.warn("use server channel throws: " + e.getMessage(), e);
       }
     }
     return channel != null;

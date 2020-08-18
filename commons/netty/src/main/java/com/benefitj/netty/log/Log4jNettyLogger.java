@@ -8,91 +8,107 @@ import org.slf4j.LoggerFactory;
  */
 public class Log4jNettyLogger implements INettyLogger {
 
-  private final Logger log = LoggerFactory.getLogger(Log4jNettyLogger.class);
+  private final Logger logger;
+
+  public Log4jNettyLogger() {
+    this(Log4jNettyLogger.class);
+  }
+
+  public Log4jNettyLogger(Class<?> clazz) {
+    this.logger = LoggerFactory.getLogger(clazz);
+  }
+
+  public Log4jNettyLogger(String name) {
+    this.logger = LoggerFactory.getLogger(name);
+  }
+
+  public Logger logger() {
+    return logger;
+  }
 
   @Override
   public void debug(String msg) {
-    log.debug(msg);
+    logger().debug(msg);
   }
 
   @Override
   public void debug(String format, Object arg) {
-    log.debug(format, arg);
+    logger().debug(format, arg);
   }
 
   @Override
   public void debug(String format, Object arg1, Object arg2) {
-    log.debug(format, arg1, arg2);
+    logger().debug(format, arg1, arg2);
   }
 
   @Override
   public void debug(String format, Object... arguments) {
-    log.debug(format, arguments);
+    logger().debug(format, arguments);
   }
 
   @Override
   public void debug(String msg, Throwable t) {
-    log.debug(msg, t);
+    logger().debug(msg, t);
   }
 
   @Override
   public void info(String msg) {
-    log.info(msg);
+    logger().info(msg);
   }
 
   @Override
   public void info(String format, Object arg) {
-    log.info(format, arg);
+    logger().info(format, arg);
   }
 
   @Override
   public void info(String format, Object arg1, Object arg2) {
-    log.info(format, arg1, arg2);
+    logger().info(format, arg1, arg2);
   }
 
   @Override
   public void info(String format, Object... arguments) {
-    log.info(format, arguments);
+    logger().info(format, arguments);
   }
 
   @Override
   public void info(String msg, Throwable t) {
-    log.info(msg, t);
+    logger().info(msg, t);
   }
 
   @Override
   public void warn(String msg) {
-    log.warn(msg);
+    logger().warn(msg);
   }
 
   @Override
   public void warn(String format, Object arg) {
-    log.warn(format, arg);
+    logger().warn(format, arg);
   }
 
   @Override
   public void warn(String format, Object... arguments) {
-    log.warn(format, arguments);
+    logger().warn(format, arguments);
   }
 
   @Override
   public void warn(String format, Object arg1, Object arg2) {
-    log.warn(format, arg1, arg2);
+    logger().warn(format, arg1, arg2);
   }
 
   @Override
   public void warn(String msg, Throwable t) {
-    log.warn(msg, t);
+    logger().warn(msg, t);
   }
 
   @Override
   public void error(String msg) {
-    log.warn(msg);
+    logger().warn(msg);
   }
 
   @Override
   public void error(String format, Object arg) {
-    log.error(format, arg);
+    logger().error(format, arg);
   }
 
   @Override
@@ -101,11 +117,11 @@ public class Log4jNettyLogger implements INettyLogger {
 
   @Override
   public void error(String format, Object... arguments) {
-    log.error(format, arguments);
+    logger().error(format, arguments);
   }
 
   @Override
   public void error(String msg, Throwable t) {
-    log.error(msg, t);
+    logger().error(msg, t);
   }
 }
