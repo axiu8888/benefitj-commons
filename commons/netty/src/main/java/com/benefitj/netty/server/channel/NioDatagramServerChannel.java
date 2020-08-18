@@ -664,10 +664,15 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
   }
 
   public void closeChannel(NioDatagramChannel channel) {
-    if (children().get(channel.remoteAddress0()) == channel) {
-      children().remove(channel.remoteAddress0());
-      channel.pipeline().fireChannelInactive();
-      channel.close();
+    EventLoop loop = channel.eventLoop();
+    if (loop.inEventLoop()) {
+      if (children().get(channel.remoteAddress0()) == channel) {
+        children().remove(channel.remoteAddress0());
+        channel.pipeline().fireChannelInactive();
+        channel.close();
+      }
+    } else {
+      loop.execute(() -> closeChannel(channel));
     }
   }
 }
