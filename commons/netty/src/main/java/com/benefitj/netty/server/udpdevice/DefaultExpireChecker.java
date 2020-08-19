@@ -1,23 +1,20 @@
-package com.benefitj.netty.server.udp;
+package com.benefitj.netty.server.udpdevice;
+
+import com.benefitj.netty.log.NettyLogger;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * 超时检查
+ * UDP设备客户端超时检查
  */
-public class DefaultExpiredChecker<C extends UdpClient> implements ExpiredChecker<C> {
+public class DefaultExpireChecker<C extends UdpDeviceClient> implements ExpireChecker<C> {
 
-  /**
-   * 默认过期检查的实现
-   */
-  public static <C extends UdpClient> ExpiredChecker<C> newInstance() {
-    return new DefaultExpiredChecker<C>();
-  }
+  private static final NettyLogger log = NettyLogger.INSTANCE;
 
   private final ThreadLocal<Map<String, C>> localRemovalMap = ThreadLocal.withInitial(LinkedHashMap::new);
 
-  public DefaultExpiredChecker() {
+  public DefaultExpireChecker() {
   }
 
   public Map<String, C> getRemovalMap() {
@@ -25,7 +22,7 @@ public class DefaultExpiredChecker<C extends UdpClient> implements ExpiredChecke
   }
 
   @Override
-  public void check(UdpClientManager<C> manager) {
+  public void check(UdpDeviceClientManager<C> manager) {
     if (!manager.isEmpty()) {
       long now = System.currentTimeMillis();
       final Map<String, C> removalMap = getRemovalMap();
@@ -41,9 +38,9 @@ public class DefaultExpiredChecker<C extends UdpClient> implements ExpiredChecke
       if (!removalMap.isEmpty()) {
         for (Map.Entry<String, C> entry : removalMap.entrySet()) {
           try {
-            manager.expiredClient(entry.getKey());
+            manager.expire(entry.getKey());
           } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("throws on expired device: " + e.getMessage());
           }
         }
         removalMap.clear();

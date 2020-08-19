@@ -1,19 +1,20 @@
-package com.benefitj.netty.server.udp;
+package com.benefitj.netty.server.udpdevice;
 
-import java.util.Map;
+import com.benefitj.netty.server.device.DeviceManager;
+
 import java.util.concurrent.TimeUnit;
 
 /**
- * 远程客户端管理类
+ * UDP客户端管理类
  */
-public interface UdpClientManager<C extends UdpClient> extends Map<String, C> {
+public interface UdpDeviceClientManager<C extends UdpDeviceClient> extends DeviceManager<C> {
 
   /**
    * 使客户端过期
    *
    * @param id 客户端ID
    */
-  void expiredClient(String id);
+  void expire(String id);
 
   /**
    * 获取客户端状态监听
@@ -30,14 +31,14 @@ public interface UdpClientManager<C extends UdpClient> extends Map<String, C> {
   /**
    * 获取过期检查实现
    */
-  ExpiredChecker<C> getExpiredChecker();
+  ExpireChecker<C> getExpireChecker();
 
   /**
    * 设置过期检查的实现
    *
    * @param checker 过期检查对象
    */
-  void setExpiredChecker(ExpiredChecker<C> checker);
+  void setExpireChecker(ExpireChecker<C> checker);
 
   /**
    * 获取过期时长
@@ -54,32 +55,32 @@ public interface UdpClientManager<C extends UdpClient> extends Map<String, C> {
   /**
    * 获取检查间隔
    */
-  long getInterval();
+  long getDelay();
 
   /**
    * 设置检查过期客户端的间隔时长
    *
-   * @param interval 间隔时长
+   * @param delay 间隔时长
    */
-  void setInterval(long interval);
+  void setDelay(long delay);
 
   /**
-   * 获取间隔时长的单位
+   * 获取延迟间隔时长的单位
    */
-  TimeUnit getIntervalUnit();
+  TimeUnit getDelayUnit();
 
   /**
-   * 设置间隔时长单位
+   * 设置延迟间隔时长单位
    *
-   * @param intervalUnit 时长单位
+   * @param delayUnit 时长单位
    */
-  void setIntervalUnit(TimeUnit intervalUnit);
+  void setDelayUnit(TimeUnit delayUnit);
 
   /**
    * 检查过期客户端
    */
-  default void checkExpiredClients() {
-    getExpiredChecker().check(this);
+  default void autoCheckExpire() {
+    getExpireChecker().check(this);
   }
 
 }

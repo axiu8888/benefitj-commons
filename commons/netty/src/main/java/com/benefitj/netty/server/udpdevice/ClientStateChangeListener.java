@@ -1,11 +1,11 @@
-package com.benefitj.netty.server.udp;
+package com.benefitj.netty.server.udpdevice;
 
 import javax.annotation.Nullable;
 
 /**
- * 客户端状态改变的监听
+ * UDP设备客户端状态改变的监听
  */
-public interface ClientStateChangeListener<C extends UdpClient> {
+public interface ClientStateChangeListener<C extends UdpDeviceClient> {
 
   /**
    * 被添加
@@ -28,14 +28,11 @@ public interface ClientStateChangeListener<C extends UdpClient> {
     // ~
   }
 
-
   /**
    * 客户端监听
    */
-  static <C extends UdpClient> ClientStateChangeListener<C> emptyListener() {
-    return new ClientStateChangeListener<C>() {
-      /* ignore */
-    };
+  static <C extends UdpDeviceClient> ClientStateChangeListener<C> emptyListener() {
+    return new ClientStateChangeListener<C>() {};
   }
 
 }

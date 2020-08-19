@@ -1,7 +1,7 @@
 package com.benefitj.netty.log;
 
 /**
- * 丢弃消息
+ * 丢弃日志
  */
 public class DiscardNettyLogger implements INettyLogger {
 

@@ -6,6 +6,8 @@ import com.benefitj.netty.log.NettyLogger;
 import com.benefitj.spring.applicationevent.ApplicationListenerAdapter;
 import com.benefitj.spring.applicationevent.EnableAutoApplicationListener;
 import com.benefitj.spring.ctx.EnableSpringCtxInit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -26,6 +28,8 @@ public class Application {
     NettyLogger.INSTANCE.setLogger(new Log4jNettyLogger());
   }
 
+  private static final Logger logger = LoggerFactory.getLogger(Application.class);
+
   @Component
   public static class UdpProxyListener extends ApplicationListenerAdapter {
 
@@ -36,12 +40,12 @@ public class Application {
     public void onApplicationReadyEvent(ApplicationReadyEvent event) {
       udpProxy.readTimeout(5);
       udpProxy.localAddress(62014);
-      udpProxy.start();
+      udpProxy.start(future -> logger.info("proxy start local: {}", udpProxy.localAddress()));
     }
 
     @Override
     public void onContextClosedEvent(ContextClosedEvent event) {
-      udpProxy.stop();
+      udpProxy.stop(future -> logger.info("proxy stop local: {}", udpProxy.localAddress()));
     }
 
   }
