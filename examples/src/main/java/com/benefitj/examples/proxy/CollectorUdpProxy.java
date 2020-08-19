@@ -5,6 +5,7 @@ import com.benefitj.core.DefaultThreadFactory;
 import com.benefitj.netty.ByteBufReadCache;
 import com.benefitj.netty.adapter.BiConsumerChannelInboundHandler;
 import com.benefitj.netty.server.UdpNettyServer;
+import com.benefitj.netty.server.device.DeviceStateChangeListener;
 import com.benefitj.netty.server.udpdevice.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -26,10 +27,10 @@ public class CollectorUdpProxy extends UdpNettyServer {
   private ByteBufReadCache cache = new ByteBufReadCache();
 
   private final UdpDeviceClientManager<CollectorDeviceClient> clientManager;
-  private OnlineDeviceExpireExecutor executor;
+  private final OnlineDeviceExpireExecutor executor;
 
   public CollectorUdpProxy() {
-    this.clientManager = new DefaultUdpDeviceClientManager<>();
+    this.clientManager = UdpDeviceClientManager.newInstance();
     this.executor = new OnlineDeviceExpireExecutor(clientManager);
   }
 
@@ -39,16 +40,18 @@ public class CollectorUdpProxy extends UdpNettyServer {
         new NioEventLoopGroup(1, new DefaultThreadFactory("boss-", "-t-"))
         , new DefaultEventLoopGroup(new DefaultThreadFactory("worker-", "-t-")));
 
+    clientManager.setDelay(500);
+    clientManager.setExpired(3000);
 
-    clientManager.setStateChangeListener(new ClientStateChangeListener<CollectorDeviceClient>() {
+    clientManager.setStateChangeListener(new DeviceStateChangeListener<CollectorDeviceClient>() {
       @Override
-      public void onAddition(String id, CollectorDeviceClient newClient, @Nullable CollectorDeviceClient oldClient) {
-        log.info("新客户端上线: {}, oldClient: {}", newClient, oldClient);
+      public void onAddition(String id, CollectorDeviceClient newDevice, @Nullable CollectorDeviceClient oldDevice) {
+        log.info("新客户端上线: {}, oldClient: {}", newDevice, oldDevice);
       }
 
       @Override
-      public void onRemoval(String id, CollectorDeviceClient client) {
-        log.info("客户端下线: {}", client);
+      public void onRemoval(String id, CollectorDeviceClient device) {
+        log.info("客户端下线: {}", device);
       }
     });
 
@@ -80,7 +83,7 @@ public class CollectorUdpProxy extends UdpNettyServer {
                 clientManager.put(deviceId, client = new CollectorDeviceClient(deviceId, ctx.channel()));
               }
               // 重置接收导数据的时间
-              client.resetLastRecvTimeNow();
+              client.resetRecvTimeNow();
 
               log.info("send: {}, deviceId: {}, packageSn: {}, time: {}"
                   , ctx.channel().remoteAddress()

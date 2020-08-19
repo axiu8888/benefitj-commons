@@ -1,9 +1,10 @@
 package com.benefitj.netty.server.udpdevice;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.concurrent.ScheduledFuture;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -14,11 +15,15 @@ public class OnlineDeviceExpireExecutor {
 
   private UdpDeviceClientManager<?> clientManager;
 
-  private final AtomicReference<ScheduledFuture<?>> checkerFuture = new AtomicReference<>();
+  private final AtomicReference<ScheduledFuture<?>> future = new AtomicReference<>();
   /**
    * 统计 channelActive 调用次数
    */
   private final AtomicInteger activeCount = new AtomicInteger(0);
+  /**
+   * 在线状态检查执行调度器
+   */
+  private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
   public OnlineDeviceExpireExecutor() {
   }
@@ -29,15 +34,15 @@ public class OnlineDeviceExpireExecutor {
 
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     this.activeCount.incrementAndGet();
-    if (this.checkerFuture.get() == null) {
+    if (this.future.get() == null) {
       synchronized (this) {
-        if (this.checkerFuture.get() == null) {
+        if (this.future.get() == null) {
           final UdpDeviceClientManager<?> manager = getClientManager();
-          ScheduledFuture<?> sf = ctx.executor().scheduleAtFixedRate(manager::autoCheckExpire
+          ScheduledFuture<?> sf = executor().scheduleAtFixedRate(manager::autoCheckExpire
               , manager.getDelay()
               , manager.getDelay()
               , manager.getDelayUnit());
-          if (!this.checkerFuture.compareAndSet(null, sf)) {
+          if (!this.future.compareAndSet(null, sf)) {
             sf.cancel(true);
           }
         }
@@ -49,8 +54,8 @@ public class OnlineDeviceExpireExecutor {
     this.activeCount.decrementAndGet();
     if (this.activeCount.get() <= 0) {
       synchronized (this) {
-        ScheduledFuture<?> sf = checkerFuture.get();
-        if (sf != null && checkerFuture.compareAndSet(sf, null)) {
+        ScheduledFuture<?> sf = future.get();
+        if (sf != null && future.compareAndSet(sf, null)) {
           getClientManager().autoCheckExpire();
           sf.cancel(true);
           this.activeCount.set(0);
@@ -67,4 +72,7 @@ public class OnlineDeviceExpireExecutor {
     return clientManager;
   }
 
+  public ScheduledExecutorService executor() {
+    return executor;
+  }
 }

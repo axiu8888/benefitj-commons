@@ -4,9 +4,12 @@ import com.benefitj.netty.server.udpdevice.UdpDeviceClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.EventLoop;
 
 import java.net.InetSocketAddress;
 import java.util.Objects;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractDevice implements Device {
 
@@ -122,6 +125,29 @@ public abstract class AbstractDevice implements Device {
    */
   @Override
   public abstract ChannelFuture send(ByteBuf data);
+
+  /**
+   * 获取Channel的EventLoop
+   */
+  @Override
+  public EventLoop eventLoop() {
+    return channel().eventLoop();
+  }
+
+  /**
+   * 执行调度任务
+   *
+   * @param task 任务
+   */
+  @Override
+  public void execute(Runnable task) {
+    eventLoop().execute(task);
+  }
+
+  @Override
+  public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+    return eventLoop().schedule(command, delay, unit);
+  }
 
   @Override
   public boolean equals(Object o) {

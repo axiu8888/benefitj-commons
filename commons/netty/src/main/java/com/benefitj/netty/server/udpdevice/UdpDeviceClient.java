@@ -14,7 +14,7 @@ public class UdpDeviceClient extends UdpDevice {
   /**
    * 上次接收到数据的时间
    */
-  private volatile long lastRecvTime = -1;
+  private volatile long recvTime = -1;
 
   public UdpDeviceClient(Channel channel) {
     super(channel);
@@ -33,33 +33,27 @@ public class UdpDeviceClient extends UdpDevice {
   }
 
   /**
-   * 最新接收数据包的时间
+   * 获取接收数据包的时间
    */
-  public long getLastRecvTime() {
-    return lastRecvTime;
+  public long getRecvTime() {
+    return recvTime;
   }
 
-  public void setLastRecvTime(long lastRecvTime) {
-    this.lastRecvTime = lastRecvTime;
+  /**
+   * 设置接收数据包的时间
+   *
+   * @param recvTime 时间
+   */
+  public void setRecvTime(long recvTime) {
+    this.recvTime = recvTime;
   }
 
   /**
    * 设置当前时间为最新的接收数据包的时间
    */
-  public void resetLastRecvTimeNow() {
-    this.setLastRecvTime(now());
+  public void resetRecvTimeNow() {
+    this.setRecvTime(now());
   }
-
-  /**
-   * 判断是否接收数据超时
-   *
-   * @param interval 允许的间隔时间
-   * @return 返回是否接收超时
-   */
-  public boolean isRecvTimeout(long interval) {
-    return now() - getLastRecvTime() > interval;
-  }
-
 
   static long now() {
     return System.currentTimeMillis();

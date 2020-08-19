@@ -1,6 +1,8 @@
 package com.benefitj.netty.server.udpdevice;
 
+import com.benefitj.netty.server.device.DefaultDeviceManager;
 import com.benefitj.netty.server.device.DeviceManager;
+import com.benefitj.netty.server.device.DeviceStateChangeListener;
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,18 +17,6 @@ public interface UdpDeviceClientManager<C extends UdpDeviceClient> extends Devic
    * @param id 客户端ID
    */
   void expire(String id);
-
-  /**
-   * 获取客户端状态监听
-   */
-  ClientStateChangeListener<C> getStateChangeListener();
-
-  /**
-   * 客户端状态监听
-   *
-   * @param listener 监听
-   */
-  void setStateChangeListener(ClientStateChangeListener<C> listener);
 
   /**
    * 获取过期检查实现
@@ -46,7 +36,7 @@ public interface UdpDeviceClientManager<C extends UdpDeviceClient> extends Devic
   long getExpired();
 
   /**
-   * 设置过期时长， -1 表示不过期
+   * 设置过期时长， 小于等于0表示不过期
    *
    * @param expired 时长
    */
@@ -81,6 +71,97 @@ public interface UdpDeviceClientManager<C extends UdpDeviceClient> extends Devic
    */
   default void autoCheckExpire() {
     getExpireChecker().check(this);
+  }
+
+
+  /**
+   * 创建UDP设备客户端管理
+   *
+   * @param <C> UDP设备的客户端
+   * @return 返回UDP设备客户端管理对象
+   */
+  static <C extends UdpDeviceClient> UdpDeviceClientManager<C> newInstance() {
+    return new DefaultUdpDeviceClientManager<C>();
+  }
+
+  /**
+   * UDP设备客户端管理
+   */
+  static class DefaultUdpDeviceClientManager<C extends UdpDeviceClient>
+      extends DefaultDeviceManager<C> implements UdpDeviceClientManager<C> {
+
+    /**
+     * 延期检查的实现
+     */
+    private ExpireChecker<C> expireChecker = ExpireChecker.newInstance();
+    /**
+     * 过期时间
+     */
+    private long expired = 5000;
+    /**
+     * 延迟检查的间隔
+     */
+    private long delay = 1000;
+    /**
+     * 延迟时间单位类型
+     */
+    private TimeUnit delayUnit = TimeUnit.MILLISECONDS;
+
+    public DefaultUdpDeviceClientManager() {
+    }
+
+    public DefaultUdpDeviceClientManager(DeviceStateChangeListener<C> listener) {
+      super(listener);
+    }
+
+    @Override
+    public void expire(String id) {
+      super.remove(id, true);
+    }
+
+    @Override
+    public ExpireChecker<C> getExpireChecker() {
+      return expireChecker;
+    }
+
+    @Override
+    public void setExpireChecker(ExpireChecker<C> checker) {
+      if (checker == null) {
+        throw new IllegalArgumentException("checker must not null");
+      }
+      this.expireChecker = checker;
+    }
+
+    @Override
+    public long getExpired() {
+      return expired;
+    }
+
+    @Override
+    public void setExpired(long expired) {
+      this.expired = expired;
+    }
+
+    @Override
+    public long getDelay() {
+      return delay;
+    }
+
+    @Override
+    public void setDelay(long delay) {
+      this.delay = delay;
+    }
+
+    @Override
+    public TimeUnit getDelayUnit() {
+      return delayUnit;
+    }
+
+    @Override
+    public void setDelayUnit(TimeUnit delayUnit) {
+      this.delayUnit = delayUnit;
+    }
+
   }
 
 }

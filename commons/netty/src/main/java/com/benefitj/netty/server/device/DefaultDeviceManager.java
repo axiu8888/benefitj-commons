@@ -13,9 +13,30 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> {
 
   private final Map<String, D> devices = new ConcurrentHashMap<>();
+  /**
+   * 设备状态监听
+   */
+  private DeviceStateChangeListener<D> listener = DeviceStateChangeListener.emptyListener();
+
+  public DefaultDeviceManager() {
+  }
+
+  public DefaultDeviceManager(DeviceStateChangeListener<D> listener) {
+    this.listener = listener;
+  }
 
   protected Map<String, D> getDevices() {
     return devices;
+  }
+
+  @Override
+  public DeviceStateChangeListener<D> getStateChangeListener() {
+    return listener;
+  }
+
+  @Override
+  public void setStateChangeListener(DeviceStateChangeListener<D> listener) {
+    this.listener = (listener != null ? listener : DeviceStateChangeListener.emptyListener());
   }
 
   @Override
@@ -45,22 +66,37 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
 
   @Override
   public D put(String key, D value) {
-    return getDevices().put(key, value);
+    D old = getDevices().put(key, value);
+    getStateChangeListener().onAddition(key, value, old);
+    return old;
   }
 
   @Override
   public D remove(Object key) {
-    return getDevices().remove(key);
+    return remove(key, true);
+  }
+
+  @Override
+  public D remove(Object key, boolean notify) {
+    D device = getDevices().remove(key);
+    if (notify && device != null) {
+      getStateChangeListener().onRemoval((String)key, device);
+    }
+    return device;
   }
 
   @Override
   public void putAll(Map<? extends String, ? extends D> m) {
-    getDevices().putAll(m);
+    for (Entry<? extends String, ? extends D> entry : m.entrySet()) {
+      this.put(entry.getKey(), entry.getValue());
+    }
   }
 
   @Override
   public void clear() {
-    getDevices().clear();
+    for (String id : keySet()) {
+      remove(id, true);
+    }
   }
 
   @Override

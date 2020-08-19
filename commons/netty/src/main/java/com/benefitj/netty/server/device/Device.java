@@ -4,8 +4,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.EventLoop;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 设备
@@ -73,5 +76,27 @@ public interface Device {
   default ChannelFuture send(byte[] data) {
     return send(Unpooled.wrappedBuffer(data));
   }
+
+  /**
+   * 获取Channel的EventLoop
+   */
+  EventLoop eventLoop();
+
+  /**
+   * 执行调度任务
+   *
+   * @param task 任务
+   */
+  void execute(Runnable task);
+
+  /**
+   * 执行调度任务
+   *
+   * @param command 任务
+   * @param delay   延迟时间
+   * @param unit    时间单位
+   * @return 返回 ScheduledFuture
+   */
+  ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit);
 
 }
