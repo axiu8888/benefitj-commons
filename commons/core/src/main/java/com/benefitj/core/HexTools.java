@@ -251,14 +251,14 @@ public class HexTools {
       if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) != 1) {
         for (int i = bytes.length - 1; i >= 0; i--) {
           value <<= 8;
-          value |= bytes[i] & 0xFF;
-        }
-      } else {
-        for (int i = bytes.length - 1; i >= 0; i--) {
-          value <<= 8;
           value |= ~bytes[i] & 0xFF;
         }
         value = (short) ((-value) - 1);
+      } else {
+        for (int i = bytes.length - 1; i >= 0; i--) {
+          value <<= 8;
+          value |= bytes[i] & 0xFF;
+        }
       }
     }
     return value;
@@ -328,14 +328,14 @@ public class HexTools {
       if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) != 1) {
         for (int i = bytes.length - 1; i >= 0; i--) {
           value <<= 8;
-          value |= bytes[i] & 0xFF;
-        }
-      } else {
-        for (int i = bytes.length - 1; i >= 0; i--) {
-          value <<= 8;
           value |= ~bytes[i] & 0xFF;
         }
         value = (-value) - 1;
+      } else {
+        for (int i = bytes.length - 1; i >= 0; i--) {
+          value <<= 8;
+          value |= bytes[i] & 0xFF;
+        }
       }
     }
     return value;
@@ -405,14 +405,14 @@ public class HexTools {
       if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) != 1) {
         for (int i = bytes.length - 1; i >= 0; i--) {
           value <<= 8;
-          value |= bytes[i] & 0xFF;
-        }
-      } else {
-        for (int i = bytes.length - 1; i >= 0; i--) {
-          value <<= 8;
           value |= ~bytes[i] & 0xFF;
         }
         value = (-value) - 1;
+      } else {
+        for (int i = bytes.length - 1; i >= 0; i--) {
+          value <<= 8;
+          value |= bytes[i] & 0xFF;
+        }
       }
     }
     return value;
