@@ -486,6 +486,28 @@ public class HexTools {
    * @param bin 二进制字节数组
    * @return 返回16进制字符串或空
    */
+  public static String byteToHex(byte bin) {
+    return byteToHex(bin, false);
+  }
+
+  /**
+   * 二进制转换成16进制字符串
+   *
+   * @param bin       二进制字节数组
+   * @param lowerCase 是否为小写字母
+   * @return 返回16进制字符串或空
+   */
+  public static String byteToHex(byte bin, boolean lowerCase) {
+    String hex = lowerCase ? HEX_LOWER_CASE : HEX_UPPER_CASE;
+    return String.valueOf(hex.charAt((bin & 0xF0) >> 4)) + hex.charAt(bin & 0x0F);
+  }
+
+  /**
+   * 二进制转换成16进制字符串
+   *
+   * @param bin 二进制字节数组
+   * @return 返回16进制字符串或空
+   */
   public static String byteToHex(byte[] bin) {
     return byteToHex(bin, false);
   }
