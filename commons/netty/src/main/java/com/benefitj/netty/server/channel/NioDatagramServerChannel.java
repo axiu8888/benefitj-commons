@@ -128,8 +128,19 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
     return children;
   }
 
-  public NioDatagramChannel newChannel(InetSocketAddress remote) {
-    return new NioDatagramChannel(this, remote);
+  public NioDatagramChannel child(InetSocketAddress remote) {
+    return children().get(remote);
+  }
+
+  protected NioDatagramChannel newChild(InetSocketAddress remote) {
+    NioDatagramChannel child = new NioDatagramChannel(this, remote);
+    NioDatagramChannel old = children().put(remote, child);
+    if (old != null) {
+      try {
+        old.doClose();
+      } catch (Exception ignore) {}
+    }
+    return child;
   }
 
   /**
@@ -154,16 +165,12 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
       allocatorHandle.lastBytesRead(nioBuf.position() - nioPos);
       msg.writerIndex(msg.writerIndex() + allocatorHandle.lastBytesRead());
       //allocate new channel or use existing one and push message to it
-      NioDatagramChannel child = children().get(remote);
+      NioDatagramChannel child = child(remote);
       if ((child == null) || !child.isOpen()) {
-        child = newChannel(remote);
-        NioDatagramChannel old = children().put(remote, child);
+        child = newChild(remote);
         buf.add(child);
         child.addByteBuf(msg);
         free = false;
-        if (old != null) {
-          old.doClose();
-        }
         return 1;
       } else {
         child.addByteBuf(msg);
@@ -182,6 +189,7 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
       }
     }
   }
+
 
   /**
    * Write a message to the underlying {@link Channel}.

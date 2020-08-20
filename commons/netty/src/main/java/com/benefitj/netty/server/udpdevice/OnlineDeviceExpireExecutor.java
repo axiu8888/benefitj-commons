@@ -1,7 +1,5 @@
 package com.benefitj.netty.server.udpdevice;
 
-import io.netty.channel.ChannelHandlerContext;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -32,7 +30,7 @@ public class OnlineDeviceExpireExecutor {
     this.clientManager = clientManager;
   }
 
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void start() {
     this.activeCount.incrementAndGet();
     if (this.future.get() == null) {
       synchronized (this) {
@@ -50,7 +48,7 @@ public class OnlineDeviceExpireExecutor {
     }
   }
 
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void stop() {
     this.activeCount.decrementAndGet();
     if (this.activeCount.get() <= 0) {
       synchronized (this) {

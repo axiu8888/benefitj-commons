@@ -11,6 +11,9 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 抽象的设备基类
+ */
 public abstract class AbstractDevice implements Device {
 
   /**

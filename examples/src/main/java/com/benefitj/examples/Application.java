@@ -38,7 +38,7 @@ public class Application {
 
     @Override
     public void onApplicationReadyEvent(ApplicationReadyEvent event) {
-      udpProxy.readTimeout(10);
+      udpProxy.readTimeout(30);
       udpProxy.localAddress(62014);
       udpProxy.start(future -> logger.info("proxy start local: {}", udpProxy.localAddress()));
     }

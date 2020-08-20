@@ -5,16 +5,21 @@ import com.benefitj.core.DefaultThreadFactory;
 import com.benefitj.netty.ByteBufReadCache;
 import com.benefitj.netty.adapter.BiConsumerChannelInboundHandler;
 import com.benefitj.netty.server.UdpNettyServer;
+import com.benefitj.netty.server.channel.NioDatagramServerChannel;
 import com.benefitj.netty.server.device.DeviceStateChangeListener;
 import com.benefitj.netty.server.udpdevice.*;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.concurrent.ScheduledFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 采集器代理
@@ -40,8 +45,8 @@ public class CollectorUdpProxy extends UdpNettyServer {
         new NioEventLoopGroup(1, new DefaultThreadFactory("boss-", "-t-"))
         , new DefaultEventLoopGroup(new DefaultThreadFactory("worker-", "-t-")));
 
-    clientManager.setDelay(500);
-    clientManager.setExpired(3000);
+    clientManager.setDelay(2000);
+    clientManager.setExpire(5000);
 
     clientManager.setStateChangeListener(new DeviceStateChangeListener<CollectorDeviceClient>() {
       @Override
@@ -51,7 +56,30 @@ public class CollectorUdpProxy extends UdpNettyServer {
 
       @Override
       public void onRemoval(String id, CollectorDeviceClient device) {
-        log.info("客户端下线: {}", device);
+        log.info("客户端下线: {}, duration: {}", device, DateFmtter.now() - device.getRecvTime());
+      }
+    });
+
+    this.handler(new ChannelInboundHandlerAdapter() {
+
+      ScheduledFuture<?> future;
+
+      @Override
+      public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        executor.start();
+        future = ctx.executor().scheduleAtFixedRate(() ->
+            log.info("\n设备数量: {}, children channel: {}\n"
+                , clientManager.size()
+                , ((NioDatagramServerChannel)ctx.channel()).children().size()
+            ), 1, 5, TimeUnit.SECONDS);
+      }
+
+      @Override
+      public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        executor.stop();
+        future.cancel(true);
       }
     });
 
@@ -59,25 +87,10 @@ public class CollectorUdpProxy extends UdpNettyServer {
       @Override
       protected void initChannel(Channel ch) throws Exception {
         ch.pipeline()
-            .addLast(new ChannelInboundHandlerAdapter() {
-
-              @Override
-              public void channelActive(ChannelHandlerContext ctx) throws Exception {
-                super.channelActive(ctx);
-                executor.channelActive(ctx);
-              }
-
-              @Override
-              public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                super.channelInactive(ctx);
-                executor.channelInactive(ctx);
-              }
-
-            })
             .addLast(new BiConsumerChannelInboundHandler<>(ByteBuf.class, (ctx, msg) -> {
               byte[] data = cache.read(msg);
 
-              String deviceId = PacketUtils.getHexDeviceId(data);
+              String deviceId = CollectorHelper.getHexDeviceId(data);
               CollectorDeviceClient client = clientManager.get(deviceId);
               if (client == null) {
                 clientManager.put(deviceId, client = new CollectorDeviceClient(deviceId, ctx.channel()));
@@ -85,11 +98,21 @@ public class CollectorUdpProxy extends UdpNettyServer {
               // 重置接收导数据的时间
               client.resetRecvTimeNow();
 
-              log.info("send: {}, deviceId: {}, packageSn: {}, time: {}"
-                  , ctx.channel().remoteAddress()
-                  , deviceId
-                  , PacketUtils.getPacketSn(data)
-                  , DateFmtter.fmt(PacketUtils.getTime(data, 9 + 4, 9 + 9)));
+              if (PacketType.isRealtime(CollectorHelper.getType(data))) {
+                // 反馈
+                ctx.writeAndFlush(Unpooled.wrappedBuffer(CollectorHelper.getRealtimeFeedback(data)));
+
+                if (client.refresh(CollectorHelper.getPacketSn(data)) && "010003f6".equals(deviceId)) {
+                  log.info("send: {}, deviceId: {}, packageSn: {}, time: {}, online: {}"
+                      , ctx.channel().remoteAddress()
+                      , deviceId
+                      , CollectorHelper.getPacketSn(data)
+                      , DateFmtter.fmt(CollectorHelper.getTime(data, 9 + 4, 9 + 9))
+                      , DateFmtter.fmt(client.getOnlineTime())
+                  );
+                }
+              }
+
             }));
       }
     });
@@ -102,8 +125,14 @@ public class CollectorUdpProxy extends UdpNettyServer {
    */
   static class CollectorDeviceClient extends UdpDeviceClient {
 
+    private final AtomicInteger packageSn = new AtomicInteger();
+
     public CollectorDeviceClient(String id, Channel channel) {
       super(id, channel);
+    }
+
+    public boolean refresh(int sn) {
+      return packageSn.compareAndSet(sn - 1, sn);
     }
 
     @Override

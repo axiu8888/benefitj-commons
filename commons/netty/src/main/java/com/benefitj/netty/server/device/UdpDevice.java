@@ -29,4 +29,13 @@ public class UdpDevice extends AbstractDevice {
     return channel().writeAndFlush(new DatagramPacket(data, getRemoteAddress()));
   }
 
+  @Override
+  public boolean equals(Object o) {
+    return super.equals(o);
+  }
+
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
 }

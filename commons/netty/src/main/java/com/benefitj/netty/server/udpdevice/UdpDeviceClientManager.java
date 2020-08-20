@@ -33,14 +33,14 @@ public interface UdpDeviceClientManager<C extends UdpDeviceClient> extends Devic
   /**
    * 获取过期时长
    */
-  long getExpired();
+  long getExpire();
 
   /**
    * 设置过期时长， 小于等于0表示不过期
    *
-   * @param expired 时长
+   * @param expire 时长
    */
-  void setExpired(long expired);
+  void setExpire(long expire);
 
   /**
    * 获取检查间隔
@@ -97,7 +97,7 @@ public interface UdpDeviceClientManager<C extends UdpDeviceClient> extends Devic
     /**
      * 过期时间
      */
-    private long expired = 5000;
+    private long expire = 5000;
     /**
      * 延迟检查的间隔
      */
@@ -133,13 +133,13 @@ public interface UdpDeviceClientManager<C extends UdpDeviceClient> extends Devic
     }
 
     @Override
-    public long getExpired() {
-      return expired;
+    public long getExpire() {
+      return expire;
     }
 
     @Override
-    public void setExpired(long expired) {
-      this.expired = expired;
+    public void setExpire(long expire) {
+      this.expire = expire;
     }
 
     @Override

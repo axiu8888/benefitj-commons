@@ -16,7 +16,7 @@ import java.util.function.Function;
  * <p>有效载荷：9 ~ n
  * <p>校验和：n + 1，1字节
  */
-public class PacketUtils {
+public class CollectorHelper {
 
   private static final Map<Integer, String> DEVICE_ID_CACHE = new WeakHashMap<>();
   private static final Function<Integer, String> SAVE_FUNC =

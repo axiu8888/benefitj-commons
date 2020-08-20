@@ -28,5 +28,13 @@ public class TcpDevice extends AbstractDevice {
     return channel().writeAndFlush(data);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    return super.equals(o);
+  }
 
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
 }
