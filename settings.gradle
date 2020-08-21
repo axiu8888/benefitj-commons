@@ -17,6 +17,7 @@ include ":commons:frameworks" // 一些库的工具
 include ":commons:interpolator" // 插值器
 include ":commons:netty" // netty
 include ":commons:eventbus" // EventBus
+include ":commons:javastruct" // java struct
 include ":commons:all" // 全部的依赖
 
 include ":examples" // examples
