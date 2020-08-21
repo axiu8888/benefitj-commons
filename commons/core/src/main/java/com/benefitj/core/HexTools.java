@@ -248,7 +248,7 @@ public class HexTools {
         }
       }
     } else {
-      if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) != 1) {
+      if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) == 1) {
         for (int i = bytes.length - 1; i >= 0; i--) {
           value <<= 8;
           value |= ~bytes[i] & 0xFF;
@@ -325,7 +325,7 @@ public class HexTools {
         }
       }
     } else {
-      if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) != 1) {
+      if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) == 1) {
         for (int i = bytes.length - 1; i >= 0; i--) {
           value <<= 8;
           value |= ~bytes[i] & 0xFF;
@@ -402,7 +402,7 @@ public class HexTools {
         }
       }
     } else {
-      if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) != 1) {
+      if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) == 1) {
         for (int i = bytes.length - 1; i >= 0; i--) {
           value <<= 8;
           value |= ~bytes[i] & 0xFF;
