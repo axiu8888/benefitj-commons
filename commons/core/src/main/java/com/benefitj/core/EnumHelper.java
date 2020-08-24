@@ -3,6 +3,7 @@ package com.benefitj.core;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * 枚举的工具类
@@ -33,34 +34,92 @@ public class EnumHelper {
    */
   @Nullable
   public static <E extends Enum> E nameOf(E[] enums, String name, boolean ignoreCase) {
-    return apply(enums, e -> (ignoreCase ? e.name().equalsIgnoreCase(name) : e.name().equals(name)) ? e : null, null);
+    return valueOf(enums, e -> ignoreCase ? e.name().equalsIgnoreCase(name) : e.name().equals(name), null);
   }
 
   /**
-   * 获取匹配的值
+   * 获取匹配的值，已过时，建议使用 {@link #valueOf(Object[], Predicate)}
    *
    * @param enums 枚举对象数组
    * @param func  匹配函数
    * @param <E>   枚举类型
    * @return 返回匹配的对象
    */
+  @Deprecated
   @Nullable
   public static <E extends Enum> E valueOf(E[] enums, Function<E, E> func) {
     return apply(enums, func, null);
   }
 
   /**
-   * 获取匹配的值
+   * 获取匹配的值，已过时，建议使用 {@link #valueOf(Object[], Predicate)}
    *
    * @param type 枚举类型
    * @param func 匹配函数
    * @param <E>  枚举类型
    * @return 返回匹配的对象
    */
+  @Deprecated
   @Nullable
   public static <E extends Enum> E valueOf(Class<E> type, Function<E, E> func) {
     return valueOf(type.getEnumConstants(), func);
   }
+
+  /**
+   * 迭代枚举值，并返回匹配值
+   *
+   * @param type 枚举类型
+   * @param func 迭代函数
+   * @param <E>  枚举类型
+   * @return 返回匹配的值或默认值
+   */
+  public static <E extends Enum<E>> E valueOf(Class<E> type, Predicate<E> func) {
+    return valueOf(type.getEnumConstants(), func, null);
+  }
+
+  /**
+   * 迭代枚举值，并返回匹配值
+   *
+   * @param type         枚举类型
+   * @param func         迭代函数
+   * @param defaultValue 默认值
+   * @param <E>          枚举类型
+   * @return 返回匹配的值或默认值
+   */
+  public static <E extends Enum<E>> E valueOf(Class<E> type, Predicate<E> func, E defaultValue) {
+    return valueOf(type.getEnumConstants(), func, defaultValue);
+  }
+
+  /**
+   * 迭代枚举值，并返回匹配值
+   *
+   * @param enums 枚举类型
+   * @param func  迭代函数
+   * @param <E>   枚举类型
+   * @return 返回匹配的值或默认值
+   */
+  public static <E> E valueOf(E[] enums, Predicate<E> func) {
+    return valueOf(enums, func, null);
+  }
+
+  /**
+   * 迭代枚举值，并返回匹配值
+   *
+   * @param enums        枚举类型
+   * @param func         迭代函数
+   * @param defaultValue 默认值
+   * @param <E>          枚举类型
+   * @return 返回匹配的值或默认值
+   */
+  public static <E> E valueOf(E[] enums, Predicate<E> func, E defaultValue) {
+    for (E e : enums) {
+      if (func.test(e)) {
+        return e;
+      }
+    }
+    return defaultValue;
+  }
+
 
   /**
    * 迭代枚举值
