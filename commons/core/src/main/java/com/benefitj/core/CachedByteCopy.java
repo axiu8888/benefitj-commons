@@ -8,7 +8,7 @@ import java.util.function.Function;
 /**
  * 字节拷贝
  */
-public class ByteHelper {
+public class CachedByteCopy {
 
   private final ThreadLocal<Map<Integer, byte[]>> bytesCache = ThreadLocal.withInitial(WeakHashMap::new);
   private final Function<Integer, byte[]> creator = byte[]::new;

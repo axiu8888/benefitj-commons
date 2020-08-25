@@ -16,13 +16,13 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
   /**
    * 设备状态监听
    */
-  private DeviceStateChangeListener<D> listener = DeviceStateChangeListener.emptyListener();
+  private DeviceStateChangeListener<D> stateChangeListener = DeviceStateChangeListener.emptyListener();
 
   public DefaultDeviceManager() {
   }
 
-  public DefaultDeviceManager(DeviceStateChangeListener<D> listener) {
-    this.listener = listener;
+  public DefaultDeviceManager(DeviceStateChangeListener<D> stateChangeListener) {
+    this.stateChangeListener = stateChangeListener;
   }
 
   protected Map<String, D> getDevices() {
@@ -31,12 +31,12 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
 
   @Override
   public DeviceStateChangeListener<D> getStateChangeListener() {
-    return listener;
+    return stateChangeListener;
   }
 
   @Override
   public void setStateChangeListener(DeviceStateChangeListener<D> listener) {
-    this.listener = (listener != null ? listener : DeviceStateChangeListener.emptyListener());
+    this.stateChangeListener = (listener != null ? listener : DeviceStateChangeListener.emptyListener());
   }
 
   @Override

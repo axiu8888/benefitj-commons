@@ -19,7 +19,7 @@ public class EventLoop implements ScheduledExecutorService {
   private static final SingletonSupplier<EventLoop> SINGLE_EVENT_LOOP
       = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-single-"));
   private static final SingletonSupplier<EventLoop> IO_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(128, "-IO-"));
+      = SingletonSupplier.of(() -> new GlobalEventLoop(128, "-io-"));
 
   /**
    * 多线程事件

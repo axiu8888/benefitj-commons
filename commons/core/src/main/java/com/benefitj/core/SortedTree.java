@@ -10,9 +10,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 对树结构进行归类排序，最后组成一棵树
+ * 对树结构进行归类排序，最后组成一棵或多棵树
  */
-public class TreeSortHelper {
+public class SortedTree {
 
   /**
    * 对树形结构排序，使其组成一棵树
@@ -22,19 +22,19 @@ public class TreeSortHelper {
    * @param <T>  树结点类型
    * @return 返回排序好的Map
    */
-  public static <ID, T extends ITree<ID, T>> Map<ID, T> sort(Map<ID, T> map) {
+  public static <ID, T extends Tree<ID, T>> Map<ID, T> sort(Map<ID, T> map) {
     // 缓存父节点
-    final Map<ID, SortedTree<ID, T>> cachedMap = new ConcurrentHashMap<>(map.size());
+    final Map<ID, TreeWrapper<ID, T>> cachedMap = new ConcurrentHashMap<>(map.size());
     for (Map.Entry<ID, T> entry : map.entrySet()) {
-      cachedMap.put(entry.getKey(), new SortedTree<>(entry.getValue()));
+      cachedMap.put(entry.getKey(), new TreeWrapper<>(entry.getValue()));
     }
 
     int count = cachedMap.size();
     // 遍历元素，查找父节点
-    for (Map.Entry<ID, SortedTree<ID, T>> entry : cachedMap.entrySet()) {
-      SortedTree<ID, T> st = entry.getValue();
+    for (Map.Entry<ID, TreeWrapper<ID, T>> entry : cachedMap.entrySet()) {
+      TreeWrapper<ID, T> st = entry.getValue();
       if (st.hasParent()) {
-        SortedTree<ID, T> pst = cachedMap.get(st.getParentId());
+        TreeWrapper<ID, T> pst = cachedMap.get(st.getParentId());
         if (pst != null && pst.addChild(st.getParentId(), st.getTree())) {
           st.setCorrelated(true);
           count--;
@@ -43,7 +43,7 @@ public class TreeSortHelper {
     }
     // 取出未找到父节点的元素
     final Map<ID, T> sortedMap = new ConcurrentHashMap<>(count);
-    for (SortedTree<ID, T> st : cachedMap.values()) {
+    for (TreeWrapper<ID, T> st : cachedMap.values()) {
       if (!st.isCorrelated()) {
         sortedMap.put(st.getId(), st.getTree());
       }
@@ -65,10 +65,10 @@ public class TreeSortHelper {
       int length = idStr.length();
       for (int i = 0; i < length; i++) {
         if (idStr.charAt(i) != ' ') {
-          return false;
+          return true;
         }
       }
-      return true;
+      return false;
     }
     return flag;
   }
@@ -76,7 +76,7 @@ public class TreeSortHelper {
   /**
    * 树结点接口
    */
-  public interface ITree<ID, N extends ITree<ID, N>> {
+  public interface Tree<ID, N extends Tree<ID, N>> {
 
     /**
      * 获取结点的ID
@@ -281,7 +281,7 @@ public class TreeSortHelper {
   }
 
 
-  static class SortedTree<ID, T extends ITree<ID, T>> implements ITree<ID, T> {
+  static class TreeWrapper<ID, T extends Tree<ID, T>> implements Tree<ID, T> {
 
     private final T tree;
     /**
@@ -289,7 +289,7 @@ public class TreeSortHelper {
      */
     private boolean correlated = false;
 
-    public SortedTree(T tree) {
+    public TreeWrapper(T tree) {
       this.tree = tree;
     }
 
@@ -341,7 +341,7 @@ public class TreeSortHelper {
     public boolean equals(Object o) {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
-      SortedTree<?, ?> that = (SortedTree<?, ?>) o;
+      TreeWrapper<?, ?> that = (TreeWrapper<?, ?>) o;
       return Objects.equals(tree, that.tree);
     }
 

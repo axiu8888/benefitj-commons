@@ -236,7 +236,8 @@ public class ReflectUtils {
    */
   @Nullable
   public static Field getField(Class<?> type, String field) {
-    if (isNonNull(type, field) && !field.isEmpty() && type != Object.class) {
+    if (type != null && field != null
+        && !field.isEmpty() && type != Object.class) {
       try {
         return type.getDeclaredField(field);
       } catch (NoSuchFieldException e) {/* ~ */}
@@ -407,20 +408,6 @@ public class ReflectUtils {
   @Nullable
   public static Type getRawType(ParameterizedType type) {
     return type != null ? type.getRawType() : null;
-  }
-
-  private static boolean isNotBlank(String s) {
-    return s != null && !s.trim().isEmpty();
-  }
-
-  /**
-   * 不是Class
-   *
-   * @param o 检查对象
-   * @return 不为Class.class对象时返回 true, 否则false
-   */
-  public static boolean isNotClass(Object o) {
-    return o != null && o.getClass() != Class.class;
   }
 
   private static boolean isNonNull(Object... os) {

@@ -1,6 +1,5 @@
 package com.benefitj.netty.server.device;
 
-import com.benefitj.netty.server.udpdevice.UdpDeviceClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -156,7 +155,7 @@ public abstract class AbstractDevice implements Device {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    UdpDeviceClient that = (UdpDeviceClient) o;
+    AbstractDevice that = (AbstractDevice) o;
     return Objects.equals(getId(), that.getId())
         && Objects.equals(channel(), that.channel())
         && Objects.equals(getRemoteAddress(), that.getRemoteAddress());

@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 常用工具
  */
+@Deprecated
 public class Utils {
 
   public static final long KB = 1024;

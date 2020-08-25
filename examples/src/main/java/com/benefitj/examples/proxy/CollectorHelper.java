@@ -1,6 +1,6 @@
 package com.benefitj.examples.proxy;
 
-import com.benefitj.core.HexTools;
+import com.benefitj.core.HexUtils;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -20,9 +20,9 @@ public class CollectorHelper {
 
   private static final Map<Integer, String> DEVICE_ID_CACHE = new WeakHashMap<>();
   private static final Function<Integer, String> SAVE_FUNC =
-      deviceCode -> byteToHex(HexTools.intToByte(deviceCode), true);
+      deviceCode -> byteToHex(HexUtils.intToBytes(deviceCode), true);
   private static final Map<Integer, byte[]> DEVICE_ID_BYTES_CACHE = new WeakHashMap<>();
-  private static final Function<Integer, byte[]> SAVE_BYTES_FUNC = HexTools::intToByte;
+  private static final Function<Integer, byte[]> SAVE_BYTES_FUNC = HexUtils::intToBytes;
 
   /**
    * 包头
@@ -132,7 +132,7 @@ public class CollectorHelper {
    * @return 返回16进制的字节数组
    */
   public static byte[] hexToByte(String hex) {
-    return HexTools.hexToByte(hex);
+    return HexUtils.hexToBytes(hex);
   }
 
   /**
@@ -143,7 +143,7 @@ public class CollectorHelper {
    * @return 返回16进制字符串或空
    */
   public static String byteToHex(byte[] bin, boolean lowerCase) {
-    return HexTools.byteToHex(bin, lowerCase);
+    return HexUtils.bytesToHex(bin, lowerCase);
   }
 
   /**

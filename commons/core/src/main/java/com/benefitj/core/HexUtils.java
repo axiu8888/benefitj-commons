@@ -5,7 +5,7 @@ import java.nio.ByteOrder;
 /**
  * 16进制转换
  */
-public class HexTools {
+public class HexUtils {
 
   /**
    * 16进制和2进制转换
@@ -33,8 +33,8 @@ public class HexTools {
    * @param num 数值
    * @return 返回一个整数
    */
-  public static byte[] shortToByte(short num) {
-    return shortToByte(num, ORDER);
+  public static byte[] shortToBytes(short num) {
+    return shortToBytes(num, ORDER);
   }
 
   /**
@@ -44,8 +44,8 @@ public class HexTools {
    * @param order 字节序
    * @return 返回一个整数
    */
-  public static byte[] shortToByte(short num, ByteOrder order) {
-    return shortToByte(num, 16, order);
+  public static byte[] shortToBytes(short num, ByteOrder order) {
+    return shortToBytes(num, 16, order);
   }
 
   /**
@@ -55,8 +55,8 @@ public class HexTools {
    * @param bit 位，根据位取几个字节
    * @return 返回一个整数
    */
-  public static byte[] shortToByte(short num, int bit) {
-    return shortToByte(num, bit, ORDER);
+  public static byte[] shortToBytes(short num, int bit) {
+    return shortToBytes(num, bit, ORDER);
   }
 
   /**
@@ -67,7 +67,7 @@ public class HexTools {
    * @param order 字节序
    * @return 返回转换后的字节数组
    */
-  public static byte[] shortToByte(short num, int bit, ByteOrder order) {
+  public static byte[] shortToBytes(short num, int bit, ByteOrder order) {
     int size = bitSize(bit);
     byte[] bytes = new byte[size];
     boolean bigEndian = (order == ByteOrder.BIG_ENDIAN);
@@ -85,8 +85,8 @@ public class HexTools {
    * @param num 数值
    * @return 返回一个整数
    */
-  public static byte[] intToByte(int num) {
-    return intToByte(num, ORDER);
+  public static byte[] intToBytes(int num) {
+    return intToBytes(num, ORDER);
   }
 
   /**
@@ -96,8 +96,8 @@ public class HexTools {
    * @param order 字节序
    * @return 返回一个整数
    */
-  public static byte[] intToByte(int num, ByteOrder order) {
-    return intToByte(num, 32, order);
+  public static byte[] intToBytes(int num, ByteOrder order) {
+    return intToBytes(num, 32, order);
   }
 
   /**
@@ -107,8 +107,8 @@ public class HexTools {
    * @param bit 位，根据位取几个字节
    * @return 返回一个整数
    */
-  public static byte[] intToByte(int num, int bit) {
-    return intToByte(num, bit, ORDER);
+  public static byte[] intToBytes(int num, int bit) {
+    return intToBytes(num, bit, ORDER);
   }
 
   /**
@@ -119,7 +119,7 @@ public class HexTools {
    * @param order 字节序
    * @return 返回转换后的字节数组
    */
-  public static byte[] intToByte(int num, int bit, ByteOrder order) {
+  public static byte[] intToBytes(int num, int bit, ByteOrder order) {
     int size = bitSize(bit);
     byte[] bytes = new byte[size];
     boolean bigEndian = (order == ByteOrder.BIG_ENDIAN);
@@ -137,8 +137,8 @@ public class HexTools {
    * @param num 数值
    * @return 返回一个整数
    */
-  public static byte[] longToByte(long num) {
-    return longToByte(num, ORDER);
+  public static byte[] longToBytes(long num) {
+    return longToBytes(num, ORDER);
   }
 
   /**
@@ -148,8 +148,8 @@ public class HexTools {
    * @param order 字节序
    * @return 返回一个整数
    */
-  public static byte[] longToByte(long num, ByteOrder order) {
-    return longToByte(num, 64, order);
+  public static byte[] longToBytes(long num, ByteOrder order) {
+    return longToBytes(num, 64, order);
   }
 
   /**
@@ -159,8 +159,8 @@ public class HexTools {
    * @param bit 位，根据位取几个字节
    * @return 返回一个整数
    */
-  public static byte[] longToByte(long num, int bit) {
-    return longToByte(num, bit, ORDER);
+  public static byte[] longToBytes(long num, int bit) {
+    return longToBytes(num, bit, ORDER);
   }
 
   /**
@@ -171,7 +171,7 @@ public class HexTools {
    * @param order 字节序
    * @return 返回转换后的字节数组
    */
-  public static byte[] longToByte(long num, int bit, ByteOrder order) {
+  public static byte[] longToBytes(long num, int bit, ByteOrder order) {
     int size = bitSize(bit);
     byte[] bytes = new byte[size];
     boolean bigEndian = (order == ByteOrder.BIG_ENDIAN);
@@ -193,8 +193,8 @@ public class HexTools {
    * @param bytes 字节
    * @return 返回一个整数
    */
-  public static short byteToShort(byte... bytes) {
-    return byteToShort(bytes, ORDER, false);
+  public static short bytesToShort(byte... bytes) {
+    return bytesToShort(bytes, ORDER, false);
   }
 
   /**
@@ -204,8 +204,8 @@ public class HexTools {
    * @param signed 是否为有符号整数
    * @return 返回一个整数
    */
-  public static short byteToShort(byte[] bytes, boolean signed) {
-    return byteToShort(bytes, ORDER, signed);
+  public static short bytesToShort(byte[] bytes, boolean signed) {
+    return bytesToShort(bytes, ORDER, signed);
   }
 
   /**
@@ -215,8 +215,8 @@ public class HexTools {
    * @param order 字节序
    * @return 返回一个整数
    */
-  public static short byteToShort(byte[] bytes, ByteOrder order) {
-    return byteToShort(bytes, order, false);
+  public static short bytesToShort(byte[] bytes, ByteOrder order) {
+    return bytesToShort(bytes, order, false);
   }
 
   /**
@@ -227,7 +227,7 @@ public class HexTools {
    * @param signed 是否为有符号整数
    * @return 返回一个整数
    */
-  public static short byteToShort(byte[] bytes, ByteOrder order, boolean signed) {
+  public static short bytesToShort(byte[] bytes, ByteOrder order, boolean signed) {
     // 大端存储：高位在前，低位在后
     // 小端存储：低位在前，高位在后
     short value = 0;
@@ -270,8 +270,8 @@ public class HexTools {
    * @param bytes 字节数组
    * @return 返回整数值
    */
-  public static int byteToInt(byte... bytes) {
-    return byteToInt(bytes, ORDER, false);
+  public static int bytesToInt(byte... bytes) {
+    return bytesToInt(bytes, ORDER, false);
   }
 
   /**
@@ -281,8 +281,8 @@ public class HexTools {
    * @param signed 是否为有符号整数
    * @return 返回整数值
    */
-  public static int byteToInt(byte[] bytes, boolean signed) {
-    return byteToInt(bytes, ORDER, signed);
+  public static int bytesToInt(byte[] bytes, boolean signed) {
+    return bytesToInt(bytes, ORDER, signed);
   }
 
   /**
@@ -292,8 +292,8 @@ public class HexTools {
    * @param order 字节序
    * @return 返回整数值
    */
-  public static int byteToInt(byte[] bytes, ByteOrder order) {
-    return byteToInt(bytes, order, false);
+  public static int bytesToInt(byte[] bytes, ByteOrder order) {
+    return bytesToInt(bytes, order, false);
   }
 
   /**
@@ -304,7 +304,7 @@ public class HexTools {
    * @param signed 是否为有符号整数
    * @return 返回整数值
    */
-  public static int byteToInt(byte[] bytes, ByteOrder order, boolean signed) {
+  public static int bytesToInt(byte[] bytes, ByteOrder order, boolean signed) {
     // 大端存储：高位在前，低位在后
     // 小端存储：低位在前，高位在后
     int value = 0;
@@ -347,8 +347,8 @@ public class HexTools {
    * @param bytes 字节数组
    * @return 返回长整数值
    */
-  public static long byteToLong(byte... bytes) {
-    return byteToLong(bytes, ORDER);
+  public static long bytesToLong(byte... bytes) {
+    return bytesToLong(bytes, ORDER);
   }
 
   /**
@@ -358,8 +358,8 @@ public class HexTools {
    * @param signed 是否为有符号整数
    * @return 返回长整数值
    */
-  public static long byteToLong(byte[] bytes, boolean signed) {
-    return byteToLong(bytes, ORDER, signed);
+  public static long bytesToLong(byte[] bytes, boolean signed) {
+    return bytesToLong(bytes, ORDER, signed);
   }
 
   /**
@@ -369,8 +369,8 @@ public class HexTools {
    * @param order 字节序
    * @return 返回长整数值
    */
-  public static long byteToLong(byte[] bytes, ByteOrder order) {
-    return byteToLong(bytes, order, false);
+  public static long bytesToLong(byte[] bytes, ByteOrder order) {
+    return bytesToLong(bytes, order, false);
   }
 
   /**
@@ -381,7 +381,7 @@ public class HexTools {
    * @param signed 是否为有符号整数
    * @return 返回长整数值
    */
-  public static long byteToLong(byte[] bytes, ByteOrder order, boolean signed) {
+  public static long bytesToLong(byte[] bytes, ByteOrder order, boolean signed) {
     // 大端存储：高位在前，低位在后
     // 小端存储：低位在前，高位在后
     long value = 0;
@@ -424,8 +424,8 @@ public class HexTools {
    * @param num 数值
    * @return 返回16进制字符串
    */
-  public static byte[] intToByte2(int num) {
-    return hexToByte(intToHex(num));
+  public static byte[] intToBytes2(int num) {
+    return hexToBytes(intToHex(num));
   }
 
   /**
@@ -470,14 +470,14 @@ public class HexTools {
    * @return 返回二进制字符串
    */
   public static String binToBinStr(byte[] bin) {
-    StringBuilder builder = new StringBuilder();
+    StringBuilder sb = new StringBuilder();
     for (byte b : bin) {
       // 高四位
-      builder.append(BINARY_STR[(b & 0xF0) >> 4]);
+      sb.append(BINARY_STR[(b & 0xF0) >> 4]);
       // 低四位
-      builder.append(BINARY_STR[b & 0x0F]);
+      sb.append(BINARY_STR[b & 0x0F]);
     }
-    return builder.toString();
+    return sb.toString();
   }
 
   /**
@@ -508,8 +508,8 @@ public class HexTools {
    * @param bin 二进制字节数组
    * @return 返回16进制字符串或空
    */
-  public static String byteToHex(byte[] bin) {
-    return byteToHex(bin, false);
+  public static String bytesToHex(byte[] bin) {
+    return bytesToHex(bin, false);
   }
 
   /**
@@ -519,7 +519,7 @@ public class HexTools {
    * @param lowerCase 是否为小写字母
    * @return 返回16进制字符串或空
    */
-  public static String byteToHex(byte[] bin, boolean lowerCase) {
+  public static String bytesToHex(byte[] bin, boolean lowerCase) {
     if (isEmpty(bin)) {
       return null;
     }
@@ -541,8 +541,8 @@ public class HexTools {
    * @param hex 字符串
    * @return 转换的字节数组
    */
-  public static byte[] hexToByte(String hex) {
-    return hexToByte(hex, null);
+  public static byte[] hexToBytes(String hex) {
+    return hexToBytes(hex, null);
   }
 
   /**
@@ -552,7 +552,7 @@ public class HexTools {
    * @param defaultValue 默认值
    * @return 转换的字节数组
    */
-  public static byte[] hexToByte(String hex, byte[] defaultValue) {
+  public static byte[] hexToBytes(String hex, byte[] defaultValue) {
     if (isNotEmpty(hex)) {
       int length = hex.length() / 2;
       char[] ch = hex.toUpperCase().toCharArray();

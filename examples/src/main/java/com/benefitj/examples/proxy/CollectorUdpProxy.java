@@ -7,7 +7,7 @@ import com.benefitj.netty.adapter.BiConsumerChannelInboundHandler;
 import com.benefitj.netty.server.UdpNettyServer;
 import com.benefitj.netty.server.channel.NioDatagramServerChannel;
 import com.benefitj.netty.server.device.DeviceStateChangeListener;
-import com.benefitj.netty.server.udpdevice.*;
+import com.benefitj.netty.server.udpclient.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;

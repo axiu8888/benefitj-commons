@@ -1,4 +1,4 @@
-package com.benefitj.netty.server.udpdevice;
+package com.benefitj.netty.server.udpclient;
 
 import com.benefitj.netty.server.device.DefaultDeviceManager;
 import com.benefitj.netty.server.device.DeviceManager;
