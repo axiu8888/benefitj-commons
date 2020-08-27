@@ -11,6 +11,31 @@ import java.util.function.Predicate;
 public class EnumHelper {
 
   /**
+   * 判断是否为匹配的值
+   *
+   * @param src  枚举对象
+   * @param name 名称
+   * @param <E>  枚举类型
+   * @return 返回是否匹配
+   */
+  public static <E extends Enum> boolean nameEquals(E src, String name) {
+    return nameEquals(src, name, true);
+  }
+
+  /**
+   * 判断是否为匹配的值
+   *
+   * @param src        枚举对象
+   * @param name       名称
+   * @param ignoreCase 是否忽略大小写
+   * @param <E>        枚举类型
+   * @return 返回是否匹配
+   */
+  public static <E extends Enum> boolean nameEquals(E src, String name, boolean ignoreCase) {
+    return ignoreCase ? src.name().equalsIgnoreCase(name) : src.name().equals(name);
+  }
+
+  /**
    * 获取匹配的值
    *
    * @param enums 枚举对象数组
