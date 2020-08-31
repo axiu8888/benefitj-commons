@@ -385,6 +385,29 @@ public class IOUtils {
         : new BufferedWriter(writer);
   }
 
+  /**
+   * 读取数据，每次读取指定长度的字节，默认闭关流
+   *
+   * @param file     文件
+   * @param consumer 处理回调
+   * @throws IllegalStateException 读取时出现错误抛出的异常
+   */
+  public static void read(File file, IBiConsumer<byte[], Integer> consumer) throws IllegalStateException {
+    read(file, 1024 << 4, consumer);
+  }
+
+  /**
+   * 读取数据，每次读取指定长度的字节，默认闭关流
+   *
+   * @param file     文件
+   * @param size     缓冲区大小
+   * @param consumer 处理回调
+   * @throws IllegalStateException 读取时出现错误抛出的异常
+   */
+  public static void read(File file, int size, IBiConsumer<byte[], Integer> consumer) throws IllegalStateException {
+    FileInputStream fis = newFIS(file);
+    read(fis, size, true, consumer);
+  }
 
   /**
    * 读取数据，每次读取指定长度的字节，默认闭关流
@@ -490,7 +513,7 @@ public class IOUtils {
    */
   public static byte[] readFileFully(File file, long maxSize) throws IllegalStateException {
     if (exists(file)) {
-      requireNotOutOfSize(file.length(), maxSize, String.format("文件不能超过%.1fMB", ofMB(maxSize)));
+      requireNotOutOfSize(file.length(), maxSize);
       final FileInputStream fis = newFIS(file);
       try {
         return readFully(fis).toByteArray();
@@ -542,7 +565,7 @@ public class IOUtils {
    */
   public static List<String> readFileLines(File file, Predicate<String> predicate, String charset, long maxSize) {
     if (isFile(file)) {
-      requireNotOutOfSize(file.length(), maxSize, String.format("数据不能超过%.1f MB", ofMB(maxSize)));
+      requireNotOutOfSize(file.length(), maxSize);
       BufferedReader reader = newBufferedReader(file, charset);
       try {
         return reader.lines()
@@ -568,13 +591,23 @@ public class IOUtils {
   /**
    * 写入数据
    *
+   * @param file 文件
+   * @param os   输出流
+   */
+  public static void write(File file, OutputStream os) {
+    write(newFIS(file), os, 1024 << 4);
+  }
+
+  /**
+   * 写入数据
+   *
    * @param is     输入流
    * @param file   文件
    * @param append 是否为追加
    * @param close  是否关闭流
    */
   public static void write(InputStream is, File file, boolean append, boolean close) {
-    FileOutputStream fos = newFOS(file, append);
+    final FileOutputStream fos = newFOS(file, append);
     try {
       write(is, fos, 1024 << 4, close);
     } finally {
@@ -886,11 +919,27 @@ public class IOUtils {
    *
    * @param length   数据的长度
    * @param maxSize  最大的长度
-   * @param errorMsg 抛出异常的信息
    */
-  public static void requireNotOutOfSize(long length, long maxSize, String errorMsg) {
+  public static void requireNotOutOfSize(long length, long maxSize) {
     if (length > maxSize) {
-      throw new IllegalArgumentException(errorMsg);
+      double max;
+      double size;
+      String unit;
+      if (length >= GB) {
+        size = ofGB(length);
+        max = ofGB(maxSize);
+        unit = "GB";
+      } else if (length >= MB) {
+        size = ofMB(length);
+        max = ofMB(maxSize);
+        unit = "MB";
+      } else {
+        size = ofKB(length);
+        max = ofKB(maxSize);
+        unit = "KB";
+      }
+      String errMsg = String.format("数据不能超过%.2f%s, 当前数据长度为%.2f%s", max, unit, size, unit);
+      throw new IllegalArgumentException(errMsg);
     }
   }
 
