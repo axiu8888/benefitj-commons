@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * 调用命令行后的响应
  */
-public class CmdResponse {
+public class CmdCall {
 
   /**
    * CMD唯一ID
@@ -40,10 +40,10 @@ public class CmdResponse {
    */
   private String error;
 
-  public CmdResponse() {
+  public CmdCall() {
   }
 
-  public CmdResponse(String id) {
+  public CmdCall(String id) {
     this.id = id;
   }
 

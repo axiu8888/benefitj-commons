@@ -4,14 +4,14 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.function.BiConsumer;
 
 /**
- * CmdResponse
+ * cmd call
  */
-public class CmdResponseFuture implements Runnable {
+public class CmdCallFuture implements Runnable {
 
   /**
-   * 原响应对象
+   * 原命令调用对象
    */
-  private final CmdResponse original;
+  private final CmdCall original;
   /**
    * Future
    */
@@ -19,14 +19,14 @@ public class CmdResponseFuture implements Runnable {
   /**
    * 回调
    */
-  private final BiConsumer<String, CmdResponseFuture> callback;
+  private final BiConsumer<String, CmdCallFuture> callback;
 
-  public CmdResponseFuture(CmdResponse original, BiConsumer<String, CmdResponseFuture> callback) {
+  public CmdCallFuture(CmdCall original, BiConsumer<String, CmdCallFuture> callback) {
     this.original = original;
     this.callback = callback;
   }
 
-  public CmdResponse getOriginal() {
+  public CmdCall getOriginal() {
     return original;
   }
 

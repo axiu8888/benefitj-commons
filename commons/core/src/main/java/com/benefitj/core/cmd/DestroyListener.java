@@ -10,7 +10,7 @@ public interface DestroyListener {
    * @param process  进程
    * @param response 响应
    */
-  void onDestroy(Process process, CmdResponse response);
+  void onDestroy(Process process, CmdCall response);
 
   /**
    * 当被取消时
@@ -19,19 +19,19 @@ public interface DestroyListener {
    * @param response 响应
    * @param timeout  是否超时
    */
-  void onCancel(Process process, CmdResponse response, boolean timeout);
+  void onCancel(Process process, CmdCall response, boolean timeout);
 
   /**
    * 监听
    */
-  final DestroyListener EMPTY_LISTENER = new DestroyListener() {
+  final DestroyListener DISCARD = new DestroyListener() {
     @Override
-    public void onDestroy(Process process, CmdResponse response) {
+    public void onDestroy(Process process, CmdCall response) {
       /*do nothing*/
     }
 
     @Override
-    public void onCancel(Process process, CmdResponse response, boolean timeout) {
+    public void onCancel(Process process, CmdCall response, boolean timeout) {
       /*do nothing*/
     }
   };

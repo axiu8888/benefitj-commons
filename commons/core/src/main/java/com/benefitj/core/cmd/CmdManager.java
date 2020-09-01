@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * CMD执行(bat/shell)
  */
-public class CmdHelper {
+public class CmdManager {
 
   /**
    * 是否为windows
@@ -54,13 +54,13 @@ public class CmdHelper {
   /**
    * 等待中的执行命令
    */
-  private final Map<String, CmdResponseFuture> waitForFutures = new ConcurrentHashMap<>();
+  private final Map<String, CmdCallFuture> waitForFutures = new ConcurrentHashMap<>();
   /**
    * 销毁的监听
    */
-  private DestroyListener destroyListener = DestroyListener.EMPTY_LISTENER;
+  private DestroyListener destroyListener = DestroyListener.DISCARD;
 
-  public CmdHelper() {
+  public CmdManager() {
   }
 
   public DestroyListener getDestroyListener() {
@@ -69,7 +69,7 @@ public class CmdHelper {
 
   public void setDestroyListener(DestroyListener destroyListener) {
     this.destroyListener = (destroyListener != null
-        ? destroyListener : DestroyListener.EMPTY_LISTENER);
+        ? destroyListener : DestroyListener.DISCARD);
   }
 
   /**
@@ -80,7 +80,8 @@ public class CmdHelper {
     if (e == null) {
       synchronized (this) {
         if ((e = this.executor) == null) {
-          e = (this.executor = Executors.newScheduledThreadPool(1));
+          ThreadFactory threadFactory = new DefaultThreadFactory("cmd-", "-t-", true);
+          e = (this.executor = Executors.newScheduledThreadPool(1, threadFactory));
         }
       }
     }
@@ -105,7 +106,7 @@ public class CmdHelper {
   /**
    * 获取等待中的进程
    */
-  protected Map<String, CmdResponseFuture> getWaitForFutures() {
+  protected Map<String, CmdCallFuture> getWaitForFutures() {
     return waitForFutures;
   }
 
@@ -125,7 +126,7 @@ public class CmdHelper {
    * @param cmd 命令
    * @return 返回结果的值
    */
-  public CmdResponse call(String cmd) {
+  public CmdCall call(String cmd) {
     return call(cmd, null, null, 0);
   }
 
@@ -136,7 +137,7 @@ public class CmdHelper {
    * @param timeout 超时时长
    * @return 返回结果的值
    */
-  public CmdResponse call(String cmd, long timeout) {
+  public CmdCall call(String cmd, long timeout) {
     return call(cmd, null, null, timeout);
   }
 
@@ -148,7 +149,7 @@ public class CmdHelper {
    * @param dir  上下文目录
    * @return 返回结果的值
    */
-  public CmdResponse call(String cmd, @Nullable List<String> envp, @Nullable File dir) {
+  public CmdCall call(String cmd, @Nullable List<String> envp, @Nullable File dir) {
     return call(cmd, envp, dir, 0);
   }
 
@@ -162,7 +163,7 @@ public class CmdHelper {
    * @param timeout 超时时长
    * @return 执行命令后的响应
    */
-  public CmdResponse call(String cmd, @Nullable List<String> envp, @Nullable File dir, long timeout) {
+  public CmdCall call(String cmd, @Nullable List<String> envp, @Nullable File dir, long timeout) {
     return call(cmd, envp, dir, timeout, null);
   }
 
@@ -176,48 +177,48 @@ public class CmdHelper {
    * @param callback 回调
    * @return 执行命令后的响应
    */
-  public CmdResponse call(String cmd, @Nullable List<String> envp, @Nullable File dir, long timeout, @Nullable Callback callback) {
+  public CmdCall call(String cmd, @Nullable List<String> envp, @Nullable File dir, long timeout, @Nullable Callback callback) {
     final Callback cb = callback != null ? callback : Callback.EMPTY_CALLBACK;
     final long start = now();
-    final CmdResponse response = new CmdResponse(uuid());
-    cb.onStart(response);
+    final CmdCall call = createCmdCall(uuid());
+    cb.onStart(call);
     try {
       return safeCall(timeout, start, () -> {
         String[] envparams = envp != null && !envp.isEmpty() ? envp.toArray(new String[0]) : null;
-        response.setCmd(cmd);
-        response.setCtxDir(dir);
-        response.setEnvp(envparams);
-        cb.onCallBefore(response, cmd, envparams, dir);
+        call.setCmd(cmd);
+        call.setCtxDir(dir);
+        call.setEnvp(envparams);
+        cb.onCallBefore(call, cmd, envparams, dir);
         final Process process = Runtime.getRuntime().exec(cmd, envparams, dir);
-        response.setProcess(process);
-        cb.onCallAfter(process, response);
+        call.setProcess(process);
+        cb.onCallAfter(process, call);
         // 强制结束
-        scheduleTimeout(response, timeout - (now() - start));
-        cb.onWaitForBefore(process, response);
+        scheduleTimeout(call, timeout - (now() - start));
+        cb.onWaitForBefore(process, call);
         try {
           // 等待
           int exitValue = process.waitFor();
-          response.setCode(exitValue);
+          call.setCode(exitValue);
         } catch (InterruptedException e) {
-          response.setCode(-1);
+          call.setCode(-1);
         }
         // 移除等待的缓存
-        cancelTimeoutSchedule(response.getId());
+        cancelTimeoutSchedule(call.getId());
         // 调用结束
-        cb.onWaitForAfter(process, response);
+        cb.onWaitForAfter(process, call);
         // 读取消息
-        readMessage(process, response);
+        readMessage(process, call);
 
-        return response;
+        return call;
       });
     } catch (Exception e) {
       throw new IllegalStateException(e);
     } finally {
-      cb.onFinish(response);
+      cb.onFinish(call);
     }
   }
 
-  private void readMessage(Process process, CmdResponse response) {
+  private void readMessage(Process process, CmdCall call) {
     try {
       Charset charset = Charset.defaultCharset();
       try (BufferedReader respBr = new BufferedReader(new InputStreamReader(process.getInputStream(), charset));
@@ -227,16 +228,16 @@ public class CmdHelper {
         while ((line = respBr.readLine()) != null) {
           sb.append(line).append(CRLF);
         }
-        response.setMessage(sb.toString());
+        call.setMessage(sb.toString());
 
         sb.setLength(0);
         while ((line = errorBr.readLine()) != null) {
           sb.append(line).append(CRLF);
         }
-        response.setError(sb.toString());
+        call.setError(sb.toString());
       }
     } catch (IOException e) {
-      response.setError(e.getMessage());
+      call.setError(e.getMessage());
     }
   }
 
@@ -246,25 +247,25 @@ public class CmdHelper {
    * @param id 进程ID
    */
   protected void cancelTimeoutSchedule(String id) {
-    final CmdResponseFuture crf = getWaitForFutures().remove(id);
+    final CmdCallFuture crf = getWaitForFutures().remove(id);
     if (crf != null) {
       crf.cancel(true);
-      CmdResponse response = crf.getOriginal();
-      getDestroyListener().onCancel(response.getProcess(), response, true);
+      CmdCall call = crf.getOriginal();
+      getDestroyListener().onCancel(call.getProcess(), call, true);
     }
   }
 
   /**
    * 延迟结束调用
    *
-   * @param response CMD响应
+   * @param call CMD响应
    * @param timeout  超时时长
    */
-  protected void scheduleTimeout(CmdResponse response, long timeout) {
+  protected void scheduleTimeout(CmdCall call, long timeout) {
     timeout = timeout > 0 ? timeout : getTimeout();
-    final CmdResponseFuture crf = new CmdResponseFuture(response, (id, f) -> {
+    final CmdCallFuture crf = new CmdCallFuture(call, (id, f) -> {
       getWaitForFutures().remove(id);
-      final CmdResponse cr = f.getOriginal();
+      final CmdCall cr = f.getOriginal();
       final Process p = cr.getProcess();
       if (p != null) {
         p.destroyForcibly();
@@ -273,7 +274,7 @@ public class CmdHelper {
       // 唤醒等待的线程
       lock(Object::notify);
     });
-    getWaitForFutures().put(response.getId(), crf);
+    getWaitForFutures().put(call.getId(), crf);
     ScheduledFuture<?> sf = schedule(crf, timeout, TimeUnit.MILLISECONDS);
     crf.setFuture(sf);
   }
@@ -332,6 +333,10 @@ public class CmdHelper {
     }
   }
 
+  public CmdCall createCmdCall(String id) {
+    return new CmdCall(id);
+  }
+
 
   public long getTimeout() {
     return timeout;
@@ -378,4 +383,43 @@ public class CmdHelper {
   protected static String uuid() {
     return UUID.randomUUID().toString().replaceAll("-", "");
   }
+
+
+  /**
+   * The default thread factory
+   */
+  static class DefaultThreadFactory implements ThreadFactory {
+
+    private static final AtomicInteger poolNumber = new AtomicInteger(1);
+    private final ThreadGroup group;
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    private final String namePrefix;
+    private boolean daemon = false;
+
+
+    public DefaultThreadFactory(String prefix, String suffix, boolean daemon) {
+      SecurityManager s = System.getSecurityManager();
+      this.group = (s != null) ? s.getThreadGroup() :
+          Thread.currentThread().getThreadGroup();
+      this.namePrefix = prefix + poolNumber.getAndIncrement() + suffix;
+      this.daemon = daemon;
+    }
+
+    public DefaultThreadFactory(ThreadGroup group, String prefix, String suffix) {
+      this.group = group;
+      this.namePrefix = prefix + poolNumber.getAndIncrement() + suffix;
+    }
+
+    @Override
+    public Thread newThread(Runnable r) {
+      Thread t = new Thread(group, r,
+          namePrefix + threadNumber.getAndIncrement(), 0);
+      t.setDaemon(daemon);
+      if (t.getPriority() != Thread.NORM_PRIORITY) {
+        t.setPriority(Thread.NORM_PRIORITY);
+      }
+      return t;
+    }
+  }
+
 }
