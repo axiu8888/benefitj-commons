@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 public class ReflectUtils {
 
   /**
-   * 判断是否为 Static和final的
+   * 判断是否被static和final修饰
    *
    * @param member Member类型
    * @return 返回判断结果
@@ -26,13 +26,33 @@ public class ReflectUtils {
   }
 
   /**
-   * 判断是否为 Static和final的
+   * 判断是否被static和final修饰
    *
    * @param modifiers 修饰符
    * @return 返回判断结果
    */
   public static boolean isStaticFinal(int modifiers) {
     return Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers);
+  }
+
+  /**
+   * 判断是否被static或final修饰
+   *
+   * @param member Member类型
+   * @return 返回判断结果
+   */
+  public static boolean isStaticOrFinal(Member member) {
+    return isStaticOrFinal(member.getModifiers());
+  }
+
+  /**
+   * 判断是否被static或final修饰
+   *
+   * @param modifiers 修饰符
+   * @return 返回判断结果
+   */
+  public static boolean isStaticOrFinal(int modifiers) {
+    return Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers);
   }
 
   /**
@@ -57,7 +77,7 @@ public class ReflectUtils {
             if (interfaceType instanceof ParameterizedType) {
               realClass = (Class<T>) findParameterizedType((ParameterizedType) interfaceType, typeParamName);
               if (realClass != null) {
-                break;
+                return realClass;
               }
             }
           }
@@ -236,8 +256,7 @@ public class ReflectUtils {
    */
   @Nullable
   public static Field getField(Class<?> type, String field) {
-    if (type != null && field != null
-        && !field.isEmpty() && type != Object.class) {
+    if (isNonNull(type, field) && !field.isEmpty() && type != Object.class) {
       try {
         return type.getDeclaredField(field);
       } catch (NoSuchFieldException e) {/* ~ */}

@@ -12,9 +12,15 @@ public class DefaultThreadFactory implements ThreadFactory {
   private final ThreadGroup group;
   private final AtomicInteger threadNumber = new AtomicInteger(1);
   private final String namePrefix;
+  private boolean daemon = false;
 
   public DefaultThreadFactory() {
     this("pool-", "-thread-");
+  }
+
+  public DefaultThreadFactory(boolean daemon) {
+    this("pool-", "-thread-");
+    this.daemon = daemon;
   }
 
   public DefaultThreadFactory(String prefix, String suffix) {
@@ -33,12 +39,36 @@ public class DefaultThreadFactory implements ThreadFactory {
   public Thread newThread(Runnable r) {
     Thread t = new Thread(group, r,
             namePrefix + threadNumber.getAndIncrement(), 0);
-    if (t.isDaemon()) {
-      t.setDaemon(false);
-    }
+    t.setDaemon(daemon);
     if (t.getPriority() != Thread.NORM_PRIORITY) {
       t.setPriority(Thread.NORM_PRIORITY);
     }
     return t;
   }
+
+  public ThreadGroup getGroup() {
+    return group;
+  }
+
+  public AtomicInteger getThreadNumber() {
+    return threadNumber;
+  }
+
+  public int getNextThreadNumber() {
+    return getThreadNumber().incrementAndGet();
+  }
+
+  public String getNamePrefix() {
+    return namePrefix;
+  }
+
+  public boolean isDaemon() {
+    return daemon;
+  }
+
+  public void setDaemon(boolean daemon) {
+    this.daemon = daemon;
+  }
+
+
 }
