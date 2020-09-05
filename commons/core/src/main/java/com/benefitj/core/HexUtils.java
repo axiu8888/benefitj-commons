@@ -537,7 +537,18 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin) {
-    return bytesToHex(bin, false);
+    return bytesToHex(bin, false, null);
+  }
+
+  /**
+   * 二进制转换成16进制字符串
+   *
+   * @param bin  二进制字节数组
+   * @param fill 填充
+   * @return 返回16进制字符串或空
+   */
+  public static String bytesToHex(byte[] bin, String fill) {
+    return bytesToHex(bin, false, fill);
   }
 
   /**
@@ -548,19 +559,36 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin, boolean lowerCase) {
+    return bytesToHex(bin, lowerCase, null);
+  }
+
+  /**
+   * 二进制转换成16进制字符串
+   *
+   * @param bin       二进制字节数组
+   * @param lowerCase 是否为小写字母
+   * @param fill      填充
+   * @return 返回16进制字符串或空
+   */
+  public static String bytesToHex(byte[] bin, boolean lowerCase, String fill) {
     if (isEmpty(bin)) {
       return null;
     }
 
     String hex = lowerCase ? HEX_LOWER_CASE : HEX_UPPER_CASE;
-    StringBuilder builder = new StringBuilder();
+    StringBuilder sb = new StringBuilder();
     for (byte b : bin) {
       // 字节高4位
-      builder.append(hex.charAt((b & 0xF0) >> 4));
+      sb.append(hex.charAt((b & 0xF0) >> 4));
       // 字节低4位
-      builder.append(hex.charAt(b & 0x0F));
+      sb.append(hex.charAt(b & 0x0F));
+      // 填充
+      sb.append(fill != null ? fill : "");
     }
-    return builder.toString();
+    if (fill != null && !fill.isEmpty()) {
+      sb.replace(sb.lastIndexOf(fill), sb.length(), "");
+    }
+    return sb.toString();
   }
 
   /**
