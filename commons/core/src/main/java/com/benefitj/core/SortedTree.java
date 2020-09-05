@@ -3,10 +3,7 @@ package com.benefitj.core;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -111,7 +108,7 @@ public class SortedTree {
      *
      * @return 返回全部的子结点
      */
-    Set<N> getChildren();
+    Collection<N> getChildren();
 
     /**
      * 获取子结点的数量（包含子结点）
@@ -119,7 +116,7 @@ public class SortedTree {
      * @return 子结点的数量
      */
     default int getChildrenSize() {
-      final Set<N> nodes = getChildren();
+      final Collection<N> nodes = getChildren();
       if (!nodes.isEmpty()) {
         int size = nodes.size();
         for (N node : nodes) {
@@ -219,7 +216,7 @@ public class SortedTree {
         if (getId().equals(id)) {
           return (N) this;
         }
-        final Set<N> nodes = this.getChildren();
+        final Collection<N> nodes = this.getChildren();
         if (!nodes.isEmpty()) {
           for (N node : nodes) {
             if (id.equals(node.getId())) {
@@ -245,7 +242,7 @@ public class SortedTree {
      */
     default N removeChild(ID id) {
       if (!getId().equals(id)) {
-        final Set<N> nodes = this.getChildren();
+        final Collection<N> nodes = this.getChildren();
         for (N node : nodes) {
           if (id.equals(node.getId())) {
             nodes.remove(node);
@@ -328,14 +325,13 @@ public class SortedTree {
     }
 
     @Override
-    public Set<T> getChildren() {
+    public Collection<T> getChildren() {
       return tree.getChildren();
     }
 
     public T getTree() {
       return tree;
     }
-
 
     @Override
     public boolean equals(Object o) {

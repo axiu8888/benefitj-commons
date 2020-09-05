@@ -1,35 +1,30 @@
 package com.benefitj.netty.adapter;
 
+import com.benefitj.netty.ByteBufCopy;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.SimpleChannelInboundHandler;
-
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.function.Function;
 
 /**
  * 具有本地缓存的 Handler
  *
  * @param <T>
  */
-public abstract class LocalCacheChannelInboundHandler<T> extends SimpleChannelInboundHandler<T> {
+public abstract class ByteBufCopyChannelInboundHandler<T> extends SimpleChannelInboundHandler<T> {
 
-  private static final Function<Integer, byte[]> CREATOR = byte[]::new;
+  private final ByteBufCopy byteBufCopy = new ByteBufCopy();
 
-  private final ThreadLocal<Map<Integer, byte[]>> byteCache = ThreadLocal.withInitial(WeakHashMap::new);
-
-  public LocalCacheChannelInboundHandler() {
+  public ByteBufCopyChannelInboundHandler() {
   }
 
-  public LocalCacheChannelInboundHandler(boolean autoRelease) {
+  public ByteBufCopyChannelInboundHandler(boolean autoRelease) {
     super(autoRelease);
   }
 
-  public LocalCacheChannelInboundHandler(Class<T> inboundMessageType) {
+  public ByteBufCopyChannelInboundHandler(Class<T> inboundMessageType) {
     super(inboundMessageType);
   }
 
-  public LocalCacheChannelInboundHandler(Class<T> inboundMessageType, boolean autoRelease) {
+  public ByteBufCopyChannelInboundHandler(Class<T> inboundMessageType, boolean autoRelease) {
     super(inboundMessageType, autoRelease);
   }
 
@@ -40,11 +35,8 @@ public abstract class LocalCacheChannelInboundHandler<T> extends SimpleChannelIn
    * @param local 是否使用本地缓冲
    * @return 返回缓存的字节数组
    */
-  public byte[] getBuff(int size, boolean local) {
-    if (local) {
-      return byteCache.get().computeIfAbsent(size, CREATOR);
-    }
-    return new byte[size];
+  public byte[] getCache(int size, boolean local) {
+    return byteBufCopy.getCache(size, local);
   }
 
   /**
@@ -53,8 +45,8 @@ public abstract class LocalCacheChannelInboundHandler<T> extends SimpleChannelIn
    * @param size 缓冲区大小
    * @return 返回缓存的字节数组
    */
-  public byte[] getBuff(int size) {
-    return getBuff(size, true);
+  public byte[] getCache(int size) {
+    return getCache(size, true);
   }
 
   /**
@@ -63,8 +55,8 @@ public abstract class LocalCacheChannelInboundHandler<T> extends SimpleChannelIn
    * @param data 数据
    * @return 返回读取的数据
    */
-  public byte[] read(ByteBuf data) {
-    return read(data, true);
+  public byte[] copy(ByteBuf data) {
+    return copy(data, true);
   }
 
   /**
@@ -74,8 +66,8 @@ public abstract class LocalCacheChannelInboundHandler<T> extends SimpleChannelIn
    * @param local 是否使用本地缓存
    * @return 返回读取的数据
    */
-  public byte[] read(ByteBuf data, boolean local) {
-    return read(data, local, false);
+  public byte[] copy(ByteBuf data, boolean local) {
+    return copy(data, local, false);
   }
 
   /**
@@ -86,8 +78,8 @@ public abstract class LocalCacheChannelInboundHandler<T> extends SimpleChannelIn
    * @param reset 是否重置读取位置
    * @return 返回读取的数据
    */
-  public byte[] read(ByteBuf data, boolean local, boolean reset) {
-    return read(data, data.readableBytes(), local, reset);
+  public byte[] copy(ByteBuf data, boolean local, boolean reset) {
+    return copy(data, data.readableBytes(), local, reset);
   }
 
   /**
@@ -99,8 +91,8 @@ public abstract class LocalCacheChannelInboundHandler<T> extends SimpleChannelIn
    * @param reset 是否重置读取位置
    * @return 返回读取的字节
    */
-  public byte[] read(ByteBuf data, int size, boolean local, boolean reset) {
-    byte[] buff = getBuff(size, local);
+  public byte[] copy(ByteBuf data, int size, boolean local, boolean reset) {
+    byte[] buff = getCache(size, local);
     if (reset) {
       data.markReaderIndex();
       data.readBytes(buff);

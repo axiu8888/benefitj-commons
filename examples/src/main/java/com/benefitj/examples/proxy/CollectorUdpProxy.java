@@ -2,7 +2,7 @@ package com.benefitj.examples.proxy;
 
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.DefaultThreadFactory;
-import com.benefitj.netty.ByteBufReadCache;
+import com.benefitj.netty.ByteBufCopy;
 import com.benefitj.netty.adapter.BiConsumerChannelInboundHandler;
 import com.benefitj.netty.server.UdpNettyServer;
 import com.benefitj.netty.server.channel.NioDatagramServerChannel;
@@ -29,7 +29,7 @@ public class CollectorUdpProxy extends UdpNettyServer {
 
   private final Logger log = LoggerFactory.getLogger(getClass().getSimpleName());
 
-  private ByteBufReadCache cache = new ByteBufReadCache();
+  private ByteBufCopy cache = new ByteBufCopy();
 
   private final UdpDeviceClientManager<CollectorDeviceClient> clientManager;
   private final OnlineDeviceExpireExecutor executor;
@@ -69,7 +69,7 @@ public class CollectorUdpProxy extends UdpNettyServer {
         super.channelActive(ctx);
         executor.start();
         future = ctx.executor().scheduleAtFixedRate(() ->
-            log.info("\n设备数量: {}, children channel: {}\n"
+            log.info("设备数量: {}, children channel: {}"
                 , clientManager.size()
                 , ((NioDatagramServerChannel)ctx.channel()).children().size()
             ), 1, 5, TimeUnit.SECONDS);
@@ -88,7 +88,7 @@ public class CollectorUdpProxy extends UdpNettyServer {
       protected void initChannel(Channel ch) throws Exception {
         ch.pipeline()
             .addLast(new BiConsumerChannelInboundHandler<>(ByteBuf.class, (ctx, msg) -> {
-              byte[] data = cache.read(msg);
+              byte[] data = cache.copy(msg);
 
               String deviceId = CollectorHelper.getHexDeviceId(data);
               CollectorDeviceClient client = clientManager.get(deviceId);
@@ -102,15 +102,16 @@ public class CollectorUdpProxy extends UdpNettyServer {
                 // 反馈
                 ctx.writeAndFlush(Unpooled.wrappedBuffer(CollectorHelper.getRealtimeFeedback(data)));
 
-                if (client.refresh(CollectorHelper.getPacketSn(data)) && "010003f6".equals(deviceId)) {
-                  log.info("send: {}, deviceId: {}, packageSn: {}, time: {}, online: {}"
-                      , ctx.channel().remoteAddress()
-                      , deviceId
-                      , CollectorHelper.getPacketSn(data)
-                      , DateFmtter.fmt(CollectorHelper.getTime(data, 9 + 4, 9 + 9))
-                      , DateFmtter.fmt(client.getOnlineTime())
-                  );
-                }
+//                if (client.refresh(CollectorHelper.getPacketSn(data)) && "010003f6".equals(deviceId)) {
+//                }
+
+                log.info("send: {}, deviceId: {}, packageSn: {}, time: {}, online: {}"
+                    , ctx.channel().remoteAddress()
+                    , deviceId
+                    , CollectorHelper.getPacketSn(data)
+                    , DateFmtter.fmt(CollectorHelper.getTime(data, 9 + 4, 9 + 9))
+                    , DateFmtter.fmt(client.getOnlineTime())
+                );
               }
 
             }));

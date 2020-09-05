@@ -8,14 +8,10 @@ import java.util.function.Function;
 /**
  * 字节拷贝
  */
-public class CachedByteCopy {
+public class BufCopy {
 
   private final ThreadLocal<Map<Integer, byte[]>> bytesCache = ThreadLocal.withInitial(WeakHashMap::new);
   private final Function<Integer, byte[]> creator = byte[]::new;
-
-  private byte[] getLocalBuff(int size) {
-    return bytesCache.get().computeIfAbsent(size, creator);
-  }
 
   /**
    * 获取缓存字节数组
@@ -36,7 +32,7 @@ public class CachedByteCopy {
    */
   public byte[] getCache(int size, boolean local) {
     if (local) {
-      byte[] buff = getLocalBuff(size);
+      byte[] buff = bytesCache.get().computeIfAbsent(size, creator);
       Arrays.fill(buff, (byte) 0x00);
       return buff;
     }

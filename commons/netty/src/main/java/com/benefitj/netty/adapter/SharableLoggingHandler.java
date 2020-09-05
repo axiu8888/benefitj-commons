@@ -10,7 +10,7 @@ import io.netty.channel.ChannelHandlerContext;
  * 打印日志
  */
 @ChannelHandler.Sharable
-public class SharableLoggingHandler extends LocalCacheChannelInboundHandler<ByteBuf> {
+public class SharableLoggingHandler extends ByteBufCopyChannelInboundHandler<ByteBuf> {
 
   public static final SharableLoggingHandler INSTANCE = new SharableLoggingHandler(100, true);
 
@@ -41,7 +41,7 @@ public class SharableLoggingHandler extends LocalCacheChannelInboundHandler<Byte
   protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
     try {
       if (isPrint() && msg.readableBytes() > 0) {
-        byte[] data = read(msg, Math.max(0, Math.min(getReadMaxSize(), 1024)), true, true);
+        byte[] data = copy(msg, Math.max(0, Math.min(getReadMaxSize(), 1024)), true, true);
         log.info(HexUtils.bytesToHex(data));
       }
     } finally {
