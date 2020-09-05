@@ -27,6 +27,34 @@ public class HexUtils {
    */
   private static final ByteOrder ORDER = ByteOrder.BIG_ENDIAN;
 
+  private static byte[][] MASKS = new byte[][]{
+      {0b00000001, 0b00000010, 0b00000100, 0b00001000, 0b00010000, 0b00100000, 0b01000000, (byte) 0b10000000},
+      {0b00000011, 0b00000110, 0b00001100, 0b00011000, 0b00110000, 0b01100000, (byte) 0b11000000},
+      {0b00000111, 0b00001110, 0b00011100, 0b00111000, 0b01110000, (byte) 0b11100000},
+      {0b00001111, 0b00011110, 0b00111100, 0b01111000, (byte) 0b11110000},
+      {0b00011111, 0b00111110, 0b01111100, (byte) 0b11111000},
+      {0b00111111, 0b01111110, (byte) 0b11111100},
+      {0b01111111, (byte) 0b11111110},
+      {(byte) 0b11111111}
+  };
+
+  /**
+   * 取值
+   *
+   * @param bits     标志位
+   * @param size     bit数量(1~8)
+   * @param position bit位置(0~7)
+   * @return 返回取值
+   */
+  public static int mask(byte bits, int size, int position) {
+    if (size <= 0 || size > 8) {
+      throw new IllegalArgumentException("Required size between 1 and 8");
+    }
+    byte[] mask = MASKS[(size - 1) % 8];
+    int i = Math.max((position % 8) + 1 - size, 0);
+    return (bits & mask[i] & 0xFF) >>> i;
+  }
+
   /**
    * 转换成整数
    *
