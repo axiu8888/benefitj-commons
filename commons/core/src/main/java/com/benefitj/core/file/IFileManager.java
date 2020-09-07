@@ -2,6 +2,9 @@ package com.benefitj.core.file;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.function.Consumer;
 
 /**
  * 文件管理
@@ -36,26 +39,6 @@ public interface IFileManager {
    * @return 返回文件的绝对路径
    */
   String getFilepath(String filename);
-
-  /**
-   * 创建目录
-   *
-   * @param directory 目录
-   * @return 返回是否存在或创建成功
-   */
-  default boolean createDirectoryIfNotExist(File directory) {
-    return createIfNotExist(directory, true);
-  }
-
-  /**
-   * 创建文件
-   *
-   * @param file 文件
-   * @return 返回是否存在或创建成功
-   */
-  default boolean createFileIfNotExist(File file) {
-    return createIfNotExist(file, false);
-  }
 
   /**
    * 创建文件如果不存在
@@ -174,6 +157,14 @@ public interface IFileManager {
   /**
    * 删除文件或目录
    *
+   * @param path 路径
+   * @return 返回是否删除成功
+   */
+  boolean delete(String path);
+
+  /**
+   * 删除文件或目录
+   *
    * @param file 文件
    * @return 删除的文件数量
    */
@@ -187,14 +178,6 @@ public interface IFileManager {
    * @return 删除的文件数量
    */
   int delete(File file, boolean force);
-
-  /**
-   * 删除文件或目录
-   *
-   * @param path 路径
-   * @return 返回是否删除成功
-   */
-  boolean delete(String path);
 
   /**
    * 删除全部文件和目录
@@ -212,12 +195,29 @@ public interface IFileManager {
   long length(String file);
 
   /**
+   * 查看文件或目录的大小
+   *
+   * @param file     文件或目录
+   * @param subFiles 是否统计子文件
+   * @return 返回文件或目录的大小
+   */
+  long length(File file, boolean subFiles);
+
+  /**
    * 统计某个目录的数量，如果传入的是文件，则返回 1 ，否则返回统计的数量
    *
    * @param path 目录
    * @return 返回统计的数量
    */
   int count(String path);
+
+  /**
+   * 统计某个目录的数量，如果传入的是文件，则返回 1 ，否则返回统计的数量
+   *
+   * @param path 目录
+   * @return 返回统计的数量
+   */
+  int count(File path);
 
   /**
    * 是否为文件
@@ -252,4 +252,73 @@ public interface IFileManager {
    */
   boolean exist(String filename);
 
+  /**
+   * 传输
+   *
+   * @param in  输入流
+   * @param out 输出流
+   */
+  void transferTo(InputStream in, File out);
+
+  /**
+   * 传输
+   *
+   * @param out      输出流
+   * @param consumer 输入流处理程序
+   */
+  void transferTo(File out, Consumer<OutputStream> consumer);
+
+  /**
+   * 传输
+   *
+   * @param in  输入流
+   * @param out 输出流
+   */
+  void transferTo(InputStream in, OutputStream out);
+
+  /**
+   * 传输
+   *
+   * @param in        输入流
+   * @param out       输出流
+   * @param autoClose 是否自动关闭流
+   */
+  void transferTo(InputStream in, OutputStream out, boolean autoClose);
+
+  /**
+   * 创建目录
+   *
+   * @param directory 目录
+   * @return 返回是否存在或创建成功
+   */
+  default boolean createDirectoryIfNotExist(File directory) {
+    return createIfNotExist(directory, true);
+  }
+
+  /**
+   * 创建文件
+   *
+   * @param file 文件
+   * @return 返回是否存在或创建成功
+   */
+  default boolean createFileIfNotExist(File file) {
+    return createIfNotExist(file, false);
+  }
+
+  /**
+   * 关闭全部
+   *
+   * @param closes AutoCloseable实现(InputStream、OutputStream)
+   */
+  default void closeQuietly(AutoCloseable... closes) {
+    if (closes != null && closes.length > 0) {
+      for (AutoCloseable c : closes) {
+        if (c != null) {
+          try {
+            c.close();
+          } catch (Exception e) {/* ignore */}
+        }
+      }
+    }
+  }
 }

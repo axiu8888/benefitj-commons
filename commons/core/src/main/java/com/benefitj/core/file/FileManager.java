@@ -1,12 +1,14 @@
 package com.benefitj.core.file;
 
+import com.benefitj.core.IOUtils;
+
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * 文件管理
@@ -214,7 +216,13 @@ public class FileManager implements IFileManager {
 
   @Override
   public long length(String file) {
-    return getFile(null, file, false).length();
+    File src = getFile(null, file, false);
+    return length(src, true);
+  }
+
+  @Override
+  public long length(File file, boolean subFiles) {
+    return IOUtils.length(file, subFiles);
   }
 
   @Override
@@ -224,7 +232,8 @@ public class FileManager implements IFileManager {
     return count(f);
   }
 
-  private int count(File file) {
+  @Override
+  public int count(File file) {
     if (file == null || !file.exists()) {
       return 0;
     }
@@ -264,6 +273,60 @@ public class FileManager implements IFileManager {
   @Override
   public boolean exist(String filename) {
     return getFile(null, filename, false).exists();
+  }
+
+  /**
+   * 传输
+   *
+   * @param in  输入流
+   * @param out 输出流
+   */
+  @Override
+  public void transferTo(InputStream in, File out) {
+    try (final FileOutputStream fos = new FileOutputStream(out)) {
+      transferTo(in, fos, true);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 传输
+   *
+   * @param out      输出流
+   * @param consumer 输入流处理程序
+   */
+  @Override
+  public void transferTo(File out, Consumer<OutputStream> consumer) {
+    createFileIfNotExist(out);
+    try (final FileOutputStream fos = new FileOutputStream(out);) {
+      consumer.accept(fos);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 传输
+   *
+   * @param in  输入流
+   * @param out 输出流
+   */
+  @Override
+  public void transferTo(InputStream in, OutputStream out) {
+    transferTo(in, out, true);
+  }
+
+  /**
+   * 传输
+   *
+   * @param in        输入流
+   * @param out       输出流
+   * @param autoClose 是否自动关闭流
+   */
+  @Override
+  public void transferTo(InputStream in, OutputStream out, boolean autoClose) {
+    IOUtils.write(in, out, 1024, autoClose);
   }
 
   protected String append(Object... os) {
