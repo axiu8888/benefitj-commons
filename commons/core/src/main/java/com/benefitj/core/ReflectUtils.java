@@ -256,7 +256,8 @@ public class ReflectUtils {
    */
   @Nullable
   public static Field getField(Class<?> type, String field) {
-    if (isNonNull(type, field) && !field.isEmpty() && type != Object.class) {
+    if (type != null && field != null
+        && !field.isEmpty() && type != Object.class) {
       try {
         return type.getDeclaredField(field);
       } catch (NoSuchFieldException e) {/* ~ */}
@@ -360,6 +361,16 @@ public class ReflectUtils {
     return fields;
   }
 
+
+  public static<T> T invoke(Object obj, Method method, Object ...args) {
+    try {
+      setAccessible(method, true);
+      return (T) method.invoke(obj, args);
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   /**
    * 获取泛型参数，默认返回 null
    *
@@ -427,15 +438,6 @@ public class ReflectUtils {
   @Nullable
   public static Type getRawType(ParameterizedType type) {
     return type != null ? type.getRawType() : null;
-  }
-
-  private static boolean isNonNull(Object... os) {
-    for (Object o : os) {
-      if (o == null) {
-        return false;
-      }
-    }
-    return true;
   }
 
 }

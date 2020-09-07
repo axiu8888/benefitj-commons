@@ -81,7 +81,7 @@ public class CmdManager {
       synchronized (this) {
         if ((e = this.executor) == null) {
           ThreadFactory threadFactory = new DefaultThreadFactory("cmd-", "-t-", true);
-          e = (this.executor = Executors.newScheduledThreadPool(1, threadFactory));
+          e = (this.executor = Executors.newScheduledThreadPool(4, threadFactory));
         }
       }
     }
@@ -152,7 +152,6 @@ public class CmdManager {
   public CmdCall call(String cmd, @Nullable List<String> envp, @Nullable File dir) {
     return call(cmd, envp, dir, 0);
   }
-
 
   /**
    * 调用命令

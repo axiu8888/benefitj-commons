@@ -1,16 +1,13 @@
 package com.benefitj.core.file;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.*;
 
 /**
- * 操作拷贝或剪切
+ * 文件拷贝或剪切
  */
 public class FileCopy {
 
@@ -22,7 +19,7 @@ public class FileCopy {
    * @return 是否成功
    */
   public static boolean copy(File srcFile, File destFile) {
-    return copy(srcFile, destFile, true);
+    return copy(srcFile, destFile, null);
   }
 
   /**
@@ -30,11 +27,24 @@ public class FileCopy {
    *
    * @param srcFile  原文件
    * @param destFile 目标文件
+   * @param filter   过滤器
+   * @return 是否成功
+   */
+  public static boolean copy(File srcFile, File destFile, FileFilter filter) {
+    return copy(srcFile, destFile, filter, true);
+  }
+
+  /**
+   * 拷贝文件或目录
+   *
+   * @param srcFile  原文件
+   * @param destFile 目标文件
+   * @param filter   过滤器
    * @param cover    是否覆盖已存在的文件
    * @return 是否成功
    */
-  public static boolean copy(File srcFile, File destFile, boolean cover) {
-    return operate(srcFile, destFile, Type.COPY, cover);
+  public static boolean copy(File srcFile, File destFile, FileFilter filter, boolean cover) {
+    return operate(srcFile, destFile, filter, Type.COPY, cover);
   }
 
   /**
@@ -45,7 +55,7 @@ public class FileCopy {
    * @return 是否成功
    */
   public static boolean cut(File srcFile, File destFile) {
-    return cut(srcFile, destFile, true);
+    return cut(srcFile, destFile, null, true);
   }
 
   /**
@@ -53,11 +63,24 @@ public class FileCopy {
    *
    * @param srcFile  原文件
    * @param destFile 目标文件
+   * @param filter   过滤器
+   * @return 是否成功
+   */
+  public static boolean cut(File srcFile, File destFile, FileFilter filter) {
+    return cut(srcFile, destFile, filter, true);
+  }
+
+  /**
+   * 剪切文件或目录
+   *
+   * @param srcFile  原文件
+   * @param destFile 目标文件
+   * @param filter   过滤器
    * @param cover    是否覆盖已存在的文件
    * @return 是否成功
    */
-  public static boolean cut(File srcFile, File destFile, boolean cover) {
-    return operate(srcFile, destFile, Type.CUT, cover);
+  public static boolean cut(File srcFile, File destFile, FileFilter filter, boolean cover) {
+    return operate(srcFile, destFile, filter, Type.CUT, cover);
   }
 
   /**
@@ -65,11 +88,12 @@ public class FileCopy {
    *
    * @param srcFile  原文件
    * @param destFile 目标文件
+   * @param filter   过滤器
    * @param type     操作类型
    * @param cover    是否覆盖已存在的文件
    * @return 是否成功
    */
-  private static boolean operate(File srcFile, File destFile, Type type, boolean cover) {
+  private static boolean operate(File srcFile, File destFile, FileFilter filter, Type type, boolean cover) {
     if (!exists(srcFile) || destFile == null) {
       return false;
     }
@@ -94,13 +118,13 @@ public class FileCopy {
     String oldDirName = srcFile.getAbsolutePath();
     String newDirName = destFile.getAbsolutePath();
     StringBuilder sb = new StringBuilder();
-    File[] files = srcFile.listFiles();
+    File[] files = srcFile.listFiles(filter);
     if (files != null && files.length > 0) {
       for (File tmpSrcFile : files) {
         sb.setLength(0);
         sb.append(tmpSrcFile.getAbsolutePath());
         sb.replace(0, oldDirName.length(), newDirName);
-        operate(tmpSrcFile, new File(sb.toString()), type, true);
+        operate(tmpSrcFile, new File(sb.toString()), filter, type, true);
       }
     }
     return type != Type.CUT || srcFile.delete();
@@ -223,7 +247,7 @@ public class FileCopy {
   /**
    * 文件操作的类型，拷贝或剪切
    */
-  public enum Type {
+  enum Type {
     /**
      * 拷贝
      */
