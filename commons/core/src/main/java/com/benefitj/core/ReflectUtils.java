@@ -1,11 +1,13 @@
 package com.benefitj.core;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -189,23 +191,6 @@ public class ReflectUtils {
   }
 
   /**
-   * 迭代 method
-   *
-   * @param type        类
-   * @param filter      过滤器
-   * @param consumer    处理器
-   * @param interceptor 拦截器
-   * @param superclass  是否继续迭代父类
-   */
-  public static void foreachMethod(Class<?> type,
-                                   Predicate<Method> filter,
-                                   Consumer<Method> consumer,
-                                   Predicate<Method> interceptor,
-                                   boolean superclass) {
-    foreach(type, Class::getDeclaredMethods, filter, consumer, interceptor, superclass);
-  }
-
-  /**
    * 迭代 field
    *
    * @param type        类
@@ -223,21 +208,6 @@ public class ReflectUtils {
   }
 
   /**
-   * 迭代 method
-   *
-   * @param type        类
-   * @param filter      过滤器
-   * @param consumer    处理器
-   * @param interceptor 拦截器
-   */
-  public static void foreachMethod(Class<?> type,
-                                   Predicate<Method> filter,
-                                   Consumer<Method> consumer,
-                                   Predicate<Method> interceptor) {
-    foreachMethod(type, filter, consumer, interceptor, true);
-  }
-
-  /**
    * 是否为泛型字段: 如果字段不为空，判断getType() == getGenericType()
    *
    * @param field 字段
@@ -245,6 +215,19 @@ public class ReflectUtils {
    */
   public static boolean isFieldTypeEquals(Field field) {
     return field != null && (field.getType() == field.getGenericType());
+  }
+
+  /**
+   * 获取某个字段
+   *
+   * @param type    类型
+   * @param matcher 匹配
+   * @return 返回获取的字段对象
+   */
+  public static Field getField(Class<?> type, Predicate<Field> matcher) {
+    AtomicReference<Field> field = new AtomicReference<>();
+    foreachField(type, matcher, field::set, f -> field.get() != null);
+    return field.get();
   }
 
   /**
@@ -362,7 +345,122 @@ public class ReflectUtils {
   }
 
 
-  public static<T> T invoke(Object obj, Method method, Object ...args) {
+  /**
+   * 迭代 method
+   *
+   * @param type        类
+   * @param filter      过滤器
+   * @param consumer    处理器
+   * @param interceptor 拦截器
+   * @param superclass  是否继续迭代父类
+   */
+  public static void foreachMethod(Class<?> type,
+                                   Predicate<Method> filter,
+                                   Consumer<Method> consumer,
+                                   Predicate<Method> interceptor,
+                                   boolean superclass) {
+    foreach(type, Class::getDeclaredMethods, filter, consumer, interceptor, superclass);
+  }
+
+  /**
+   * 迭代 method
+   *
+   * @param type        类
+   * @param filter      过滤器
+   * @param consumer    处理器
+   * @param interceptor 拦截器
+   */
+  public static void foreachMethod(Class<?> type,
+                                   Predicate<Method> filter,
+                                   Consumer<Method> consumer,
+                                   Predicate<Method> interceptor) {
+    foreachMethod(type, filter, consumer, interceptor, true);
+  }
+
+  /**
+   * 获取 method
+   *
+   * @param type    类
+   * @param matcher 匹配器
+   * @return 返回获取到的Method
+   */
+  public static Method getMethod(Class<?> type, @Nonnull Predicate<Method> matcher) {
+    AtomicReference<Method> method = new AtomicReference<>();
+    foreachMethod(type, matcher, method::set, m -> method.get() != null);
+    return method.get();
+  }
+
+  /**
+   * 获取 method
+   *
+   * @param type    类
+   * @param matcher 匹配器
+   * @return 返回 methods
+   */
+  public static LinkedList<Method> getMethods(Class<?> type, @Nullable Predicate<Method> matcher) {
+    final LinkedList<Method> methods = new LinkedList<>();
+    foreachMethod(type, matcher, methods::add, m -> false);
+    return methods;
+  }
+
+  /**
+   * 获取 get method
+   *
+   * @param type 类
+   * @return 返回 methods
+   */
+  public static LinkedList<Method> getGetterMethods(Class<?> type) {
+    final LinkedList<Method> methods = new LinkedList<>();
+    foreachMethod(type, ReflectUtils::isGetterMethod, methods::add, m -> false);
+    return methods;
+  }
+
+  /**
+   * 获取 method
+   *
+   * @param type 类
+   * @return 返回 methods
+   */
+  public static LinkedList<Method> getSetterMethods(Class<?> type) {
+    final LinkedList<Method> methods = new LinkedList<>();
+    foreachMethod(type, ReflectUtils::isSetterMethod, methods::add, m -> false);
+    return methods;
+  }
+
+  /**
+   * 是否为 get 方法
+   *
+   * @param m 方法
+   * @return 返回是否为 get 方法
+   */
+  public static boolean isGetterMethod(Method m) {
+    if (m.getReturnType() != void.class && m.getParameterCount() == 0) {
+      String name = m.getName();
+      return name.startsWith("get") || name.startsWith("is");
+    }
+    return false;
+  }
+
+  /**
+   * 是否为 set 方法
+   *
+   * @param m 方法
+   * @return 返回是否为 set 方法
+   */
+  public static boolean isSetterMethod(Method m) {
+    return m.getParameterCount() == 1 && m.getName().startsWith("set");
+  }
+
+  /**
+   * 调用方法
+   *
+   * @param obj    对象
+   * @param method 方法
+   * @param args   参数
+   * @param <T>    返回值类型
+   * @return 返回返回值
+   */
+  public static <T> T invoke(Object obj, Method method, Object... args) {
     try {
       setAccessible(method, true);
       return (T) method.invoke(obj, args);
