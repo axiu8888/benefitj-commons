@@ -11,7 +11,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public abstract class ByteBufCopyChannelInboundHandler<T> extends SimpleChannelInboundHandler<T> {
 
-  private final ByteBufCopy byteBufCopy = new ByteBufCopy();
+  private final ByteBufCopy bufCopy = new ByteBufCopy();
 
   public ByteBufCopyChannelInboundHandler() {
   }
@@ -28,6 +28,10 @@ public abstract class ByteBufCopyChannelInboundHandler<T> extends SimpleChannelI
     super(inboundMessageType, autoRelease);
   }
 
+  public ByteBufCopy getBufCopy() {
+    return bufCopy;
+  }
+
   /**
    * 获取缓冲
    *
@@ -36,7 +40,7 @@ public abstract class ByteBufCopyChannelInboundHandler<T> extends SimpleChannelI
    * @return 返回缓存的字节数组
    */
   public byte[] getCache(int size, boolean local) {
-    return byteBufCopy.getCache(size, local);
+    return getBufCopy().getCache(size, local);
   }
 
   /**
@@ -101,6 +105,30 @@ public abstract class ByteBufCopyChannelInboundHandler<T> extends SimpleChannelI
       data.readBytes(buff);
     }
     return buff;
+  }
+
+  /**
+   * 读取数据，并重置读取位置
+   *
+   * @param data  数据
+   * @param size  缓冲区大小
+   * @param local 是否使用本地缓冲
+   * @return 返回读取的字节
+   */
+  public byte[] copyAndReset(ByteBuf data, int size, boolean local) {
+    return copy(data, size, local, true);
+  }
+
+  /**
+   * 读取数据，并重置读取位置
+   *
+   * @param data  数据
+   * @param size  缓冲区大小
+   * @param local 是否使用本地缓冲
+   * @return 返回读取的字节
+   */
+  public byte[] copyAndReset(byte[] data, int size, boolean local) {
+    return getBufCopy().copy(data, size, local);
   }
 
 }

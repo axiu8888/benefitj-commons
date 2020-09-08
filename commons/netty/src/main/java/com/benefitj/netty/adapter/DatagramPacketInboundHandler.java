@@ -1,5 +1,6 @@
 package com.benefitj.netty.adapter;
 
+import com.benefitj.core.HexUtils;
 import com.benefitj.netty.MessageValidator;
 import com.benefitj.netty.log.NettyLogger;
 import io.netty.buffer.ByteBuf;
@@ -7,13 +8,12 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
 
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Function;
 
 import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
@@ -21,21 +21,13 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
  * UDP解析器处理器
  */
 @ChannelHandler.Sharable
-public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket> {
+public class DatagramPacketInboundHandler extends ByteBufCopyChannelInboundHandler<DatagramPacket> {
 
   public static final MessageValidator<byte[]> DEFAULT_VALIDATOR = (original, msg) -> true;
-  public static final Function<Integer, byte[]> BYTES_FUNC = byte[]::new;
-
   /**
    * log
    */
   protected final NettyLogger logger = NettyLogger.INSTANCE;
-
-  /**
-   * 缓存字节数组
-   */
-  private final ThreadLocal<Map<Integer, byte[]>> byteCache = ThreadLocal.withInitial(WeakHashMap::new);
-
   /**
    * 数据包最小长度
    */
@@ -51,39 +43,26 @@ public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket
   /**
    * 解析器
    */
-  private final List<PacketResolveAdapter> adapters = new CopyOnWriteArrayList<>();
+  private final List<DatagramPacketAdapter> adapters = new CopyOnWriteArrayList<>();
   /**
    * 验证器
    */
   private MessageValidator<byte[]> messageValidator = DEFAULT_VALIDATOR;
 
-  public UdpPacketHandler() {
+  public DatagramPacketInboundHandler() {
   }
 
-  public UdpPacketHandler(int minLen) {
+  public DatagramPacketInboundHandler(int minLen) {
     this.minLen = minLen;
   }
 
-  public UdpPacketHandler(List<PacketResolveAdapter> resolvers) {
+  public DatagramPacketInboundHandler(List<DatagramPacketAdapter> resolvers) {
     register(resolvers);
   }
 
-  public UdpPacketHandler(int minLen, List<PacketResolveAdapter> resolvers) {
+  public DatagramPacketInboundHandler(int minLen, List<DatagramPacketAdapter> resolvers) {
     this.minLen = minLen;
     register(resolvers);
-  }
-
-  public byte[] getByteCache(int size) {
-    return byteCache.get().computeIfAbsent(size, BYTES_FUNC);
-  }
-
-  public byte[] copy(byte[] src) {
-    return copy(src, new byte[src.length]);
-  }
-
-  public byte[] copy(byte[] src, byte[] dest) {
-    System.arraycopy(src, 0, dest, 0, dest.length);
-    return dest;
   }
 
   /**
@@ -137,7 +116,7 @@ public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket
   /**
    * @return 获取解析器
    */
-  protected List<PacketResolveAdapter> getAdapters() {
+  protected List<DatagramPacketAdapter> getAdapters() {
     return adapters;
   }
 
@@ -162,9 +141,9 @@ public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket
    *
    * @param adapter 处理器
    */
-  public void register(PacketResolveAdapter adapter) {
+  public void register(DatagramPacketAdapter adapter) {
     checkNotNull(adapter, "adapter");
-    final List<PacketResolveAdapter> handlers = this.adapters;
+    final List<DatagramPacketAdapter> handlers = this.adapters;
     if (!handlers.contains(adapter)) {
       handlers.add(adapter);
     }
@@ -175,8 +154,8 @@ public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket
    *
    * @param adapters 处理器
    */
-  public void register(Collection<PacketResolveAdapter> adapters) {
-    for (PacketResolveAdapter resolver : adapters) {
+  public void register(Collection<DatagramPacketAdapter> adapters) {
+    for (DatagramPacketAdapter resolver : adapters) {
       register(resolver);
     }
   }
@@ -186,7 +165,7 @@ public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket
    *
    * @param adapter 处理器
    */
-  public void unregister(PacketResolveAdapter adapter) {
+  public void unregister(DatagramPacketAdapter adapter) {
     checkNotNull(adapter, "adapter");
     adapters.remove(adapter);
   }
@@ -196,8 +175,8 @@ public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket
    *
    * @param adapters 处理器
    */
-  public void unregister(Collection<PacketResolveAdapter> adapters) {
-    for (PacketResolveAdapter resolver : adapters) {
+  public void unregister(Collection<DatagramPacketAdapter> adapters) {
+    for (DatagramPacketAdapter resolver : adapters) {
       unregister(resolver);
     }
   }
@@ -207,7 +186,7 @@ public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket
     try {
       final ByteBuf content = msg.content();
       final int len = content.readableBytes();
-      final byte[] data = readByteBufLocal(content, Math.min(len, getMaxReadLen()));
+      final byte[] data = copy(content, Math.min(len, getMaxReadLen()), true, true);
       if (len < getMinLen()) {
         onPacketUnknown(ctx, msg, data);
         return;
@@ -241,11 +220,11 @@ public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket
    * @return 返回解析的对象
    */
   public void process0(ChannelHandlerContext ctx, DatagramPacket packet, byte[] data) {
-    final List<PacketResolveAdapter> adapters = this.adapters;
+    final List<DatagramPacketAdapter> adapters = this.adapters;
     if (adapters.isEmpty()) {
       onEmptyProcess(ctx, packet, data);
     } else {
-      for (PacketResolveAdapter handler : adapters) {
+      for (DatagramPacketAdapter handler : adapters) {
         if (handler.support(data)) {
           handler.process(ctx, packet, data);
           break;
@@ -275,12 +254,10 @@ public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket
     if (data != null) {
       int len = data.length;
       // 未知数据
-      int readUnknownMaxLen = getReadUnknownMaxLen();
-      if (data.length > readUnknownMaxLen) {
-        data = copy(data, getByteCache(readUnknownMaxLen));
-      }
+      int size = Math.min(data.length, getReadUnknownMaxLen());
+      data = copy(msg.content(), size, true, true);
       logger.info("unknown packet, sender: {}, size: {}, content: {}...",
-          msg.sender(), len, Arrays.toString(data));
+          msg.sender(), len, HexUtils.bytesToHex(data));
     } else {
       logger.info("unknown packet, sender: {}, size == 0", msg.sender());
     }
@@ -298,33 +275,5 @@ public class UdpPacketHandler extends SimpleChannelInboundHandler<DatagramPacket
     return ctx.writeAndFlush(new DatagramPacket(Unpooled.wrappedBuffer(data), address));
   }
 
-  /**
-   * 读取缓冲
-   *
-   * @param buf msg
-   * @return 返回 dest
-   */
-  public byte[] readByteBufLocal(ByteBuf buf, int size) {
-    return readByteBuf(buf, getByteCache(size), true);
-  }
-
-  /**
-   * 读取缓冲
-   *
-   * @param buf       msg
-   * @param dest      byte[]
-   * @param resetMark 是否标记读取的位置
-   * @return 返回 dest
-   */
-  public byte[] readByteBuf(ByteBuf buf, byte[] dest, boolean resetMark) {
-    if (resetMark) {
-      buf.markReaderIndex();
-      buf.readBytes(dest);
-      buf.resetReaderIndex();
-    } else {
-      buf.readBytes(dest);
-    }
-    return dest;
-  }
 
 }

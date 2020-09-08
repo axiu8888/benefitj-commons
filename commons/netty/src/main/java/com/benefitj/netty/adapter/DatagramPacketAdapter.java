@@ -4,9 +4,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 
 /**
- * 解析器
+ * UDP数据包处理程序
  */
-public interface PacketResolveAdapter {
+public interface DatagramPacketAdapter {
 
   /**
    * 是否支持
