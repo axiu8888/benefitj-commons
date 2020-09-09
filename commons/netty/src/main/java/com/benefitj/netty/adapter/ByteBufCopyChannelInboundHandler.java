@@ -98,9 +98,12 @@ public abstract class ByteBufCopyChannelInboundHandler<T> extends SimpleChannelI
   public byte[] copy(ByteBuf data, int size, boolean local, boolean reset) {
     byte[] buff = getCache(size, local);
     if (reset) {
-      data.markReaderIndex();
-      data.readBytes(buff);
-      data.resetReaderIndex();
+      try {
+        data.markReaderIndex();
+        data.readBytes(buff);
+      } finally {
+        data.resetReaderIndex();
+      }
     } else {
       data.readBytes(buff);
     }
@@ -127,7 +130,7 @@ public abstract class ByteBufCopyChannelInboundHandler<T> extends SimpleChannelI
    * @param local 是否使用本地缓冲
    * @return 返回读取的字节
    */
-  public byte[] copyAndReset(byte[] data, int size, boolean local) {
+  public byte[] copy(byte[] data, int size, boolean local) {
     return getBufCopy().copy(data, size, local);
   }
 

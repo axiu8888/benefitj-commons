@@ -13,7 +13,12 @@ public class BiConsumerChannelInboundHandler<I> extends SimpleChannelInboundHand
 
   private NettyBiConsumer<ChannelHandlerContext, I> consumer;
 
-  public BiConsumerChannelInboundHandler(Class<? extends I> inboundMessageType, NettyBiConsumer<ChannelHandlerContext, I> consumer) {
+  public BiConsumerChannelInboundHandler(Class<? extends I> inboundMessageType) {
+    this(inboundMessageType, null);
+  }
+
+  public BiConsumerChannelInboundHandler(Class<? extends I> inboundMessageType,
+                                         NettyBiConsumer<ChannelHandlerContext, I> consumer) {
     super(inboundMessageType);
     this.setConsumer(consumer);
   }

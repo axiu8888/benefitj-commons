@@ -12,7 +12,7 @@ import io.netty.channel.ChannelHandlerContext;
 @ChannelHandler.Sharable
 public class SharableLoggingHandler extends ByteBufCopyChannelInboundHandler<ByteBuf> {
 
-  public static final SharableLoggingHandler INSTANCE = new SharableLoggingHandler(100, true);
+  public static final SharableLoggingHandler INSTANCE = new SharableLoggingHandler(50, true);
 
   /**
    * 读取的最大长度
@@ -41,12 +41,24 @@ public class SharableLoggingHandler extends ByteBufCopyChannelInboundHandler<Byt
   protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
     try {
       if (isPrint() && msg.readableBytes() > 0) {
-        byte[] data = copy(msg, Math.max(0, Math.min(getReadMaxSize(), 1024)), true, true);
-        log.info(HexUtils.bytesToHex(data));
+        int size = Math.max(0, Math.min(getReadMaxSize(), msg.readableBytes()));
+        byte[] data = copyAndReset(msg, size, true);
+        printLog(ctx, msg, data);
       }
     } finally {
       ctx.fireChannelRead(msg.retain());
     }
+  }
+
+  /**
+   * 打印日志
+   *
+   * @param ctx 上下文
+   * @param msg 消息
+   * @param buf 读取的缓冲数据
+   */
+  public void printLog(ChannelHandlerContext ctx, ByteBuf msg, byte[] buf) {
+    log.info(HexUtils.bytesToHex(buf));
   }
 
   public int getReadMaxSize() {

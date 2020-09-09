@@ -15,11 +15,11 @@ public class EventLoop implements ScheduledExecutorService {
    * 全局事件实例
    */
   private static final SingletonSupplier<EventLoop> MULTI_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(PROCESSOR_SIZE, "-multi-"));
+      = SingletonSupplier.of(() -> new GlobalEventLoop(PROCESSOR_SIZE, "-multi-", false));
   private static final SingletonSupplier<EventLoop> SINGLE_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-single-"));
+      = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-single-", false));
   private static final SingletonSupplier<EventLoop> IO_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(128, "-io-"));
+      = SingletonSupplier.of(() -> new GlobalEventLoop(128, "-io-", true));
 
   /**
    * 多线程事件
@@ -45,7 +45,11 @@ public class EventLoop implements ScheduledExecutorService {
   private final ScheduledExecutorService executor;
 
   public EventLoop(int corePoolSize) {
-    this(corePoolSize, defaultThreadFactory());
+    this(corePoolSize, false);
+  }
+
+  public EventLoop(int corePoolSize, boolean daemon) {
+    this(corePoolSize, defaultThreadFactory(daemon));
   }
 
   public EventLoop(int corePoolSize, ThreadFactory threadFactory) {
@@ -143,15 +147,15 @@ public class EventLoop implements ScheduledExecutorService {
 
   private static final AtomicInteger ID = new AtomicInteger(0);
 
-  private static ThreadFactory defaultThreadFactory() {
+  private static ThreadFactory defaultThreadFactory(boolean daemon) {
     String prefix = String.format("eventLoop%d-", ID.incrementAndGet());
-    return new DefaultThreadFactory(prefix, "-T-");
+    return new DefaultThreadFactory(prefix, "-T-", daemon);
   }
 
   static final class GlobalEventLoop extends EventLoop {
 
-    private GlobalEventLoop(int corePoolSize, String suffix) {
-      super(corePoolSize, new DefaultThreadFactory("global-", suffix));
+    private GlobalEventLoop(int corePoolSize, String suffix, boolean daemon) {
+      super(corePoolSize, new DefaultThreadFactory("global-", suffix, daemon));
       ShutdownHook.register(super::shutdown);
     }
 

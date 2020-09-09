@@ -15,19 +15,23 @@ public class DefaultThreadFactory implements ThreadFactory {
   private boolean daemon = false;
 
   public DefaultThreadFactory() {
-    this("pool-", "-thread-");
+    this("pool-", "-thread-", false);
   }
 
   public DefaultThreadFactory(boolean daemon) {
-    this("pool-", "-thread-");
-    this.daemon = daemon;
+    this("pool-", "-thread-", daemon);
   }
 
   public DefaultThreadFactory(String prefix, String suffix) {
+    this(prefix, suffix, false);
+  }
+
+  public DefaultThreadFactory(String prefix, String suffix, boolean daemon) {
     SecurityManager s = System.getSecurityManager();
     this.group = (s != null) ? s.getThreadGroup() :
             Thread.currentThread().getThreadGroup();
     this.namePrefix = prefix + poolNumber.getAndIncrement() + suffix;
+    this.setDaemon(daemon);
   }
 
   public DefaultThreadFactory(ThreadGroup group, String prefix, String suffix) {
