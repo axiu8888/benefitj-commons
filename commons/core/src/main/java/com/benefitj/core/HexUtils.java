@@ -492,12 +492,12 @@ public class HexUtils {
   }
 
   /**
-   * 二进制转换成二进制字符串
+   * 字节数组转换成二进制字符串
    *
-   * @param bin 二进制字节数组
+   * @param bin 字节数组
    * @return 返回二进制字符串
    */
-  public static String binToBinStr(byte[] bin) {
+  public static String bytesToBinary(byte[] bin) {
     StringBuilder sb = new StringBuilder();
     for (byte b : bin) {
       // 高四位
@@ -537,7 +537,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin) {
-    return bytesToHex(bin, false, null);
+    return bytesToHex(bin, false, null, 1);
   }
 
   /**
@@ -548,7 +548,19 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin, String fill) {
-    return bytesToHex(bin, false, fill);
+    return bytesToHex(bin, false, fill, 1);
+  }
+
+  /**
+   * 二进制转换成16进制字符串
+   *
+   * @param bin         二进制字节数组
+   * @param fill        填充
+   * @param spiltLength 分割的长度
+   * @return 返回16进制字符串或空
+   */
+  public static String bytesToHex(byte[] bin, String fill, int spiltLength) {
+    return bytesToHex(bin, false, fill, spiltLength);
   }
 
   /**
@@ -559,34 +571,38 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin, boolean lowerCase) {
-    return bytesToHex(bin, lowerCase, null);
+    return bytesToHex(bin, lowerCase, null, 1);
   }
 
   /**
    * 二进制转换成16进制字符串
    *
-   * @param bin       二进制字节数组
-   * @param lowerCase 是否为小写字母
-   * @param fill      填充
+   * @param bin         二进制字节数组
+   * @param lowerCase   是否为小写字母
+   * @param fill        填充
+   * @param spiltLength 分割的长度
    * @return 返回16进制字符串或空
    */
-  public static String bytesToHex(byte[] bin, boolean lowerCase, String fill) {
+  public static String bytesToHex(byte[] bin, boolean lowerCase, String fill, int spiltLength) {
     if (isEmpty(bin)) {
       return null;
     }
 
     String hex = lowerCase ? HEX_LOWER_CASE : HEX_UPPER_CASE;
     StringBuilder sb = new StringBuilder();
-    for (byte b : bin) {
+    spiltLength = Math.max(spiltLength, 1);
+    for (int i = 0, index = 0; i < bin.length; i++) {
+      byte b = bin[i];
       // 字节高4位
       sb.append(hex.charAt((b & 0xF0) >> 4));
       // 字节低4位
       sb.append(hex.charAt(b & 0x0F));
-      // 填充
-      sb.append(fill != null ? fill : "");
-    }
-    if (fill != null && !fill.isEmpty()) {
-      sb.replace(sb.lastIndexOf(fill), sb.length(), "");
+      index++;
+      if (fill != null && i != (bin.length - 1)
+          && index % spiltLength == 0) {
+        // 填充
+        sb.append(fill);
+      }
     }
     return sb.toString();
   }
