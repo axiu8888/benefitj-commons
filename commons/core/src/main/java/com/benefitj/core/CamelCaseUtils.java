@@ -5,7 +5,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** 驼峰命名法转换工具 */
+/**
+ * 驼峰命名法转换工具
+ */
 public class CamelCaseUtils {
 
   private static final char SEPARATOR = '_';
@@ -21,12 +23,16 @@ public class CamelCaseUtils {
     CACHE_PATTERN.putIfAbsent(PATTERN_UNDERLINE, Pattern.compile(PATTERN_UNDERLINE));
   }
 
-  /** 匹配大写字符 */
+  /**
+   * 匹配大写字符
+   */
   public static synchronized Matcher matcherChar(String src) {
     return CACHE_PATTERN.get(PATTERN_CHAR).matcher(src);
   }
 
-  /** 匹配下划线 */
+  /**
+   * 匹配下划线
+   */
   public static synchronized Matcher matcherUnderLine(String src) {
     return CACHE_PATTERN.get(PATTERN_UNDERLINE).matcher(src);
   }
@@ -47,7 +53,7 @@ public class CamelCaseUtils {
    * @param src 要转换的字符串
    * @return 驼峰命名转化成下划线
    */
-  public static String camelToUnderLine(String src, StringBuilder builder){
+  public static String camelToUnderLine(String src, StringBuilder builder) {
     Matcher matcher = matcherChar(src);
     if (!matcher.find()) {
       return src;
@@ -79,7 +85,7 @@ public class CamelCaseUtils {
   /**
    * 下划线转驼峰命名
    *
-   * @param src 要转换的字符串
+   * @param src     要转换的字符串
    * @param capWord 是否首字母大写
    * @return 将所有的下划线后的小写字母转化成大写，如果没有下划线，直接返回
    */
@@ -90,7 +96,7 @@ public class CamelCaseUtils {
   /**
    * 下划线转驼峰命名
    *
-   * @param src 要转换的字符串
+   * @param src     要转换的字符串
    * @param capWord 是否首字母大写
    * @param builder 拼接字符串
    * @return 将所有的下划线后的小写字母转化成大写，如果没有下划线，直接返回

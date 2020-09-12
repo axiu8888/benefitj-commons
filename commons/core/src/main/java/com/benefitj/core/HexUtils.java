@@ -10,9 +10,8 @@ public class HexUtils {
   /**
    * 16进制和2进制转换
    */
-  private static final String HEX_UPPER_CASE = "0123456789ABCDEF";
-
-  private static final String HEX_LOWER_CASE = "0123456789abcdef";
+  public static final String HEX_UPPER_CASE = "0123456789ABCDEF";
+  public static final String HEX_LOWER_CASE = "0123456789abcdef";
 
   private static final String[] BINARY_STR = {
       "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
@@ -554,13 +553,13 @@ public class HexUtils {
   /**
    * 二进制转换成16进制字符串
    *
-   * @param bin         二进制字节数组
-   * @param fill        填充
-   * @param spiltLength 分割的长度
+   * @param bin    二进制字节数组
+   * @param fill   填充
+   * @param length 分割的长度
    * @return 返回16进制字符串或空
    */
-  public static String bytesToHex(byte[] bin, String fill, int spiltLength) {
-    return bytesToHex(bin, false, fill, spiltLength);
+  public static String bytesToHex(byte[] bin, String fill, int length) {
+    return bytesToHex(bin, false, fill, length);
   }
 
   /**
@@ -577,34 +576,94 @@ public class HexUtils {
   /**
    * 二进制转换成16进制字符串
    *
-   * @param bin         二进制字节数组
-   * @param lowerCase   是否为小写字母
-   * @param fill        填充
-   * @param spiltLength 分割的长度
+   * @param bin       二进制字节数组
+   * @param lowerCase 是否为小写字母
+   * @param fill      填充
+   * @param length    分割的长度
    * @return 返回16进制字符串或空
    */
-  public static String bytesToHex(byte[] bin, boolean lowerCase, String fill, int spiltLength) {
+  public static String bytesToHex(byte[] bin, boolean lowerCase, final String fill, int length) {
+    String hex = lowerCase ? HEX_LOWER_CASE : HEX_UPPER_CASE;
+    final int split = Math.max(length, 1);
+    return bytesToHex(bin, (sb, b, index) -> {
+      // 原16进制数据
+      fillHex(hex, sb, b);
+      // 填充
+      if (fill != null && index < (bin.length - 1) && ((index + 1) % split == 0)) {
+        sb.append(fill);
+      }
+    });
+  }
+
+  /**
+   * 二进制转换成16进制字符串
+   *
+   * @param bin    二进制字节数组
+   * @param prefix 前缀
+   * @param suffix 后缀
+   * @param length 分割的长度
+   * @return 返回16进制字符串或空
+   */
+  public static String bytesToHex(byte[] bin, final String prefix, String suffix, int length) {
+    return bytesToHex(bin, false, prefix, suffix, length);
+  }
+
+  /**
+   * 二进制转换成16进制字符串
+   *
+   * @param bin       二进制字节数组
+   * @param lowerCase 是否为小写字母
+   * @param prefix    前缀
+   * @param suffix    后缀
+   * @param length    分割的长度
+   * @return 返回16进制字符串或空
+   */
+  public static String bytesToHex(byte[] bin, boolean lowerCase, final String prefix, String suffix, int length) {
     if (isEmpty(bin)) {
       return null;
     }
-
     String hex = lowerCase ? HEX_LOWER_CASE : HEX_UPPER_CASE;
+    final int split = Math.max(length, 1);
     StringBuilder sb = new StringBuilder();
-    spiltLength = Math.max(spiltLength, 1);
-    for (int i = 0, index = 0; i < bin.length; i++) {
+    for (int i = 0, j = 1; i < bin.length; i++, j++) {
       byte b = bin[i];
-      // 字节高4位
-      sb.append(hex.charAt((b & 0xF0) >> 4));
-      // 字节低4位
-      sb.append(hex.charAt(b & 0x0F));
-      index++;
-      if (fill != null && i != (bin.length - 1)
-          && index % spiltLength == 0) {
-        // 填充
-        sb.append(fill);
-      }
+      // 填充前缀
+      sb.append(prefix != null && i % split == 0 ? prefix : "");
+      // 原16进制数据
+      fillHex(hex, sb, b);
+      // 填充后缀
+      sb.append(suffix != null && i < (bin.length - 1) && (j % split == 0) ? suffix : "");
     }
     return sb.toString();
+  }
+
+  /**
+   * 二进制转换成16进制字符串
+   *
+   * @param bin      二进制字节数组
+   * @param consumer 返回
+   * @return 返回16进制字符串或空
+   */
+  public static String bytesToHex(byte[] bin, HexConsumer consumer) {
+    if (isEmpty(bin)) {
+      return null;
+    }
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < bin.length; i++) {
+      consumer.accept(sb, bin[i], i);
+    }
+    return sb.toString();
+  }
+
+  private static void fillHex(String hex, StringBuilder sb, byte b) {
+    // 字节高4位
+    sb.append(hex.charAt((b & 0xF0) >> 4));
+    // 字节低4位
+    sb.append(hex.charAt(b & 0x0F));
+  }
+
+  private static boolean matchFill(byte[] bin, int index, int length) {
+    return index < (bin.length - 1) && ((index + 1) % length == 0);
   }
 
   /**
@@ -658,5 +717,19 @@ public class HexUtils {
 
   private static boolean isEmpty(byte[] bytes) {
     return bytes == null || bytes.length <= 0;
+  }
+
+
+  public interface HexConsumer {
+
+    /**
+     * 处理
+     *
+     * @param sb    字符串拼接
+     * @param raw   原字节
+     * @param index 字节的索引
+     */
+    void accept(StringBuilder sb, byte raw, int index);
+
   }
 }
