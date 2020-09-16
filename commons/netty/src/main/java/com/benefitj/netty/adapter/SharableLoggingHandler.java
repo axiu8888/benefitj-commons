@@ -58,7 +58,10 @@ public class SharableLoggingHandler extends ByteBufCopyChannelInboundHandler<Byt
    * @param buf 读取的缓冲数据
    */
   public void printLog(ChannelHandlerContext ctx, ByteBuf msg, byte[] buf) {
-    log.info(HexUtils.bytesToHex(buf));
+    log.info("remote: {}, size: {}, data: {}"
+        , ctx.channel().remoteAddress()
+        , msg.readableBytes()
+        , HexUtils.bytesToHex(buf));
   }
 
   public int getReadMaxSize() {

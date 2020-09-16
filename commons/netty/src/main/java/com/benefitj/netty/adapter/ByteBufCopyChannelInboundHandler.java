@@ -96,18 +96,7 @@ public abstract class ByteBufCopyChannelInboundHandler<T> extends SimpleChannelI
    * @return 返回读取的字节
    */
   public byte[] copy(ByteBuf data, int size, boolean local, boolean reset) {
-    byte[] buff = getCache(size, local);
-    if (reset) {
-      try {
-        data.markReaderIndex();
-        data.readBytes(buff);
-      } finally {
-        data.resetReaderIndex();
-      }
-    } else {
-      data.readBytes(buff);
-    }
-    return buff;
+    return bufCopy.copy(data, size, local, reset);
   }
 
   /**
