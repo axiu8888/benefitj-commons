@@ -383,8 +383,8 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
    * @param time 时间
    * @return 返回是否超时
    */
-  public boolean isReadTimeout(long time) {
-    long timeout = config().readMillisTimeout();
+  public boolean isReaderTimeout(long time) {
+    long timeout = config().readerMillisTimeout();
     return timeout > 0 && System.currentTimeMillis() - time >= timeout;
   }
 
@@ -394,26 +394,26 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
    * @param time 时间
    * @return 返回是否超时
    */
-  public boolean isWriteTimeout(long time) {
-    long timeout = config().writeMillisTimeout();
+  public boolean isWriterTimeout(long time) {
+    long timeout = config().writerMillisTimeout();
     return timeout > 0 && System.currentTimeMillis() - time >= timeout;
   }
 
-  public long readTimeout() {
-    return this.config().readTimeout();
+  public long readerTimeout() {
+    return this.config().readerTimeout();
   }
 
-  public NioDatagramServerChannel readTimeout(long readTimeout) {
-    this.config().readTimeout(readTimeout);
+  public NioDatagramServerChannel readerTimeout(long readTimeout) {
+    this.config().readerTimeout(readTimeout);
     return this;
   }
 
-  public long writeTimeout() {
-    return this.config().writeTimeout();
+  public long writerTimeout() {
+    return this.config().writerTimeout();
   }
 
-  public NioDatagramServerChannel writeTimeout(long writeTimeout) {
-    this.config().writeTimeout(writeTimeout);
+  public NioDatagramServerChannel writerTimeout(long writeTimeout) {
+    this.config().writerTimeout(writeTimeout);
     return this;
   }
 
@@ -426,9 +426,9 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
     return this;
   }
 
-  public NioDatagramServerChannel idle(long read, long write, TimeUnit unit) {
-    this.readTimeout(read);
-    this.writeTimeout(write);
+  public NioDatagramServerChannel idle(long reader, long writer, TimeUnit unit) {
+    this.readerTimeout(reader);
+    this.writerTimeout(writer);
     this.timeoutUnit(unit);
     return this;
   }

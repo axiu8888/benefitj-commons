@@ -15,9 +15,9 @@ public class EventLoop implements ScheduledExecutorService {
    * 全局事件实例
    */
   private static final SingletonSupplier<EventLoop> MULTI_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(PROCESSOR_SIZE, "-multi-", false));
+      = SingletonSupplier.of(() -> new GlobalEventLoop(PROCESSOR_SIZE, "-multi-", true));
   private static final SingletonSupplier<EventLoop> SINGLE_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-single-", false));
+      = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-single-", true));
   private static final SingletonSupplier<EventLoop> IO_EVENT_LOOP
       = SingletonSupplier.of(() -> new GlobalEventLoop(128, "-io-", true));
 
@@ -156,7 +156,9 @@ public class EventLoop implements ScheduledExecutorService {
 
     private GlobalEventLoop(int corePoolSize, String suffix, boolean daemon) {
       super(corePoolSize, new DefaultThreadFactory("global-", suffix, daemon));
-      ShutdownHook.register(super::shutdown);
+      if (!daemon) {
+        ShutdownHook.register(super::shutdown);
+      }
     }
 
     @Override

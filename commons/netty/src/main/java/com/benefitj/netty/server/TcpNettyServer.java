@@ -30,8 +30,8 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
     // childOptions
     Map<ChannelOption<?>, Object> childOptionMap = new HashMap<>();
     childOptionMap.put(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-    childOptionMap.put(ChannelOption.SO_RCVBUF, 1024 << 4);
-    childOptionMap.put(ChannelOption.SO_SNDBUF, 1024 << 4);
+    childOptionMap.put(ChannelOption.SO_RCVBUF, (1024 << 10) * 4);
+    childOptionMap.put(ChannelOption.SO_SNDBUF, (1024 << 10) * 4);
     childOptionMap.put(ChannelOption.TCP_NODELAY, true);
     childOptionMap.put(ChannelOption.SO_KEEPALIVE, true);
     childOptionMap.put(ChannelOption.AUTO_READ, true);
@@ -60,18 +60,16 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
 
     // add options
     Map<ChannelOption<?>, Object> oMap = DEFAULT_OPTIONS;
-    Map<ChannelOption<?>, Object> options = new HashMap<>(oMap.size() + 10);
+    Map<ChannelOption<?>, Object> options = new HashMap<>(oMap.size() + 16);
     options.putAll(oMap);
     options.putAll(options());
     options(options);
 
     // add child options
     Map<ChannelOption<?>, Object> coMap = DEFAULT_CHILD_OPTIONS;
-    Map<ChannelOption<?>, Object> childOptions = new HashMap<>(coMap.size() + 10);
+    Map<ChannelOption<?>, Object> childOptions = new HashMap<>(coMap.size() + 16);
     childOptions.putAll(coMap);
     childOptions.putAll(childOptions());
-    // 默认8个KB
-    options.putIfAbsent(ChannelOption.SO_RCVBUF, 1024 * 8);
     childOptions(childOptions);
     return self();
   }

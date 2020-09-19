@@ -10,6 +10,9 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * UDP客户端
  */
@@ -30,6 +33,14 @@ public class UdpNettyClient extends AbstractNettyClient<UdpNettyClient> {
     this.executeWhileNull(localAddress(), () -> checkAndResetPort(null));
     this.option(ChannelOption.SO_BROADCAST, true);
     this.option(ChannelOption.SO_REUSEADDR, true);
+
+    Map<ChannelOption<?>, Object> options = new HashMap<>(16);
+    options.putAll(options());
+    // 默认4MB，数据量较大，缓冲区较小会导致丢包
+    options.putIfAbsent(ChannelOption.SO_RCVBUF, (1024 << 10) * 4);
+    options.putIfAbsent(ChannelOption.SO_SNDBUF, (1024 << 10) * 4);
+    this.options(options);
+
     return self();
   }
 

@@ -102,8 +102,8 @@ public class DatagramServerChannelConfig extends DefaultDatagramChannelConfig im
     SET_OPTION = setOption;
   }
 
-  private volatile long readTimeout = 0;
-  private volatile long writeTimeout = 0;
+  private volatile long readerTimeout = 0;
+  private volatile long writerTimeout = 0;
   private volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
 
   public DatagramServerChannelConfig(NioDatagramServerChannel channel) {
@@ -560,22 +560,22 @@ public class DatagramServerChannelConfig extends DefaultDatagramChannelConfig im
     return self();
   }
 
-  public long readTimeout() {
-    return readTimeout;
+  public long readerTimeout() {
+    return readerTimeout;
   }
 
-  public DatagramServerChannelConfig readTimeout(long readTimeout) {
-    this.readTimeout = readTimeout;
-    return this;
+  public DatagramServerChannelConfig readerTimeout(long readTimeout) {
+    this.readerTimeout = readTimeout;
+    return self();
   }
 
-  public long writeTimeout() {
-    return writeTimeout;
+  public long writerTimeout() {
+    return writerTimeout;
   }
 
-  public DatagramServerChannelConfig writeTimeout(long writeTimeout) {
-    this.writeTimeout = writeTimeout;
-    return this;
+  public DatagramServerChannelConfig writerTimeout(long writeTimeout) {
+    this.writerTimeout = writeTimeout;
+    return self();
   }
 
   public TimeUnit timeoutUnit() {
@@ -584,22 +584,22 @@ public class DatagramServerChannelConfig extends DefaultDatagramChannelConfig im
 
   public DatagramServerChannelConfig timeoutUnit(TimeUnit timeoutUnit) {
     this.timeoutUnit = timeoutUnit;
-    return this;
+    return self();
   }
 
-  public DatagramServerChannelConfig idle(long read, long write, TimeUnit unit) {
-    this.readTimeout(read);
-    this.writeTimeout(write);
-    this.timeoutUnit(unit);
-    return this;
+  public DatagramServerChannelConfig idle(long reader, long writer, TimeUnit timeoutUnit) {
+    this.readerTimeout(reader);
+    this.writerTimeout(writer);
+    this.timeoutUnit(timeoutUnit);
+    return self();
   }
 
-  public long writeMillisTimeout() {
-    return writeTimeout > 0 ? timeoutUnit().toMillis(writeTimeout) : 0;
+  public long writerMillisTimeout() {
+    return writerTimeout > 0 ? timeoutUnit().toMillis(writerTimeout) : 0;
   }
 
-  public long readMillisTimeout() {
-    return readTimeout > 0 ? timeoutUnit().toMillis(readTimeout) : 0;
+  public long readerMillisTimeout() {
+    return readerTimeout > 0 ? timeoutUnit().toMillis(readerTimeout) : 0;
   }
 
 }

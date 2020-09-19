@@ -2,41 +2,44 @@ package com.benefitj.examples.proxy;
 
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.DefaultThreadFactory;
+import com.benefitj.core.EventLoop;
+import com.benefitj.core.HexUtils;
 import com.benefitj.netty.ByteBufCopy;
 import com.benefitj.netty.adapter.BiConsumerChannelInboundHandler;
 import com.benefitj.netty.server.UdpNettyServer;
 import com.benefitj.netty.server.channel.NioDatagramServerChannel;
 import com.benefitj.netty.server.device.DeviceStateChangeListener;
-import com.benefitj.netty.server.udpclient.*;
+import com.benefitj.netty.server.udpclient.OnlineDeviceExpireExecutor;
+import com.benefitj.netty.server.udpclient.UdpDeviceClientManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.ScheduledFuture;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 采集器代理
+ * 采集器服务
  */
 @Component
-public class CollectorUdpProxy extends UdpNettyServer {
+public class CollectorUdpServer extends UdpNettyServer {
 
-  private final Logger log = LoggerFactory.getLogger(getClass().getSimpleName());
+  private static final Logger log = LoggerFactory.getLogger(CollectorUdpServer.class.getSimpleName());
 
   private ByteBufCopy cache = new ByteBufCopy();
 
-  private final UdpDeviceClientManager<CollectorDeviceClient> clientManager;
+  private final UdpDeviceClientManager<CollectorDeviceClient> clients;
   private final OnlineDeviceExpireExecutor executor;
 
-  public CollectorUdpProxy() {
-    this.clientManager = UdpDeviceClientManager.newInstance();
-    this.executor = new OnlineDeviceExpireExecutor(clientManager);
+  public CollectorUdpServer() {
+    this.clients = UdpDeviceClientManager.newInstance();
+    this.executor = new OnlineDeviceExpireExecutor(clients);
   }
 
   @Override
@@ -45,18 +48,27 @@ public class CollectorUdpProxy extends UdpNettyServer {
         new NioEventLoopGroup(1, new DefaultThreadFactory("boss-", "-t-"))
         , new DefaultEventLoopGroup(new DefaultThreadFactory("worker-", "-t-")));
 
-    clientManager.setDelay(2000);
-    clientManager.setExpire(5000);
+    // 接收数据的缓冲区大小，会直接影响到UDP是否被有效接收
+    this.option(ChannelOption.SO_RCVBUF, (1024 << 10) * 32);
 
-    clientManager.setStateChangeListener(new DeviceStateChangeListener<CollectorDeviceClient>() {
+    clients.setDelay(1000);
+    clients.setExpire(5000);
+
+    clients.setStateChangeListener(new DeviceStateChangeListener<CollectorDeviceClient>() {
       @Override
       public void onAddition(String id, CollectorDeviceClient newDevice, @Nullable CollectorDeviceClient oldDevice) {
-        log.info("新客户端上线: {}, oldClient: {}", newDevice, oldDevice);
+        EventLoop.single().execute(() ->
+            log.info("新客户端上线: {}, oldClient: {}", newDevice, oldDevice));
+        if (oldDevice != null) {
+          oldDevice.stopTimer();
+        }
       }
 
       @Override
       public void onRemoval(String id, CollectorDeviceClient device) {
-        log.info("客户端下线: {}, duration: {}", device, DateFmtter.now() - device.getRecvTime());
+        device.stopTimer();
+        EventLoop.single().execute(() ->
+            log.info("客户端下线: {}, duration: {}", device, DateFmtter.now() - device.getRecvTime()));
       }
     });
 
@@ -70,8 +82,8 @@ public class CollectorUdpProxy extends UdpNettyServer {
         executor.start();
         future = ctx.executor().scheduleAtFixedRate(() ->
             log.info("设备数量: {}, children channel: {}"
-                , clientManager.size()
-                , ((NioDatagramServerChannel)ctx.channel()).children().size()
+                , clients.size()
+                , ((NioDatagramServerChannel) ctx.channel()).children().size()
             ), 1, 5, TimeUnit.SECONDS);
       }
 
@@ -83,6 +95,8 @@ public class CollectorUdpProxy extends UdpNettyServer {
       }
     });
 
+    int printLevel = HexUtils.bytesToInt(HexUtils.hexToBytes("0100034A"));
+
     this.childHandler(new ChannelInitializer<Channel>() {
       @Override
       protected void initChannel(Channel ch) throws Exception {
@@ -91,60 +105,42 @@ public class CollectorUdpProxy extends UdpNettyServer {
               byte[] data = cache.copy(msg);
 
               String deviceId = CollectorHelper.getHexDeviceId(data);
-              CollectorDeviceClient client = clientManager.get(deviceId);
+              CollectorDeviceClient client = clients.get(deviceId);
               if (client == null) {
-                clientManager.put(deviceId, client = new CollectorDeviceClient(deviceId, ctx.channel()));
+                clients.put(deviceId, client = new CollectorDeviceClient(deviceId, ctx.channel()));
+                client.setDeviceId(HexUtils.bytesToInt(HexUtils.hexToBytes(deviceId)));
+                client.startTimer();
               }
               // 重置接收导数据的时间
               client.resetRecvTimeNow();
 
               if (PacketType.isRealtime(CollectorHelper.getType(data))) {
+                // 更新包序号
+                int packetSn = CollectorHelper.getPacketSn(data);
+                client.refresh(packetSn);
                 // 反馈
                 ctx.writeAndFlush(Unpooled.wrappedBuffer(CollectorHelper.getRealtimeFeedback(data)));
 
-//                if (client.refresh(CollectorHelper.getPacketSn(data)) && "010003f6".equals(deviceId)) {
-//                }
-
-                log.info("send: {}, deviceId: {}, packageSn: {}, time: {}, online: {}"
-                    , ctx.channel().remoteAddress()
-                    , deviceId
-                    , CollectorHelper.getPacketSn(data)
-                    , DateFmtter.fmt(CollectorHelper.getTime(data, 9 + 4, 9 + 9))
-                    , DateFmtter.fmt(client.getOnlineTime())
-                );
+                if (client.getDeviceId() < printLevel) {
+                  long onlineTime = client.getOnlineTime();
+                  long time = CollectorHelper.getTime(data, 9 + 4, 9 + 9);
+                  EventLoop.single().execute(() ->
+                      log.info("send: {}, deviceId: {}, packageSn: {}, time: {}, online: {}"
+                          , ctx.channel().remoteAddress()
+                          , deviceId
+                          , packetSn
+                          , DateFmtter.fmt(time)
+                          , DateFmtter.fmt(onlineTime)
+                      ));
+                }
+              } else {
+                log.info("不是实时数据包: {}", CollectorHelper.getPacketType(data));
               }
 
             }));
       }
     });
     return super.useDefaultConfig();
-  }
-
-
-  /**
-   * 采集器设备客户端
-   */
-  static class CollectorDeviceClient extends UdpDeviceClient {
-
-    private final AtomicInteger packageSn = new AtomicInteger();
-
-    public CollectorDeviceClient(String id, Channel channel) {
-      super(id, channel);
-    }
-
-    public boolean refresh(int sn) {
-      return packageSn.compareAndSet(sn - 1, sn);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      return super.equals(o);
-    }
-
-    @Override
-    public int hashCode() {
-      return super.hashCode();
-    }
   }
 
 }

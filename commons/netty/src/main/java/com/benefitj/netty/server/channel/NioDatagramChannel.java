@@ -49,8 +49,8 @@ class NioDatagramChannel extends AbstractChannel {
   /**
    * 最新接收数据包的时间
    */
-  private volatile long lastReadTime = System.currentTimeMillis();
-  private volatile long lastWriteTime = System.currentTimeMillis();
+  private volatile long lastReaderTime = System.currentTimeMillis();
+  private volatile long lastWriterTime = System.currentTimeMillis();
 
   private final AtomicReference<ScheduledFuture<?>> timeoutFuture = new AtomicReference<>();
   /**
@@ -189,7 +189,7 @@ class NioDatagramChannel extends AbstractChannel {
       try {
         ByteBuf buf;
         while ((buf = this.bufQueue.poll()) != null) {
-          this.lastReadTime = System.currentTimeMillis();
+          this.lastReaderTime = System.currentTimeMillis();
           pipeline().fireChannelRead(buf);
         }
         pipeline().fireChannelReadComplete();
@@ -243,7 +243,7 @@ class NioDatagramChannel extends AbstractChannel {
     NioEventLoop loop = parent().eventLoop();
     if (loop.inEventLoop()) {
       try {
-        this.lastWriteTime = System.currentTimeMillis();
+        this.lastWriterTime = System.currentTimeMillis();
         Unsafe unsafe = parent().unsafe();
         for (Object buf : list) {
           unsafe.write(buf, voidPromise());
@@ -270,7 +270,7 @@ class NioDatagramChannel extends AbstractChannel {
     if (timeoutFuture.get() != null) return;
 
     ScheduledFuture<?> timeoutFuture = this.eventLoop().scheduleAtFixedRate(() -> {
-      if (parent().isReadTimeout(this.lastReadTime)) {
+      if (parent().isReaderTimeout(this.lastReaderTime)) {
         ScheduledFuture<?> future = this.timeoutFuture.get();
         if (future == null || future.isCancelled()) {
           return;
@@ -287,7 +287,7 @@ class NioDatagramChannel extends AbstractChannel {
         } finally {
           this.timeoutFuture.getAndSet(null).cancel(true);
         }
-      } else if (parent().isWriteTimeout(this.lastWriteTime)) {
+      } else if (parent().isWriterTimeout(this.lastWriterTime)) {
         // 写入超时
         try {
           doClose();

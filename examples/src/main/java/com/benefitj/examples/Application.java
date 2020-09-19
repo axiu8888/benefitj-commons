@@ -1,6 +1,6 @@
 package com.benefitj.examples;
 
-import com.benefitj.examples.proxy.CollectorUdpProxy;
+import com.benefitj.examples.proxy.CollectorUdpServer;
 import com.benefitj.netty.log.Log4jNettyLogger;
 import com.benefitj.netty.log.NettyLogger;
 import com.benefitj.spring.applicationevent.ApplicationListenerAdapter;
@@ -31,21 +31,21 @@ public class Application {
   private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
   @Component
-  public static class UdpProxyListener extends ApplicationListenerAdapter {
+  public static class CollectorUdpServerListener extends ApplicationListenerAdapter {
 
     @Autowired
-    private CollectorUdpProxy udpProxy;
+    private CollectorUdpServer server;
 
     @Override
     public void onApplicationReadyEvent(ApplicationReadyEvent event) {
-      udpProxy.readTimeout(30);
-      udpProxy.localAddress(62014);
-      udpProxy.start(future -> logger.info("proxy start local: {}", udpProxy.localAddress()));
+      server.readerTimeout(30);
+      server.localAddress(62014);
+      server.start(future -> logger.info("proxy start local: {}", server.localAddress()));
     }
 
     @Override
     public void onContextClosedEvent(ContextClosedEvent event) {
-      udpProxy.stop(future -> logger.info("proxy stop local: {}", udpProxy.localAddress()));
+      server.stop(future -> logger.info("proxy stop local: {}", server.localAddress()));
     }
 
   }

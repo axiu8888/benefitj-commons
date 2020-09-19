@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
 
-  private long readTimeout = 60;
+  private long readerTimeout = 60;
   private long writeTimeout = 0;
   private TimeUnit timeoutUnit = TimeUnit.SECONDS;
 
@@ -40,10 +40,11 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
     }
     this.option(ChannelOption.SO_BROADCAST, true);
     this.option(ChannelOption.SO_REUSEADDR, true);
-    Map<ChannelOption<?>, Object> options = new HashMap<>(10);
+    Map<ChannelOption<?>, Object> options = new HashMap<>(16);
     options.putAll(options());
-    // 默认8个KB
-    options.putIfAbsent(ChannelOption.SO_RCVBUF, 1024 * 8);
+    // 默认4MB，数据量较大，缓冲区较小会导致丢包
+    options.putIfAbsent(ChannelOption.SO_RCVBUF, (1024 << 10) * 4);
+    options.putIfAbsent(ChannelOption.SO_SNDBUF, (1024 << 10) * 4);
     this.options(options);
 
     return self();
@@ -52,23 +53,24 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
   @Override
   protected ChannelFuture startOnly(ServerBootstrap bootstrap) {
     return super.startOnly(bootstrap).addListener(future ->
-        ((NioDatagramServerChannel) getServeChannel()).idle(readTimeout(), writeTimeout(), timeoutUnit()));
+        ((NioDatagramServerChannel) getServeChannel())
+            .idle(readerTimeout(), writerTimeout(), timeoutUnit()));
   }
 
-  public long readTimeout() {
-    return readTimeout;
+  public long readerTimeout() {
+    return readerTimeout;
   }
 
-  public UdpNettyServer readTimeout(long readTimeout) {
-    this.readTimeout = readTimeout;
+  public UdpNettyServer readerTimeout(long readerTimeout) {
+    this.readerTimeout = readerTimeout;
     return self();
   }
 
-  public long writeTimeout() {
+  public long writerTimeout() {
     return writeTimeout;
   }
 
-  public UdpNettyServer writeTimeout(long writeTimeout) {
+  public UdpNettyServer writerTimeout(long writeTimeout) {
     this.writeTimeout = writeTimeout;
     return self();
   }
@@ -82,10 +84,10 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
     return self();
   }
 
-  public UdpNettyServer idle(long read, long write, TimeUnit unit) {
-    this.readTimeout(read);
-    this.writeTimeout(write);
-    this.timeoutUnit(unit);
+  public UdpNettyServer idle(long reader, long writer, TimeUnit timeoutUnit) {
+    this.readerTimeout(reader);
+    this.writerTimeout(writer);
+    this.timeoutUnit(timeoutUnit);
     return self();
   }
 

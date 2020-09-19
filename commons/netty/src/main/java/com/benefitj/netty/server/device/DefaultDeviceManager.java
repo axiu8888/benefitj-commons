@@ -12,7 +12,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> {
 
-  private final Map<String, D> devices = new ConcurrentHashMap<>();
+  /**
+   * 设备
+   */
+  private final Map<String, D> devices = new ConcurrentHashMap<>(16);
   /**
    * 设备状态监听
    */
@@ -78,11 +81,14 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
 
   @Override
   public D remove(Object key, boolean notify) {
-    D device = getDevices().remove(key);
-    if (notify && device != null) {
-      getStateChangeListener().onRemoval((String)key, device);
+    if (key instanceof String) {
+      D device = getDevices().remove(key);
+      if (notify && device != null) {
+        getStateChangeListener().onRemoval((String)key, device);
+      }
+      return device;
     }
-    return device;
+    return null;
   }
 
   @Override
