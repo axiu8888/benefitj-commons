@@ -9,6 +9,7 @@ import com.benefitj.spring.ctx.EnableSpringCtxInit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -36,10 +37,13 @@ public class Application {
     @Autowired
     private CollectorUdpServer server;
 
+    @Value("#{ @environment['collector.server.port'] ?: 62014 }")
+    private Integer port;
+
     @Override
     public void onApplicationReadyEvent(ApplicationReadyEvent event) {
       server.readerTimeout(30);
-      server.localAddress(62014);
+      server.localAddress(port);
       server.start(future -> logger.info("proxy start local: {}", server.localAddress()));
     }
 

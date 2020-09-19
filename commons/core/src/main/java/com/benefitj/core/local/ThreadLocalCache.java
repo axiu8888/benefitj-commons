@@ -9,21 +9,16 @@ public class ThreadLocalCache<T> implements LocalCache<T> {
   /**
    * 默认的回调
    */
-  private static final InitialCallback DEFAULT = () -> null;
+  private static final InitialCallback NULL = () -> null;
 
   private InitialCallback<T> callback;
   /**
    * 线程缓存对象
    */
-  private final ThreadLocal<T> local = new ThreadLocal<T>() {
-    @Override
-    protected T initialValue() {
-      return getInitialCallback().initialValue();
-    }
-  };//ThreadLocal.withInitial(() -> getInitialCallback().initialValue());
+  private final ThreadLocal<T> local = ThreadLocal.withInitial(() -> getInitialCallback().initialValue());
 
   public ThreadLocalCache() {
-    this(DEFAULT);
+    this(NULL);
   }
 
   public ThreadLocalCache(InitialCallback<T> callback) {
@@ -81,9 +76,9 @@ public class ThreadLocalCache<T> implements LocalCache<T> {
 
   @Override
   public T getAndRemove() {
-    ThreadLocal<T> local = getLocal();
-    T t = local.get();
-    local.remove();;
+    ThreadLocal<T> l = getLocal();
+    T t = l.get();
+    l.remove();
     return t;
   }
 
@@ -94,7 +89,7 @@ public class ThreadLocalCache<T> implements LocalCache<T> {
    */
   @Override
   public void setInitialCallback(InitialCallback<T> callback) {
-    this.callback = callback != null ? callback : DEFAULT;
+    this.callback = callback != null ? callback : NULL;
   }
 
   /**

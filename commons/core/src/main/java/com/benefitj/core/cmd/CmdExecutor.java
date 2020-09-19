@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * CMD执行(bat/shell)
  */
-public class CmdManager {
+public class CmdExecutor {
 
   /**
    * 是否为windows
@@ -54,13 +54,13 @@ public class CmdManager {
   /**
    * 等待中的执行命令
    */
-  private final Map<String, CmdCallFuture> waitForFutures = new ConcurrentHashMap<>();
+  private final Map<String, CmdCallTask> waitForFutures = new ConcurrentHashMap<>();
   /**
    * 销毁的监听
    */
   private DestroyListener destroyListener = DestroyListener.DISCARD;
 
-  public CmdManager() {
+  public CmdExecutor() {
   }
 
   public DestroyListener getDestroyListener() {
@@ -106,7 +106,7 @@ public class CmdManager {
   /**
    * 获取等待中的进程
    */
-  protected Map<String, CmdCallFuture> getWaitForFutures() {
+  protected Map<String, CmdCallTask> getWaitForFutures() {
     return waitForFutures;
   }
 
@@ -179,14 +179,14 @@ public class CmdManager {
   public CmdCall call(String cmd, @Nullable List<String> envp, @Nullable File dir, long timeout, @Nullable Callback callback) {
     final Callback cb = callback != null ? callback : Callback.EMPTY_CALLBACK;
     final long start = now();
+    final String[] envparams = envp != null && !envp.isEmpty() ? envp.toArray(new String[0]) : null;
     final CmdCall call = createCmdCall(uuid());
+    call.setCmd(cmd);
+    call.setCtxDir(dir);
+    call.setEnvp(envparams);
     cb.onStart(call);
     try {
       return safeCall(timeout, start, () -> {
-        String[] envparams = envp != null && !envp.isEmpty() ? envp.toArray(new String[0]) : null;
-        call.setCmd(cmd);
-        call.setCtxDir(dir);
-        call.setEnvp(envparams);
         cb.onCallBefore(call, cmd, envparams, dir);
         final Process process = Runtime.getRuntime().exec(cmd, envparams, dir);
         call.setProcess(process);
@@ -246,10 +246,10 @@ public class CmdManager {
    * @param id 进程ID
    */
   protected void cancelTimeoutSchedule(String id) {
-    final CmdCallFuture crf = getWaitForFutures().remove(id);
-    if (crf != null) {
-      crf.cancel(true);
-      CmdCall call = crf.getOriginal();
+    final CmdCallTask task = getWaitForFutures().remove(id);
+    if (task != null) {
+      task.cancel(true);
+      CmdCall call = task.getOriginal();
       getDestroyListener().onCancel(call.getProcess(), call, true);
     }
   }
@@ -262,20 +262,20 @@ public class CmdManager {
    */
   protected void scheduleTimeout(CmdCall call, long timeout) {
     timeout = timeout > 0 ? timeout : getTimeout();
-    final CmdCallFuture crf = new CmdCallFuture(call, (id, f) -> {
+    final CmdCallTask task = new CmdCallTask(call, (id, f) -> {
       getWaitForFutures().remove(id);
+      // 唤醒等待的线程
+      lock(Object::notify);
       final CmdCall cr = f.getOriginal();
       final Process p = cr.getProcess();
       if (p != null) {
         p.destroyForcibly();
         getDestroyListener().onDestroy(p, cr);
       }
-      // 唤醒等待的线程
-      lock(Object::notify);
     });
-    getWaitForFutures().put(call.getId(), crf);
-    ScheduledFuture<?> sf = schedule(crf, timeout, TimeUnit.MILLISECONDS);
-    crf.setFuture(sf);
+    getWaitForFutures().put(call.getId(), task);
+    ScheduledFuture<?> future = schedule(task, timeout, TimeUnit.MILLISECONDS);
+    task.setFuture(future);
   }
 
   /**
@@ -379,7 +379,7 @@ public class CmdManager {
   /**
    * 获取UUID
    */
-  protected static String uuid() {
+  static String uuid() {
     return UUID.randomUUID().toString().replaceAll("-", "");
   }
 

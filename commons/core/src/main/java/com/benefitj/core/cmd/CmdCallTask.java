@@ -4,9 +4,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.function.BiConsumer;
 
 /**
- * cmd call
+ * cmd call task
  */
-public class CmdCallFuture implements Runnable {
+public class CmdCallTask implements Runnable {
 
   /**
    * 原命令调用对象
@@ -19,9 +19,9 @@ public class CmdCallFuture implements Runnable {
   /**
    * 回调
    */
-  private final BiConsumer<String, CmdCallFuture> callback;
+  private final BiConsumer<String, CmdCallTask> callback;
 
-  public CmdCallFuture(CmdCall original, BiConsumer<String, CmdCallFuture> callback) {
+  public CmdCallTask(CmdCall original, BiConsumer<String, CmdCallTask> callback) {
     this.original = original;
     this.callback = callback;
   }

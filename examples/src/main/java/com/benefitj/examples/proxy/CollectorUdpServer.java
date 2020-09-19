@@ -16,9 +16,9 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.ScheduledFuture;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -37,6 +37,9 @@ public class CollectorUdpServer extends UdpNettyServer {
   private final UdpDeviceClientManager<CollectorDeviceClient> clients;
   private final OnlineDeviceExpireExecutor executor;
 
+  @Value("#{ @environment['collector.server.option.soRcvbufSize'] ?: 8 }")
+  private Integer soRcvbufSize;
+
   public CollectorUdpServer() {
     this.clients = UdpDeviceClientManager.newInstance();
     this.executor = new OnlineDeviceExpireExecutor(clients);
@@ -49,7 +52,7 @@ public class CollectorUdpServer extends UdpNettyServer {
         , new DefaultEventLoopGroup(new DefaultThreadFactory("worker-", "-t-")));
 
     // 接收数据的缓冲区大小，会直接影响到UDP是否被有效接收
-    this.option(ChannelOption.SO_RCVBUF, (1024 << 10) * 32);
+    this.option(ChannelOption.SO_RCVBUF, (1024 << 10) * soRcvbufSize);
 
     clients.setDelay(1000);
     clients.setExpire(5000);

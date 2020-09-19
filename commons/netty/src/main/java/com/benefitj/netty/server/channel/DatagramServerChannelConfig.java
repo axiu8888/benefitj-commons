@@ -104,10 +104,10 @@ public class DatagramServerChannelConfig extends DefaultDatagramChannelConfig im
 
   private volatile long readerTimeout = 0;
   private volatile long writerTimeout = 0;
-  private volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
+  private TimeUnit timeoutUnit = TimeUnit.SECONDS;
 
   public DatagramServerChannelConfig(NioDatagramServerChannel channel) {
-    this(channel, new FixedRecvByteBufAllocator(2048));
+    this(channel, new FixedRecvByteBufAllocator(4096));
   }
 
   public DatagramServerChannelConfig(NioDatagramServerChannel channel, RecvByteBufAllocator allocator) {
