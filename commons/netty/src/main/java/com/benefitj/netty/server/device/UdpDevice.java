@@ -21,12 +21,22 @@ public class UdpDevice extends AbstractDevice {
   /**
    * 发送数据
    *
-   * @param data 数据
+   * @param msg 数据
    * @return 返回 ChannelFuture
    */
   @Override
-  public ChannelFuture send(ByteBuf data) {
-    return channel().writeAndFlush(new DatagramPacket(data, getRemoteAddress()));
+  public ChannelFuture send(ByteBuf msg) {
+    return send(new DatagramPacket(msg, getRemoteAddress()));
+  }
+
+  /**
+   * 发送数据
+   *
+   * @param msg 数据
+   * @return 返回 ChannelFuture
+   */
+  public ChannelFuture send(DatagramPacket msg) {
+    return channel().writeAndFlush(msg);
   }
 
   @Override

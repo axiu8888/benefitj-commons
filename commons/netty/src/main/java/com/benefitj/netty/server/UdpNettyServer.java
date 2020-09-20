@@ -50,6 +50,23 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
     return self();
   }
 
+  /**
+   * 设置接收的缓冲区大小
+   */
+  public UdpNettyServer soRcvbufSize(Integer soRcvbufSize) {
+    this.option(ChannelOption.SO_RCVBUF, (1024 << 10) * soRcvbufSize);
+    return self();
+  }
+
+  /**
+   * 设置发送的缓冲区大小
+   */
+  public UdpNettyServer soSndbufSize(Integer soSndbufSize) {
+    this.option(ChannelOption.SO_SNDBUF, (1024 << 10) * soSndbufSize);
+    return self();
+  }
+
+
   @Override
   protected ChannelFuture startOnly(ServerBootstrap bootstrap) {
     return super.startOnly(bootstrap).addListener(future ->

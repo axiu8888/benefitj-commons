@@ -120,13 +120,13 @@ public abstract class AbstractDevice implements Device {
   }
 
   /**
-   * 发送数据
+   * 发送消息
    *
-   * @param data 数据
+   * @param msg 消息
    * @return 返回 ChannelFuture
    */
   @Override
-  public abstract ChannelFuture send(ByteBuf data);
+  public abstract ChannelFuture send(ByteBuf msg);
 
   /**
    * 获取Channel的EventLoop

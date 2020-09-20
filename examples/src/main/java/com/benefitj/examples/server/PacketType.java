@@ -1,4 +1,4 @@
-package com.benefitj.examples.proxy;
+package com.benefitj.examples.server;
 
 import javax.annotation.Nullable;
 

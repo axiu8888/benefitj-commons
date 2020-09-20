@@ -20,12 +20,12 @@ public class TcpDevice extends AbstractDevice {
   /**
    * 发送数据
    *
-   * @param data 数据
+   * @param msg 数据
    * @return 返回 ChannelFuture
    */
   @Override
-  public ChannelFuture send(ByteBuf data) {
-    return channel().writeAndFlush(data);
+  public ChannelFuture send(ByteBuf msg) {
+    return channel().writeAndFlush(msg);
   }
 
   @Override

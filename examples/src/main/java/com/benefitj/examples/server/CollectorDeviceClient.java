@@ -1,4 +1,4 @@
-package com.benefitj.examples.proxy;
+package com.benefitj.examples.server;
 
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.EventLoop;
@@ -21,20 +21,20 @@ public class CollectorDeviceClient extends UdpDeviceClient {
   private final AtomicInteger packageSn = new AtomicInteger();
   private ScheduledFuture<?> timer;
   /**
-   * 设备ID
+   * 设备号
    */
-  private int deviceId;
+  private int deviceSn;
 
   public CollectorDeviceClient(String id, Channel channel) {
     super(id, channel);
   }
 
-  public int getDeviceId() {
-    return deviceId;
+  public int getDeviceSn() {
+    return deviceSn;
   }
 
-  public void setDeviceId(int deviceId) {
-    this.deviceId = deviceId;
+  public void setDeviceSn(int deviceSn) {
+    this.deviceSn = deviceSn;
   }
 
   public boolean refresh(int sn) {
@@ -71,7 +71,7 @@ public class CollectorDeviceClient extends UdpDeviceClient {
 
   public void startTimer() {
     cancelTimer();
-    this.timer = EventLoop.multi().schedule(() -> {
+    this.timer = EventLoop.single().schedule(() -> {
       if (DateFmtter.now() - getRecvTime() > 1000) {
         log.info("超过一秒未接收到数据: {}, onlineTime: {}"
             , CollectorDeviceClient.this, DateFmtter.fmt(getOnlineTime()));

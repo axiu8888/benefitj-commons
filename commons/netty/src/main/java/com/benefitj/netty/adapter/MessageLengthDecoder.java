@@ -1,5 +1,6 @@
 package com.benefitj.netty.adapter;
 
+import com.benefitj.netty.ByteBufCopy;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -8,9 +9,6 @@ import io.netty.util.AttributeKey;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.function.Function;
 
 /**
  * 消息长度解码
@@ -19,9 +17,8 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
 
   public static final byte[] HEAD = new byte[0];
   public static final LengthFunction LENGTH_FUNCTION = (ctx, in, readBuff) -> in.readableBytes();
-  private static final Function<Integer, byte[]> BUFF_FUNC = byte[]::new;
 
-  private final ThreadLocal<Map<Integer, byte[]>> buffCache = ThreadLocal.withInitial(WeakHashMap::new);
+  private final ByteBufCopy bufCopy = new ByteBufCopy();
   /**
    * 获取最小读取长度
    */
@@ -74,9 +71,8 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
     // 标记一下读取数据之前的位置
     in.markReaderIndex();
 
-    byte[] headBuff = getLocalBuff(minReadLength);
     // 只读取包头的数据
-    in.readBytes(headBuff);
+    byte[] headBuff = bufCopy.copy(in, minReadLength, true, false);
 
     // 判断包头是否匹配
     byte[] head = getHead();
@@ -88,7 +84,7 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
         // 丢弃不匹配的包头数据
         in.resetReaderIndex();
         // 读取后丢弃的字节
-        in.readBytes(getLocalBuff(i + 1));
+        in.skipBytes(i + 1);
         return;
       }
     }
@@ -145,19 +141,15 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
     return lengthKey;
   }
 
-  protected byte[] getLocalBuff(Integer size) {
-    return buffCache.get().computeIfAbsent(size, BUFF_FUNC);
-  }
-
   public interface LengthFunction {
     /**
      * 长度
      *
-     * @param ctx      xxx
-     * @param in       数据
-     * @param readBuff 读取的缓冲数据
+     * @param ctx     xxx
+     * @param in      数据
+     * @param segment 读取的数据片段
      * @return 返回数据的长度
      */
-    int getLength(ChannelHandlerContext ctx, ByteBuf in, byte[] readBuff);
+    int getLength(ChannelHandlerContext ctx, ByteBuf in, byte[] segment);
   }
 }
