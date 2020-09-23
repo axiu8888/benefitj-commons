@@ -1,5 +1,6 @@
 package com.benefitj.core;
 
+import java.lang.ref.SoftReference;
 import java.util.Random;
 import java.util.UUID;
 
@@ -8,15 +9,21 @@ import java.util.UUID;
  */
 public class IdUtils {
 
-  public static final String CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  private static final char[] CHARS_ARRAY = CHARS.toCharArray();
-  private static final char[] LETTERS_ARRAY = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+  private static final char[] CHARS_ARRAY = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+  private static final char[] LETTERS_ARRAY = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+  private static final char[] LOWER_LETTERS_ARRAY = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+  private static final char[] UPPER_LETTERS_ARRAY = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
   private static final char[] NUMBERS_ARRAY = "0123456789".toCharArray();
 
-  private static final ThreadLocal<Random> randomLocal = ThreadLocal.withInitial(Random::new);
+  private static final ThreadLocal<SoftReference<Random>> randomLocal = ThreadLocal.withInitial(() -> new SoftReference<>(new Random()));
 
   private static Random getRandom() {
-    return randomLocal.get();
+    Random r = randomLocal.get().get();
+    if (r != null) {
+      r = new Random();
+      randomLocal.set(new SoftReference<>(r));
+    }
+    return r;
   }
 
   /**
@@ -94,7 +101,51 @@ public class IdUtils {
   }
 
   /**
-   * 获取随机的字符串
+   * 获取随机的小写字母的字符串
+   *
+   * @param length 随机字符串长度
+   * @return 返回随机字符串
+   */
+  public static String nextLowerLetterId(int length) {
+    return nextLowerLetterId(null, null, length);
+  }
+
+  /**
+   * 获取随机的小写字母的字符串
+   *
+   * @param prefix 前缀
+   * @param suffix 后缀
+   * @param length 随机字符串长度
+   * @return 返回随机字符串
+   */
+  public static String nextLowerLetterId(String prefix, String suffix, int length) {
+    return nextId(LOWER_LETTERS_ARRAY, prefix, suffix, length);
+  }
+
+  /**
+   * 获取随机的大写字母的字符串
+   *
+   * @param length 随机字符串长度
+   * @return 返回随机字符串
+   */
+  public static String nextUpperLetterId(int length) {
+    return nextUpperLetterId(null, null, length);
+  }
+
+  /**
+   * 获取随机的大写字母的字符串
+   *
+   * @param prefix 前缀
+   * @param suffix 后缀
+   * @param length 随机字符串长度
+   * @return 返回随机字符串
+   */
+  public static String nextUpperLetterId(String prefix, String suffix, int length) {
+    return nextId(UPPER_LETTERS_ARRAY, prefix, suffix, length);
+  }
+
+  /**
+   * 获取随机的数字字符串
    *
    * @param length 随机字符串长度
    * @return 返回随机字符串
@@ -104,7 +155,7 @@ public class IdUtils {
   }
 
   /**
-   * 获取随机的字符串
+   * 获取随机的数字字符串
    *
    * @param prefix 前缀
    * @param suffix 后缀
@@ -138,8 +189,16 @@ public class IdUtils {
    * 获取UUID
    */
   public static String uuid() {
-    return UUID.randomUUID().toString().replace("-", "");
+    return rawUUID().replace("-", "");
   }
+
+  /**
+   * 获取原始的UUID
+   */
+  public static String rawUUID() {
+    return UUID.randomUUID().toString();
+  }
+
 
   private static String checkNotNull(String str) {
     return str != null ? str : "";
