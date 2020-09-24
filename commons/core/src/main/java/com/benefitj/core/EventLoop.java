@@ -6,7 +6,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 执行事件
+ * 事件循环
  */
 public class EventLoop implements ScheduledExecutorService {
 
@@ -143,6 +143,20 @@ public class EventLoop implements ScheduledExecutorService {
   @Override
   public void execute(Runnable command) {
     getExecutor().execute(command);
+  }
+
+  /**
+   * 创建单线程的EventLoop
+   */
+  public static EventLoop newSingle(boolean daemon) {
+    return newEventLoop(1, daemon);
+  }
+
+  /**
+   * 创建EventLoop
+   */
+  public static EventLoop newEventLoop(int corePoolSize, boolean daemon) {
+    return new EventLoop(corePoolSize, defaultThreadFactory(daemon));
   }
 
   private static final AtomicInteger ID = new AtomicInteger(0);

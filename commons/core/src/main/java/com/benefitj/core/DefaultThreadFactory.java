@@ -29,7 +29,7 @@ public class DefaultThreadFactory implements ThreadFactory {
   public DefaultThreadFactory(String prefix, String suffix, boolean daemon) {
     SecurityManager s = System.getSecurityManager();
     this.group = (s != null) ? s.getThreadGroup() :
-            Thread.currentThread().getThreadGroup();
+        Thread.currentThread().getThreadGroup();
     this.namePrefix = prefix + poolNumber.getAndIncrement() + suffix;
     this.setDaemon(daemon);
   }
@@ -42,7 +42,7 @@ public class DefaultThreadFactory implements ThreadFactory {
   @Override
   public Thread newThread(Runnable r) {
     Thread t = new Thread(group, r,
-            namePrefix + threadNumber.getAndIncrement(), 0);
+        namePrefix + threadNumber.getAndIncrement(), 0);
     t.setDaemon(daemon);
     if (t.getPriority() != Thread.NORM_PRIORITY) {
       t.setPriority(Thread.NORM_PRIORITY);
@@ -73,6 +73,5 @@ public class DefaultThreadFactory implements ThreadFactory {
   public void setDaemon(boolean daemon) {
     this.daemon = daemon;
   }
-
 
 }
