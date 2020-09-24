@@ -1,6 +1,7 @@
 package com.benefitj.netty.server.device;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
@@ -127,6 +128,18 @@ public abstract class AbstractDevice implements Device {
    */
   @Override
   public abstract ChannelFuture send(ByteBuf msg);
+
+  /**
+   * 发送消息
+   *
+   * @param msg 消息
+   * @return 返回 ChannelFuture
+   */
+
+  @Override
+  public ChannelFuture send(byte[] msg) {
+    return send(Unpooled.wrappedBuffer(msg));
+  }
 
   /**
    * 获取Channel的EventLoop

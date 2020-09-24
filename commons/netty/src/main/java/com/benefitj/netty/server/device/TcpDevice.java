@@ -18,9 +18,9 @@ public class TcpDevice extends AbstractDevice {
   }
 
   /**
-   * 发送数据
+   * 发送消息
    *
-   * @param msg 数据
+   * @param msg 消息
    * @return 返回 ChannelFuture
    */
   @Override

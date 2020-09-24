@@ -1,7 +1,6 @@
 package com.benefitj.netty.server.device;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
@@ -60,22 +59,20 @@ public interface Device {
   Channel channel();
 
   /**
-   * 发送数据
+   * 发送消息
    *
-   * @param data 数据
+   * @param msg 消息
    * @return 返回 ChannelFuture
    */
-  ChannelFuture send(ByteBuf data);
+  ChannelFuture send(ByteBuf msg);
 
   /**
-   * 发送数据
+   * 发送消息
    *
-   * @param data 数据
+   * @param msg 消息
    * @return 返回 ChannelFuture
    */
-  default ChannelFuture send(byte[] data) {
-    return send(Unpooled.wrappedBuffer(data));
-  }
+  ChannelFuture send(byte[] msg);
 
   /**
    * 获取Channel的EventLoop

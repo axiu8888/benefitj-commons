@@ -103,6 +103,17 @@ public abstract class ByteBufCopyChannelInboundHandler<T> extends SimpleChannelI
    * 读取数据，并重置读取位置
    *
    * @param data  数据
+   * @param local 是否使用本地缓冲
+   * @return 返回读取的字节
+   */
+  public byte[] copyAndReset(ByteBuf data, boolean local) {
+    return copy(data, data.readableBytes(), local, true);
+  }
+
+  /**
+   * 读取数据，并重置读取位置
+   *
+   * @param data  数据
    * @param size  缓冲区大小
    * @param local 是否使用本地缓冲
    * @return 返回读取的字节

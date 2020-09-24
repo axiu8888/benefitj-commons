@@ -1,9 +1,12 @@
 package com.benefitj.netty.server.device;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.socket.DatagramPacket;
+
+import java.net.InetSocketAddress;
 
 /**
  * UDP 设备
@@ -19,20 +22,42 @@ public class UdpDevice extends AbstractDevice {
   }
 
   /**
-   * 发送数据
+   * 发送消息
    *
-   * @param msg 数据
+   * @param msg    消息
+   * @param remote 远程地址
+   * @return 返回 ChannelFuture
+   */
+  public ChannelFuture send(byte[] msg, InetSocketAddress remote) {
+    return send(Unpooled.wrappedBuffer(msg), remote);
+  }
+
+  /**
+   * 发送消息
+   *
+   * @param msg 消息
    * @return 返回 ChannelFuture
    */
   @Override
   public ChannelFuture send(ByteBuf msg) {
-    return send(new DatagramPacket(msg, getRemoteAddress()));
+    return send(msg, getRemoteAddress());
   }
 
   /**
-   * 发送数据
+   * 发送消息
    *
-   * @param msg 数据
+   * @param msg    消息
+   * @param remote 远程地址
+   * @return 返回 ChannelFuture
+   */
+  public ChannelFuture send(ByteBuf msg, InetSocketAddress remote) {
+    return send(new DatagramPacket(msg, remote));
+  }
+
+  /**
+   * 发送消息
+   *
+   * @param msg 消息
    * @return 返回 ChannelFuture
    */
   public ChannelFuture send(DatagramPacket msg) {
