@@ -23,6 +23,7 @@ public class CmdExecutor {
    */
   private static final boolean WINDOWS;
   public static final String CRLF;
+
   static {
     WINDOWS = System.getProperty("os.name").contains("Windows");
     CRLF = WINDOWS ? "\r\n" : "\n";
@@ -33,6 +34,16 @@ public class CmdExecutor {
    */
   public static boolean isWindows() {
     return WINDOWS;
+  }
+
+  /**
+   * 添加命令头
+   *
+   * @param cmd 命令
+   * @return 返回新的命令
+   */
+  public static String cmdPrefix(String cmd) {
+    return (isWindows() ? "cmd /c start /b " : "sh ") + cmd;
   }
 
   private final AtomicReference<Thread> sign = new AtomicReference<>();
@@ -257,8 +268,8 @@ public class CmdExecutor {
   /**
    * 延迟结束调用
    *
-   * @param call CMD响应
-   * @param timeout  超时时长
+   * @param call    CMD响应
+   * @param timeout 超时时长
    */
   protected void scheduleTimeout(CmdCall call, long timeout) {
     timeout = timeout > 0 ? timeout : getTimeout();
@@ -289,7 +300,7 @@ public class CmdExecutor {
     final AtomicReference<Thread> sign = this.sign;
     int maxProcess = getMaxCallNum();
     final Thread current = Thread.currentThread();
-    for (;;) {
+    for (; ; ) {
       if (sign.compareAndSet(null, current)) {
         // 执行的命令未达到最大值
         if (aliveProcess.get() < maxProcess) {
@@ -356,6 +367,7 @@ public class CmdExecutor {
   public int getAliveProcess() {
     return aliveProcess.get();
   }
+
   protected static boolean isTimeout(long start, long timeout) {
     return timeout > 0 && ((now() - start) >= timeout);
   }
