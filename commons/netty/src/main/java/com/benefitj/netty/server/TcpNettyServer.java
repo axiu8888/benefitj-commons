@@ -2,6 +2,7 @@ package com.benefitj.netty.server;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -48,14 +49,12 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
   @Override
   public TcpNettyServer useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
-      this.executeWhileNotNull(bossGroup(), () -> this.group(new EpollEventLoopGroup()));
-      this.executeWhileNotNull(workerGroup(), () -> this.group(bossGroup(), new EpollEventLoopGroup()));
+      this.executeWhileNull(this.workerGroup(), () -> this.group(new EpollEventLoopGroup(), new EpollEventLoopGroup()));
       this.executeWhileNull(this.channelFactory(), () -> this.channel(EpollServerSocketChannel.class));
       this.option(UnixChannelOption.SO_REUSEPORT, true);
     } else {
-      this.executeWhileNotNull(bossGroup(), () -> this.group(new NioEventLoopGroup()));
-      this.executeWhileNotNull(workerGroup(), () -> this.group(bossGroup(), new NioEventLoopGroup()));
-      this.executeWhileNull(channelFactory(), () -> channel(NioServerSocketChannel.class));
+      this.executeWhileNull(this.workerGroup(), () -> this.group(new NioEventLoopGroup(), new NioEventLoopGroup()));
+      this.executeWhileNull(this.channelFactory(), () -> channel(NioServerSocketChannel.class));
     }
 
     // add options
@@ -72,6 +71,12 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
     childOptions.putAll(childOptions());
     childOptions(childOptions);
     return self();
+  }
+
+  @Deprecated
+  @Override
+  public TcpNettyServer group(EventLoopGroup group) {
+    return super.group(group, group);
   }
 
 }
