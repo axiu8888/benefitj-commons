@@ -2,7 +2,7 @@ package com.benefitj.examples.server;
 
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.EventLoop;
-import com.benefitj.netty.server.udpclient.UdpDeviceClient;
+import com.benefitj.netty.server.device.UdpDevice;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 采集器设备客户端
  */
-public class CollectorDeviceClient extends UdpDeviceClient {
+public class CollectorDevice extends UdpDevice {
 
-  private static final Logger log = LoggerFactory.getLogger(CollectorDeviceClient.class.getSimpleName());
+  private static final Logger log = LoggerFactory.getLogger(CollectorDevice.class.getSimpleName());
 
   private final AtomicInteger packageSn = new AtomicInteger();
   private ScheduledFuture<?> timer;
@@ -25,7 +25,7 @@ public class CollectorDeviceClient extends UdpDeviceClient {
    */
   private int deviceSn;
 
-  public CollectorDeviceClient(String id, Channel channel) {
+  public CollectorDevice(String id, Channel channel) {
     super(id, channel);
   }
 
@@ -74,7 +74,7 @@ public class CollectorDeviceClient extends UdpDeviceClient {
     this.timer = EventLoop.single().schedule(() -> {
       if (DateFmtter.now() - getRecvTime() > 1000) {
         log.info("超过一秒未接收到数据: {}, onlineTime: {}"
-            , CollectorDeviceClient.this, DateFmtter.fmt(getOnlineTime()));
+            , CollectorDevice.this, DateFmtter.fmt(getOnlineTime()));
       }
     }, 1100, TimeUnit.MILLISECONDS);
   }

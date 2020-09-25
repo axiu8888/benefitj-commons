@@ -1,4 +1,4 @@
-package com.benefitj.netty.server.udpclient;
+package com.benefitj.netty.server.udp;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -13,7 +13,7 @@ public class UdpDeviceExpiredCheckerHandler extends ChannelInboundHandlerAdapter
    */
   private final OnlineDeviceExpireExecutor executor;
 
-  public UdpDeviceExpiredCheckerHandler(UdpDeviceClientManager<?> manager) {
+  public UdpDeviceExpiredCheckerHandler(UdpDeviceManager<?> manager) {
     this.executor = new OnlineDeviceExpireExecutor(manager);
   }
 

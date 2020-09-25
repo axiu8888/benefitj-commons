@@ -9,8 +9,9 @@ import com.benefitj.netty.adapter.BiConsumerChannelInboundHandler;
 import com.benefitj.netty.server.UdpNettyServer;
 import com.benefitj.netty.server.channel.NioDatagramServerChannel;
 import com.benefitj.netty.server.device.DeviceStateChangeListener;
-import com.benefitj.netty.server.udpclient.OnlineDeviceExpireExecutor;
-import com.benefitj.netty.server.udpclient.UdpDeviceClientManager;
+import com.benefitj.netty.server.udp.DefaultUdpDeviceManager;
+import com.benefitj.netty.server.udp.OnlineDeviceExpireExecutor;
+import com.benefitj.netty.server.udp.UdpDeviceManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -31,9 +32,11 @@ public class CollectorUdpServer extends UdpNettyServer {
 
   private static final Logger log = LoggerFactory.getLogger(CollectorUdpServer.class.getSimpleName());
 
+  private static final EventLoop single = EventLoop.newSingle(true);
+
   private ByteBufCopy cache = new ByteBufCopy();
 
-  private final UdpDeviceClientManager<CollectorDeviceClient> clients;
+  private final UdpDeviceManager<CollectorDevice> clients;
   private final OnlineDeviceExpireExecutor executor;
 
   /**
@@ -53,7 +56,7 @@ public class CollectorUdpServer extends UdpNettyServer {
   private Integer delay;
 
   public CollectorUdpServer() {
-    this.clients = UdpDeviceClientManager.newInstance();
+    this.clients = DefaultUdpDeviceManager.newInstance();
     this.executor = new OnlineDeviceExpireExecutor(clients);
   }
 
@@ -69,10 +72,10 @@ public class CollectorUdpServer extends UdpNettyServer {
     clients.setDelay(delay);
     clients.setExpire(expire);
 
-    clients.setStateChangeListener(new DeviceStateChangeListener<CollectorDeviceClient>() {
+    clients.setStateChangeListener(new DeviceStateChangeListener<CollectorDevice>() {
       @Override
-      public void onAddition(String id, CollectorDeviceClient newDevice, @Nullable CollectorDeviceClient oldDevice) {
-        EventLoop.single().execute(() ->
+      public void onAddition(String id, CollectorDevice newDevice, @Nullable CollectorDevice oldDevice) {
+        single.execute(() ->
             log.info("新客户端上线: {}, oldClient: {}", newDevice, oldDevice));
         if (oldDevice != null) {
           oldDevice.stopTimer();
@@ -80,9 +83,9 @@ public class CollectorUdpServer extends UdpNettyServer {
       }
 
       @Override
-      public void onRemoval(String id, CollectorDeviceClient device) {
+      public void onRemoval(String id, CollectorDevice device) {
         device.stopTimer();
-        EventLoop.single().execute(() ->
+        single.execute(() ->
             log.info("客户端下线: {}, duration: {}", device, DateFmtter.now() - device.getRecvTime()));
       }
     });
@@ -120,14 +123,14 @@ public class CollectorUdpServer extends UdpNettyServer {
               byte[] data = cache.copy(msg);
 
               String deviceId = CollectorHelper.getHexDeviceId(data);
-              CollectorDeviceClient client = clients.get(deviceId);
+              CollectorDevice client = clients.get(deviceId);
               if (client == null) {
-                clients.put(deviceId, client = new CollectorDeviceClient(deviceId, ctx.channel()));
+                clients.put(deviceId, client = new CollectorDevice(deviceId, ctx.channel()));
                 client.setDeviceSn(HexUtils.bytesToInt(HexUtils.hexToBytes(deviceId)));
                 client.startTimer();
               }
               // 重置接收导数据的时间
-              client.resetRecvTimeNow();
+              client.setRecvTimeNow();
 
               if (PacketType.isRealtime(CollectorHelper.getType(data))) {
                 // 更新包序号
@@ -139,7 +142,7 @@ public class CollectorUdpServer extends UdpNettyServer {
                 if (client.getDeviceSn() < printLevel) {
                   long onlineTime = client.getOnlineTime();
                   long time = CollectorHelper.getTime(data, 9 + 4, 9 + 9);
-                  EventLoop.single().execute(() ->
+                  single.execute(() ->
                       log.info("send: {}, deviceId: {}, packageSn: {}, time: {}, online: {}"
                           , ctx.channel().remoteAddress()
                           , deviceId

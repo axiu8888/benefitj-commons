@@ -1,4 +1,4 @@
-package com.benefitj.netty.server.udpclient;
+package com.benefitj.netty.server.udp;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class OnlineDeviceExpireExecutor {
 
-  private UdpDeviceClientManager<?> clientManager;
+  private UdpDeviceManager<?> clientManager;
 
   private final AtomicReference<ScheduledFuture<?>> future = new AtomicReference<>();
   /**
@@ -26,7 +26,7 @@ public class OnlineDeviceExpireExecutor {
   public OnlineDeviceExpireExecutor() {
   }
 
-  public OnlineDeviceExpireExecutor(UdpDeviceClientManager<?> clientManager) {
+  public OnlineDeviceExpireExecutor(UdpDeviceManager<?> clientManager) {
     this.clientManager = clientManager;
   }
 
@@ -35,7 +35,7 @@ public class OnlineDeviceExpireExecutor {
     if (this.future.get() == null) {
       synchronized (this) {
         if (this.future.get() == null) {
-          final UdpDeviceClientManager<?> manager = getClientManager();
+          final UdpDeviceManager<?> manager = getClientManager();
           ScheduledFuture<?> sf = executor().scheduleAtFixedRate(manager::autoCheckExpire
               , manager.getDelay()
               , manager.getDelay()
@@ -62,11 +62,11 @@ public class OnlineDeviceExpireExecutor {
     }
   }
 
-  public void setClientManager(UdpDeviceClientManager<?> clientManager) {
+  public void setClientManager(UdpDeviceManager<?> clientManager) {
     this.clientManager = clientManager;
   }
 
-  public UdpDeviceClientManager<?> getClientManager() {
+  public UdpDeviceManager<?> getClientManager() {
     return clientManager;
   }
 

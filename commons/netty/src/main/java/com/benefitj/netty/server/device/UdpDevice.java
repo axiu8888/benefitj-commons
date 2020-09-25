@@ -12,6 +12,14 @@ import java.net.InetSocketAddress;
  * UDP 设备
  */
 public class UdpDevice extends AbstractDevice {
+  /**
+   * 上线时间
+   */
+  private long onlineTime = System.currentTimeMillis();
+  /**
+   * 上次接收到数据的时间
+   */
+  private volatile long recvTime = -1;
 
   public UdpDevice(Channel channel) {
     super(channel);
@@ -19,6 +27,37 @@ public class UdpDevice extends AbstractDevice {
 
   public UdpDevice(String id, Channel channel) {
     super(id, channel);
+  }
+
+  public void setOnlineTime(long onlineTime) {
+    this.onlineTime = onlineTime;
+  }
+
+  public long getOnlineTime() {
+    return onlineTime;
+  }
+
+  /**
+   * 获取接收数据包的时间
+   */
+  public long getRecvTime() {
+    return recvTime;
+  }
+
+  /**
+   * 设置接收数据包的时间
+   *
+   * @param recvTime 时间
+   */
+  public void setRecvTime(long recvTime) {
+    this.recvTime = recvTime;
+  }
+
+  /**
+   * 设置当前时间为最新的接收数据包的时间
+   */
+  public void setRecvTimeNow() {
+    this.setRecvTime(System.currentTimeMillis());
   }
 
   /**
