@@ -121,6 +121,15 @@ public abstract class AbstractDevice implements Device {
   }
 
   /**
+   * 是否为active
+   */
+  @Override
+  public boolean isActive() {
+    Channel ch = channel();
+    return ch != null && ch.isActive();
+  }
+
+  /**
    * 发送消息
    *
    * @param msg 消息

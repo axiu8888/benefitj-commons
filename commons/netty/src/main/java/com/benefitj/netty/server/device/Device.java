@@ -59,6 +59,11 @@ public interface Device {
   Channel channel();
 
   /**
+   * 是否为active
+   */
+  boolean isActive();
+
+  /**
    * 发送消息
    *
    * @param msg 消息
