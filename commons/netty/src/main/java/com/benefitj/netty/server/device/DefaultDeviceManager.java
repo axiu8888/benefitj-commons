@@ -1,5 +1,7 @@
 package com.benefitj.netty.server.device;
 
+import io.netty.channel.Channel;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +22,10 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
    * 设备状态监听
    */
   private DeviceStateChangeListener<D> stateChangeListener = DeviceStateChangeListener.emptyListener();
+  /**
+   * 设备工厂
+   */
+  private DeviceFactory<D> deviceFactory;
 
   public DefaultDeviceManager() {
   }
@@ -40,6 +46,20 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
   @Override
   public void setStateChangeListener(DeviceStateChangeListener<D> listener) {
     this.stateChangeListener = (listener != null ? listener : DeviceStateChangeListener.emptyListener());
+  }
+
+  @Override
+  public D computeIfAbsent(String id, Channel channel) {
+    D device = get(id);
+    if (device == null) {
+      DeviceFactory<D> factory = getDeviceFactory();
+      if (factory == null) {
+        throw new IllegalStateException("DeviceFactory == null !");
+      }
+      device = factory.create(id, channel);
+      this.put(id, device);
+    }
+    return device;
   }
 
   @Override
@@ -75,6 +95,16 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
   }
 
   @Override
+  public DeviceFactory<D> getDeviceFactory() {
+    return deviceFactory;
+  }
+
+  @Override
+  public void setDeviceFactory(DeviceFactory<D> deviceFactory) {
+    this.deviceFactory = deviceFactory;
+  }
+
+  @Override
   public D remove(Object key) {
     return remove(key, true);
   }
@@ -84,7 +114,7 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
     if (key instanceof String) {
       D device = getDevices().remove(key);
       if (notify && device != null) {
-        getStateChangeListener().onRemoval((String)key, device);
+        getStateChangeListener().onRemoval((String) key, device);
       }
       return device;
     }

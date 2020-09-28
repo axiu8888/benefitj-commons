@@ -9,22 +9,22 @@ import io.netty.channel.SimpleChannelInboundHandler;
  *
  * @param <T>
  */
-public abstract class ByteBufCopyChannelInboundHandler<T> extends SimpleChannelInboundHandler<T> {
+public abstract class ByteBufCopyInboundHandler<T> extends SimpleChannelInboundHandler<T> {
 
   private final ByteBufCopy bufCopy = new ByteBufCopy();
 
-  public ByteBufCopyChannelInboundHandler() {
+  public ByteBufCopyInboundHandler() {
   }
 
-  public ByteBufCopyChannelInboundHandler(boolean autoRelease) {
+  public ByteBufCopyInboundHandler(boolean autoRelease) {
     super(autoRelease);
   }
 
-  public ByteBufCopyChannelInboundHandler(Class<T> inboundMessageType) {
+  public ByteBufCopyInboundHandler(Class<T> inboundMessageType) {
     super(inboundMessageType);
   }
 
-  public ByteBufCopyChannelInboundHandler(Class<T> inboundMessageType, boolean autoRelease) {
+  public ByteBufCopyInboundHandler(Class<T> inboundMessageType, boolean autoRelease) {
     super(inboundMessageType, autoRelease);
   }
 

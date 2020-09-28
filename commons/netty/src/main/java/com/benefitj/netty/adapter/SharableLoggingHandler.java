@@ -10,7 +10,7 @@ import io.netty.channel.ChannelHandlerContext;
  * 打印日志
  */
 @ChannelHandler.Sharable
-public class SharableLoggingHandler extends ByteBufCopyChannelInboundHandler<ByteBuf> {
+public class SharableLoggingHandler extends ByteBufCopyInboundHandler<ByteBuf> {
 
   public static final SharableLoggingHandler INSTANCE = new SharableLoggingHandler(50, true);
 

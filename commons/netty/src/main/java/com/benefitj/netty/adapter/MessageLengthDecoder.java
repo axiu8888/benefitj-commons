@@ -16,9 +16,9 @@ import java.util.List;
 public class MessageLengthDecoder extends ByteToMessageDecoder {
 
   public static final byte[] HEAD = new byte[0];
-  public static final LengthFunction LENGTH_FUNCTION = (ctx, in, readBuff) -> in.readableBytes();
+  public static final LengthFunction LENGTH_FUNCTION = (ctx, in, segment) -> in.readableBytes();
 
-  private final ByteBufCopy bufCopy = new ByteBufCopy();
+  private final ByteBufCopy copy = new ByteBufCopy();
   /**
    * 获取最小读取长度
    */
@@ -31,10 +31,20 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
    * 获取长度的实现
    */
   private LengthFunction lengthFunction = LENGTH_FUNCTION;
-
+  /**
+   * 消息头校验
+   */
+  private HeadValidator headValidator;
+  /**
+   * 长度
+   */
   private final AttributeKey<Integer> lengthKey = AttributeKey.valueOf("length");
 
   public MessageLengthDecoder() {
+  }
+
+  public MessageLengthDecoder(int minReadLength) {
+    this(minReadLength, HEAD);
   }
 
   public MessageLengthDecoder(int minReadLength, byte[] head) {
@@ -42,16 +52,12 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
     this.setHead(head);
   }
 
+  public MessageLengthDecoder(int minReadLength, LengthFunction lengthFunction) {
+    this(minReadLength, HEAD, lengthFunction);
+  }
+
   public MessageLengthDecoder(int minReadLength, byte[] head, LengthFunction lengthFunction) {
     this(minReadLength, head);
-    this.lengthFunction = lengthFunction;
-  }
-
-  public LengthFunction getLengthFunction() {
-    return lengthFunction;
-  }
-
-  public void setLengthFunction(LengthFunction lengthFunction) {
     this.lengthFunction = lengthFunction;
   }
 
@@ -68,32 +74,47 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
       return;
     }
 
-    // 标记一下读取数据之前的位置
-    in.markReaderIndex();
-
     // 只读取包头的数据
-    byte[] headBuff = bufCopy.copy(in, minReadLength, true, false);
-
+    byte[] segment = copy.copyAdnReset(in, minReadLength, true);
     // 判断包头是否匹配
     byte[] head = getHead();
-    for (int i = 0; i < head.length; i++) {
-      // 检查包头
-      if (headBuff[i] != head[i]) {
-        // 不匹配直接丢弃
-        attr.set(null);
-        // 丢弃不匹配的包头数据
-        in.resetReaderIndex();
-        // 读取后丢弃的字节
-        in.skipBytes(i + 1);
-        return;
+    if (!isHead(head, segment, 0)) {
+      int discardSize = 0;
+      try {
+        int size = segment.length - head.length;
+        for (int i = 0; i < size; i++) {
+          if (isHead(head, segment, i)) {
+            break;
+          }
+          if (isDiscard(head, segment, i)) {
+            // 不匹配的字节
+            discardSize++;
+          } else {
+            return;
+          }
+        }
+        if (discardSize > 0) {
+          return;
+        }
+      } finally {
+        if (discardSize > 0) {
+          // 丢弃不匹配的数据
+          attr.set(null);
+          byte[] discard;
+          if (discardSize != segment.length) {
+            // 拷贝无用数据
+            discard = this.copy.copy(in, discardSize, false, false);
+          } else {
+            discard = segment;
+            in.skipBytes(discardSize);
+          }
+          discardBytes(ctx, in, discard);
+        }
       }
     }
 
-    // 重置为读取之前的位置
-    in.resetReaderIndex();
-
     // 检查可读取的字节是否达到可读取的长度
-    final int len = getLength(ctx, in, headBuff);
+    final int len = getLength(ctx, in, segment);
     if (in.readableBytes() < len) {
       attr.set(len);
       return;
@@ -104,19 +125,64 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
   }
 
   /**
+   * 丢弃的数据
+   *
+   * @param discard 数据
+   */
+  protected void discardBytes(ChannelHandlerContext ctx, ByteBuf in, byte[] discard) {
+    // nothing done.
+  }
+
+  /**
+   * 校验消息头
+   *
+   * @param head  消息头
+   * @param buf   读取的数据缓冲
+   * @param start 缓冲区开始的位置
+   * @return 返回校验结果
+   */
+  protected boolean isHead(byte[] head, byte[] buf, int start) {
+    HeadValidator validator = getHeadValidator();
+    if (validator != null) {
+      return validator.isHead(head, buf, start);
+    }
+    if (buf.length - start < head.length) {
+      return false;
+    }
+    for (int i = 0; i < head.length; i++) {
+      if (head[i] != buf[i + start]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * 是否丢弃数据
+   *
+   * @param head  消息头
+   * @param buf   读取的数据缓冲
+   * @param start 缓冲开始的位置
+   * @return 返回是否丢弃数据
+   */
+  protected boolean isDiscard(byte[] head, byte[] buf, int start) {
+    return head.length < 1 || buf[start] != head[0];
+  }
+
+  /**
    * 长度
    *
-   * @param ctx      xxx
-   * @param in       数据
-   * @param readBuff 读取的缓冲数据
+   * @param ctx xxx
+   * @param in  数据
+   * @param buf 读取的缓冲数据
    * @return 返回数据的长度
    */
-  public int getLength(ChannelHandlerContext ctx, ByteBuf in, byte[] readBuff) {
+  public int getLength(ChannelHandlerContext ctx, ByteBuf in, byte[] buf) {
     final LengthFunction func = this.lengthFunction;
     if (func == null) {
       throw new IllegalStateException("LengthFunction is null...");
     }
-    return func.getLength(ctx, in, readBuff);
+    return func.getLength(ctx, in, buf);
   }
 
   @Nonnull
@@ -137,8 +203,37 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
     this.head = head != null ? head : HEAD;
   }
 
+  public LengthFunction getLengthFunction() {
+    return lengthFunction;
+  }
+
+  public void setLengthFunction(LengthFunction lengthFunction) {
+    this.lengthFunction = lengthFunction;
+  }
+
+  public HeadValidator getHeadValidator() {
+    return headValidator;
+  }
+
+  public void setHeadValidator(HeadValidator headValidator) {
+    this.headValidator = headValidator;
+  }
+
   public AttributeKey<Integer> getLengthKey() {
     return lengthKey;
+  }
+
+
+  public interface HeadValidator {
+    /**
+     * 校验 head
+     *
+     * @param head  消息头
+     * @param buf   读取的数据缓冲
+     * @param start 缓冲区开始的位置
+     * @return 返回校验结果
+     */
+    boolean isHead(byte[] head, byte[] buf, int start);
   }
 
   public interface LengthFunction {
@@ -153,3 +248,4 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
     int getLength(ChannelHandlerContext ctx, ByteBuf in, byte[] segment);
   }
 }
+

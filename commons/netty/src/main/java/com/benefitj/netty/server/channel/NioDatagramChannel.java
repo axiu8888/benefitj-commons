@@ -44,7 +44,7 @@ class NioDatagramChannel extends AbstractChannel {
   /**
    * 缓冲队列
    */
-  private final Queue<ByteBuf> bufQueue = new ConcurrentLinkedQueue<>();
+  private final Queue<DatagramPacket> messageQueue = new ConcurrentLinkedQueue<>();
 
   /**
    * 最新接收数据包的时间
@@ -52,7 +52,7 @@ class NioDatagramChannel extends AbstractChannel {
   private volatile long lastReaderTime = System.currentTimeMillis();
   private volatile long lastWriterTime = System.currentTimeMillis();
 
-  private final AtomicReference<ScheduledFuture<?>> timeoutFuture = new AtomicReference<>();
+  private final AtomicReference<ScheduledFuture<?>> timerRef = new AtomicReference<>();
   /**
    * Creates a new instance.
    *
@@ -149,7 +149,7 @@ class NioDatagramChannel extends AbstractChannel {
 
   @Override
   protected void doRegister() throws Exception {
-    scheduleTimeout();
+    startTimer();
   }
 
   /**
@@ -187,8 +187,8 @@ class NioDatagramChannel extends AbstractChannel {
     //is reading check, because the pipeline head context will call read again
     if (this.reading.compareAndSet(false, true)) {
       try {
-        ByteBuf buf;
-        while ((buf = this.bufQueue.poll()) != null) {
+        DatagramPacket buf;
+        while ((buf = this.messageQueue.poll()) != null) {
           this.lastReaderTime = System.currentTimeMillis();
           pipeline().fireChannelRead(buf);
         }
@@ -258,47 +258,51 @@ class NioDatagramChannel extends AbstractChannel {
     }
   }
 
-  public NioDatagramChannel addByteBuf(ByteBuf msg) {
-    this.bufQueue.add(msg);
+  public NioDatagramChannel addMessage(DatagramPacket msg) {
+    this.messageQueue.offer(msg);
     return this;
   }
 
   /**
    * 超时调度
    */
-  protected void scheduleTimeout() {
-    if (timeoutFuture.get() != null) return;
+  protected void startTimer() {
+    if (timerRef.get() != null) {
+      return;
+    }
+    ScheduledFuture<?> timer = this.eventLoop()
+        .scheduleAtFixedRate(this::check, 1, 1, TimeUnit.SECONDS);
+    this.timerRef.set(timer);
+  }
 
-    ScheduledFuture<?> timeoutFuture = this.eventLoop().scheduleAtFixedRate(() -> {
-      if (parent().isReaderTimeout(this.lastReaderTime)) {
-        ScheduledFuture<?> future = this.timeoutFuture.get();
-        if (future == null || future.isCancelled()) {
-          return;
-        }
-        if (!isActive()) {
-          this.timeoutFuture.getAndSet(null).cancel(true);
-          return;
-        }
-        // 读取超时
-        try {
-          doClose();
-        } catch (Throwable e) {
-          PlatformDependent.throwException(e);
-        } finally {
-          this.timeoutFuture.getAndSet(null).cancel(true);
-        }
-      } else if (parent().isWriterTimeout(this.lastWriterTime)) {
-        // 写入超时
-        try {
-          doClose();
-        } catch (Throwable e) {
-          PlatformDependent.throwException(e);
-        } finally {
-          this.timeoutFuture.getAndSet(null).cancel(true);
-        }
+  private void check() {
+    if (parent().isReaderTimeout(this.lastReaderTime)) {
+      ScheduledFuture<?> future = this.timerRef.get();
+      if (future == null || future.isCancelled()) {
+        return;
       }
-    }, 1, 1, TimeUnit.SECONDS);
-    this.timeoutFuture.set(timeoutFuture);
+      if (!isActive()) {
+        this.timerRef.getAndSet(null).cancel(true);
+        return;
+      }
+      // 读取超时
+      try {
+        doClose();
+      } catch (Throwable e) {
+        PlatformDependent.throwException(e);
+      } finally {
+        this.timerRef.getAndSet(null).cancel(true);
+      }
+    } else if (parent().isWriterTimeout(this.lastWriterTime)) {
+      // 写入超时
+      try {
+        doClose();
+      } catch (Throwable e) {
+        PlatformDependent.throwException(e);
+      } finally {
+        this.timerRef.getAndSet(null).cancel(true);
+      }
+    }
   }
 
   final class UdpChannelUnsafe extends AbstractUnsafe {

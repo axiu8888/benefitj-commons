@@ -9,5 +9,5 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * @param <I>
  */
 @ChannelHandler.Sharable
-public abstract class SharableSimpleChannelInboundHandler<I> extends SimpleChannelInboundHandler<I> {
+public abstract class SharableSimpleInboundHandler<I> extends SimpleChannelInboundHandler<I> {
 }

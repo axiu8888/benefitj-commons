@@ -42,12 +42,33 @@ public class ByteBufCopy extends BufCopy {
   /**
    * 读取数据，并重置读取标记
    *
+   * @param data 数据
+   * @return 返回读取的数据
+   */
+  public byte[] copyAdnReset(ByteBuf data, int size) {
+    return copyAdnReset(data, size, true);
+  }
+
+  /**
+   * 读取数据，并重置读取标记
+   *
    * @param data  数据
    * @param local 是否使用本地缓存
    * @return 返回读取的数据
    */
   public byte[] copyAdnReset(ByteBuf data, boolean local) {
     return copy(data, local, true);
+  }
+
+  /**
+   * 读取数据，并重置读取标记
+   *
+   * @param data  数据
+   * @param local 是否使用本地缓存
+   * @return 返回读取的数据
+   */
+  public byte[] copyAdnReset(ByteBuf data, int size, boolean local) {
+    return copy(data, size, local, true);
   }
 
   /**

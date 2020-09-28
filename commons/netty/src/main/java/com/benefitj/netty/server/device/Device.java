@@ -6,6 +6,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -100,5 +101,41 @@ public interface Device {
    * @return 返回 ScheduledFuture
    */
   ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit);
+
+  /**
+   * 属性集合
+   */
+  Map<String, Object> attrs();
+
+  /**
+   * 设置属性值
+   *
+   * @param key   属性键
+   * @param value 属性值
+   */
+  void setAttr(String key, Object value);
+
+  /**
+   * 获取属性值
+   *
+   * @param key 属性键
+   * @param <T> 属性值类型
+   * @return 返回获取的属性值
+   */
+  <T> T getAttr(String key);
+
+  /**
+   * 移除属性值
+   *
+   * @param key 属性键
+   * @param <T> 属性值类型
+   * @return 返回被移除的属性值，如果没有，返回 NULL
+   */
+  <T> T removeAttr(String key);
+
+  /**
+   * 清空所有属性值
+   */
+  void clearAttrs();
 
 }

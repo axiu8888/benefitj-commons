@@ -9,16 +9,16 @@ import io.netty.channel.SimpleChannelInboundHandler;
  *
  * @param <I>
  */
-public class BiConsumerChannelInboundHandler<I> extends SimpleChannelInboundHandler<I> {
+public class BiConsumerInboundHandler<I> extends SimpleChannelInboundHandler<I> {
 
   private NettyBiConsumer<ChannelHandlerContext, I> consumer;
 
-  public BiConsumerChannelInboundHandler(Class<? extends I> inboundMessageType) {
+  public BiConsumerInboundHandler(Class<? extends I> inboundMessageType) {
     this(inboundMessageType, null);
   }
 
-  public BiConsumerChannelInboundHandler(Class<? extends I> inboundMessageType,
-                                         NettyBiConsumer<ChannelHandlerContext, I> consumer) {
+  public BiConsumerInboundHandler(Class<? extends I> inboundMessageType,
+                                  NettyBiConsumer<ChannelHandlerContext, I> consumer) {
     super(inboundMessageType);
     this.setConsumer(consumer);
   }

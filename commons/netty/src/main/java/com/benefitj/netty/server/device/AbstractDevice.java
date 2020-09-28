@@ -7,7 +7,9 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -28,11 +30,14 @@ public abstract class AbstractDevice implements Device {
    * 远程地址
    */
   private InetSocketAddress remoteAddress;
-
   /**
    * 通道
    */
   private Channel channel;
+  /**
+   * 属性
+   */
+  private Map<String, Object> attributes = new ConcurrentHashMap<>();
 
   public AbstractDevice(Channel channel) {
     this(null, channel);
@@ -41,11 +46,24 @@ public abstract class AbstractDevice implements Device {
   public AbstractDevice(String id, Channel channel) {
     this.id = id;
     this.channel = channel;
-
     if (channel != null) {
       this.setLocalAddress((InetSocketAddress) channel.localAddress());
       this.setRemoteAddress((InetSocketAddress) channel.remoteAddress());
     }
+  }
+
+  public AbstractDevice(String id, Channel channel, InetSocketAddress remoteAddr) {
+    this(id, channel, null, remoteAddr);
+    if (channel != null) {
+      this.setLocalAddress((InetSocketAddress) channel.localAddress());
+    }
+  }
+
+  public AbstractDevice(String id, Channel channel, InetSocketAddress localAddr, InetSocketAddress remoteAddr) {
+    this.id = id;
+    this.channel = channel;
+    this.setLocalAddress(localAddr);
+    this.setRemoteAddress(remoteAddr);
   }
 
   protected AbstractDevice self() {
@@ -171,6 +189,55 @@ public abstract class AbstractDevice implements Device {
   @Override
   public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
     return eventLoop().schedule(command, delay, unit);
+  }
+
+  /**
+   * 属性集合
+   */
+  @Override
+  public Map<String, Object> attrs() {
+    return attributes;
+  }
+
+  /**
+   * 设置属性值
+   *
+   * @param key   属性键
+   * @param value 属性值
+   */
+  @Override
+  public void setAttr(String key, Object value) {
+    attrs().put(key, value);
+  }
+
+  /**
+   * 获取属性值
+   *
+   * @param key 属性键
+   * @return 返回获取的属性值
+   */
+  @Override
+  public <T> T getAttr(String key) {
+    return (T) attrs().get(key);
+  }
+
+  /**
+   * 移除属性值
+   *
+   * @param key 属性键
+   * @return 返回被移除的属性值，如果没有，返回 NULL
+   */
+  @Override
+  public <T> T removeAttr(String key) {
+    return (T) attrs().remove(key);
+  }
+
+  /**
+   * 清空所有属性值
+   */
+  @Override
+  public void clearAttrs() {
+    attrs().clear();
   }
 
   @Override

@@ -662,10 +662,6 @@ public class HexUtils {
     sb.append(hex.charAt(b & 0x0F));
   }
 
-  private static boolean matchFill(byte[] bin, int index, int length) {
-    return index < (bin.length - 1) && ((index + 1) % length == 0);
-  }
-
   /**
    * 16进制字符串转换成字节数组
    *
@@ -709,6 +705,81 @@ public class HexUtils {
     }
     return -1;
     // return (byte) "0123456789ABCDEF".indexOf(c);
+  }
+
+  /**
+   * 是否相等
+   *
+   * @param src   原数组
+   * @param start 开始的位置
+   * @param flag  标志
+   * @return 返回是否相等
+   */
+  public static boolean isEquals(byte[] src, int start, byte flag) {
+    for (int i = start; i < src.length; i++) {
+      if (src[i] != flag) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * 判断两个字节数组是否相等
+   *
+   * @param standard 原数组
+   * @param dest     目标数组
+   * @return 返回是否相等
+   */
+  public static boolean isEquals(byte[] standard, byte[] dest) {
+    return isEquals(standard, dest, 0);
+  }
+
+  /**
+   * 判断两个字节数组是否相等
+   *
+   * @param standard 原数组
+   * @param dest     目标数组
+   * @param destPos  目标数组开始的位置
+   * @return 返回是否相等
+   */
+  public static boolean isEquals(byte[] standard, byte[] dest, int destPos) {
+    return isEquals(standard, dest, destPos, standard.length);
+  }
+
+  /**
+   * 判断两个字节数组是否相等
+   *
+   * @param standard 原数组
+   * @param dest     目标数组
+   * @param destPos  目标数组开始的位置
+   * @param len      比较的长度
+   * @return 返回是否相等
+   */
+  public static boolean isEquals(byte[] standard, byte[] dest, int destPos, int len) {
+    return isEquals(standard, 0, dest, destPos, len);
+  }
+
+  /**
+   * 判断两个字节数组是否相等
+   *
+   * @param src     原数组
+   * @param srcPos  原数组开始的位置
+   * @param dest    目标数组
+   * @param destPos 目标数组开始的位置
+   * @param len     比较的长度
+   * @return 返回是否相等
+   */
+  public static boolean isEquals(byte[] src, int srcPos, byte[] dest, int destPos, int len) {
+    if ((src.length - srcPos >= len) && (dest.length - destPos >= len)) {
+      for (int i = 0; i < len; i++) {
+        if (src[srcPos + i] != dest[i + destPos]) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   private static boolean isNotEmpty(String s) {

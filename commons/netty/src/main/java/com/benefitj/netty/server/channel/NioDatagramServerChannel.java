@@ -169,11 +169,11 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
       if ((child == null) || !child.isOpen()) {
         child = newChild(remote);
         buf.add(child);
-        child.addByteBuf(msg);
+        child.addMessage(new DatagramPacket(msg, localAddress(), remote));
         free = false;
         return 1;
       } else {
-        child.addByteBuf(msg);
+        child.addMessage(new DatagramPacket(msg, localAddress(), remote));
         free = false;
         if (child.isRegistered()) {
           child.read();
