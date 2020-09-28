@@ -31,7 +31,8 @@ artifacts.archives sourceJar
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    compileOnly fileTree(dir: 'libs-source', include: ['*.jar'])
+    compile fileTree(dir: 'libs/jar', include: ['*.jar'])
+    compileOnly fileTree(dir: 'libs/source', include: ['*.jar'])
 
     testCompileOnly 'junit:junit:4.12'
 
@@ -46,6 +47,6 @@ dependencies {
     compileOnly 'org.slf4j:slf4j-log4j12:1.7.30'
 
     implementation 'org.apache.commons:commons-lang3:3.9'
-//    implementation 'com.alibaba:fastjson:1.2.62'
+//    implementation 'com.alibaba:fastjson:1.2.73'
 
 }
