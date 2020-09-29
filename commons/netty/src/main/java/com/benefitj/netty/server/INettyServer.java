@@ -94,4 +94,9 @@ public interface INettyServer<S extends INettyServer<S>> extends INetty<ServerBo
    */
   S childHandler(ChannelHandler childHandler);
 
+  /**
+   * 服务端类型
+   */
+  ServerType serverType();
+
 }

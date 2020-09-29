@@ -79,4 +79,11 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
     return super.group(group, group);
   }
 
+  /**
+   * 服务端类型
+   */
+  @Override
+  public final ServerType serverType() {
+    return ServerType.TCP;
+  }
 }
