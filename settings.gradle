@@ -19,6 +19,8 @@ include ":commons:netty" // netty
 include ":commons:eventbus" // EventBus
 include ":commons:all" // 全部的依赖
 
+include ":mqtt" // mqtt
+
 include ":examples" // examples
 
 
