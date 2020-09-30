@@ -13,13 +13,9 @@ import java.net.InetSocketAddress;
  */
 public class UdpDevice extends AbstractDevice {
   /**
-   * 上线时间
-   */
-  private long onlineTime = System.currentTimeMillis();
-  /**
    * 上次接收到数据的时间
    */
-  private volatile long recvTime = -1;
+  private volatile long rcvTime = -1;
 
   public UdpDevice(Channel channel) {
     super(channel);
@@ -29,35 +25,37 @@ public class UdpDevice extends AbstractDevice {
     super(id, channel);
   }
 
-  public void setOnlineTime(long onlineTime) {
-    this.onlineTime = onlineTime;
+  public UdpDevice(String id, Channel channel, InetSocketAddress remoteAddr) {
+    super(id, channel, remoteAddr);
   }
 
-  public long getOnlineTime() {
-    return onlineTime;
+  public UdpDevice(String id, Channel channel, InetSocketAddress localAddr, InetSocketAddress remoteAddr) {
+    super(id, channel, localAddr, remoteAddr);
   }
 
   /**
    * 获取接收数据包的时间
    */
-  public long getRecvTime() {
-    return recvTime;
+  public long getRcvTime() {
+    return rcvTime;
   }
 
   /**
    * 设置接收数据包的时间
    *
-   * @param recvTime 时间
+   * @param rcvTime 时间
    */
-  public void setRecvTime(long recvTime) {
-    this.recvTime = recvTime;
+  public Device setRcvTime(long rcvTime) {
+    this.rcvTime = rcvTime;
+    return self();
   }
 
   /**
    * 设置当前时间为最新的接收数据包的时间
    */
-  public void setRecvTimeNow() {
-    this.setRecvTime(System.currentTimeMillis());
+  public Device setRecvTimeNow() {
+    this.setRcvTime(System.currentTimeMillis());
+    return self();
   }
 
   /**
@@ -112,4 +110,5 @@ public class UdpDevice extends AbstractDevice {
   public int hashCode() {
     return super.hashCode();
   }
+
 }

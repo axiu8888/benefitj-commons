@@ -7,6 +7,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +18,10 @@ import java.util.concurrent.TimeUnit;
  * 抽象的设备基类
  */
 public abstract class AbstractDevice implements Device {
+
+  private static InetSocketAddress ofAddr(SocketAddress addr) {
+    return (InetSocketAddress) addr;
+  }
 
   /**
    * 设备ID
@@ -38,24 +43,23 @@ public abstract class AbstractDevice implements Device {
    * 属性
    */
   private Map<String, Object> attributes = new ConcurrentHashMap<>();
+  /**
+   * 上线时间
+   */
+  private long onlineTime;
 
   public AbstractDevice(Channel channel) {
     this(null, channel);
   }
 
   public AbstractDevice(String id, Channel channel) {
-    this.id = id;
-    this.channel = channel;
-    if (channel != null) {
-      this.setLocalAddress((InetSocketAddress) channel.localAddress());
-      this.setRemoteAddress((InetSocketAddress) channel.remoteAddress());
-    }
+    this(id, channel, ofAddr(channel.localAddress()), ofAddr(channel.remoteAddress()));
   }
 
   public AbstractDevice(String id, Channel channel, InetSocketAddress remoteAddr) {
     this(id, channel, null, remoteAddr);
     if (channel != null) {
-      this.setLocalAddress((InetSocketAddress) channel.localAddress());
+      this.setLocalAddress(ofAddr(channel.localAddress()));
     }
   }
 
@@ -64,6 +68,8 @@ public abstract class AbstractDevice implements Device {
     this.channel = channel;
     this.setLocalAddress(localAddr);
     this.setRemoteAddress(remoteAddr);
+    // 在线时间
+    this.setOnlineTime(System.currentTimeMillis());
   }
 
   protected AbstractDevice self() {
@@ -131,6 +137,25 @@ public abstract class AbstractDevice implements Device {
   }
 
   /**
+   * 设置在线时间
+   *
+   * @param onlineTime 在线时间
+   */
+  @Override
+  public Device setOnlineTime(long onlineTime) {
+    this.onlineTime = onlineTime;
+    return self();
+  }
+
+  /**
+   * 获取在线时间
+   */
+  @Override
+  public long getOnlineTime() {
+    return onlineTime;
+  }
+
+  /**
    * 通道
    */
   @Override
@@ -154,7 +179,9 @@ public abstract class AbstractDevice implements Device {
    * @return 返回 ChannelFuture
    */
   @Override
-  public abstract ChannelFuture send(ByteBuf msg);
+  public ChannelFuture send(ByteBuf msg) {
+    return channel().writeAndFlush(msg);
+  }
 
   /**
    * 发送消息
@@ -174,6 +201,14 @@ public abstract class AbstractDevice implements Device {
   @Override
   public EventLoop eventLoop() {
     return channel().eventLoop();
+  }
+
+  /**
+   * 是否在EventLoop中
+   */
+  @Override
+  public boolean inEventLoop() {
+    return eventLoop().inEventLoop();
   }
 
   /**
@@ -257,7 +292,13 @@ public abstract class AbstractDevice implements Device {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "(" + getId() + "#" + getRemoteAddress() + ")";
+    return new StringBuilder()
+        .append(getClass().getSimpleName())
+        .append("(")
+        .append(getId())
+        .append("#").append(getRemoteAddress())
+        .append(")")
+        .toString();
   }
 
 }

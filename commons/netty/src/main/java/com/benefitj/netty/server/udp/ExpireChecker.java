@@ -77,7 +77,7 @@ public interface ExpireChecker<C extends UdpDevice> {
     public boolean isExpired(C client, UdpDeviceManager<C> manager) {
       long now = System.currentTimeMillis();
       return (now - client.getOnlineTime() > manager.getExpire())
-          && (now - client.getRecvTime() >= manager.getExpire());
+          && (now - client.getRcvTime() >= manager.getExpire());
     }
 
   }

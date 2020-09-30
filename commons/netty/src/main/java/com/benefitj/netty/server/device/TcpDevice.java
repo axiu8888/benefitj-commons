@@ -4,6 +4,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
+import java.net.InetSocketAddress;
+
 /**
  * TCP 设备
  */
@@ -15,6 +17,14 @@ public class TcpDevice extends AbstractDevice {
 
   public TcpDevice(String id, Channel channel) {
     super(id, channel);
+  }
+
+  public TcpDevice(String id, Channel channel, InetSocketAddress remoteAddr) {
+    super(id, channel, remoteAddr);
+  }
+
+  public TcpDevice(String id, Channel channel, InetSocketAddress localAddr, InetSocketAddress remoteAddr) {
+    super(id, channel, localAddr, remoteAddr);
   }
 
   /**

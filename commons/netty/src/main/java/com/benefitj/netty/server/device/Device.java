@@ -55,6 +55,19 @@ public interface Device {
   Device setRemoteAddress(InetSocketAddress remoteAddr);
 
   /**
+   * 设置在线时间
+   *
+   * @param onlineTime 在线时间
+   * @return 返回设备对象
+   */
+  Device setOnlineTime(long onlineTime);
+
+  /**
+   * 获取在线时间
+   */
+  long getOnlineTime();
+
+  /**
    * 通道
    */
   Channel channel();
@@ -84,6 +97,11 @@ public interface Device {
    * 获取Channel的EventLoop
    */
   EventLoop eventLoop();
+
+  /**
+   * 是否在EventLoop中
+   */
+  boolean inEventLoop();
 
   /**
    * 执行调度任务
