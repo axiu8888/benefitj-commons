@@ -1,4 +1,4 @@
-package com.benefitj.mqtt.packet;
+package com.benefitj.mqtt.message;
 
 /**
  * 消息方向

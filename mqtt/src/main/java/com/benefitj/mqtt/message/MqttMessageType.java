@@ -1,4 +1,4 @@
-package com.benefitj.mqtt.packet;
+package com.benefitj.mqtt.message;
 
 /**
  * 控制报文类型
@@ -107,6 +107,15 @@ public enum MqttMessageType {
 
   public String getDescription() {
     return description;
+  }
+
+  public static MqttMessageType valueOf(int v) {
+    for (MqttMessageType type : values()) {
+      if (type.value == v) {
+        return type;
+      }
+    }
+    return null;
   }
 
 }

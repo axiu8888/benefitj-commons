@@ -1,9 +1,9 @@
-package com.benefitj.mqtt.packet;
+package com.benefitj.mqtt.message;
 
 /**
  * 控制报文
  */
-public interface ControlPacket {
+public interface MqttMessage {
 
   /**
    * 获取控制报文的类型

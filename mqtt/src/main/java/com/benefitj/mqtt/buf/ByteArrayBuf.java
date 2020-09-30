@@ -325,6 +325,20 @@ public class ByteArrayBuf {
   }
 
   /**
+   * 写入，根据指定的位置开始写入
+   *
+   * @param src     原数据
+   * @param srcPos  原数据开始的位置
+   * @param dest    目标缓冲
+   * @param destPos 目标缓冲开始的位置
+   * @param len     写入数据的长度
+   */
+  public ByteArrayBuf write(byte[] src, int srcPos, ByteArrayBuf dest, int destPos, int len) {
+
+    return writeBytes0(src, srcPos, dest, len);
+  }
+
+  /**
    * 写入布尔值，1字节
    *
    * @param v 值

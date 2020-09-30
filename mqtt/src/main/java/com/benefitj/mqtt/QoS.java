@@ -1,21 +1,34 @@
 package com.benefitj.mqtt;
 
+/**
+ * 服务质量
+ */
 public enum QoS {
 
   /**
-   *
+   * 至多一次
    */
-  QoS_0((byte)0),
-  QoS_1((byte)1),
-  QoS_2((byte)2);
+  AT_MOST_ONCE(0),
+  /**
+   * 至少一次
+   */
+  AT_LEAST_ONCE(1),
+  /**
+   * 每次
+   */
+  EXACTLY_ONCE(2),
+  /**
+   * 失败
+   */
+  FAILURE(0x80);
 
-  private final byte value;
+  private final int value;
 
-  QoS(byte value) {
+  QoS(int value) {
     this.value = value;
   }
 
-  public byte getValue() {
+  public int getValue() {
     return value;
   }
 

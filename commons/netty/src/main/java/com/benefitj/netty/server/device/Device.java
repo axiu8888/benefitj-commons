@@ -68,6 +68,26 @@ public interface Device {
   long getOnlineTime();
 
   /**
+   * 获取接收数据包的时间
+   */
+  long getRcvTime();
+
+  /**
+   * 设置接收数据包的时间
+   *
+   * @param rcvTime 时间
+   * @return 返回设备对象
+   */
+  Device setRcvTime(long rcvTime);
+
+  /**
+   * 设置当前时间为最新的接收数据包的时间
+   *
+   * @return 返回设备对象
+   */
+  Device setRecvTimeNow();
+
+  /**
    * 通道
    */
   Channel channel();
@@ -155,5 +175,10 @@ public interface Device {
    * 清空所有属性值
    */
   void clearAttrs();
+
+  /**
+   * 关闭通道
+   */
+  ChannelFuture closeChannel();
 
 }

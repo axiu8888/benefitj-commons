@@ -1,11 +1,11 @@
-package com.benefitj.mqtt.packet;
+package com.benefitj.mqtt.message;
 
 import com.benefitj.mqtt.MqttUtils;
 
 /**
  * 控制报文包装器
  */
-public interface ControlPacketWrapper<T extends ControlPacket> {
+public interface MqttMessageWrapper<T extends MqttMessage> {
 
   /**
    * 原始报文数据
@@ -22,26 +22,26 @@ public interface ControlPacketWrapper<T extends ControlPacket> {
   /**
    * 获取报文
    */
-  T getPacket();
+  T getMessage();
 
   /**
    * 设置报文
    *
-   * @param packet 报文
+   * @param message 报文
    */
-  void setPacket(T packet);
+  void setMessage(T message);
 
   /**
    * 获取控制报文类型
    */
-  MqttMessageType getPacketType();
+  MqttMessageType getMessageType();
 
   /**
    * 设置控制报文类型
    *
-   * @param packetType 报文类型
+   * @param messageType 报文类型
    */
-  void setPacketType(MqttMessageType packetType);
+  void setMessageType(MqttMessageType messageType);
 
   /**
    * 获取标志位

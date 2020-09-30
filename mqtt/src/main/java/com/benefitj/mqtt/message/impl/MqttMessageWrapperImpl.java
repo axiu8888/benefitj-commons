@@ -1,15 +1,15 @@
-package com.benefitj.mqtt.packet.impl;
+package com.benefitj.mqtt.message.impl;
 
-import com.benefitj.mqtt.packet.ControlPacket;
-import com.benefitj.mqtt.packet.MqttMessageType;
-import com.benefitj.mqtt.packet.ControlPacketWrapper;
+import com.benefitj.mqtt.message.MqttMessage;
+import com.benefitj.mqtt.message.MqttMessageType;
+import com.benefitj.mqtt.message.MqttMessageWrapper;
 
 /**
  * 控制报文包装器实现
  *
  * @param <T>
  */
-public class ControlPacketWrapperImpl<T extends ControlPacket> implements ControlPacketWrapper<T> {
+public class MqttMessageWrapperImpl<T extends MqttMessage> implements MqttMessageWrapper<T> {
 
   /**
    * 原始包文
@@ -28,7 +28,7 @@ public class ControlPacketWrapperImpl<T extends ControlPacket> implements Contro
    */
   private byte flags;
 
-  public ControlPacketWrapperImpl(byte[] raw, T packet) {
+  public MqttMessageWrapperImpl(byte[] raw, T packet) {
     this.raw = raw;
     this.packet = packet;
   }
@@ -55,36 +55,36 @@ public class ControlPacketWrapperImpl<T extends ControlPacket> implements Contro
    * 获取报文
    */
   @Override
-  public T getPacket() {
+  public T getMessage() {
     return this.packet;
   }
 
   /**
    * 设置报文
    *
-   * @param packet 报文
+   * @param message 报文
    */
   @Override
-  public void setPacket(T packet) {
-    this.packet = packet;
+  public void setMessage(T message) {
+    this.packet = message;
   }
 
   /**
    * 获取控制报文类型
    */
   @Override
-  public MqttMessageType getPacketType() {
+  public MqttMessageType getMessageType() {
     return this.packetType;
   }
 
   /**
    * 设置控制报文类型
    *
-   * @param packetType 报文类型
+   * @param messageType 报文类型
    */
   @Override
-  public void setPacketType(MqttMessageType packetType) {
-    this.packetType = packetType;
+  public void setMessageType(MqttMessageType messageType) {
+    this.packetType = messageType;
   }
 
   /**

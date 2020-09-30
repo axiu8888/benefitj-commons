@@ -12,10 +12,6 @@ import java.net.InetSocketAddress;
  * UDP 设备
  */
 public class UdpDevice extends AbstractDevice {
-  /**
-   * 上次接收到数据的时间
-   */
-  private volatile long rcvTime = -1;
 
   public UdpDevice(Channel channel) {
     super(channel);
@@ -31,31 +27,6 @@ public class UdpDevice extends AbstractDevice {
 
   public UdpDevice(String id, Channel channel, InetSocketAddress localAddr, InetSocketAddress remoteAddr) {
     super(id, channel, localAddr, remoteAddr);
-  }
-
-  /**
-   * 获取接收数据包的时间
-   */
-  public long getRcvTime() {
-    return rcvTime;
-  }
-
-  /**
-   * 设置接收数据包的时间
-   *
-   * @param rcvTime 时间
-   */
-  public Device setRcvTime(long rcvTime) {
-    this.rcvTime = rcvTime;
-    return self();
-  }
-
-  /**
-   * 设置当前时间为最新的接收数据包的时间
-   */
-  public Device setRecvTimeNow() {
-    this.setRcvTime(System.currentTimeMillis());
-    return self();
   }
 
   /**

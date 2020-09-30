@@ -1,16 +1,10 @@
 package com.benefitj.mqtt;
 
-import com.benefitj.core.HexUtils;
-import com.benefitj.core.IdUtils;
-import com.benefitj.core.local.LocalCacheFactory;
-import com.benefitj.core.local.LocalMapCache;
+import com.benefitj.core.BufCopy;
 import com.benefitj.mqtt.buf.MqttByteBuf;
-import com.benefitj.mqtt.packet.CONNECT;
-import com.benefitj.mqtt.packet.MqttMessageType;
-import com.benefitj.mqtt.packet.impl.ConnectPacket;
+import com.benefitj.mqtt.message.CONNECT;
+import com.benefitj.mqtt.message.MqttMessageType;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Arrays;
 
 /**
  * MQTT工具
@@ -24,39 +18,6 @@ import java.util.Arrays;
  * 有效载荷： ......
  */
 public class MqttUtils {
-  public static void main(String[] args) {
-//    System.err.println(HexUtils.bytesToHex("MQTT".getBytes(StandardCharsets.UTF_8)));
-//    System.err.println(HexUtils.bytesToInt(new byte[]{0x00, 0x04}));
-
-
-    ConnectPacket connect = new ConnectPacket();
-    // 设置 client ID
-    connect.setClientId(IdUtils.nextId("mqtt", null, 12));
-    // 协议名: MQTT/MQTT3.1.1
-    connect.setProtocolName("MQTT");
-    // 协议等级
-    connect.setProtocolLevel(4);
-    // 遗嘱标志
-    connect.setWillFlag(true);
-    // 遗嘱保留
-    connect.setWillRetain(true);
-    // 遗嘱 QoS
-    connect.setWillQoS(0);
-    // 遗嘱主题
-    connect.setWillTopic("test");
-    // 遗嘱消息
-    connect.setWillMessage("呵呵, game over!");
-    // 用户名
-    connect.setUsername("admin");
-    // 密码
-    connect.setPassword("123456".getBytes());
-    // 保持30秒
-    connect.setKeepAlive(30);
-
-    byte[] encode = encode(connect);
-    System.err.println("encode: " + HexUtils.bytesToHex(encode));
-
-  }
 
   // 0(0x00)                              127(0x7F)
   // 128(0x00)                            16383(0xFF 0x7F)
@@ -71,25 +32,21 @@ public class MqttUtils {
   /**
    * 缓存剩余长度的字节
    */
-  private static final LocalMapCache<Integer, byte[]> BUFF_CACHE = LocalCacheFactory.newBytesWeakHashMapCache();
+  private static final BufCopy COPY = new BufCopy();
 
 
   /**
    * 获取缓存字节
    */
-  private static byte[] getBuff(int size) {
-    return getBuff(size, true);
+  private static byte[] getCache(int size) {
+    return getCache(size, true);
   }
 
   /**
    * 获取软引用的缓存字节
    */
-  private static byte[] getBuff(int size, boolean local) {
-    byte[] buff = local ? BUFF_CACHE.computeIfAbsent(size) : new byte[size];
-    if (local) {
-      Arrays.fill(buff, (byte) 0x00);
-    }
-    return buff;
+  private static byte[] getCache(int size, boolean local) {
+    return COPY.getCache(size, local);
   }
 
   /**
@@ -114,7 +71,7 @@ public class MqttUtils {
       throw new IllegalArgumentException("Required max length " + MAX_LENGTH + ", current length: " + length);
     }
     // 每个字节的高位用于标识是否还有长度，低7位
-    byte[] buff = getBuff(4);
+    byte[] buff = getCache(4);
     int index = 0;
     int x = length;
     do {
@@ -127,7 +84,7 @@ public class MqttUtils {
       index++;
     } while (x > 0 && index < 4);
     if (index != buff.length || !local) {
-      byte[] remainLength = getBuff(index, local);
+      byte[] remainLength = getCache(index, local);
       System.arraycopy(buff, 0, remainLength, 0, remainLength.length);
       return remainLength;
     }
@@ -175,30 +132,25 @@ public class MqttUtils {
    * @param connect 连接报文
    * @return 返回编码后的数据
    */
-  public static byte[] encode(CONNECT connect) {
+  public static byte[] connectEncode(CONNECT connect) {
     if (StringUtils.isEmpty(connect.getClientId())) {
-      throw new IllegalArgumentException("Required client id");
+      throw new IllegalArgumentException("client id is empty");
     }
 
-    // 检查 will topic 和 will message
     if (connect.isWillFlag()
-        && (StringUtils.isBlank(connect.getWillTopic())
-        || StringUtils.isBlank(connect.getWillMessage()))) {
+        && StringUtils.isAnyBlank(connect.getWillTopic(), connect.getWillMessage())) {
       throw new IllegalStateException("连接标志为1，必须设置will topic和will message");
     }
+    // 检查 will topic 和 will message
 
     final MqttByteBuf buf = new MqttByteBuf(1024 << 4);
     // 固定报头
-    MqttMessageType packetType = connect.getMessageType();
-    //byte type = (byte) (packetType.getValue() << 4);
-    ////type |= type & connect.geFlags(); // flags为0000
-    //buf.put(type); // fixed header
-
-
-    // 固定报头:
-    //  类型和标志位00010000
-    //  剩余长度(待计算)
-
+    // 类型和标志位00010000
+    MqttMessageType msgType = connect.getMessageType();
+    // flags为0000
+    buf.writeByte((byte) (msgType.getValue() << 4)); // fixed header
+    // 剩余长度(待计算)
+    //buf.write(0);
 
     // 可变报头: 协议名(2 + n)、协议等级(1)、连接标志(1)、保持连接(2)
 
@@ -251,35 +203,8 @@ public class MqttUtils {
     // password
     buf.put(connect.getPassword(), true);
 
-    buf.markReaderIndex();
-    System.err.println("readBytes ==>: " + HexUtils.bytesToHex(buf.readBytes()));
-    buf.resetReaderIndex();
-
     return buf.readBytes();
   }
 
-
-//
-//  /**
-//   * 控制报文头
-//   *
-//   * @param packet 报文
-//   * @return 返回报文头
-//   */
-//  public static byte[] encodeFixedHeader(ControlPacket packet) {
-//    return encodeFixedHeader(packet, true);
-//  }
-//
-//  /**
-//   * 控制报文头
-//   *
-//   * @param packet 报文
-//   * @param local  是否为本地缓冲数据
-//   * @return 返回报文头
-//   */
-//  public static byte[] encodeFixedHeader(ControlPacket packet, boolean local) {
-//
-//
-//  }
 
 }

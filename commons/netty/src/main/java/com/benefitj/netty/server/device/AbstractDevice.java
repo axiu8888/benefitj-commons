@@ -47,6 +47,10 @@ public abstract class AbstractDevice implements Device {
    * 上线时间
    */
   private long onlineTime;
+  /**
+   * 最近一次的接收时间
+   */
+  private volatile long rcvTime = -1;
 
   public AbstractDevice(Channel channel) {
     this(null, channel);
@@ -153,6 +157,34 @@ public abstract class AbstractDevice implements Device {
   @Override
   public long getOnlineTime() {
     return onlineTime;
+  }
+
+  /**
+   * 获取接收数据包的时间
+   */
+  @Override
+  public long getRcvTime() {
+    return rcvTime;
+  }
+
+  /**
+   * 设置接收数据包的时间
+   *
+   * @param rcvTime 时间
+   */
+  @Override
+  public Device setRcvTime(long rcvTime) {
+    this.rcvTime = rcvTime;
+    return self();
+  }
+
+  /**
+   * 设置当前时间为最新的接收数据包的时间
+   */
+  @Override
+  public Device setRecvTimeNow() {
+    this.setRcvTime(System.currentTimeMillis());
+    return self();
   }
 
   /**
@@ -275,6 +307,14 @@ public abstract class AbstractDevice implements Device {
     attrs().clear();
   }
 
+  /**
+   * 关闭通道
+   */
+  @Override
+  public ChannelFuture closeChannel() {
+    return channel().close();
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -292,13 +332,32 @@ public abstract class AbstractDevice implements Device {
 
   @Override
   public String toString() {
+    InetSocketAddress remote = getRemoteAddress();
     return new StringBuilder()
         .append(getClass().getSimpleName())
         .append("(")
         .append(getId())
-        .append("#").append(getRemoteAddress())
+        .append("#").append(remote.getHostString()).append(":").append(remote.getPort())
+        .append("#online[").append(String.format("%.1fs", getDuration(getOnlineTime(), TimeUnit.SECONDS))).append("]")
+        .append("#rcv[").append(String.format("%.1fs", getDuration(getRcvTime(), TimeUnit.SECONDS))).append("]")
         .append(")")
         .toString();
   }
 
+
+  protected static float getDuration(long time, TimeUnit unit) {
+    long duration = System.currentTimeMillis() - time;
+    switch (unit) {
+      case SECONDS:
+        return duration / 1000.0f;
+      case MINUTES:
+        return duration / 60_000.f;
+      case HOURS:
+        return duration / 3600_000.f;
+      case DAYS:
+        return duration / 24.f / 3600_000.f;
+      default:
+        return duration;
+    }
+  }
 }

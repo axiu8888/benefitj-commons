@@ -1,7 +1,7 @@
-package com.benefitj.mqtt.packet.impl;
+package com.benefitj.mqtt.message.impl;
 
-import com.benefitj.mqtt.packet.CONNECT;
-import com.benefitj.mqtt.packet.MqttMessageType;
+import com.benefitj.mqtt.message.CONNECT;
+import com.benefitj.mqtt.message.MqttMessageType;
 
 /**
  * CONNECT 报文实现, {@link CONNECT}
@@ -12,7 +12,7 @@ import com.benefitj.mqtt.packet.MqttMessageType;
  *
  * @author DINGXIUAN
  */
-public class ConnectPacket implements CONNECT {
+public class ConnectMessage implements CONNECT {
 
   /**
    * 客户端唯一标识
@@ -63,7 +63,7 @@ public class ConnectPacket implements CONNECT {
    */
   private int keepAlive = 0;
 
-  public ConnectPacket() {
+  public ConnectMessage() {
   }
 
   /**
@@ -362,8 +362,8 @@ public class ConnectPacket implements CONNECT {
       return this;
     }
 
-    public ConnectPacket build() {
-      ConnectPacket connect = new ConnectPacket();
+    public ConnectMessage build() {
+      ConnectMessage connect = new ConnectMessage();
       connect.setClientId(this.clientId);
       connect.setProtocolName(this.protocolName);
       connect.setProtocolLevel(this.protocolLevel);

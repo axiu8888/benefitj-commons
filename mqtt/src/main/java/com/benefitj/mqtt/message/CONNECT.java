@@ -1,4 +1,4 @@
-package com.benefitj.mqtt.packet;
+package com.benefitj.mqtt.message;
 
 /**
  * 客户端连接
@@ -153,7 +153,7 @@ package com.benefitj.mqtt.packet;
  *
  * @author DINGXIUAN
  */
-public interface CONNECT extends ControlPacket {
+public interface CONNECT extends MqttMessage {
 
   /**
    * 获取控制报文的类型
