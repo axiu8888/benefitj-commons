@@ -245,7 +245,7 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
    * @param c 消费者回调
    * @return 返回是否使用了通道
    */
-  boolean useServerChannel(NettyConsumer<Channel> c);
+  boolean useServeChannel(NettyConsumer<Channel> c);
 
   /**
    * 是否已启动

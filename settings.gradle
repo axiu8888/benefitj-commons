@@ -20,6 +20,7 @@ include ":commons:eventbus" // EventBus
 include ":commons:all" // 全部的依赖
 
 include ":mqtt" // mqtt
+include ":mqtt-netty" // 使用netty的编解码的handler处理mqtt消息
 
 include ":examples" // examples
 

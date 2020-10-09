@@ -379,7 +379,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   }
 
   @Override
-  public boolean useServerChannel(NettyConsumer<Channel> c) {
+  public boolean useServeChannel(NettyConsumer<Channel> c) {
     final Channel channel = getServeChannel();
     if (channel != null) {
       try {
