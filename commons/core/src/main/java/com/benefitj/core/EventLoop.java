@@ -155,6 +155,14 @@ public class EventLoop implements ScheduledExecutorService {
   /**
    * 创建EventLoop
    */
+  public static EventLoop newCoreLoop(boolean daemon) {
+    int coreSize = Runtime.getRuntime().availableProcessors();
+    return newEventLoop(coreSize, daemon);
+  }
+
+  /**
+   * 创建EventLoop
+   */
   public static EventLoop newEventLoop(int corePoolSize, boolean daemon) {
     return new EventLoop(corePoolSize, defaultThreadFactory(daemon));
   }
