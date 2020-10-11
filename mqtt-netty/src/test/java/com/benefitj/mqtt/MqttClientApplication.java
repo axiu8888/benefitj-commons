@@ -52,14 +52,15 @@ public class MqttClientApplication {
 
     client.start();
 
-    EventLoop.single()
+    EventLoop.multi()
         .scheduleAtFixedRate(() -> {
-          log.info("client interrupted...");
-          client.getServeChannel().close();
+          //log.info("client interrupted start ...");
+          client.closeServeChannel();
+          log.info("client interrupted end ...");
         }, 10, 10, TimeUnit.SECONDS);
 
 
-    EventLoop.single().schedule(() ->
+    EventLoop.multi().schedule(() ->
         client.stop(future -> log.info("client stopped....")), 120, TimeUnit.SECONDS);
 
 //    // 结束程序

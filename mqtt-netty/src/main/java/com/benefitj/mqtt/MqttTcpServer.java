@@ -4,6 +4,7 @@ import com.benefitj.core.DefaultThreadFactory;
 import com.benefitj.core.HexUtils;
 import com.benefitj.netty.ByteBufCopy;
 import com.benefitj.netty.adapter.BiConsumerInboundHandler;
+import com.benefitj.netty.adapter.ChannelShutdownEventHandler;
 import com.benefitj.netty.log.Log4jNettyLogger;
 import com.benefitj.netty.log.NettyLogger;
 import com.benefitj.netty.server.TcpNettyServer;
@@ -46,6 +47,7 @@ public class MqttTcpServer extends TcpNettyServer {
       protected void initChannel(Channel ch) throws Exception {
         final ByteBufCopy copy = new ByteBufCopy();
         ch.pipeline()
+            .addLast(ChannelShutdownEventHandler.INSTANCE)
             .addLast(new IdleStateHandler(20, 0, 0, TimeUnit.SECONDS) {
               @Override
               public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -60,13 +62,6 @@ public class MqttTcpServer extends TcpNettyServer {
                   }
                 } else {
                   super.userEventTriggered(ctx, evt);
-                }
-
-                // 接收到客户端断开事件
-                if (ctx.channel().isActive()
-                    && ((evt instanceof ChannelInputShutdownEvent)
-                    || (evt instanceof ChannelOutputShutdownEvent))) {
-                  ctx.channel().close();
                 }
               }
 

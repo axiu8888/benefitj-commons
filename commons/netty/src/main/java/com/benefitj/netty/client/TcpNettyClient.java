@@ -1,6 +1,7 @@
 package com.benefitj.netty.client;
 
 import com.benefitj.netty.DefaultThreadFactory;
+import com.benefitj.netty.adapter.ChannelShutdownEventHandler;
 import com.benefitj.netty.log.Log4jNettyLogger;
 import com.benefitj.netty.log.NettyLogger;
 import io.netty.bootstrap.Bootstrap;
@@ -8,8 +9,6 @@ import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.ChannelInputShutdownEvent;
-import io.netty.channel.socket.ChannelOutputShutdownEvent;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -17,7 +16,6 @@ import io.netty.util.concurrent.GenericFutureListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * TCP客户端
@@ -162,10 +160,6 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
      * 定时器，每隔固定时间检查客户端状态
      */
     private ScheduledFuture<?> timer;
-    /**
-     * 重连任务
-     */
-    private final AtomicBoolean taskState = new AtomicBoolean(false);
 
     public AutoReconnectChannelInitializer(TcpNettyClient client) {
       this.client = client;
@@ -184,31 +178,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     @Override
     protected void initChannel(Channel ch) throws Exception {
       ch.pipeline()
-          .addLast(new ChannelDuplexHandler() {
-
-            @Override
-            public void channelActive(ChannelHandlerContext ctx) throws Exception {
-              super.channelActive(ctx);
-              log.info("channelActive, {}", ctx.channel().remoteAddress());
-            }
-
-            @Override
-            public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-              super.channelInactive(ctx);
-              log.info("channelInactive, {}", ctx.channel().remoteAddress());
-            }
-
-            @Override
-            public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-              super.userEventTriggered(ctx, evt);
-              // 接收到断开事件
-              if (ctx.channel().isActive()
-                  && ((evt instanceof ChannelInputShutdownEvent)
-                  || (evt instanceof ChannelOutputShutdownEvent))) {
-                ctx.channel().close();
-              }
-            }
-          })
+          .addLast(ChannelShutdownEventHandler.INSTANCE)
           .addLast(client.handler());
     }
 
@@ -218,8 +188,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     void scheduleReconnectService() {
       if (timer == null) {
         // 开始调度
-        this.timer = executor.scheduleAtFixedRate(() ->
-            startReconnectTask(), period, period, periodUnit);
+        this.timer = executor.scheduleAtFixedRate(this::startReconnectTask, period, period, periodUnit);
       }
     }
 
@@ -227,6 +196,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
      * 停止重连
      */
     void shutdownReconnectService() {
+      log.info("shutdownReconnectService");
       if (timer != null) {
         this.timer.cancel(true);
         this.timer = null;
@@ -246,16 +216,9 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
         return;
       }
 
-      if (taskState.compareAndSet(false, true)) {
-        // 更新
-        this.executor.schedule(() -> {
-          // 将状态重置为NEW
-          client.stateHolder().set(Thread.State.NEW);
-          // 停止
-          client.start(f -> taskState.set(false));
-        }, period, periodUnit);
-        log.info("startReconnectTask..., isConnected: {}", client.isConnected());
-      }
+      this.client.stateHolder().set(Thread.State.NEW);
+      this.client.start();
+      log.info("startReconnectTask 1..., isConnected: {}", client.isConnected());
     }
 
   }

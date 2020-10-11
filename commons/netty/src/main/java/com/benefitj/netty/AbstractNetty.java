@@ -189,10 +189,8 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
     if (expectAndSet(Thread.State.RUNNABLE, newState) || expectAndSet(Thread.State.NEW, newState)) {
       List<GenericFutureListener<? extends Future<Void>>> stopListeners = new ArrayList<>(stopListeners());
       Collections.addAll(stopListeners, listeners);
-      stopListeners.add(future -> {
-        // 停止
-        useServeChannel(ChannelOutboundInvoker::close);
-      });
+      // 停止
+      stopListeners.add(f -> setServeChannel(null));
       GenericFutureListener[] stopListenerArray = stopListeners.toArray(new GenericFutureListener[0]);
       shutdownGracefully(group(), true, stopListenerArray);
     } else {
@@ -221,6 +219,13 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   public S setServeChannel(Channel serveChannel) {
     this.serveChannel = serveChannel;
     return self();
+  }
+
+  public void closeServeChannel() {
+    Channel ch = getServeChannel();
+    if (ch != null && ch.isActive()) {
+      ch.close();
+    }
   }
 
   /**
@@ -464,7 +469,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   /**
    * 添加启动时的监听
    */
-  public S addStartListeners(GenericFutureListener<? extends Future<Void>> ...listeners) {
+  public S addStartListeners(GenericFutureListener<? extends Future<Void>>... listeners) {
     Collections.addAll(startListeners(), listeners);
     return self();
   }
@@ -479,7 +484,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   /**
    * 添加停止时的监听
    */
-  public S addStopListeners(GenericFutureListener<? extends Future<Void>> ...listeners) {
+  public S addStopListeners(GenericFutureListener<? extends Future<Void>>... listeners) {
     Collections.addAll(stopListeners(), listeners);
     return self();
   }
