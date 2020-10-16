@@ -7,6 +7,7 @@ import com.benefitj.netty.handler.ChannelShutdownEventHandler;
 import com.benefitj.netty.log.Log4jNettyLogger;
 import com.benefitj.netty.log.NettyLogger;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
@@ -64,9 +65,16 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
     Map<ChannelOption<?>, Object> options = new HashMap<>(16);
     options.putAll(options());
+    options.put(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
     // 默认4MB，数据量较大，缓冲区较小会导致丢包
     options.putIfAbsent(ChannelOption.SO_RCVBUF, (1024 << 10) * 4);
     options.putIfAbsent(ChannelOption.SO_SNDBUF, (1024 << 10) * 4);
+    options.put(ChannelOption.TCP_NODELAY, true);
+    options.put(ChannelOption.SO_KEEPALIVE, true);
+    options.put(ChannelOption.AUTO_READ, true);
+    options.put(ChannelOption.AUTO_CLOSE, true);
+    options.put(ChannelOption.ALLOW_HALF_CLOSURE, true);
+    options.put(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000);
     this.options(options);
 
     if (autoReconnect()) {
@@ -91,7 +99,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   @Override
   protected ChannelFuture startOnly(Bootstrap bootstrap, GenericFutureListener<? extends Future<Void>>... listeners) {
-    return bootstrap.connect().syncUninterruptibly().addListeners(listeners);
+    return bootstrap.connect().addListeners(listeners);
   }
 
   @Override
