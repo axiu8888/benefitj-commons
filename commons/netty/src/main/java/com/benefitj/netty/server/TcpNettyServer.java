@@ -24,7 +24,7 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
   static {
     // options
     Map<ChannelOption<?>, Object> optionMap = new HashMap<>();
-    optionMap.put(ChannelOption.SO_REUSEADDR, true);
+    optionMap.put(ChannelOption.SO_REUSEADDR, false);
     optionMap.put(ChannelOption.SO_BACKLOG, 1024);
     DEFAULT_OPTIONS = Collections.unmodifiableMap(optionMap);
 

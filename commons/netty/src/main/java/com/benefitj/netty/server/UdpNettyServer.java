@@ -32,14 +32,14 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
       this.executeWhileNull(bossGroup(), () ->
           this.group(new EpollEventLoopGroup(1), new DefaultEventLoopGroup()));
       this.executeWhileNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
-      this.option(UnixChannelOption.SO_REUSEPORT, true);
+      this.option(UnixChannelOption.SO_REUSEPORT, false);
     } else {
       this.executeWhileNull(bossGroup(), () ->
           this.group(new NioEventLoopGroup(1), new DefaultEventLoopGroup()));
       this.executeWhileNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
     }
     this.option(ChannelOption.SO_BROADCAST, true);
-    this.option(ChannelOption.SO_REUSEADDR, true);
+    this.option(ChannelOption.SO_REUSEADDR, false);
     Map<ChannelOption<?>, Object> options = new HashMap<>(16);
     options.putAll(options());
     // 默认4MB，数据量较大，缓冲区较小会导致丢包

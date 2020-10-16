@@ -39,14 +39,16 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
 
   @Override
   protected ChannelFuture startOnly(ServerBootstrap bootstrap) {
-    return bootstrap.bind().addListener(f -> {
-      SocketAddress socketAddress = bootstrap.config().localAddress();
-      if (f.isSuccess()) {
-        log.debug("Netty server started at localAddress: " + socketAddress);
-      } else {
-        log.debug("Netty server start failed at localAddress: " + socketAddress);
-      }
-    });
+    return bootstrap.bind()
+        .syncUninterruptibly()
+        .addListener(f -> {
+          SocketAddress socketAddress = bootstrap.config().localAddress();
+          if (f.isSuccess()) {
+            log.debug("Netty server started at localAddress: " + socketAddress);
+          } else {
+            log.debug("Netty server start failed at localAddress: " + socketAddress);
+          }
+        });
   }
 
   @Override

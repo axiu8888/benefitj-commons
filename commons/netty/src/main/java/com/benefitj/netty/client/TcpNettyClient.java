@@ -91,7 +91,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   @Override
   protected ChannelFuture startOnly(Bootstrap bootstrap, GenericFutureListener<? extends Future<Void>>... listeners) {
-    return bootstrap.connect().addListeners(listeners);
+    return bootstrap.connect().syncUninterruptibly().addListeners(listeners);
   }
 
   @Override

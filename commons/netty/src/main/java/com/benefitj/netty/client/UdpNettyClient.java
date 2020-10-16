@@ -46,7 +46,7 @@ public class UdpNettyClient extends AbstractNettyClient<UdpNettyClient> {
 
   @Override
   protected ChannelFuture startOnly(Bootstrap bootstrap, GenericFutureListener<? extends Future<Void>>... listeners) {
-    return bootstrap.bind().addListeners(listeners);
+    return bootstrap.bind().syncUninterruptibly().addListeners(listeners);
   }
 
 }

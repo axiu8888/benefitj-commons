@@ -2,6 +2,7 @@ package com.benefitj.netty.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.DatagramPacket;
 
 /**
  * 处理简单的消息
@@ -43,6 +44,16 @@ public class BiConsumerInboundHandler<I> extends ByteBufCopyInboundHandler<I> {
    */
   public static BiConsumerInboundHandler<ByteBuf> newByteBufHandler(HandlerBiConsumer<ByteBuf> consumer) {
     return new BiConsumerInboundHandler<>(ByteBuf.class, consumer);
+  }
+
+  /**
+   * 创建Handler
+   *
+   * @param consumer 消费者
+   * @return 返回创建的Handler
+   */
+  public static BiConsumerInboundHandler<DatagramPacket> newDatagramHandler(HandlerBiConsumer<DatagramPacket> consumer) {
+    return new BiConsumerInboundHandler<>(DatagramPacket.class, consumer);
   }
 
 }
