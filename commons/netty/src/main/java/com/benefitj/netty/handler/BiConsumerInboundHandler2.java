@@ -1,15 +1,14 @@
-package com.benefitj.netty.adapter;
+package com.benefitj.netty.handler;
 
 import com.benefitj.netty.NettyBiConsumer;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
  * 处理简单的消息
  *
  * @param <I>
  */
-public abstract class BiConsumerInboundHandler2<I> extends SimpleChannelInboundHandler<I> {
+public abstract class BiConsumerInboundHandler2<I> extends ByteBufCopyInboundHandler<I> {
 
   private NettyBiConsumer<ChannelHandlerContext, I> consumer;
 

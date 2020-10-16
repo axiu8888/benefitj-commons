@@ -1,4 +1,4 @@
-package com.benefitj.netty.adapter;
+package com.benefitj.netty.handler;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.SimpleChannelInboundHandler;

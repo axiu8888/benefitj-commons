@@ -1,4 +1,4 @@
-package com.benefitj.netty.adapter;
+package com.benefitj.netty.handler;
 
 import com.benefitj.netty.ByteBufCopy;
 import io.netty.buffer.ByteBuf;
@@ -20,11 +20,11 @@ public abstract class ByteBufCopyInboundHandler<T> extends SimpleChannelInboundH
     super(autoRelease);
   }
 
-  public ByteBufCopyInboundHandler(Class<T> inboundMessageType) {
+  public ByteBufCopyInboundHandler(Class<? extends T> inboundMessageType) {
     super(inboundMessageType);
   }
 
-  public ByteBufCopyInboundHandler(Class<T> inboundMessageType, boolean autoRelease) {
+  public ByteBufCopyInboundHandler(Class<? extends T> inboundMessageType, boolean autoRelease) {
     super(inboundMessageType, autoRelease);
   }
 

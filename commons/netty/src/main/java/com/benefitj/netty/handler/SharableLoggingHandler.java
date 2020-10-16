@@ -1,4 +1,4 @@
-package com.benefitj.netty.adapter;
+package com.benefitj.netty.handler;
 
 import com.benefitj.core.HexUtils;
 import com.benefitj.netty.log.NettyLogger;

@@ -1,9 +1,8 @@
 package com.benefitj.mqtt;
 
 import com.benefitj.core.EventLoop;
-import com.benefitj.netty.ByteBufCopy;
-import com.benefitj.netty.adapter.BiConsumerInboundHandler;
 import com.benefitj.netty.client.TcpNettyClient;
+import com.benefitj.netty.handler.BiConsumerInboundHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -29,11 +28,9 @@ public class MqttClientApplication {
     client.handler(new ChannelInitializer<Channel>() {
       @Override
       protected void initChannel(Channel ch) throws Exception {
-        final ByteBufCopy copy = new ByteBufCopy();
         ch.pipeline()
-            .addLast(new BiConsumerInboundHandler<>(ByteBuf.class, (ctx, msg) -> {
-              byte[] data = copy.copy(msg);
-              log.info("响应: {}", new String(data));
+            .addLast(BiConsumerInboundHandler.newByteBufHandler((handler, ctx, msg) -> {
+              log.info("响应: {}", new String(handler.copy(msg)));
             }));
       }
     });

@@ -1,6 +1,7 @@
-package com.benefitj.netty.adapter;
+package com.benefitj.netty.handler;
 
 import com.benefitj.netty.ByteBufCopy;
+import com.benefitj.netty.NettyUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -136,37 +137,29 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
   /**
    * 校验消息头
    *
-   * @param head  消息头
-   * @param buf   读取的数据缓冲
-   * @param start 缓冲区开始的位置
+   * @param head    消息头
+   * @param segment 读取的数据缓冲
+   * @param start   缓冲区开始的位置
    * @return 返回校验结果
    */
-  protected boolean isHead(byte[] head, byte[] buf, int start) {
+  protected boolean isHead(byte[] head, byte[] segment, int start) {
     HeadValidator validator = getHeadValidator();
     if (validator != null) {
-      return validator.isHead(head, buf, start);
+      return validator.isHead(head, segment, start);
     }
-    if (buf.length - start < head.length) {
-      return false;
-    }
-    for (int i = 0; i < head.length; i++) {
-      if (head[i] != buf[i + start]) {
-        return false;
-      }
-    }
-    return true;
+    return head.length == 0 || NettyUtils.match(head, segment, start);
   }
 
   /**
    * 是否丢弃数据
    *
-   * @param head  消息头
-   * @param buf   读取的数据缓冲
-   * @param start 缓冲开始的位置
+   * @param head    消息头
+   * @param segment 读取的数据缓冲
+   * @param start   缓冲开始的位置
    * @return 返回是否丢弃数据
    */
-  protected boolean isDiscard(byte[] head, byte[] buf, int start) {
-    return head.length < 1 || buf[start] != head[0];
+  protected boolean isDiscard(byte[] head, byte[] segment, int start) {
+    return head.length == 0 || !NettyUtils.match(head, segment, start);
   }
 
   /**
@@ -247,5 +240,6 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
      */
     int getLength(ChannelHandlerContext ctx, ByteBuf in, byte[] segment);
   }
+
 }
 
