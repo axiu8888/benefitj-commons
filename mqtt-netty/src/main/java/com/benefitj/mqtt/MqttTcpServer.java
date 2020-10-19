@@ -46,7 +46,7 @@ public class MqttTcpServer extends TcpNettyServer {
                 ctx.writeAndFlush(msg);
               }
             }))
-            .addLast(ActiveChangeChannelHandler.newHandler((state, ctx, handler) ->
+            .addLast(ActiveChangeChannelHandler.newHandler((handler, ctx, state) ->
                 log.info("客户端{}, {}"
                     , state == ActiveState.ACTIVE ? "上线" : "下线"
                     , ctx.channel().remoteAddress())))

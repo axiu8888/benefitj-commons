@@ -92,7 +92,7 @@ public abstract class RetrofitRequest<Api> implements IRetrofitRequest<Api> {
         if ((api = this.serviceApi) != null) {
           return api;
         }
-        api = (this.serviceApi = createApi(getApiClass()));
+        api = (this.serviceApi = createApi(getApiType()));
       }
     }
     return api;

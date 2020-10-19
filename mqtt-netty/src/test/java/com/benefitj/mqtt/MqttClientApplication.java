@@ -3,6 +3,8 @@ package com.benefitj.mqtt;
 import com.benefitj.core.EventLoop;
 import com.benefitj.netty.client.TcpNettyClient;
 import com.benefitj.netty.handler.BiConsumerInboundHandler;
+import com.benefitj.netty.log.Log4jNettyLogger;
+import com.benefitj.netty.log.NettyLogger;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -20,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 @SpringBootApplication
 public class MqttClientApplication {
   public static void main(String[] args) {
+    NettyLogger.INSTANCE.setLogger(new Log4jNettyLogger());
 
     final Logger log = LoggerFactory.getLogger(MqttClientApplication.class);
 

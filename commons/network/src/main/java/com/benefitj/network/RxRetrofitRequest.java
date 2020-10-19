@@ -23,23 +23,23 @@ public class RxRetrofitRequest<Api> extends RetrofitRequest<Api> {
   /**
    * 创建新的Request
    *
-   * @param apiClass 接口
-   * @param baseUrl  基地址
+   * @param apiType 接口
+   * @param baseUrl 基地址
    * @return 返回接口的代理类
    */
-  public static <T> T create(String baseUrl, Class<T> apiClass) {
-    return new RxRetrofitRequest<T>(baseUrl, apiClass).getApi();
+  public static <T> T create(String baseUrl, Class<T> apiType) {
+    return new RxRetrofitRequest<T>(baseUrl, apiType).getApi();
   }
 
   /**
    * 创建新的Request
    *
-   * @param apiClass 接口
-   * @param baseUrl  基地址
+   * @param apiType 接口
+   * @param baseUrl 基地址
    * @return 返回接口的代理类
    */
-  public static <T> T create(String baseUrl, Class<T> apiClass, OkHttpClient client) {
-    RxRetrofitRequest<T> request = new RxRetrofitRequest<>(baseUrl, apiClass);
+  public static <T> T create(String baseUrl, Class<T> apiType, OkHttpClient client) {
+    RxRetrofitRequest<T> request = new RxRetrofitRequest<>(baseUrl, apiType);
     request.setOkHttpClient(client);
     return request.getApi();
   }
@@ -56,20 +56,20 @@ public class RxRetrofitRequest<Api> extends RetrofitRequest<Api> {
    */
   private volatile OkHttpClient okHttpClient;
 
-  private Class<Api> apiClass;
+  private Class<Api> apiType;
 
   public RxRetrofitRequest(String baseUrl) {
     super(baseUrl);
   }
 
-  public RxRetrofitRequest(String baseUrl, Class<Api> apiClass) {
+  public RxRetrofitRequest(String baseUrl, Class<Api> apiType) {
     super(baseUrl);
-    this.apiClass = apiClass;
+    this.apiType = apiType;
   }
 
   @Override
-  public Class<Api> getApiClass() {
-    Class<Api> klass = this.apiClass;
+  public Class<Api> getApiType() {
+    Class<Api> klass = this.apiType;
     if (klass == null) {
       throw new IllegalStateException("Api的class不能为null, 请覆写此方法!");
     }

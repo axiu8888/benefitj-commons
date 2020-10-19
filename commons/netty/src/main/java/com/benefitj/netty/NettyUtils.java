@@ -19,7 +19,7 @@ public class NettyUtils {
    * @return 返回拷贝的数据
    */
   public static byte[] copy(ByteBuf msg, int len, boolean reset) {
-    return COPY.copy(msg, len, true, reset);
+    return COPY.copy(msg, len, false, reset);
   }
 
   /**

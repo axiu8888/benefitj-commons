@@ -20,13 +20,13 @@ public class ActiveChangeChannelHandler extends ChannelDuplexHandler {
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     super.channelActive(ctx);
-    getListener().onChanged(ActiveState.ACTIVE, ctx, this);
+    getListener().onChanged(this, ctx, ActiveState.ACTIVE);
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
-    getListener().onChanged(ActiveState.INACTIVE, ctx, this);
+    getListener().onChanged(this, ctx, ActiveState.INACTIVE);
   }
 
   public ActiveStateListener getListener() {
@@ -45,11 +45,11 @@ public class ActiveChangeChannelHandler extends ChannelDuplexHandler {
     /**
      * 监听
      *
-     * @param state   状态
      * @param ctx     上下文
      * @param handler 当前的Handler
+     * @param state   状态
      */
-    void onChanged(ActiveState state, ChannelHandlerContext ctx, ActiveChangeChannelHandler handler);
+    void onChanged(ActiveChangeChannelHandler handler, ChannelHandlerContext ctx, ActiveState state);
   }
 
 

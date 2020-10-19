@@ -26,7 +26,7 @@ public interface IRetrofitRequest<Api> {
   /**
    * 获取ServiceApi的Class
    */
-  Class<Api> getApiClass();
+  Class<Api> getApiType();
 
   /**
    * 构建Retrofit

@@ -4,8 +4,6 @@ import com.benefitj.netty.DefaultThreadFactory;
 import com.benefitj.netty.handler.ActiveChangeChannelHandler;
 import com.benefitj.netty.handler.ActiveState;
 import com.benefitj.netty.handler.ChannelShutdownEventHandler;
-import com.benefitj.netty.log.Log4jNettyLogger;
-import com.benefitj.netty.log.NettyLogger;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -24,9 +22,6 @@ import java.util.concurrent.*;
  * TCP客户端
  */
 public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
-  static {
-    NettyLogger.INSTANCE.setLogger(new Log4jNettyLogger());
-  }
 
   /**
    * 是否自动重连
@@ -78,7 +73,8 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     this.options(options);
 
     if (autoReconnect()) {
-      this.executeWhileNull(super.handler(), () -> super.handler(new WatchdogChannelInitializer(this)));
+      this.executeWhileNull(super.handler(), () ->
+          super.handler(new WatchdogChannelInitializer(this)));
     } else {
       super.handler(handler);
     }
@@ -149,11 +145,12 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     return self();
   }
 
-
   /**
    * 自动重连的初始化程序
    */
-  static class WatchdogChannelInitializer extends ChannelInitializer<Channel> implements ActiveChangeChannelHandler.ActiveStateListener {
+  static class WatchdogChannelInitializer extends ChannelInitializer<Channel>
+      implements ActiveChangeChannelHandler.ActiveStateListener {
+
     /**
      * Netty TCP 客户端
      */
@@ -234,7 +231,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     }
 
     @Override
-    public void onChanged(ActiveState state, ChannelHandlerContext ctx, ActiveChangeChannelHandler handler) {
+    public void onChanged(ActiveChangeChannelHandler handler, ChannelHandlerContext ctx, ActiveState state) {
       // 立刻重新尝试开启一个新的连接
       if (state == ActiveState.INACTIVE && !executor.isShutdown()) {
         executor.schedule(this::startReconnectNow, 0, TimeUnit.MILLISECONDS);
