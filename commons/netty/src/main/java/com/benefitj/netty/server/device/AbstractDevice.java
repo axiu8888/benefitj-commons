@@ -196,6 +196,17 @@ public abstract class AbstractDevice implements Device {
   }
 
   /**
+   * 设置通道
+   *
+   * @param channel 通道
+   * @return 返回当前设备
+   */
+  public Device channel(Channel channel) {
+    this.channel = channel;
+    return self();
+  }
+
+  /**
    * 是否为active
    */
   @Override
