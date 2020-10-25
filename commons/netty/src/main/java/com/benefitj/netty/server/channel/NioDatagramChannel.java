@@ -34,10 +34,6 @@ class NioDatagramChannel extends AbstractChannel {
    */
   private volatile InetSocketAddress remoteAddress;
   /**
-   * 是否为 active
-   */
-  private volatile boolean open = true;
-  /**
    * 读取状态
    */
   private final AtomicBoolean reading = new AtomicBoolean(false);
@@ -82,7 +78,7 @@ class NioDatagramChannel extends AbstractChannel {
    */
   @Override
   public boolean isOpen() {
-    return open && parent().isActive();
+    return parent().isActive();
   }
 
   /**
@@ -175,7 +171,6 @@ class NioDatagramChannel extends AbstractChannel {
    */
   @Override
   protected void doClose() throws Exception {
-    this.open = false;
     parent().closeChannel(this);
   }
 
