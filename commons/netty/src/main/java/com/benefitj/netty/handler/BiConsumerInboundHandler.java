@@ -11,14 +11,14 @@ import io.netty.channel.socket.DatagramPacket;
  */
 public class BiConsumerInboundHandler<I> extends ByteBufCopyInboundHandler<I> {
 
-  private HandlerBiConsumer<I> consumer;
+  private InboundHandlerBiConsumer<I> consumer;
 
   public BiConsumerInboundHandler(Class<? extends I> inboundMessageType) {
     this(inboundMessageType, null);
   }
 
   public BiConsumerInboundHandler(Class<? extends I> inboundMessageType,
-                                  HandlerBiConsumer<I> consumer) {
+                                  InboundHandlerBiConsumer<I> consumer) {
     super(inboundMessageType);
     this.setConsumer(consumer);
   }
@@ -28,11 +28,11 @@ public class BiConsumerInboundHandler<I> extends ByteBufCopyInboundHandler<I> {
     getConsumer().accept(this, ctx, msg);
   }
 
-  public HandlerBiConsumer<I> getConsumer() {
+  public InboundHandlerBiConsumer<I> getConsumer() {
     return consumer;
   }
 
-  public void setConsumer(HandlerBiConsumer<I> consumer) {
+  public void setConsumer(InboundHandlerBiConsumer<I> consumer) {
     this.consumer = consumer;
   }
 
@@ -42,7 +42,7 @@ public class BiConsumerInboundHandler<I> extends ByteBufCopyInboundHandler<I> {
    * @param consumer 消费者
    * @return 返回创建的Handler
    */
-  public static BiConsumerInboundHandler<ByteBuf> newByteBufHandler(HandlerBiConsumer<ByteBuf> consumer) {
+  public static BiConsumerInboundHandler<ByteBuf> newByteBufHandler(InboundHandlerBiConsumer<ByteBuf> consumer) {
     return new BiConsumerInboundHandler<>(ByteBuf.class, consumer);
   }
 
@@ -52,7 +52,7 @@ public class BiConsumerInboundHandler<I> extends ByteBufCopyInboundHandler<I> {
    * @param consumer 消费者
    * @return 返回创建的Handler
    */
-  public static BiConsumerInboundHandler<DatagramPacket> newDatagramHandler(HandlerBiConsumer<DatagramPacket> consumer) {
+  public static BiConsumerInboundHandler<DatagramPacket> newDatagramHandler(InboundHandlerBiConsumer<DatagramPacket> consumer) {
     return new BiConsumerInboundHandler<>(DatagramPacket.class, consumer);
   }
 

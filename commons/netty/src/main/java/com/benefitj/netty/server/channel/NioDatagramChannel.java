@@ -48,7 +48,7 @@ class NioDatagramChannel extends AbstractChannel {
   private volatile long lastReaderTime = System.currentTimeMillis();
   private volatile long lastWriterTime = System.currentTimeMillis();
 
-  private final AtomicReference<ScheduledFuture<?>> timerRef = new AtomicReference<>();
+  private final AtomicReference<ScheduledFuture<?>> timer = new AtomicReference<>();
   /**
    * Creates a new instance.
    *
@@ -262,22 +262,22 @@ class NioDatagramChannel extends AbstractChannel {
    * 超时调度
    */
   protected void startTimer() {
-    if (timerRef.get() != null) {
+    if (timer.get() != null) {
       return;
     }
     ScheduledFuture<?> timer = this.eventLoop()
         .scheduleAtFixedRate(this::check, 1, 1, TimeUnit.SECONDS);
-    this.timerRef.set(timer);
+    this.timer.set(timer);
   }
 
   private void check() {
     if (parent().isReaderTimeout(this.lastReaderTime)) {
-      ScheduledFuture<?> future = this.timerRef.get();
+      ScheduledFuture<?> future = this.timer.get();
       if (future == null || future.isCancelled()) {
         return;
       }
       if (!isActive()) {
-        this.timerRef.getAndSet(null).cancel(true);
+        this.timer.getAndSet(null).cancel(true);
         return;
       }
       // 读取超时
@@ -286,7 +286,7 @@ class NioDatagramChannel extends AbstractChannel {
       } catch (Throwable e) {
         PlatformDependent.throwException(e);
       } finally {
-        this.timerRef.getAndSet(null).cancel(true);
+        this.timer.getAndSet(null).cancel(true);
       }
     } else if (parent().isWriterTimeout(this.lastWriterTime)) {
       // 写入超时
@@ -295,7 +295,7 @@ class NioDatagramChannel extends AbstractChannel {
       } catch (Throwable e) {
         PlatformDependent.throwException(e);
       } finally {
-        this.timerRef.getAndSet(null).cancel(true);
+        this.timer.getAndSet(null).cancel(true);
       }
     }
   }
