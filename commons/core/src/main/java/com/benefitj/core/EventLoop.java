@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * 事件循环
@@ -60,24 +61,25 @@ public class EventLoop implements ScheduledExecutorService {
     return executor;
   }
 
+
   @Override
   public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-    return getExecutor().schedule(command, delay, unit);
+    return getExecutor().schedule(wrapped(command), delay, unit);
   }
 
   @Override
   public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-    return getExecutor().schedule(callable, delay, unit);
+    return getExecutor().schedule(wrapped(callable), delay, unit);
   }
 
   @Override
   public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
-    return getExecutor().scheduleAtFixedRate(command, initialDelay, period, unit);
+    return getExecutor().scheduleAtFixedRate(wrapped(command), initialDelay, period, unit);
   }
 
   @Override
   public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
-    return getExecutor().scheduleWithFixedDelay(command, initialDelay, delay, unit);
+    return getExecutor().scheduleWithFixedDelay(wrapped(command), initialDelay, delay, unit);
   }
 
   @Override
@@ -107,42 +109,94 @@ public class EventLoop implements ScheduledExecutorService {
 
   @Override
   public <T> Future<T> submit(Callable<T> task) {
-    return getExecutor().submit(task);
+    return getExecutor().submit(wrapped(task));
   }
 
   @Override
   public <T> Future<T> submit(Runnable task, T result) {
-    return getExecutor().submit(task, result);
+    return getExecutor().submit(wrapped(task), result);
   }
 
   @Override
   public Future<?> submit(Runnable task) {
-    return getExecutor().submit(task);
+    return getExecutor().submit(wrapped(task));
   }
 
   @Override
   public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
-    return getExecutor().invokeAll(tasks);
+    return getExecutor().invokeAll(wrapped(tasks));
   }
 
   @Override
   public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
-    return getExecutor().invokeAll(tasks, timeout, unit);
+    return getExecutor().invokeAll(wrapped(tasks), timeout, unit);
   }
 
   @Override
   public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
-    return getExecutor().invokeAny(tasks);
+    return getExecutor().invokeAny(wrapped(tasks));
   }
 
   @Override
   public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-    return getExecutor().invokeAny(tasks, timeout, unit);
+    return getExecutor().invokeAny(wrapped(tasks), timeout, unit);
   }
 
   @Override
   public void execute(Runnable command) {
-    getExecutor().execute(command);
+    getExecutor().execute(wrapped(command));
+  }
+
+  /**
+   * 包裹 Runnable
+   *
+   * @param task 任务
+   * @return 返回结果
+   */
+  protected Runnable wrapped(Runnable task) {
+    return () -> {
+      try {
+        task.run();
+      } catch (Throwable e) {
+        Thread t = Thread.currentThread();
+        Thread.UncaughtExceptionHandler handler = t.getUncaughtExceptionHandler();
+        handler.uncaughtException(t, e);
+        throw e;
+      }
+    };
+  }
+
+  /**
+   * 包裹 Callable
+   *
+   * @param task 任务
+   * @param <T>  返回类型
+   * @return 返回结果
+   */
+  protected <T> Callable<T> wrapped(Callable<T> task) {
+    return () -> {
+      try {
+        return task.call();
+      } catch (Throwable e) {
+        Thread t = Thread.currentThread();
+        Thread.UncaughtExceptionHandler handler = t.getUncaughtExceptionHandler();
+        handler.uncaughtException(t, e);
+        throw e;
+      }
+    };
+  }
+
+  /**
+   * 包裹 Callable
+   *
+   * @param tasks 任务
+   * @param <T>   返回类型
+   * @return 返回结果
+   */
+  protected <T> Collection<? extends Callable<T>> wrapped(Collection<? extends Callable<T>> tasks) {
+    return tasks.stream()
+        .map(this::wrapped)
+        .collect(Collectors.toList());
   }
 
   /**
