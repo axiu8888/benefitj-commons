@@ -271,6 +271,22 @@ public class ReflectUtils {
   /**
    * 获取字段的值
    *
+   * @param obj     原对象
+   * @param matcher 匹配器
+   * @param <V>     值类型
+   * @return 返回获取到的值
+   */
+  public static <V> V getFieldValue(Object obj, Predicate<Field> matcher) {
+    if (obj != null) {
+      Field field = getField(obj.getClass(), matcher);
+      return field != null ? getFieldValue(field, obj) : null;
+    }
+    return null;
+  }
+
+  /**
+   * 获取字段的值
+   *
    * @param field 字段
    * @param obj   原对象
    * @param <V>   值类型
