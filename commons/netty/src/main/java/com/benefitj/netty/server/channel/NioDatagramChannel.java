@@ -29,10 +29,15 @@ class NioDatagramChannel extends AbstractChannel {
 
   private static final ChannelMetadata METADATA = new ChannelMetadata(false);
   private final DefaultChannelConfig config = new DefaultChannelConfig(this);
+
+  /**
+   * Channel
+   */
+  private volatile boolean open = true;
   /**
    * 远程地址
    */
-  private volatile InetSocketAddress remoteAddress;
+  private InetSocketAddress remoteAddress;
   /**
    * 读取状态
    */
@@ -40,15 +45,18 @@ class NioDatagramChannel extends AbstractChannel {
   /**
    * 缓冲队列
    */
-  private final Queue<DatagramPacket> messageQueue = new ConcurrentLinkedQueue<>();
-
+  private final Queue<DatagramPacket> queue = new ConcurrentLinkedQueue<>();
   /**
-   * 最新接收数据包的时间
+   * 读取数据包的时间
    */
-  private volatile long lastReaderTime = System.currentTimeMillis();
-  private volatile long lastWriterTime = System.currentTimeMillis();
+  private volatile long readerTime = now();
+  /**
+   * 写入数据包的时间
+   */
+  private volatile long writerTime = now();
 
   private final AtomicReference<ScheduledFuture<?>> timer = new AtomicReference<>();
+
   /**
    * Creates a new instance.
    *
@@ -78,7 +86,7 @@ class NioDatagramChannel extends AbstractChannel {
    */
   @Override
   public boolean isOpen() {
-    return parent().isActive();
+    return open;
   }
 
   /**
@@ -86,7 +94,7 @@ class NioDatagramChannel extends AbstractChannel {
    */
   @Override
   public boolean isActive() {
-    return isOpen();
+    return isOpen() && parent().isActive();
   }
 
   /**
@@ -166,11 +174,13 @@ class NioDatagramChannel extends AbstractChannel {
     doClose();
   }
 
+
   /**
    * Close the {@link Channel}
    */
   @Override
   protected void doClose() throws Exception {
+    this.open = false;
     parent().closeChannel(this);
   }
 
@@ -183,8 +193,8 @@ class NioDatagramChannel extends AbstractChannel {
     if (this.reading.compareAndSet(false, true)) {
       try {
         DatagramPacket buf;
-        while ((buf = this.messageQueue.poll()) != null) {
-          this.lastReaderTime = System.currentTimeMillis();
+        while ((buf = this.queue.poll()) != null) {
+          this.readerTime(now());
           pipeline().fireChannelRead(buf);
         }
         pipeline().fireChannelReadComplete();
@@ -238,7 +248,7 @@ class NioDatagramChannel extends AbstractChannel {
     NioEventLoop loop = parent().eventLoop();
     if (loop.inEventLoop()) {
       try {
-        this.lastWriterTime = System.currentTimeMillis();
+        this.writerTime(now());
         Unsafe unsafe = parent().unsafe();
         for (Object buf : list) {
           unsafe.write(buf, voidPromise());
@@ -254,48 +264,66 @@ class NioDatagramChannel extends AbstractChannel {
   }
 
   public NioDatagramChannel addMessage(DatagramPacket msg) {
-    this.messageQueue.offer(msg);
+    this.queue.offer(msg);
+    return this;
+  }
+
+  public long readerTime() {
+    return readerTime;
+  }
+
+  public NioDatagramChannel readerTime(long readerTime) {
+    this.readerTime = readerTime;
+    return this;
+  }
+
+  public long writerTime() {
+    return writerTime;
+  }
+
+  public NioDatagramChannel writerTime(long writerTime) {
+    this.writerTime = writerTime;
     return this;
   }
 
   /**
-   * 超时调度
+   * 开始超时调度
    */
-  protected void startTimer() {
+  private void startTimer() {
     if (timer.get() != null) {
       return;
     }
-    ScheduledFuture<?> timer = this.eventLoop()
-        .scheduleAtFixedRate(this::check, 1, 1, TimeUnit.SECONDS);
-    this.timer.set(timer);
+    ScheduledFuture<?> future = this.eventLoop().scheduleAtFixedRate(
+        this::checkTimeout, 500, 500, TimeUnit.MILLISECONDS);
+    this.timer.set(future);
   }
 
-  private void check() {
-    if (parent().isReaderTimeout(this.lastReaderTime)) {
-      ScheduledFuture<?> future = this.timer.get();
-      if (future == null || future.isCancelled()) {
-        return;
-      }
+  /**
+   * 停止超时调度
+   */
+  private void stopTimer() {
+    ScheduledFuture<?> future = this.timer.getAndSet(null);
+    if (future != null) {
+      future.cancel(true);
+    }
+  }
+
+  private void checkTimeout() {
+    if (this.timer.get() != null) {
       if (!isActive()) {
-        this.timer.getAndSet(null).cancel(true);
+        stopTimer();
         return;
       }
-      // 读取超时
-      try {
-        doClose();
-      } catch (Throwable e) {
-        PlatformDependent.throwException(e);
-      } finally {
-        this.timer.getAndSet(null).cancel(true);
-      }
-    } else if (parent().isWriterTimeout(this.lastWriterTime)) {
-      // 写入超时
-      try {
-        doClose();
-      } catch (Throwable e) {
-        PlatformDependent.throwException(e);
-      } finally {
-        this.timer.getAndSet(null).cancel(true);
+      // 读取或写入超时
+      if (parent().isReaderTimeout(this.readerTime())
+          || parent().isWriterTimeout(this.writerTime())) {
+        try {
+          close();
+        } catch (Exception e) {
+          PlatformDependent.throwException(e);
+        } finally {
+          stopTimer();
+        }
       }
     }
   }
@@ -306,6 +334,10 @@ class NioDatagramChannel extends AbstractChannel {
     public void connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise) {
       throw new UnsupportedOperationException();
     }
+  }
+
+  private static long now() {
+    return System.currentTimeMillis();
   }
 
 }
