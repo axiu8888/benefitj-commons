@@ -7,7 +7,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,8 +18,18 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractDevice implements Device {
 
-  private static InetSocketAddress ofAddr(SocketAddress addr) {
-    return (InetSocketAddress) addr;
+  /**
+   * 本地地址
+   */
+  public static InetSocketAddress ofLocal(Channel ch) {
+    return ch != null ? (InetSocketAddress) ch.localAddress() : null;
+  }
+
+  /**
+   * 远程地址
+   */
+  public static InetSocketAddress ofRemote(Channel ch) {
+    return ch != null ? (InetSocketAddress) ch.remoteAddress() : null;
   }
 
   /**
@@ -52,19 +61,20 @@ public abstract class AbstractDevice implements Device {
    */
   private volatile long rcvTime = -1;
 
+  public AbstractDevice(String id) {
+    this.id = id;
+  }
+
   public AbstractDevice(Channel channel) {
     this(null, channel);
   }
 
   public AbstractDevice(String id, Channel channel) {
-    this(id, channel, ofAddr(channel.localAddress()), ofAddr(channel.remoteAddress()));
+    this(id, channel, ofLocal(channel), ofRemote(channel));
   }
 
   public AbstractDevice(String id, Channel channel, InetSocketAddress remoteAddr) {
-    this(id, channel, null, remoteAddr);
-    if (channel != null) {
-      this.setLocalAddress(ofAddr(channel.localAddress()));
-    }
+    this(id, channel, ofLocal(channel), remoteAddr);
   }
 
   public AbstractDevice(String id, Channel channel, InetSocketAddress localAddr, InetSocketAddress remoteAddr) {

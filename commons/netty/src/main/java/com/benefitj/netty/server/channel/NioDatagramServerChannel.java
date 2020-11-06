@@ -166,21 +166,22 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
       msg.writerIndex(msg.writerIndex() + allocatorHandle.lastBytesRead());
       //allocate new channel or use existing one and push message to it
       NioDatagramChannel child = child(remote);
-      if ((child == null) || !child.isOpen()) {
+      DatagramPacket packet = new DatagramPacket(msg, localAddress(), remote);
+      if (child == null || !child.isOpen()) {
         child = newChild(remote);
         buf.add(child);
-        child.addMessage(new DatagramPacket(msg, localAddress(), remote));
+        child.addMessage(packet);
         free = false;
         return 1;
       } else {
-        child.addMessage(new DatagramPacket(msg, localAddress(), remote));
+        child.addMessage(packet);
         free = false;
         if (child.isRegistered()) {
           child.read();
         }
         return 0;
       }
-    } catch (Throwable t) {
+    } catch (Exception t) {
       PlatformDependent.throwException(t);
       return -1;
     } finally {

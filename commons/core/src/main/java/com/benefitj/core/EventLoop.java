@@ -157,7 +157,7 @@ public class EventLoop implements ScheduledExecutorService {
     return () -> {
       try {
         task.run();
-      } catch (Throwable e) {
+      } catch (Exception e) {
         Thread t = Thread.currentThread();
         Thread.UncaughtExceptionHandler handler = t.getUncaughtExceptionHandler();
         handler.uncaughtException(t, e);
@@ -177,7 +177,7 @@ public class EventLoop implements ScheduledExecutorService {
     return () -> {
       try {
         return task.call();
-      } catch (Throwable e) {
+      } catch (Exception e) {
         Thread t = Thread.currentThread();
         Thread.UncaughtExceptionHandler handler = t.getUncaughtExceptionHandler();
         handler.uncaughtException(t, e);

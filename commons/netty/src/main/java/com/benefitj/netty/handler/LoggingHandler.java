@@ -1,6 +1,6 @@
 package com.benefitj.netty.handler;
 
-import com.benefitj.core.HexUtils;
+import com.benefitj.netty.NettyHexUtils;
 import com.benefitj.netty.log.NettyLogger;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -10,9 +10,9 @@ import io.netty.channel.ChannelHandlerContext;
  * 打印日志
  */
 @ChannelHandler.Sharable
-public class SharableLoggingHandler extends ByteBufCopyInboundHandler<ByteBuf> {
+public class LoggingHandler extends ByteBufCopyInboundHandler<ByteBuf> {
 
-  public static final SharableLoggingHandler INSTANCE = new SharableLoggingHandler(50, true);
+  public static final LoggingHandler INSTANCE = new LoggingHandler(50, true);
 
   /**
    * 读取的最大长度
@@ -25,14 +25,14 @@ public class SharableLoggingHandler extends ByteBufCopyInboundHandler<ByteBuf> {
 
   private final NettyLogger log = NettyLogger.INSTANCE;
 
-  public SharableLoggingHandler() {
+  public LoggingHandler() {
   }
 
-  public SharableLoggingHandler(int readMaxSize) {
+  public LoggingHandler(int readMaxSize) {
     this.readMaxSize = readMaxSize;
   }
 
-  public SharableLoggingHandler(int readMaxSize, boolean print) {
+  public LoggingHandler(int readMaxSize, boolean print) {
     this.readMaxSize = readMaxSize;
     this.print = print;
   }
@@ -61,7 +61,7 @@ public class SharableLoggingHandler extends ByteBufCopyInboundHandler<ByteBuf> {
     log.info("remote: {}, size: {}, data: {}"
         , ctx.channel().remoteAddress()
         , msg.readableBytes()
-        , HexUtils.bytesToHex(buf));
+        , NettyHexUtils.bytesToHex(buf));
   }
 
   public int getReadMaxSize() {

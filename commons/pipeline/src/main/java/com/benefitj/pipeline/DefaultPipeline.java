@@ -26,7 +26,7 @@ public class DefaultPipeline implements Pipeline {
   /**
    * 本地线程调用次数统计
    */
-  private final ThreadLocal<AtomicInteger> localCallCount = ThreadLocal.withInitial(AtomicInteger::new);
+  private final ThreadLocal<AtomicInteger> localCount = ThreadLocal.withInitial(AtomicInteger::new);
 
   private final Set<String> nameCaches = Collections.synchronizedSet(new HashSet<>());
   private final Map<Class<?>, AtomicInteger> nameGenerator = new ConcurrentHashMap<>();
@@ -47,12 +47,13 @@ public class DefaultPipeline implements Pipeline {
     final Thread current = Thread.currentThread();
     while (true) {
       if ((sign.get() == current) || sign.compareAndSet(null, current)) {
+        final AtomicInteger c = localCount.get();
         try {
-          localCallCount.get().incrementAndGet();
+          c.incrementAndGet();
           r.run();
           break;
         } finally {
-          if (localCallCount.get().decrementAndGet() < 1) {
+          if (c.decrementAndGet() < 1) {
             sign.set(null);
           }
         }

@@ -86,7 +86,7 @@ class NioDatagramChannel extends AbstractChannel {
    */
   @Override
   public boolean isOpen() {
-    return open;
+    return open && parent().isOpen();
   }
 
   /**

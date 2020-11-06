@@ -4,8 +4,8 @@ group = "netty"
 
 dependencies {
 
-  compileOnly project(":commons:core")
-  compileOnly project(":commons:pipeline")
+//  compileOnly project(":commons:core")
+//  compileOnly project(":commons:pipeline")
   compileOnly 'io.netty:netty-all:4.1.51.Final'
 
 }
