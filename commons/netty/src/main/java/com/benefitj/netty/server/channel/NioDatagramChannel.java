@@ -49,13 +49,15 @@ class NioDatagramChannel extends AbstractChannel {
   /**
    * 读取数据包的时间
    */
-  private volatile long readerTime = now();
+  private volatile long readerTime;
   /**
    * 写入数据包的时间
    */
-  private volatile long writerTime = now();
-
-  private final AtomicReference<ScheduledFuture<?>> timer = new AtomicReference<>();
+  private volatile long writerTime;
+  /**
+   * 超时检测的调度
+   */
+  private final AtomicReference<ScheduledFuture<?>> timeoutTimer = new AtomicReference<>();
 
   /**
    * Creates a new instance.
@@ -65,6 +67,8 @@ class NioDatagramChannel extends AbstractChannel {
   public NioDatagramChannel(NioDatagramServerChannel parent, InetSocketAddress remoteAddress) {
     super(parent);
     this.remoteAddress = remoteAddress;
+    this.readerTime(now());
+    this.writerTime(now());
   }
 
 
@@ -81,12 +85,17 @@ class NioDatagramChannel extends AbstractChannel {
     return config;
   }
 
+  public Channel setOpen(boolean open) {
+    this.open = open;
+    return this;
+  }
+
   /**
    * Returns {@code true} if the {@link Channel} is open and may get active later
    */
   @Override
   public boolean isOpen() {
-    return open && parent().isOpen();
+    return this.open && parent().isOpen();
   }
 
   /**
@@ -180,8 +189,9 @@ class NioDatagramChannel extends AbstractChannel {
    */
   @Override
   protected void doClose() throws Exception {
-    this.open = false;
-    parent().closeChannel(this);
+    this.setOpen(false);
+    // 移除通道
+    parent().removeChannel(this);
   }
 
   /**
@@ -290,26 +300,26 @@ class NioDatagramChannel extends AbstractChannel {
    * 开始超时调度
    */
   private void startTimer() {
-    if (timer.get() != null) {
+    if (timeoutTimer.get() != null) {
       return;
     }
     ScheduledFuture<?> future = this.eventLoop().scheduleAtFixedRate(
         this::checkTimeout, 500, 500, TimeUnit.MILLISECONDS);
-    this.timer.set(future);
+    this.timeoutTimer.set(future);
   }
 
   /**
    * 停止超时调度
    */
   private void stopTimer() {
-    ScheduledFuture<?> future = this.timer.getAndSet(null);
+    ScheduledFuture<?> future = this.timeoutTimer.getAndSet(null);
     if (future != null) {
       future.cancel(true);
     }
   }
 
   private void checkTimeout() {
-    if (this.timer.get() != null) {
+    if (this.timeoutTimer.get() != null) {
       if (!isActive()) {
         stopTimer();
         return;
@@ -318,7 +328,7 @@ class NioDatagramChannel extends AbstractChannel {
       if (parent().isReaderTimeout(this.readerTime())
           || parent().isWriterTimeout(this.writerTime())) {
         try {
-          close();
+          super.close();
         } catch (Exception e) {
           PlatformDependent.throwException(e);
         } finally {
