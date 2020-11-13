@@ -58,6 +58,22 @@ public class ReflectUtils {
   }
 
   /**
+   * 是否被注解注释
+   *
+   * @param element     Class、Field、Method
+   * @param annotations 注解
+   * @return 返回是否被注释
+   */
+  public static boolean isAnnotationPresent(AnnotatedElement element, Class<? extends Annotation>... annotations) {
+    for (Class<? extends Annotation> annotation : annotations) {
+      if (!element.isAnnotationPresent(annotation)) {
+        return false;
+      }
+    }
+    return annotations.length > 0;
+  }
+
+  /**
    * 获取参数化类型
    *
    * @param clazz         实现类

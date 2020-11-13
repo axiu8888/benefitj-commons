@@ -11,6 +11,29 @@ import java.util.function.Predicate;
 public class EnumHelper {
 
   /**
+   * 枚举名称
+   *
+   * @param e   枚举
+   * @param <E> 枚举类型
+   * @return 返回枚举的名称
+   */
+  public static <E extends Enum> String ofName(E e) {
+    return ofName(e, null);
+  }
+
+  /**
+   * 枚举名称
+   *
+   * @param e            枚举
+   * @param defaultValue 默认值
+   * @param <E>          枚举类型
+   * @return 返回枚举的名称
+   */
+  public static <E extends Enum> String ofName(E e, String defaultValue) {
+    return e != null ? e.name() : defaultValue;
+  }
+
+  /**
    * 判断是否为匹配的值
    *
    * @param src  枚举对象
