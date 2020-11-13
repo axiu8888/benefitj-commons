@@ -224,6 +224,24 @@ public class ReflectUtils {
   }
 
   /**
+   * 迭代字段，并返回处理后的结果集
+   *
+   * @param type     类型
+   * @param filter   过滤器，过滤出匹配的字段
+   * @param function 处理Field，并返回结果
+   * @param <T>      类型
+   * @return 返回处理后的结果集
+   */
+  public static <T> List<T> foreachFields(Class<?> type, Predicate<Field> filter, Function<Field, T> function) {
+    final List<T> list = new LinkedList<>();
+    foreachField(type
+        , filter
+        , f -> list.add(function.apply(f))
+        , f -> false);
+    return list;
+  }
+
+  /**
    * 是否为泛型字段: 如果字段不为空，判断getType() == getGenericType()
    *
    * @param field 字段
@@ -407,6 +425,24 @@ public class ReflectUtils {
                                    Consumer<Method> consumer,
                                    Predicate<Method> interceptor) {
     foreachMethod(type, filter, consumer, interceptor, true);
+  }
+
+  /**
+   * 迭代方法，并返回处理的集合
+   *
+   * @param type     类型
+   * @param filter   过滤器，过滤出匹配的方法
+   * @param function 处理Method，并返回结果
+   * @param <T>      类型
+   * @return 返回处理后的结果集
+   */
+  public static <T> List<T> foreachMethods(Class<?> type, Predicate<Method> filter, Function<Method, T> function) {
+    final List<T> list = new LinkedList<>();
+    foreachMethod(type
+        , filter
+        , m -> list.add(function.apply(m))
+        , m -> false);
+    return list;
   }
 
   /**
