@@ -8,6 +8,7 @@ import io.netty.channel.socket.InternetProtocolFamily;
 import io.netty.util.internal.*;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
@@ -73,7 +74,9 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
   /**
    * clients
    */
-  private final Map<InetSocketAddress, NioDatagramChannel> children = new ConcurrentHashMap<>();
+  private final Map<Serializable, NioDatagramChannel> children = new ConcurrentHashMap<>();
+
+  private ChannelKeyFactory channelKeyFactory;
 
   /**
    * Create a new instance which will use the Operation Systems default {@link InternetProtocolFamily}.
@@ -114,7 +117,6 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
     super(null, socket, SelectionKey.OP_READ);
   }
 
-
   @Override
   protected DatagramChannel javaChannel() {
     return (DatagramChannel) super.javaChannel();
@@ -124,23 +126,67 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
     return javaChannel().socket();
   }
 
-  public Map<InetSocketAddress, NioDatagramChannel> children() {
+  public ChannelKeyFactory channelKeyFactory() {
+    return channelKeyFactory;
+  }
+
+  public Class<? extends ChannelKeyFactory> channelKeyFactoryType() {
+    return RemoteAddressChannelKeyFactory.class;
+  }
+
+  /**
+   * 获取全部的 Channel
+   */
+  public Map<Serializable, NioDatagramChannel> children() {
     return children;
   }
 
-  public NioDatagramChannel child(InetSocketAddress remote) {
-    return children().get(remote);
+  /**
+   * 获取通道
+   *
+   * @param channelKey 通道主键
+   * @return 返回Channel
+   */
+  public NioDatagramChannel getChild(Serializable channelKey) {
+    return children().get(channelKey);
   }
 
-  protected NioDatagramChannel newChild(InetSocketAddress remote) {
-    NioDatagramChannel child = new NioDatagramChannel(this, remote);
-    NioDatagramChannel old = children().put(remote, child);
+  /**
+   * 创建新的 Channel
+   *
+   * @param channelKey 通道Key
+   * @param remote     远程地址
+   * @param content    数据内容
+   * @return 返回新的 Channel
+   */
+  public NioDatagramChannel newChild(Serializable channelKey, InetSocketAddress remote, ByteBuf content) {
+    NioDatagramChannel child = new NioDatagramChannel(channelKey, this, remote);
+    NioDatagramChannel old = children().put(channelKey, child);
     if (old != null) {
-      try {
-        old.doClose();
-      } catch (Exception ignore) {}
+      closeChild(old);
     }
     return child;
+  }
+
+  /**
+   * 关闭 Channel
+   *
+   * @param child 通道
+   */
+  public void closeChild(NioDatagramChannel child) {
+    EventLoop loop = child.eventLoop();
+    if (loop.inEventLoop()) {
+      NioDatagramChannel ch = children().get(child.channelKey());
+      if (ch == child) {
+        children().remove(child.channelKey());
+      } else {
+        if (child.isOpen()) {
+          child.close();
+        }
+      }
+    } else {
+      loop.execute(() -> closeChild(child));
+    }
   }
 
   /**
@@ -151,24 +197,28 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
   @Override
   protected int doReadMessages(List<Object> buf) throws Exception {
     RecvByteBufAllocator.Handle allocatorHandle = unsafe().recvBufAllocHandle();
-    ByteBuf msg = allocatorHandle.allocate(config().getAllocator());
-    allocatorHandle.attemptedBytesRead(msg.writableBytes());
+    ByteBuf content = allocatorHandle.allocate(config().getAllocator());
+    allocatorHandle.attemptedBytesRead(content.writableBytes());
     boolean free = true;
     try {
       //read message
-      ByteBuffer nioBuf = msg.internalNioBuffer(msg.writerIndex(), msg.writableBytes());
+      ByteBuffer nioBuf = content.internalNioBuffer(content.writerIndex(), content.writableBytes());
       int nioPos = nioBuf.position();
       InetSocketAddress remote = (InetSocketAddress) javaChannel().receive(nioBuf);
       if (remote == null) {
         return 0;
       }
       allocatorHandle.lastBytesRead(nioBuf.position() - nioPos);
-      msg.writerIndex(msg.writerIndex() + allocatorHandle.lastBytesRead());
+      content.writerIndex(content.writerIndex() + allocatorHandle.lastBytesRead());
       //allocate new channel or use existing one and push message to it
-      NioDatagramChannel child = child(remote);
-      DatagramPacket packet = new DatagramPacket(msg, localAddress(), remote);
+      DatagramPacket packet = new DatagramPacket(content, localAddress(), remote);
+      Serializable channelKey = channelKeyFactory().getChannelKey(packet);
+      NioDatagramChannel child = getChild(channelKey);
       if (child == null || !child.isOpen()) {
-        child = newChild(remote);
+        child = newChild(channelKey, remote, content);
+        if (child == null) {
+          return 0;
+        }
         buf.add(child);
         child.addMessage(packet);
         free = false;
@@ -186,7 +236,7 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
       return -1;
     } finally {
       if (free) {
-        msg.release();
+        content.release();
       }
     }
   }
@@ -238,10 +288,22 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
    */
   @Override
   protected void doBind(SocketAddress localAddress) throws Exception {
+    this.onInstantiateChannelKeyFactory();
     if (PlatformDependent.javaVersion() >= 7) {
       SocketUtils.bind(javaChannel(), localAddress);
     } else {
       javaChannel().socket().bind(localAddress);
+    }
+  }
+
+  /**
+   * 实例化 ChannelKeyFactory
+   */
+  protected void onInstantiateChannelKeyFactory() {
+    try {
+      this.channelKeyFactory = channelKeyFactoryType().newInstance();
+    } catch (IllegalAccessException | InstantiationException e) {
+      PlatformDependent.throwException(e);
     }
   }
 
@@ -252,9 +314,7 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
     } finally {
       if (!children().isEmpty()) {
         for (NioDatagramChannel channel : children().values()) {
-          try {
-            channel.doClose();
-          } catch (Exception ignore) {}
+          closeChild(channel);
         }
       }
     }
@@ -672,15 +732,4 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
     return super.closeOnReadError(cause);
   }
 
-  public void removeChannel(NioDatagramChannel channel) {
-    EventLoop loop = channel.eventLoop();
-    if (loop.inEventLoop()) {
-      NioDatagramChannel ch = children().get(channel.remoteAddress0());
-      if (ch == channel) {
-        children().remove(channel.remoteAddress0());
-      }
-    } else {
-      loop.execute(() -> removeChannel(channel));
-    }
-  }
 }

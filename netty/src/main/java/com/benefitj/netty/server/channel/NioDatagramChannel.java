@@ -9,6 +9,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.RecyclableArrayList;
 
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Queue;
@@ -25,10 +26,15 @@ import java.util.concurrent.atomic.AtomicReference;
  * @see AddressedEnvelope
  * @see DatagramPacket
  */
-class NioDatagramChannel extends AbstractChannel {
+public class NioDatagramChannel extends AbstractChannel {
 
   private static final ChannelMetadata METADATA = new ChannelMetadata(false);
   private final DefaultChannelConfig config = new DefaultChannelConfig(this);
+
+  /**
+   * 通道对应的Key
+   */
+  private final Serializable channelKey;
 
   /**
    * Channel
@@ -64,13 +70,17 @@ class NioDatagramChannel extends AbstractChannel {
    *
    * @param parent the parent of this channel. {@code null} if there's no parent.
    */
-  public NioDatagramChannel(NioDatagramServerChannel parent, InetSocketAddress remoteAddress) {
+  public NioDatagramChannel(Serializable channelKey, NioDatagramServerChannel parent, InetSocketAddress remoteAddress) {
     super(parent);
+    this.channelKey = channelKey;
     this.remoteAddress = remoteAddress;
     this.readerTime(now());
     this.writerTime(now());
   }
 
+  public Serializable channelKey() {
+    return channelKey;
+  }
 
   @Override
   public NioDatagramServerChannel parent() {
@@ -191,7 +201,7 @@ class NioDatagramChannel extends AbstractChannel {
   protected void doClose() throws Exception {
     this.setOpen(false);
     // 移除通道
-    parent().removeChannel(this);
+    parent().closeChild(this);
   }
 
   /**

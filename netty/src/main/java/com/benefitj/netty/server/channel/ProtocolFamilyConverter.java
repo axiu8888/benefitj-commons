@@ -9,7 +9,7 @@ import java.net.StandardProtocolFamily;
 /**
  * Helper class which convert the {@link InternetProtocolFamily}.
  */
-final class ProtocolFamilyConverter {
+public final class ProtocolFamilyConverter {
 
   private ProtocolFamilyConverter() {
     // Utility class

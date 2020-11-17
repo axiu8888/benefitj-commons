@@ -15,7 +15,7 @@ import java.util.Set;
  * Provides {@link ChannelOption} over a given {@link java.net.SocketOption} which is then passed through the underlying
  * {@link java.nio.channels.NetworkChannel}.
  */
-final class NioChannelOption<T> extends ChannelOption<T> {
+public final class NioChannelOption<T> extends ChannelOption<T> {
 
   private final java.net.SocketOption<T> option;
 
