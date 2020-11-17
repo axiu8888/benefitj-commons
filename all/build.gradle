@@ -1,0 +1,52 @@
+
+apply from: "${getRootDir()}/buildSystem/base.gradle"
+apply from: "${getRootDir()}/buildSystem/package-allinone.gradle"
+
+jar {
+    archivesBaseName = "benefitj-commons"
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile project(":core")
+    compile project(":consistent-hash")
+    compile project(":pipeline")
+    compile project(":netty")
+    compile project(":interpolator")
+
+    // network start *****************************************************/
+    compile project(":network")
+    // OkHttp + RxJava + Retrofit
+    compile "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
+    compile "com.squareup.okhttp3:okhttp:${okHttpVersion}"
+    compile "com.squareup.okhttp3:logging-interceptor:${okHttpVersion}"
+    compile "com.squareup.retrofit2:retrofit:${retrofitVersion}"
+    compile "com.squareup.retrofit2:adapter-rxjava2:${retrofitVersion}"
+    compile "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
+    compile "com.squareup.retrofit2:converter-gson:${retrofitVersion}"
+    compile "com.squareup.retrofit2:converter-scalars:${retrofitVersion}"
+    compile "com.squareup.retrofit2:converter-moshi:${retrofitVersion}"
+    // network end *****************************************************/
+
+
+    // eventbus start *****************************************************/
+    compile project(":eventbus")
+    compile 'com.google.guava:guava:29.0-jre'
+    // eventbus end *****************************************************/
+
+
+    // frameworks start *****************************************************/
+    compile project(":frameworks")
+    // 二维码
+    compile 'com.google.zxing:javase:3.4.0'
+    // 验证码
+    compile("com.octo.captcha:jcaptcha:1.0") {
+        exclude(module: "servlet-api")
+        exclude(module: "imaging")
+    }
+    // Servlet
+    compileOnly("javax.servlet:javax.servlet-api:4.0.0")
+    // frameworks end *****************************************************/
+
+}

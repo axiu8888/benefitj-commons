@@ -1,0 +1,10 @@
+apply from: "${getRootDir()}/buildSystem/base.gradle"
+
+group = "pipeline"
+
+dependencies {
+
+	compileOnly project(":core")
+
+}
+

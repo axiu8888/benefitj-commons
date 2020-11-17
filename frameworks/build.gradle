@@ -1,0 +1,27 @@
+apply from: "${getRootDir()}/buildSystem/base.gradle"
+
+group = "frameworks"
+
+description = "框架的工具类"
+
+dependencies {
+
+    testCompile 'junit:junit:4.12'
+
+//    compile project(":core")
+
+    compileOnly 'commons-io:commons-io:2.6'
+    compileOnly 'com.google.guava:guava:29.0-jre'
+
+    // 二维码
+    compileOnly 'com.google.zxing:core:3.4.0'
+    compileOnly 'com.google.zxing:javase:3.4.0'
+
+    // 验证码
+    compileOnly("com.octo.captcha:jcaptcha:1.0") {
+        exclude(module: "servlet-api")
+        exclude(module: "imaging")
+    }
+    // Servlet
+    compileOnly("javax.servlet:javax.servlet-api:4.0.0")
+}

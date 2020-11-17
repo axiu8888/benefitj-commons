@@ -1,8 +1,0 @@
-
-
-subprojects {
-
-    // 在此处更改groupId
-    //ext.groupId = "com.benefitj"
-
-}

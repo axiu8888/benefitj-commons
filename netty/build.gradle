@@ -1,0 +1,11 @@
+apply from: "${getRootDir()}/buildSystem/base.gradle"
+
+group = "netty"
+
+dependencies {
+
+//  compileOnly project(":core")
+//  compileOnly project(":pipeline")
+  compileOnly 'io.netty:netty-all:4.1.51.Final'
+
+}

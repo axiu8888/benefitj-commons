@@ -24,14 +24,18 @@ ext {
     artifactPrefix = ""
 }
 
-allprojects {
+
+
+subprojects {
 
     group = 'com.benefitj'
     version = '1.1.0-SNAPSHOT'
 
-    ext.artifactPrefix = ""
-    ext.groupId = "com.benefitj"
-    ext.artifactId = "${project.name}"
-    ext.versionId = "${version}"
+    ext {
+        artifactPrefix = ""
+        groupId = "com.benefitj"
+        artifactId = "${project.name}"
+        versionId = "${version}"
+    }
 
 }

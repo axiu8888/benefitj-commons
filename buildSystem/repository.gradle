@@ -1,0 +1,17 @@
+
+buildscript {
+    repositories {
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        mavenCentral()
+        jcenter()
+//        maven { url 'http://192.168.232.130:9001/repository/nexusCenterProxy/' }
+    }
+}
+
+
+repositories {
+    maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+    mavenCentral()
+    jcenter()
+//    maven { url 'http://192.168.232.130:9001/repository/nexusCenterProxy/' }
+}

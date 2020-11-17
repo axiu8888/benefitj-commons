@@ -9,19 +9,19 @@ rootProject.name = 'benefitj-commons'
 /**
  * 常用工具的依赖
  */
-include ":commons:core" // 常用工具
-include ":commons:pipeline" // pipeline
-include ":commons:network" // HTTP请求，OkHttp + Retrofit + RxJava
-include ":commons:consistent-hash" // 一致性Hash
-include ":commons:frameworks" // 一些库的工具
-include ":commons:interpolator" // 插值器
-include ":commons:netty" // netty
-include ":commons:eventbus" // EventBus
-include ":commons:all" // 全部的依赖
+include ":all" // 全部的依赖
+include ":core" // 常用工具
+include ":pipeline" // pipeline
+include ":network" // HTTP请求，OkHttp + Retrofit + RxJava
+include ":consistent-hash" // 一致性Hash
+include ":frameworks" // 一些库的工具
+include ":interpolator" // 插值器
+include ":netty" // netty
+include ":eventbus" // EventBus
 
+// 待实现 TODO 2020-11-17
+include ":eventloop" // EventLoop
+// 待实现 TODO 2020-11-17
 include ":mqtt" // mqtt
-include ":mqtt-netty" // 使用netty的编解码的handler处理mqtt消息
-
-include ":examples" // examples
 
 
