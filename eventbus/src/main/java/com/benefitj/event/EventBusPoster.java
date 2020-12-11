@@ -192,7 +192,7 @@ public class EventBusPoster {
    *
    * @param adapter 事件处理器
    */
-  public void register(EventAdapter adapter) {
+  public void register(Object adapter) {
     if (adapter != null) {
       checkAndInit();
       getEventBus().register(adapter);
@@ -217,7 +217,7 @@ public class EventBusPoster {
    *
    * @param adapter 事件处理器
    */
-  public void unregister(EventAdapter adapter) {
+  public void unregister(Object adapter) {
     if (adapter != null) {
       checkAndInit();
       getEventBus().unregister(adapter);
@@ -231,8 +231,8 @@ public class EventBusPoster {
    *
    * @param adapters 事件处理器
    */
-  public void unregister(Collection<? extends EventAdapter> adapters) {
-    for (EventAdapter adapter : adapters) {
+  public void unregister(Collection<Object> adapters) {
+    for (Object adapter : adapters) {
       unregister(adapter);
     }
   }
