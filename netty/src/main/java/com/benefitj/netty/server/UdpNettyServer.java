@@ -40,8 +40,7 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
     }
     this.option(ChannelOption.SO_BROADCAST, true);
     this.option(ChannelOption.SO_REUSEADDR, false);
-    Map<ChannelOption<?>, Object> options = new HashMap<>(16);
-    options.putAll(options());
+    Map<ChannelOption<?>, Object> options = new HashMap<>(options());
     // 默认4MB，数据量较大，缓冲区较小会导致丢包
     options.putIfAbsent(ChannelOption.SO_RCVBUF, (1024 << 10) * 4);
     options.putIfAbsent(ChannelOption.SO_SNDBUF, (1024 << 10) * 4);

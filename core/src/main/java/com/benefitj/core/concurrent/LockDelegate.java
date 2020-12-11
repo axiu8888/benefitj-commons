@@ -1,4 +1,4 @@
-package com.benefitj.core;
+package com.benefitj.core.concurrent;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Condition;

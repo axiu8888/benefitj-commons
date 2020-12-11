@@ -47,7 +47,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   /**
    * 默认使用Linux的Epoll，如果可用
    */
-  private volatile boolean useLinuxNativeEpoll = isLinux();
+  private volatile boolean useLinuxNativeEpoll = isLinux() && !PlatformDependent.isAndroid();
   /**
    * 主通道，启动后返回的通道
    */
@@ -506,7 +506,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
    */
   @Override
   public boolean useLinuxNativeEpoll() {
-    return useLinuxNativeEpoll && isLinux() && !PlatformDependent.isAndroid();
+    return useLinuxNativeEpoll;
   }
 
   @Override

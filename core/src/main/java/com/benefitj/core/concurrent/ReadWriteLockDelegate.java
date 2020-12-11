@@ -1,4 +1,4 @@
-package com.benefitj.core;
+package com.benefitj.core.concurrent;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
@@ -11,7 +11,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ReadWriteLockDelegate {
 
   private final ReadWriteLock lock;
-
 
   public ReadWriteLockDelegate() {
     this(false);

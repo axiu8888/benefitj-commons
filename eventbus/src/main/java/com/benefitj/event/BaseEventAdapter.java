@@ -37,7 +37,7 @@ public abstract class BaseEventAdapter<E> implements EventAdapter<E> {
       if (support(event)) {
         process(event);
       }
-    } catch (Throwable e) {
+    } catch (Exception e) {
       logger.error("throw: " + e.getMessage(), e);
     }
   }

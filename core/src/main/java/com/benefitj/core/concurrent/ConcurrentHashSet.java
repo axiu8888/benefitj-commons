@@ -1,10 +1,15 @@
-package com.benefitj.core;
+package com.benefitj.core.concurrent;
 
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * ConcurrentHashSet
+ *
+ * @param <E>
+ */
 public class ConcurrentHashSet<E> extends AbstractSet<E> {
 
   private final Map<E, Boolean> map = new ConcurrentHashMap<>();

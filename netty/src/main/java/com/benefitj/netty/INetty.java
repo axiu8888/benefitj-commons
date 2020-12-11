@@ -7,6 +7,7 @@ import io.netty.channel.ChannelFactory;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.internal.PlatformDependent;
 
 import java.net.SocketAddress;
 import java.util.Map;
@@ -335,7 +336,7 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
    * @return 是否为Windows系统
    */
   default boolean isWindows() {
-    return getOsName().toLowerCase().contains("windows");
+    return PlatformDependent.isWindows();
   }
 
   /**
