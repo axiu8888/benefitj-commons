@@ -56,4 +56,8 @@ public class BiConsumerInboundHandler<I> extends ByteBufCopyInboundHandler<I> {
     return new BiConsumerInboundHandler<>(DatagramPacket.class, consumer);
   }
 
+  public static <T> BiConsumerInboundHandler<T> newHandler(Class<T> type, InboundHandlerBiConsumer<T> consumer) {
+    return new BiConsumerInboundHandler<>(type, consumer);
+  }
+
 }
