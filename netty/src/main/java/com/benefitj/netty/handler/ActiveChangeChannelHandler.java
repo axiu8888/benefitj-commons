@@ -7,9 +7,9 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * 监听 Channel 的状态
  */
-public class ActiveChangeChannelHandler extends ChannelDuplexHandler {
+public class ActiveChangeChannelHandler extends ChannelDuplexHandler implements ByteBufCopy {
 
-  private final ByteBufCopy bufCopy = new ByteBufCopy();
+  private final ByteBufCopy bufCopy = ByteBufCopy.newByteBufCopy();
 
   private ActiveStateListener listener;
 
@@ -40,6 +40,12 @@ public class ActiveChangeChannelHandler extends ChannelDuplexHandler {
   public ByteBufCopy getBufCopy() {
     return bufCopy;
   }
+
+  @Override
+  public byte[] getCache(int size, boolean local) {
+    return bufCopy.getCache(size, local);
+  }
+
 
   public interface ActiveStateListener {
     /**

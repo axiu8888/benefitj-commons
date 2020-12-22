@@ -8,20 +8,7 @@ import java.util.function.Function;
 /**
  * 字节拷贝
  */
-public class BufCopy {
-
-  private final ThreadLocal<Map<Integer, byte[]>> bytesCache = ThreadLocal.withInitial(WeakHashMap::new);
-  private final Function<Integer, byte[]> creator = byte[]::new;
-
-  /**
-   * 获取缓存字节数组
-   *
-   * @param size 数组大小
-   * @return 返回字节数据
-   */
-  public byte[] getCache(int size) {
-    return getCache(size, true);
-  }
+public interface BufCopy {
 
   /**
    * 获取缓存字节数组
@@ -30,13 +17,16 @@ public class BufCopy {
    * @param local 是否为本地线程缓存数组
    * @return 返回字节数据
    */
-  public byte[] getCache(int size, boolean local) {
-    if (local) {
-      byte[] buff = bytesCache.get().computeIfAbsent(size, creator);
-      Arrays.fill(buff, (byte) 0x00);
-      return buff;
-    }
-    return new byte[size];
+  byte[] getCache(int size, boolean local);
+
+  /**
+   * 获取缓存字节数组
+   *
+   * @param size 数组大小
+   * @return 返回字节数据
+   */
+  default byte[] getCache(int size) {
+    return getCache(size, true);
   }
 
   /**
@@ -45,7 +35,7 @@ public class BufCopy {
    * @param src 元数据
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src) {
+  default byte[] copy(byte[] src) {
     return copy(src, true);
   }
 
@@ -55,7 +45,7 @@ public class BufCopy {
    * @param src 元数据
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, boolean local) {
+  default byte[] copy(byte[] src, boolean local) {
     return copy(src, 0, src.length, local);
   }
 
@@ -67,7 +57,7 @@ public class BufCopy {
    * @param len   长度
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, int start, int len) {
+  default byte[] copy(byte[] src, int start, int len) {
     return copy(src, start, len, true);
   }
 
@@ -78,7 +68,7 @@ public class BufCopy {
    * @param len 长度
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, int len) {
+  default byte[] copy(byte[] src, int len) {
     return copy(src, len, true);
   }
 
@@ -90,7 +80,7 @@ public class BufCopy {
    * @param local 是否为本地线程缓存数组
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, int len, boolean local) {
+  default byte[] copy(byte[] src, int len, boolean local) {
     return copy(src, 0, len, local);
   }
 
@@ -103,7 +93,7 @@ public class BufCopy {
    * @param local 是否为本地线程缓存数组
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, int start, int len, boolean local) {
+  default byte[] copy(byte[] src, int start, int len, boolean local) {
     byte[] dest = getCache(len, local);
     return copy(src, start, dest, 0, len);
   }
@@ -115,7 +105,7 @@ public class BufCopy {
    * @param dest 目标数据
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, byte[] dest) {
+  default byte[] copy(byte[] src, byte[] dest) {
     return copy(src, 0, dest, 0, dest.length);
   }
 
@@ -129,9 +119,39 @@ public class BufCopy {
    * @param len     长度
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, int start, byte[] dest, int destPos, int len) {
+  default byte[] copy(byte[] src, int start, byte[] dest, int destPos, int len) {
     System.arraycopy(src, start, dest, destPos, len);
     return dest;
+  }
+
+  /**
+   * 创建缓冲拷贝
+   */
+  static BufCopy newBufCopy() {
+    return new SimpleBufCopy();
+  }
+
+  class SimpleBufCopy implements BufCopy {
+
+    private final ThreadLocal<Map<Integer, byte[]>> bytesCache = ThreadLocal.withInitial(WeakHashMap::new);
+    private final Function<Integer, byte[]> creator = byte[]::new;
+
+    /**
+     * 获取缓存字节数组
+     *
+     * @param size  数组大小
+     * @param local 是否为本地线程缓存数组
+     * @return 返回字节数据
+     */
+    public byte[] getCache(int size, boolean local) {
+      if (local) {
+        byte[] buff = bytesCache.get().computeIfAbsent(size, creator);
+        Arrays.fill(buff, (byte) 0x00);
+        return buff;
+      }
+      return new byte[size];
+    }
+
   }
 
 }

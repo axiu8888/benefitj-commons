@@ -9,9 +9,9 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * @param <I>
  */
 public abstract class ByteBufCopyInboundHandler<I> extends SimpleChannelInboundHandler<I>
-  implements ByteBufCopyHandler<I> {
+  implements ByteBufCopy {
 
-  private final ByteBufCopy bufCopy = new ByteBufCopy();
+  private final ByteBufCopy bufCopy = ByteBufCopy.newByteBufCopy();
 
   public ByteBufCopyInboundHandler() {
   }
@@ -28,9 +28,13 @@ public abstract class ByteBufCopyInboundHandler<I> extends SimpleChannelInboundH
     super(inboundMessageType, autoRelease);
   }
 
-  @Override
   public ByteBufCopy getBufCopy() {
     return bufCopy;
+  }
+
+  @Override
+  public byte[] getCache(int size, boolean local) {
+    return bufCopy.getCache(size, local);
   }
 
 }

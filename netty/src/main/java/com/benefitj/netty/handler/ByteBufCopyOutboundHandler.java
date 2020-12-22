@@ -5,9 +5,9 @@ import io.netty.channel.*;
 import io.netty.util.internal.TypeParameterMatcher;
 
 public abstract class ByteBufCopyOutboundHandler<I> extends ChannelOutboundHandlerAdapter
-    implements ByteBufCopyHandler<I> {
+    implements ByteBufCopy {
 
-  private final ByteBufCopy bufCopy = new ByteBufCopy();
+  private final ByteBufCopy bufCopy = ByteBufCopy.newByteBufCopy();
   private final TypeParameterMatcher matcher;
 
   public ByteBufCopyOutboundHandler() {
@@ -39,9 +39,12 @@ public abstract class ByteBufCopyOutboundHandler<I> extends ChannelOutboundHandl
 
   protected abstract void channelWrite0(ChannelHandlerContext ctx, I msg, ChannelPromise promise);
 
-  @Override
   public ByteBufCopy getBufCopy() {
     return bufCopy;
   }
 
+  @Override
+  public byte[] getCache(int size, boolean local) {
+    return bufCopy.getCache(size, local);
+  }
 }

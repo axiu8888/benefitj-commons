@@ -14,12 +14,12 @@ import java.util.List;
 /**
  * 消息长度解码
  */
-public class MessageLengthDecoder extends ByteToMessageDecoder {
+public class MessageLengthDecoder extends ByteToMessageDecoder implements ByteBufCopy {
 
   public static final byte[] HEAD = new byte[0];
   public static final LengthFunction LENGTH_FUNCTION = (ctx, in, segment) -> in.readableBytes();
 
-  private final ByteBufCopy copy = new ByteBufCopy();
+  private final ByteBufCopy copy = ByteBufCopy.newByteBufCopy();
   /**
    * 获取最小读取长度
    */
@@ -63,6 +63,11 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
   }
 
   @Override
+  public byte[] getCache(int size, boolean local) {
+    return copy.getCache(size, local);
+  }
+
+  @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
     final int minReadLength = getMinReadLength();
     if (in.readableBytes() < minReadLength) {
@@ -76,7 +81,7 @@ public class MessageLengthDecoder extends ByteToMessageDecoder {
     }
 
     // 只读取包头的数据
-    byte[] segment = copy.copyAdnReset(in, minReadLength, true);
+    byte[] segment = copy.copyAndReset(in, minReadLength, true);
     // 判断包头是否匹配
     byte[] head = getHead();
     if (!isHead(head, segment, 0)) {

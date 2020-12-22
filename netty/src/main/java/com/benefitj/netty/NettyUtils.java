@@ -8,7 +8,7 @@ import io.netty.channel.socket.DatagramPacket;
  */
 public class NettyUtils {
 
-  private static final ByteBufCopy COPY = new ByteBufCopy();
+  private static final ByteBufCopy COPY = ByteBufCopy.newByteBufCopy();
 
   /**
    * 拷贝数据

@@ -11,20 +11,7 @@ import java.util.function.Function;
 /**
  * 读取 ByteBuf
  */
-public class ByteBufCopy {
-
-  private final ThreadLocal<Map<Integer, byte[]>> bytesCache = ThreadLocal.withInitial(WeakHashMap::new);
-  private final Function<Integer, byte[]> creator = byte[]::new;
-
-  /**
-   * 获取缓存字节数组
-   *
-   * @param size 数组大小
-   * @return 返回字节数据
-   */
-  public byte[] getCache(int size) {
-    return getCache(size, true);
-  }
+public interface ByteBufCopy {
 
   /**
    * 获取缓存字节数组
@@ -33,13 +20,16 @@ public class ByteBufCopy {
    * @param local 是否为本地线程缓存数组
    * @return 返回字节数据
    */
-  public byte[] getCache(int size, boolean local) {
-    if (local) {
-      byte[] buff = bytesCache.get().computeIfAbsent(size, creator);
-      Arrays.fill(buff, (byte) 0x00);
-      return buff;
-    }
-    return new byte[size];
+  byte[] getCache(int size, boolean local);
+
+  /**
+   * 获取缓存字节数组
+   *
+   * @param size 数组大小
+   * @return 返回字节数据
+   */
+  default byte[] getCache(int size) {
+    return getCache(size, true);
   }
 
   /**
@@ -48,7 +38,7 @@ public class ByteBufCopy {
    * @param src 元数据
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src) {
+  default byte[] copy(byte[] src) {
     return copy(src, true);
   }
 
@@ -58,7 +48,7 @@ public class ByteBufCopy {
    * @param src 元数据
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, boolean local) {
+  default byte[] copy(byte[] src, boolean local) {
     return copy(src, 0, src.length, local);
   }
 
@@ -70,7 +60,7 @@ public class ByteBufCopy {
    * @param len   长度
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, int start, int len) {
+  default byte[] copy(byte[] src, int start, int len) {
     return copy(src, start, len, true);
   }
 
@@ -81,7 +71,7 @@ public class ByteBufCopy {
    * @param len 长度
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, int len) {
+  default byte[] copy(byte[] src, int len) {
     return copy(src, len, true);
   }
 
@@ -93,7 +83,7 @@ public class ByteBufCopy {
    * @param local 是否为本地线程缓存数组
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, int len, boolean local) {
+  default byte[] copy(byte[] src, int len, boolean local) {
     return copy(src, 0, len, local);
   }
 
@@ -106,7 +96,7 @@ public class ByteBufCopy {
    * @param local 是否为本地线程缓存数组
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, int start, int len, boolean local) {
+  default byte[] copy(byte[] src, int start, int len, boolean local) {
     byte[] dest = getCache(len, local);
     return copy(src, start, dest, 0, len);
   }
@@ -118,7 +108,7 @@ public class ByteBufCopy {
    * @param dest 目标数据
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, byte[] dest) {
+  default byte[] copy(byte[] src, byte[] dest) {
     return copy(src, 0, dest, 0, dest.length);
   }
 
@@ -132,7 +122,7 @@ public class ByteBufCopy {
    * @param len     长度
    * @return 返回拷贝后的数据
    */
-  public byte[] copy(byte[] src, int start, byte[] dest, int destPos, int len) {
+  default byte[] copy(byte[] src, int start, byte[] dest, int destPos, int len) {
     System.arraycopy(src, start, dest, destPos, len);
     return dest;
   }
@@ -143,7 +133,7 @@ public class ByteBufCopy {
    * @param data 数据
    * @return 返回读取的数据
    */
-  public byte[] copy(ByteBuf data) {
+  default byte[] copy(ByteBuf data) {
     return copy(data, true);
   }
 
@@ -153,7 +143,7 @@ public class ByteBufCopy {
    * @param data 数据
    * @return 返回读取的数据
    */
-  public byte[] copy(DatagramPacket data) {
+  default byte[] copy(DatagramPacket data) {
     return copy(data.content());
   }
 
@@ -164,7 +154,7 @@ public class ByteBufCopy {
    * @param local 是否使用本地缓存
    * @return 返回读取的数据
    */
-  public byte[] copy(ByteBuf data, boolean local) {
+  default byte[] copy(ByteBuf data, boolean local) {
     return copy(data, local, false);
   }
 
@@ -175,7 +165,7 @@ public class ByteBufCopy {
    * @param local 是否使用本地缓存
    * @return 返回读取的数据
    */
-  public byte[] copy(DatagramPacket data, boolean local) {
+  default byte[] copy(DatagramPacket data, boolean local) {
     return copy(data.content(), local);
   }
 
@@ -185,8 +175,8 @@ public class ByteBufCopy {
    * @param data 数据
    * @return 返回读取的数据
    */
-  public byte[] copyAdnReset(ByteBuf data) {
-    return copyAdnReset(data, true);
+  default byte[] copyAndReset(ByteBuf data) {
+    return copyAndReset(data, true);
   }
 
   /**
@@ -195,8 +185,8 @@ public class ByteBufCopy {
    * @param data 数据
    * @return 返回读取的数据
    */
-  public byte[] copyAdnReset(DatagramPacket data) {
-    return copyAdnReset(data.content());
+  default byte[] copyAndReset(DatagramPacket data) {
+    return copyAndReset(data.content());
   }
 
   /**
@@ -205,8 +195,8 @@ public class ByteBufCopy {
    * @param data 数据
    * @return 返回读取的数据
    */
-  public byte[] copyAdnReset(ByteBuf data, int size) {
-    return copyAdnReset(data, size, true);
+  default byte[] copyAndReset(ByteBuf data, int size) {
+    return copyAndReset(data, size, true);
   }
 
   /**
@@ -215,8 +205,8 @@ public class ByteBufCopy {
    * @param data 数据
    * @return 返回读取的数据
    */
-  public byte[] copyAdnReset(DatagramPacket data, int size) {
-    return copyAdnReset(data.content(), size);
+  default byte[] copyAndReset(DatagramPacket data, int size) {
+    return copyAndReset(data.content(), size);
   }
 
   /**
@@ -226,7 +216,7 @@ public class ByteBufCopy {
    * @param local 是否使用本地缓存
    * @return 返回读取的数据
    */
-  public byte[] copyAdnReset(ByteBuf data, boolean local) {
+  default byte[] copyAndReset(ByteBuf data, boolean local) {
     return copy(data, local, true);
   }
 
@@ -237,8 +227,8 @@ public class ByteBufCopy {
    * @param local 是否使用本地缓存
    * @return 返回读取的数据
    */
-  public byte[] copyAdnReset(DatagramPacket data, boolean local) {
-    return copyAdnReset(data.content(), local);
+  default byte[] copyAndReset(DatagramPacket data, boolean local) {
+    return copyAndReset(data.content(), local);
   }
 
   /**
@@ -248,7 +238,7 @@ public class ByteBufCopy {
    * @param local 是否使用本地缓存
    * @return 返回读取的数据
    */
-  public byte[] copyAdnReset(ByteBuf data, int size, boolean local) {
+  default byte[] copyAndReset(ByteBuf data, int size, boolean local) {
     return copy(data, size, local, true);
   }
 
@@ -259,8 +249,31 @@ public class ByteBufCopy {
    * @param local 是否使用本地缓存
    * @return 返回读取的数据
    */
-  public byte[] copyAdnReset(DatagramPacket data, int size, boolean local) {
-    return copyAdnReset(data.content(), size, local);
+  default byte[] copyAndReset(DatagramPacket data, int size, boolean local) {
+    return copyAndReset(data.content(), size, local);
+  }
+
+  /**
+   * 读取数据，并重置读取标记
+   *
+   * @param data  数据
+   * @param local 是否使用本地缓存
+   * @return 返回读取的数据
+   */
+  default byte[] minAndReset(DatagramPacket data, int min, boolean local) {
+    final ByteBuf content = data.content();
+    return copy(content, Math.min(min, content.readableBytes()), local, true);
+  }
+
+  /**
+   * 读取数据，并重置读取标记
+   *
+   * @param data  数据
+   * @param local 是否使用本地缓存
+   * @return 返回读取的数据
+   */
+  default byte[] minAndReset(ByteBuf data, int min, boolean local) {
+    return copy(data, Math.min(min, data.readableBytes()), local, true);
   }
 
   /**
@@ -271,7 +284,7 @@ public class ByteBufCopy {
    * @param reset 是否重置读取位置
    * @return 返回读取的数据
    */
-  public byte[] copy(ByteBuf data, boolean local, boolean reset) {
+  default byte[] copy(ByteBuf data, boolean local, boolean reset) {
     return copy(data, data.readableBytes(), local, reset);
   }
 
@@ -283,7 +296,7 @@ public class ByteBufCopy {
    * @param reset 是否重置读取位置
    * @return 返回读取的数据
    */
-  public byte[] copy(DatagramPacket data, boolean local, boolean reset) {
+  default byte[] copy(DatagramPacket data, boolean local, boolean reset) {
     final ByteBuf bb = data.content();
     return copy(bb, bb.readableBytes(), local, reset);
   }
@@ -297,7 +310,7 @@ public class ByteBufCopy {
    * @param reset 是否重置读取位置
    * @return 返回读取的字节
    */
-  public byte[] copy(ByteBuf data, int size, boolean local, boolean reset) {
+  default byte[] copy(ByteBuf data, int size, boolean local, boolean reset) {
     byte[] buff = getCache(size, local);
     if (reset) {
       data.markReaderIndex();
@@ -307,6 +320,36 @@ public class ByteBufCopy {
       data.readBytes(buff);
     }
     return buff;
+  }
+
+  /**
+   * 创建字节缓冲拷贝
+   */
+  static ByteBufCopy newByteBufCopy() {
+    return new SimpleByteBufCopy();
+  }
+
+  class SimpleByteBufCopy implements ByteBufCopy {
+
+    private final ThreadLocal<Map<Integer, byte[]>> bytesCache = ThreadLocal.withInitial(WeakHashMap::new);
+    private final Function<Integer, byte[]> creator = byte[]::new;
+
+    /**
+     * 获取缓存字节数组
+     *
+     * @param size  数组大小
+     * @param local 是否为本地线程缓存数组
+     * @return 返回字节数据
+     */
+    public byte[] getCache(int size, boolean local) {
+      if (local) {
+        byte[] buff = bytesCache.get().computeIfAbsent(size, creator);
+        Arrays.fill(buff, (byte) 0x00);
+        return buff;
+      }
+      return new byte[size];
+    }
+
   }
 
 
