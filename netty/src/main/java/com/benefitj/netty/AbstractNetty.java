@@ -132,7 +132,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
       Collections.addAll(startListeners, listeners);
       GenericFutureListener[] startListenerArray = startListeners.toArray(new GenericFutureListener[0]);
       ChannelFuture future = startOnly(b).addListeners(startListenerArray);
-      setServeChannel(future.channel());
+      executeWhileNull(getServeChannel(), () -> setServeChannel(future.channel()));
     } else {
       final Channel c = getServeChannel();
       if (c != null) {

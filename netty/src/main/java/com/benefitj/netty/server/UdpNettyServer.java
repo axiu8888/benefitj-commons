@@ -5,7 +5,6 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.DefaultEventLoopGroup;
-import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.unix.UnixChannelOption;
 
@@ -30,7 +29,7 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
   public UdpNettyServer useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
       this.executeWhileNull(bossGroup(), () ->
-          this.group(new EpollEventLoopGroup(1), new DefaultEventLoopGroup()));
+          this.group(new NioEventLoopGroup(1), new DefaultEventLoopGroup()));
       this.executeWhileNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
       this.option(UnixChannelOption.SO_REUSEPORT, false);
     } else {
@@ -68,7 +67,7 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
 
   @Override
   protected ChannelFuture startOnly(ServerBootstrap bootstrap) {
-    return super.startOnly(bootstrap).addListener(future ->
+    return super.startOnly(bootstrap).addListener(f ->
         ((NioDatagramServerChannel) getServeChannel())
             .idle(readerTimeout(), writerTimeout(), timeoutUnit()));
   }

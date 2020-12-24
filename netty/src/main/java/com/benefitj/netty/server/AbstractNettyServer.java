@@ -39,8 +39,9 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
 
   @Override
   protected ChannelFuture startOnly(ServerBootstrap bootstrap) {
-    return bootstrap.bind()
-        .syncUninterruptibly()
+    ChannelFuture cf = bootstrap.bind();
+    setServeChannel(cf.channel());
+    return cf.syncUninterruptibly()
         .addListener(f -> {
           SocketAddress socketAddress = bootstrap.config().localAddress();
           if (f.isSuccess()) {
