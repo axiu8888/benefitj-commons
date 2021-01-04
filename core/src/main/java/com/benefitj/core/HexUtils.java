@@ -493,16 +493,33 @@ public class HexUtils {
   /**
    * 字节数组转换成二进制字符串
    *
-   * @param bin 字节数组
+   * @param bytes 字节数组
    * @return 返回二进制字符串
    */
-  public static String bytesToBinary(byte[] bin) {
-    StringBuilder sb = new StringBuilder();
-    for (byte b : bin) {
+  public static String bytesToBinary(byte... bytes) {
+    return bytesToBinary(bytes, " ", 1);
+  }
+
+  /**
+   * 字节数组转换成二进制字符串
+   *
+   * @param bytes 字节数组
+   * @param split 分隔符
+   * @param len   分割的长度
+   * @return 返回二进制字符串
+   */
+  public static String bytesToBinary(byte[] bytes, String split, int len) {
+    StringBuilder sb = new StringBuilder(bytes.length * 8);
+    for (int i = 0; i < bytes.length; i++) {
+      byte b = bytes[i];
       // 高四位
       sb.append(BINARY_STR[(b & 0xF0) >> 4]);
       // 低四位
       sb.append(BINARY_STR[b & 0x0F]);
+      // 分割
+      if (split != null && i % len == 0) {
+        sb.append(i > 0 && i < bytes.length - 1 ? split : "");
+      }
     }
     return sb.toString();
   }
