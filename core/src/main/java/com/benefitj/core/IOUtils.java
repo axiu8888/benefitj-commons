@@ -449,6 +449,21 @@ public class IOUtils {
   /**
    * 读取数据，每次读取一行，默认关闭流
    *
+   * @param file     文件
+   * @param consumer 处理回调
+   * @throws IllegalStateException 读取时出现错误抛出的异常
+   */
+  public static void readLine(File file, IConsumer<String> consumer) throws IllegalStateException {
+    try (final BufferedReader reader = new BufferedReader(new FileReader(file))) {
+      readLine(reader, false, consumer);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 读取数据，每次读取一行，默认关闭流
+   *
    * @param reader   输入
    * @param consumer 处理回调
    * @throws IllegalStateException 读取时出现错误抛出的异常
@@ -917,8 +932,8 @@ public class IOUtils {
   /**
    * 要求不超过一定大小
    *
-   * @param length   数据的长度
-   * @param maxSize  最大的长度
+   * @param length  数据的长度
+   * @param maxSize 最大的长度
    */
   public static void requireNotOutOfSize(long length, long maxSize) {
     if (length > maxSize) {
