@@ -1,6 +1,7 @@
 package com.benefitj.netty.handler;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 
@@ -9,6 +10,7 @@ import io.netty.channel.socket.DatagramPacket;
  *
  * @param <I>
  */
+@ChannelHandler.Sharable
 public class BiConsumerInboundHandler<I> extends ByteBufCopyInboundHandler<I> {
 
   private InboundHandlerBiConsumer<I> consumer;

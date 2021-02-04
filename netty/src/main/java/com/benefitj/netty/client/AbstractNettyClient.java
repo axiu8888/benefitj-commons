@@ -42,7 +42,7 @@ public abstract class AbstractNettyClient<S extends AbstractNettyClient<S>> exte
    */
   @Override
   public final ChannelFuture startOnly(Bootstrap bootstrap) {
-    return startOnly(bootstrap, f -> {
+    ChannelFuture cf = startOnly(bootstrap, f -> {
       SocketAddress localAddress = config().localAddress();
       SocketAddress remoteAddress = config().remoteAddress();
       if (f.isSuccess()) {
@@ -52,6 +52,8 @@ public abstract class AbstractNettyClient<S extends AbstractNettyClient<S>> exte
         log.debug("Netty client start failed at localAddress: " + localAddress + ", remoteAddress: " + remoteAddress);
       }
     });
+    setServeChannel(cf.channel());
+    return cf;
   }
 
   /**

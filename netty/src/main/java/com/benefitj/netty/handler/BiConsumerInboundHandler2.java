@@ -1,6 +1,7 @@
 package com.benefitj.netty.handler;
 
 import com.benefitj.netty.NettyBiConsumer;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -8,6 +9,7 @@ import io.netty.channel.ChannelHandlerContext;
  *
  * @param <I>
  */
+@ChannelHandler.Sharable
 public abstract class BiConsumerInboundHandler2<I> extends ByteBufCopyInboundHandler<I> {
 
   private NettyBiConsumer<ChannelHandlerContext, I> consumer;
