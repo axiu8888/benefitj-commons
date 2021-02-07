@@ -1,6 +1,7 @@
 package com.benefitj.netty.handler;
 
 import com.benefitj.netty.ByteBufCopy;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
@@ -8,6 +9,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
  *
  * @param <I>
  */
+@ChannelHandler.Sharable
 public abstract class ByteBufCopyInboundHandler<I> extends SimpleChannelInboundHandler<I>
   implements ByteBufCopy {
 

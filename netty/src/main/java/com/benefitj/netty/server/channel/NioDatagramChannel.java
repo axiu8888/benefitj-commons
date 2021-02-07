@@ -6,7 +6,6 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoop;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.RecyclableArrayList;
 
 import java.io.Serializable;
@@ -14,10 +13,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An NIO datagram {@link Channel} that sends and receives an
@@ -52,18 +48,6 @@ public class NioDatagramChannel extends AbstractChannel {
    * 缓冲队列
    */
   private final Queue<DatagramPacket> queue = new ConcurrentLinkedQueue<>();
-  /**
-   * 读取数据包的时间
-   */
-  private volatile long readerTime;
-  /**
-   * 写入数据包的时间
-   */
-  private volatile long writerTime;
-  /**
-   * 超时检测的调度
-   */
-  private final AtomicReference<ScheduledFuture<?>> timeoutTimer = new AtomicReference<>();
 
   /**
    * Creates a new instance.
@@ -74,8 +58,6 @@ public class NioDatagramChannel extends AbstractChannel {
     super(parent);
     this.channelKey = channelKey;
     this.remoteAddress = remoteAddress;
-    this.readerTime(now());
-    this.writerTime(now());
   }
 
   public Serializable channelKey() {
@@ -172,7 +154,7 @@ public class NioDatagramChannel extends AbstractChannel {
 
   @Override
   protected void doRegister() throws Exception {
-    startTimer();
+    // ~
   }
 
   /**
@@ -183,6 +165,7 @@ public class NioDatagramChannel extends AbstractChannel {
   @Deprecated
   @Override
   protected void doBind(SocketAddress localAddress) throws Exception {
+    throw new UnsupportedOperationException();
   }
 
   /**
@@ -214,7 +197,6 @@ public class NioDatagramChannel extends AbstractChannel {
       try {
         DatagramPacket buf;
         while ((buf = this.queue.poll()) != null) {
-          this.readerTime(now());
           pipeline().fireChannelRead(buf);
         }
         pipeline().fireChannelReadComplete();
@@ -268,7 +250,6 @@ public class NioDatagramChannel extends AbstractChannel {
     NioEventLoop loop = parent().eventLoop();
     if (loop.inEventLoop()) {
       try {
-        this.writerTime(now());
         Unsafe unsafe = parent().unsafe();
         for (Object buf : list) {
           unsafe.write(buf, voidPromise());
@@ -286,66 +267,6 @@ public class NioDatagramChannel extends AbstractChannel {
   public NioDatagramChannel addMessage(DatagramPacket msg) {
     this.queue.offer(msg);
     return this;
-  }
-
-  public long readerTime() {
-    return readerTime;
-  }
-
-  public NioDatagramChannel readerTime(long readerTime) {
-    this.readerTime = readerTime;
-    return this;
-  }
-
-  public long writerTime() {
-    return writerTime;
-  }
-
-  public NioDatagramChannel writerTime(long writerTime) {
-    this.writerTime = writerTime;
-    return this;
-  }
-
-  /**
-   * 开始超时调度
-   */
-  private void startTimer() {
-    if (timeoutTimer.get() != null) {
-      return;
-    }
-    ScheduledFuture<?> future = this.eventLoop().scheduleAtFixedRate(
-        this::checkTimeout, 500, 500, TimeUnit.MILLISECONDS);
-    this.timeoutTimer.set(future);
-  }
-
-  /**
-   * 停止超时调度
-   */
-  private void stopTimer() {
-    ScheduledFuture<?> future = this.timeoutTimer.getAndSet(null);
-    if (future != null) {
-      future.cancel(true);
-    }
-  }
-
-  private void checkTimeout() {
-    if (this.timeoutTimer.get() != null) {
-      if (!isActive()) {
-        stopTimer();
-        return;
-      }
-      // 读取或写入超时
-      if (parent().isReaderTimeout(this.readerTime())
-          || parent().isWriterTimeout(this.writerTime())) {
-        try {
-          super.close();
-        } catch (Exception e) {
-          PlatformDependent.throwException(e);
-        } finally {
-          stopTimer();
-        }
-      }
-    }
   }
 
   final class UdpChannelUnsafe extends AbstractUnsafe {

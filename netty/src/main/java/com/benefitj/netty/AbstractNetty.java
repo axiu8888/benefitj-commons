@@ -9,7 +9,6 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import io.netty.util.internal.PlatformDependent;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -47,7 +46,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   /**
    * 默认使用Linux的Epoll，如果可用
    */
-  private volatile boolean useLinuxNativeEpoll = isLinux() && !PlatformDependent.isAndroid();
+  private volatile boolean useLinuxNativeEpoll = false;
   /**
    * 主通道，启动后返回的通道
    */

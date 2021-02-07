@@ -16,7 +16,6 @@ import java.nio.channels.*;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 public class NioDatagramServerChannel extends AbstractNioMessageChannel
     implements io.netty.channel.socket.DatagramChannel, ServerChannel {
@@ -437,63 +436,6 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
   private static boolean isSingleDirectBuffer(ByteBuf buf) {
     return buf.isDirect() && buf.nioBufferCount() == 1;
   }
-
-  /**
-   * 判断是否读取超时
-   *
-   * @param time 时间
-   * @return 返回是否超时
-   */
-  public boolean isReaderTimeout(long time) {
-    long timeout = config().readerMillisTimeout();
-    return timeout > 0 && System.currentTimeMillis() - time >= timeout;
-  }
-
-  /**
-   * 判断是否写入超时
-   *
-   * @param time 时间
-   * @return 返回是否超时
-   */
-  public boolean isWriterTimeout(long time) {
-    long timeout = config().writerMillisTimeout();
-    return timeout > 0 && System.currentTimeMillis() - time >= timeout;
-  }
-
-  public long readerTimeout() {
-    return this.config().readerTimeout();
-  }
-
-  public NioDatagramServerChannel readerTimeout(long readTimeout) {
-    this.config().readerTimeout(readTimeout);
-    return this;
-  }
-
-  public long writerTimeout() {
-    return this.config().writerTimeout();
-  }
-
-  public NioDatagramServerChannel writerTimeout(long writeTimeout) {
-    this.config().writerTimeout(writeTimeout);
-    return this;
-  }
-
-  public TimeUnit timeoutUnit() {
-    return this.config().timeoutUnit();
-  }
-
-  public NioDatagramServerChannel timeoutUnit(TimeUnit timeoutUnit) {
-    this.config().timeoutUnit(timeoutUnit);
-    return this;
-  }
-
-  public NioDatagramServerChannel idle(long reader, long writer, TimeUnit unit) {
-    this.readerTimeout(reader);
-    this.writerTimeout(writer);
-    this.timeoutUnit(unit);
-    return this;
-  }
-
 
   @Override
   public ChannelFuture joinGroup(InetAddress multicastAddress) {

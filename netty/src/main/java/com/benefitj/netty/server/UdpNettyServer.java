@@ -10,16 +10,11 @@ import io.netty.channel.unix.UnixChannelOption;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * UDP服务
  */
 public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
-
-  private long readerTimeout = 60;
-  private long writeTimeout = 0;
-  private TimeUnit timeoutUnit = TimeUnit.SECONDS;
 
   public UdpNettyServer() {
     super();
@@ -67,43 +62,7 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
 
   @Override
   protected ChannelFuture startOnly(ServerBootstrap bootstrap) {
-    return super.startOnly(bootstrap).addListener(f ->
-        ((NioDatagramServerChannel) getServeChannel())
-            .idle(readerTimeout(), writerTimeout(), timeoutUnit()));
-  }
-
-  public long readerTimeout() {
-    return readerTimeout;
-  }
-
-  public UdpNettyServer readerTimeout(long readerTimeout) {
-    this.readerTimeout = readerTimeout;
-    return self();
-  }
-
-  public long writerTimeout() {
-    return writeTimeout;
-  }
-
-  public UdpNettyServer writerTimeout(long writeTimeout) {
-    this.writeTimeout = writeTimeout;
-    return self();
-  }
-
-  public TimeUnit timeoutUnit() {
-    return timeoutUnit;
-  }
-
-  public UdpNettyServer timeoutUnit(TimeUnit timeoutUnit) {
-    this.timeoutUnit = timeoutUnit;
-    return self();
-  }
-
-  public UdpNettyServer idle(long reader, long writer, TimeUnit timeoutUnit) {
-    this.readerTimeout(reader);
-    this.writerTimeout(writer);
-    this.timeoutUnit(timeoutUnit);
-    return self();
+    return super.startOnly(bootstrap);
   }
 
   /**

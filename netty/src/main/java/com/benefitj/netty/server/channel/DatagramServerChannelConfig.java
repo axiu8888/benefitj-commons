@@ -15,7 +15,6 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static io.netty.channel.ChannelOption.*;
 
@@ -102,12 +101,8 @@ public class DatagramServerChannelConfig extends DefaultDatagramChannelConfig im
     SET_OPTION = setOption;
   }
 
-  private volatile long readerTimeout = 0;
-  private volatile long writerTimeout = 0;
-  private TimeUnit timeoutUnit = TimeUnit.SECONDS;
-
   public DatagramServerChannelConfig(NioDatagramServerChannel channel) {
-    this(channel, new FixedRecvByteBufAllocator(4096));
+    this(channel, new FixedRecvByteBufAllocator(1024 << 4));
   }
 
   public DatagramServerChannelConfig(NioDatagramServerChannel channel, RecvByteBufAllocator allocator) {
@@ -559,47 +554,4 @@ public class DatagramServerChannelConfig extends DefaultDatagramChannelConfig im
     super.setWriteBufferWaterMark(writeBufferWaterMark);
     return self();
   }
-
-  public long readerTimeout() {
-    return readerTimeout;
-  }
-
-  public DatagramServerChannelConfig readerTimeout(long readTimeout) {
-    this.readerTimeout = readTimeout;
-    return self();
-  }
-
-  public long writerTimeout() {
-    return writerTimeout;
-  }
-
-  public DatagramServerChannelConfig writerTimeout(long writeTimeout) {
-    this.writerTimeout = writeTimeout;
-    return self();
-  }
-
-  public TimeUnit timeoutUnit() {
-    return timeoutUnit;
-  }
-
-  public DatagramServerChannelConfig timeoutUnit(TimeUnit timeoutUnit) {
-    this.timeoutUnit = timeoutUnit;
-    return self();
-  }
-
-  public DatagramServerChannelConfig idle(long reader, long writer, TimeUnit timeoutUnit) {
-    this.readerTimeout(reader);
-    this.writerTimeout(writer);
-    this.timeoutUnit(timeoutUnit);
-    return self();
-  }
-
-  public long writerMillisTimeout() {
-    return writerTimeout > 0 ? timeoutUnit().toMillis(writerTimeout) : 0;
-  }
-
-  public long readerMillisTimeout() {
-    return readerTimeout > 0 ? timeoutUnit().toMillis(readerTimeout) : 0;
-  }
-
 }

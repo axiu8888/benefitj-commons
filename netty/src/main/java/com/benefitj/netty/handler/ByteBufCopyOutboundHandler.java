@@ -4,6 +4,7 @@ import com.benefitj.netty.ByteBufCopy;
 import io.netty.channel.*;
 import io.netty.util.internal.TypeParameterMatcher;
 
+@ChannelHandler.Sharable
 public abstract class ByteBufCopyOutboundHandler<I> extends ChannelOutboundHandlerAdapter
     implements ByteBufCopy {
 

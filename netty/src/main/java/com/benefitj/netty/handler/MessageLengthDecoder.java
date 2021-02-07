@@ -3,6 +3,7 @@ package com.benefitj.netty.handler;
 import com.benefitj.netty.ByteBufCopy;
 import com.benefitj.netty.NettyUtils;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.util.Attribute;
@@ -14,6 +15,7 @@ import java.util.List;
 /**
  * 消息长度解码
  */
+@ChannelHandler.Sharable
 public class MessageLengthDecoder extends ByteToMessageDecoder implements ByteBufCopy {
 
   public static final byte[] HEAD = new byte[0];

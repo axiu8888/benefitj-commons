@@ -1,7 +1,7 @@
 package com.benefitj.netty.client;
 
 import com.benefitj.netty.DefaultThreadFactory;
-import com.benefitj.netty.handler.ActiveChangeChannelHandler;
+import com.benefitj.netty.handler.ActiveChannelHandler;
 import com.benefitj.netty.handler.ActiveState;
 import com.benefitj.netty.handler.ChannelShutdownEventHandler;
 import io.netty.bootstrap.Bootstrap;
@@ -165,7 +165,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
    */
   @Slf4j
   static class WatchdogChannelInitializer extends ChannelInitializer<Channel>
-      implements ActiveChangeChannelHandler.ActiveStateListener {
+      implements ActiveChannelHandler.ActiveStateListener {
 
     /**
      * Netty TCP 客户端
@@ -204,7 +204,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     protected void initChannel(Channel ch) throws Exception {
       ch.pipeline()
           .addLast(ChannelShutdownEventHandler.INSTANCE)
-          .addLast(ActiveChangeChannelHandler.newHandler(this))
+          .addLast(ActiveChannelHandler.newHandler(this))
           .addLast(client.handler);
     }
 
@@ -253,7 +253,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     }
 
     @Override
-    public void onChanged(ActiveChangeChannelHandler handler, ChannelHandlerContext ctx, ActiveState state) {
+    public void onChanged(ActiveChannelHandler handler, ChannelHandlerContext ctx, ActiveState state) {
       // 立刻重新尝试开启一个新的连接
       if (state == ActiveState.INACTIVE) {
         ScheduledExecutorService executor = this.executor;

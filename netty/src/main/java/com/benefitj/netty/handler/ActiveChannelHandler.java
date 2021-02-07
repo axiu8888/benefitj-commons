@@ -2,18 +2,20 @@ package com.benefitj.netty.handler;
 
 import com.benefitj.netty.ByteBufCopy;
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
  * 监听 Channel 的状态
  */
-public class ActiveChangeChannelHandler extends ChannelDuplexHandler implements ByteBufCopy {
+@ChannelHandler.Sharable
+public class ActiveChannelHandler extends ChannelDuplexHandler implements ByteBufCopy {
 
   private final ByteBufCopy bufCopy = ByteBufCopy.newByteBufCopy();
 
   private ActiveStateListener listener;
 
-  public ActiveChangeChannelHandler(ActiveStateListener listener) {
+  public ActiveChannelHandler(ActiveStateListener listener) {
     this.listener = listener;
   }
 
@@ -55,7 +57,7 @@ public class ActiveChangeChannelHandler extends ChannelDuplexHandler implements 
      * @param handler 当前的Handler
      * @param state   状态
      */
-    void onChanged(ActiveChangeChannelHandler handler, ChannelHandlerContext ctx, ActiveState state);
+    void onChanged(ActiveChannelHandler handler, ChannelHandlerContext ctx, ActiveState state);
   }
 
 
@@ -65,7 +67,7 @@ public class ActiveChangeChannelHandler extends ChannelDuplexHandler implements 
    * @param listener 监听
    * @return 返回创建的Handler
    */
-  public static ActiveChangeChannelHandler newHandler(ActiveStateListener listener) {
-    return new ActiveChangeChannelHandler(listener);
+  public static ActiveChannelHandler newHandler(ActiveStateListener listener) {
+    return new ActiveChannelHandler(listener);
   }
 }
