@@ -1,0 +1,12 @@
+apply from: "${getRootDir()}/buildSystem/base.gradle"
+
+group = "javastruct"
+
+description = "java结构体"
+
+dependencies {
+
+  compile project(":core")
+
+}
+
