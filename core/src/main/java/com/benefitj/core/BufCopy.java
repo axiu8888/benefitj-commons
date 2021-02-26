@@ -106,7 +106,18 @@ public interface BufCopy {
    * @return 返回拷贝后的数据
    */
   default byte[] copy(byte[] src, byte[] dest) {
-    return copy(src, 0, dest, 0, dest.length);
+    return copy(src, 0, dest, 0, Math.min(src.length, dest.length));
+  }
+
+  /**
+   * 拷贝
+   *
+   * @param src  原数据
+   * @param dest 目标数据
+   * @return 返回拷贝后的数据
+   */
+  default byte[] copy(byte[] src, int srcPos, byte[] dest, int destPos) {
+    return copy(src, srcPos, dest, destPos, Math.min(src.length - srcPos, dest.length - destPos));
   }
 
   /**
