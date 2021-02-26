@@ -1,4 +1,4 @@
-package com.benefitj.javastruct.field;
+package com.benefitj.javastruct.annotaion;
 
 import java.lang.annotation.*;
 
@@ -14,7 +14,7 @@ import java.lang.annotation.*;
 public @interface JavaStructClass {
 
   /**
-   * 结构体的长度，0为根据数据类型定义
+   * 结构体的长度，0为根据数据类型自动计算
    */
   int value() default 0;
 

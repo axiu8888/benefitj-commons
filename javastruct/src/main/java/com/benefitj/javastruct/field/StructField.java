@@ -1,5 +1,6 @@
 package com.benefitj.javastruct.field;
 
+import com.benefitj.javastruct.annotaion.JavaStructField;
 import com.benefitj.javastruct.convert.FieldConverter;
 
 import java.lang.reflect.Field;
@@ -17,7 +18,7 @@ public class StructField {
   /**
    * 基本数据类型
    */
-  private PrimitiveFieldType fieldType;
+  private PrimitiveType primitiveType;
   /**
    * 注解
    */
@@ -31,9 +32,9 @@ public class StructField {
     this.field = field;
   }
 
-  public StructField(Field field, PrimitiveFieldType fieldType, JavaStructField structField) {
+  public StructField(Field field, PrimitiveType primitiveType, JavaStructField structField) {
     this.field = field;
-    this.fieldType = fieldType;
+    this.primitiveType = primitiveType;
     this.structField = structField;
   }
 
@@ -52,12 +53,12 @@ public class StructField {
     this.field = field;
   }
 
-  public PrimitiveFieldType getFieldType() {
-    return fieldType;
+  public PrimitiveType getPrimitiveType() {
+    return primitiveType;
   }
 
-  public void setFieldType(PrimitiveFieldType fieldType) {
-    this.fieldType = fieldType;
+  public void setPrimitiveType(PrimitiveType primitiveType) {
+    this.primitiveType = primitiveType;
   }
 
   public JavaStructField getStructField() {
@@ -80,7 +81,7 @@ public class StructField {
    * 是否为数组类型
    */
   public boolean isArray() {
-    return getFieldType().isArray();
+    return getPrimitiveType().isArray();
   }
 
   /**

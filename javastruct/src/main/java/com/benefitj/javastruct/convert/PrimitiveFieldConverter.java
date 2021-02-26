@@ -1,8 +1,7 @@
 package com.benefitj.javastruct.convert;
 
-import com.benefitj.core.BufCopy;
 import com.benefitj.core.HexUtils;
-import com.benefitj.javastruct.field.JavaStructField;
+import com.benefitj.javastruct.annotaion.JavaStructField;
 import com.benefitj.javastruct.field.StructField;
 
 import javax.annotation.Nullable;
@@ -14,8 +13,17 @@ import java.util.function.Function;
  */
 public interface PrimitiveFieldConverter extends FieldConverter {
 
-  BufCopy getBufCopy();
+  /**
+   * @param field 类字段信息
+   * @param value 字段值
+   * @return
+   */
+  @Override
+  byte[] convert(StructField field, Object value);
 
+  /**
+   * 是否为本地
+   */
   boolean isLocal();
 
   /**
@@ -24,8 +32,17 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    * @param size 字节大小
    * @return 返回字节数组
    */
-  default byte[] getByteBuf(int size) {
-    return getBufCopy().getCache(size, isLocal());
+  byte[] getByteBuf(int size);
+
+  /**
+   * 拷贝数据
+   *
+   * @param src  原数组
+   * @param dest 目标数组
+   * @return 返回拷贝后的目标数据
+   */
+  default byte[] copy(byte[] src, byte[] dest) {
+    return copy(src, 0, dest, 0, Math.min(src.length, dest.length));
   }
 
   /**
@@ -47,29 +64,25 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    * @param srcPos  原数据开始的位置
    * @param dest    目标数组
    * @param destPos 目标数据开始的位置
+   * @return 返回拷贝后的目标数据
+   */
+  default byte[] copy(byte[] src, int srcPos, byte[] dest, int destPos) {
+    return copy(src, srcPos, dest, destPos, Math.min(src.length - srcPos, dest.length - destPos));
+  }
+
+  /**
+   * 拷贝数据
+   *
+   * @param src     原数组
+   * @param srcPos  原数据开始的位置
+   * @param dest    目标数组
+   * @param destPos 目标数据开始的位置
    * @param len     长度
    * @return 返回拷贝后的目标数据
    */
   default byte[] copy(byte[] src, int srcPos, byte[] dest, int destPos, int len) {
     System.arraycopy(src, srcPos, dest, destPos, len);
     return dest;
-  }
-
-  /**
-   * 拷贝数据
-   *
-   * @param src  原数组
-   * @param dest 目标数组
-   * @return 返回拷贝后的目标数据
-   */
-  default byte[] copy(byte[] src, byte[] dest) {
-    return copy(src, 0, dest, 0, Math.min(src.length, dest.length));
-  }
-
-  default byte[] convert(StructField field, Object value, Function<Object, byte[]> func) {
-    int size = field.size() > 0 ? field.size() : field.getFieldType().getSize();
-    byte[] bytes = func.apply(value);
-    return bytes.length == size && isLocal() ? bytes : copy(bytes, getByteBuf(size));
   }
 
   /**
@@ -110,7 +123,7 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    * @return 返回转换后的数据
    */
   default byte[] convertShort(StructField field, Object value) {
-    return convert(field, value, o -> HexUtils.shortToBytes((Short) o, field.getByteOrder()));
+    return convert(field, value, o -> HexUtils.shortToBytes(((Number) value).shortValue(), field.getByteOrder()));
   }
 
   /**
@@ -121,7 +134,7 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    * @return 返回转换后的数据
    */
   default byte[] convertInteger(StructField field, Object value) {
-    return convert(field, value, o -> HexUtils.intToBytes((Integer) o, field.getByteOrder()));
+    return convert(field, value, o -> HexUtils.intToBytes(((Number) value).intValue(), field.getByteOrder()));
   }
 
   /**
@@ -132,7 +145,7 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    * @return 返回转换后的数据
    */
   default byte[] convertLong(StructField field, Object value) {
-    return convert(field, value, o -> HexUtils.longToBytes((Long) o, field.getByteOrder()));
+    return convert(field, value, o -> HexUtils.longToBytes(((Number) value).longValue(), field.getByteOrder()));
   }
 
   /**
@@ -144,7 +157,7 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    */
   default byte[] convertFloat(StructField field, Object value) {
     return convert(field, value, o ->
-        HexUtils.intToBytes(Float.floatToIntBits((Float) value), field.getByteOrder()));
+        HexUtils.intToBytes(Float.floatToIntBits(((Number) value).floatValue()), field.getByteOrder()));
   }
 
   /**
@@ -156,7 +169,7 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    */
   default byte[] convertDouble(StructField field, Object value) {
     return convert(field, value, o ->
-        HexUtils.longToBytes(Double.doubleToLongBits((Double) value), field.getByteOrder()));
+        HexUtils.longToBytes(Double.doubleToLongBits(((Number) value).doubleValue()), field.getByteOrder()));
   }
 
   /**
@@ -178,6 +191,29 @@ public interface PrimitiveFieldConverter extends FieldConverter {
   }
 
   /**
+   * 转换
+   *
+   * @param field 字段
+   * @param value 值
+   * @param func  转换函数
+   * @return 返回转换后的字节数据
+   */
+  default byte[] convert(StructField field, Object value, Function<Object, byte[]> func) {
+    int size = field.size() > 0 ? field.size() : field.getPrimitiveType().getSize();
+    byte[] bytes = func.apply(value);
+    if (isLocal() && bytes.length == size) {
+      return bytes;
+    }
+
+    byte[] buf = getByteBuf(size);
+    if (field.isLittleEndian()) {
+      return copy(bytes, buf);
+    }
+    int srcPos = bytes.length > size ? bytes.length - size : size - bytes.length;
+    return copy(bytes, srcPos, buf, 0, Math.min(bytes.length, size));
+  }
+
+  /**
    * 转换布尔数组类型
    *
    * @param field 字段信息
@@ -187,11 +223,18 @@ public interface PrimitiveFieldConverter extends FieldConverter {
   default byte[] convertBooleanArray(StructField field, Object value) {
     if (value.getClass() == boolean[].class) {
       boolean[] array = (boolean[]) value;
-      return convertArray(field, array.length, i -> new byte[]{(byte) (array[i] ? 1 : 0)});
+      byte[] buf = new byte[1];
+      return convertArray(field, array.length, i -> {
+        buf[0] = (byte) (array[i] ? 1 : 0);
+        return buf;
+      });
     } else {
       Boolean[] array = (Boolean[]) value;
-      return convertArray(field, array.length, i ->
-          new byte[]{(byte) (Boolean.TRUE.equals(array[i]) ? 1 : 0)});
+      byte[] buf = new byte[1];
+      return convertArray(field, array.length, i -> {
+        buf[0] = (byte) (array[i] ? 1 : 0);
+        return buf;
+      });
     }
   }
 
@@ -203,23 +246,20 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    * @return 返回转换后的数据
    */
   default byte[] convertByteArray(StructField field, Object value) {
-    int size = field.size();
     if (value.getClass() == byte[].class) {
       byte[] array = (byte[]) value;
-      byte[] buf = getByteBuf(size * array.length);
-      for (int i = 0; i < array.length; i++) {
-        buf[i * size] = array[i];
-      }
-      return buf;
+      byte[] buf = new byte[1];
+      return convertArray(field, array.length, i -> {
+        buf[0] = array[i];
+        return buf;
+      });
     } else {
       Byte[] array = (Byte[]) value;
-      byte[] buf = getByteBuf(size * array.length);
-      for (int i = 0; i < array.length; i++) {
-        if (array[i] != null) {
-          buf[i * size] = array[i];
-        }
-      }
-      return buf;
+      byte[] buf = new byte[1];
+      return convertArray(field, array.length, i -> {
+        buf[0] = array[i] != null ? array[i] : 0;
+        return buf;
+      });
     }
   }
 
@@ -255,7 +295,7 @@ public interface PrimitiveFieldConverter extends FieldConverter {
     } else {
       Integer[] array = (Integer[]) value;
       return convertArray(field, array.length, i ->
-          array[i] != null ? HexUtils.longToBytes(array[i]) : null);
+          array[i] != null ? HexUtils.intToBytes(array[i]) : null);
     }
   }
 
@@ -322,15 +362,27 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    * @return 返回转换后的数据
    */
   default byte[] convertArray(StructField field, int length, ArrayFunction func) {
-    int size = field.size() / length;
+    int ratio = field.size() / length;
     byte[] buf = getByteBuf(field.size());
     for (int i = 0; i < length; i++) {
       byte[] bytes = func.apply(i);
       if (bytes != null) {
-        copy(bytes, 0, buf, i * size, Math.min(bytes.length, size));
+        if (field.isLittleEndian()) {
+          copy(bytes, 0, buf, i * ratio, Math.min(bytes.length, ratio));
+        } else {
+          copy(bytes, srcPos(bytes, ratio), buf, destPos(bytes, ratio) + i * ratio, Math.min(bytes.length, ratio));
+        }
       }
     }
     return buf;
+  }
+
+  default int srcPos(byte[] src, int size) {
+    return src.length > size ? src.length - size : size - src.length;
+  }
+
+  default int destPos(byte[] src, int size) {
+    return src.length > size ? 0 : size - src.length;
   }
 
   interface ArrayFunction {

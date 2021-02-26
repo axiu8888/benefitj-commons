@@ -1,7 +1,8 @@
-package com.benefitj.javastruct.field;
+package com.benefitj.javastruct.annotaion;
 
 import com.benefitj.javastruct.convert.DefaultPrimitiveFieldConverter;
 import com.benefitj.javastruct.convert.FieldConverter;
+import com.benefitj.javastruct.field.FieldByteOrder;
 
 import java.lang.annotation.*;
 
@@ -31,7 +32,7 @@ public @interface JavaStructField {
   /**
    * 转换器
    */
-  Class<? extends FieldConverter> converter() default DefaultPrimitiveFieldConverter.class;
+  Class<? extends FieldConverter> converter() default FieldConverter.class;
 
   /**
    * 字节编码

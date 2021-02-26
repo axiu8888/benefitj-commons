@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * 简单数据类型
  */
-public enum PrimitiveFieldType {
+public enum PrimitiveType {
 
   /**
    * 布尔类型
@@ -67,16 +67,12 @@ public enum PrimitiveFieldType {
    * 字符串
    */
   STRING(0, String.class),
-//  /**
-//   * 字符串数组
-//   */
-//  STRING_ARRAY(0, String.class),
   ;
 
   private final int size;
   private final List<Class<?>> types;
 
-  PrimitiveFieldType(int size, Class<?>... types) {
+  PrimitiveType(int size, Class<?>... types) {
     this.size = size;
     this.types = Collections.unmodifiableList(Arrays.asList(types));
   }
@@ -96,11 +92,11 @@ public enum PrimitiveFieldType {
     return false;
   }
 
-  private static final Map<Class, PrimitiveFieldType> fieldTypes;
+  private static final Map<Class, PrimitiveType> fieldTypes;
 
   static {
-    Map<Class<?>, PrimitiveFieldType> typeMap = new HashMap<>();
-    for (PrimitiveFieldType value : values()) {
+    Map<Class<?>, PrimitiveType> typeMap = new HashMap<>();
+    for (PrimitiveType value : values()) {
       value.types.forEach(type -> typeMap.put(type, value));
     }
     fieldTypes = Collections.unmodifiableMap(typeMap);
@@ -112,7 +108,7 @@ public enum PrimitiveFieldType {
    * @param type 类型
    * @return 返回枚举类型
    */
-  public static PrimitiveFieldType getFieldType(Class<?> type) {
+  public static PrimitiveType getFieldType(Class<?> type) {
     return fieldTypes.get(type);
   }
 

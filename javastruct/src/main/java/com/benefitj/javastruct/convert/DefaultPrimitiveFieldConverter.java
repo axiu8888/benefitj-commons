@@ -1,8 +1,11 @@
 package com.benefitj.javastruct.convert;
 
 import com.benefitj.core.BufCopy;
-import com.benefitj.javastruct.field.PrimitiveFieldType;
+import com.benefitj.javastruct.annotaion.JavaStructField;
+import com.benefitj.javastruct.field.PrimitiveType;
 import com.benefitj.javastruct.field.StructField;
+
+import java.lang.reflect.Field;
 
 /**
  * 默认的基本数据类型的字段转换器
@@ -22,12 +25,25 @@ public class DefaultPrimitiveFieldConverter implements PrimitiveFieldConverter {
     this.local = local;
   }
 
+  /**
+   * 是否支持的类型
+   *
+   * @param field 字段
+   * @param jsf   字段的注解
+   * @param pt    字段对应的基本类型
+   * @return 返回是否支持
+   */
+  @Override
+  public boolean support(Field field, JavaStructField jsf, PrimitiveType pt) {
+    return pt != null;
+  }
+
   @Override
   public byte[] convert(StructField field, Object value) {
     if (value == null) {
       return getByteBuf(field.size());
     }
-    PrimitiveFieldType type = PrimitiveFieldType.getFieldType(value.getClass());
+    PrimitiveType type = PrimitiveType.getFieldType(value.getClass());
     switch (type) {
       case BOOLEAN:
         return convertBoolean(field, value);
@@ -65,9 +81,13 @@ public class DefaultPrimitiveFieldConverter implements PrimitiveFieldConverter {
     }
   }
 
-  @Override
   public BufCopy getBufCopy() {
     return bufCopy;
+  }
+
+  @Override
+  public byte[] getByteBuf(int size) {
+    return getBufCopy().getCache(size, isLocal());
   }
 
   @Override

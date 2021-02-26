@@ -8,5 +8,8 @@ dependencies {
 
   compile project(":core")
 
+  annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+  testCompile "org.projectlombok:lombok:${lombokVersion}"
+
 }
 
