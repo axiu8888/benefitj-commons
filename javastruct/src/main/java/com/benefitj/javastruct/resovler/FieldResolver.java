@@ -1,4 +1,4 @@
-package com.benefitj.javastruct.convert;
+package com.benefitj.javastruct.resovler;
 
 import com.benefitj.javastruct.annotaion.JavaStructField;
 import com.benefitj.javastruct.field.PrimitiveType;
@@ -6,10 +6,7 @@ import com.benefitj.javastruct.field.StructField;
 
 import java.lang.reflect.Field;
 
-/**
- * 字段转换器
- */
-public interface FieldConverter {
+public interface FieldResolver<T> {
 
   /**
    * 是否支持的类型
@@ -22,13 +19,14 @@ public interface FieldConverter {
   boolean support(Field field, JavaStructField jsf, PrimitiveType pt);
 
   /**
-   * 转换数据
+   * 解析数据
    *
-   * @param field 类字段信息
-   * @param value 字段值
-   * @return 返回转换后的字节数组
+   * @param field    字节
+   * @param data     数据
+   * @param position 下表位置
+   * @return 返回解析后的对象
    */
-  byte[] convert(StructField field, Object value);
+  T resolve(StructField field, byte[] data, int position);
 
   /**
    * 拷贝数据
@@ -80,5 +78,4 @@ public interface FieldConverter {
     System.arraycopy(src, srcPos, dest, destPos, len);
     return dest;
   }
-
 }

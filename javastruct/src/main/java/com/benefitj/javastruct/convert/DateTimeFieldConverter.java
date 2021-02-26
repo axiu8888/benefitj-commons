@@ -9,6 +9,9 @@ import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.util.Date;
 
+/**
+ * 时间类型转换器
+ */
 public class DateTimeFieldConverter extends DefaultPrimitiveFieldConverter {
 
   public DateTimeFieldConverter() {
@@ -29,7 +32,9 @@ public class DateTimeFieldConverter extends DefaultPrimitiveFieldConverter {
   @Override
   public boolean support(Field field, JavaStructField jsf, PrimitiveType pt) {
     Class<?> type = field.getType();
-    return type.isAssignableFrom(Date.class) || type.isAssignableFrom(Timestamp.class);
+    return type.isAssignableFrom(Date.class)
+        || type.isAssignableFrom(Timestamp.class)
+        ;
   }
 
   /**

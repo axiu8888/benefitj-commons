@@ -1,6 +1,5 @@
 package com.benefitj.javastruct.entity;
 
-import com.benefitj.javastruct.convert.DateTimeFieldConverter;
 import com.benefitj.javastruct.annotaion.JavaStructClass;
 import com.benefitj.javastruct.annotaion.JavaStructField;
 import lombok.Getter;
@@ -23,11 +22,11 @@ public class Person {
    */
   @JavaStructField(size = 1)
   private int age;
-//  /**
-//   * V5波形数组
-//   */
-//  @JavaStructField(size = 400)
-//  private short[] V5;
+  /**
+   * V5波形数组: 200采样率
+   */
+  @JavaStructField(size = 400)
+  private short[] V5;
   /**
    * 时间
    */
@@ -61,13 +60,13 @@ public class Person {
     this.age = age;
   }
 
-//  public short[] getV5() {
-//    return V5;
-//  }
-//
-//  public void setV5(short[] v5) {
-//    V5 = v5;
-//  }
+  public short[] getV5() {
+    return V5;
+  }
+
+  public void setV5(short[] v5) {
+    V5 = v5;
+  }
 
   public long getTime() {
     return time;

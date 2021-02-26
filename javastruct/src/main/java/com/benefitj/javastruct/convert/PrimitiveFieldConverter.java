@@ -34,56 +34,6 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    */
   byte[] getByteBuf(int size);
 
-  /**
-   * 拷贝数据
-   *
-   * @param src  原数组
-   * @param dest 目标数组
-   * @return 返回拷贝后的目标数据
-   */
-  default byte[] copy(byte[] src, byte[] dest) {
-    return copy(src, 0, dest, 0, Math.min(src.length, dest.length));
-  }
-
-  /**
-   * 拷贝数据
-   *
-   * @param src  原数组
-   * @param dest 目标数组
-   * @param len  长度
-   * @return 返回拷贝后的目标数据
-   */
-  default byte[] copy(byte[] src, byte[] dest, int len) {
-    return copy(src, 0, dest, 0, len);
-  }
-
-  /**
-   * 拷贝数据
-   *
-   * @param src     原数组
-   * @param srcPos  原数据开始的位置
-   * @param dest    目标数组
-   * @param destPos 目标数据开始的位置
-   * @return 返回拷贝后的目标数据
-   */
-  default byte[] copy(byte[] src, int srcPos, byte[] dest, int destPos) {
-    return copy(src, srcPos, dest, destPos, Math.min(src.length - srcPos, dest.length - destPos));
-  }
-
-  /**
-   * 拷贝数据
-   *
-   * @param src     原数组
-   * @param srcPos  原数据开始的位置
-   * @param dest    目标数组
-   * @param destPos 目标数据开始的位置
-   * @param len     长度
-   * @return 返回拷贝后的目标数据
-   */
-  default byte[] copy(byte[] src, int srcPos, byte[] dest, int destPos, int len) {
-    System.arraycopy(src, srcPos, dest, destPos, len);
-    return dest;
-  }
 
   /**
    * 转换布尔类型
@@ -181,10 +131,7 @@ public interface PrimitiveFieldConverter extends FieldConverter {
    */
   default byte[] convertString(StructField field, Object value) {
     String str = (String) value;
-    JavaStructField sf = field.getStructField();
-    String name = sf.charset().trim();
-    Charset charset = Charset.forName(!name.isEmpty() ? name : "UTF-8");
-    byte[] bytes = str.getBytes(charset);
+    byte[] bytes = str.getBytes(Charset.forName(field.getCharset()));
     int size = field.size() > 0 ? field.size() : bytes.length;
     byte[] buf = getByteBuf(size);
     return copy(bytes, 0, buf, 0, Math.min(buf.length, bytes.length));

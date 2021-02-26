@@ -41,6 +41,12 @@ public class StructClass {
     this.size = size;
   }
 
+  /**
+   * 转换对象
+   *
+   * @param o 对象
+   * @return 返回转换后的字节数组
+   */
   public byte[] convert(Object o) {
     byte[] data = new byte[getSize()];
     int index = 0;
@@ -53,4 +59,37 @@ public class StructClass {
     }
     return data;
   }
+
+  /**
+   * 解析结构体数据
+   *
+   * @param data  数据
+   * @param start 开始的位置
+   * @param <T>   对象类型
+   * @return 返回解析的对象
+   */
+  public <T> T parse(byte[] data, int start) {
+    if (data.length - start < getSize()) {
+      throw new IllegalArgumentException(
+          "数据长度不够，要求长度" + getSize() + "，实际长度" + (data.length - start));
+    }
+
+    Object o;
+    try {
+      o = getType().newInstance();
+    } catch (InstantiationException | IllegalAccessException e) {
+      throw new IllegalStateException(e);
+    }
+
+    int index = 0;
+    for (StructField sf : getFields()) {
+      Object value = sf.getResolver().resolve(sf, data, index);
+      if (value != null) {
+        ReflectUtils.setFieldValue(sf.getField(), o, value);
+      }
+      index += sf.size();
+    }
+    return (T) o;
+  }
+
 }

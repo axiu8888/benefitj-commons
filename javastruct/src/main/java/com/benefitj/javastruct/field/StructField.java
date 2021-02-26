@@ -2,6 +2,7 @@ package com.benefitj.javastruct.field;
 
 import com.benefitj.javastruct.annotaion.JavaStructField;
 import com.benefitj.javastruct.convert.FieldConverter;
+import com.benefitj.javastruct.resovler.FieldResolver;
 
 import java.lang.reflect.Field;
 import java.nio.ByteOrder;
@@ -27,6 +28,14 @@ public class StructField {
    * 转换器
    */
   private FieldConverter converter;
+  /**
+   * 解析器
+   */
+  private FieldResolver resolver;
+  /**
+   * 字符串的编码
+   */
+  private String charset = "UTF-8";
 
   public StructField(Field field) {
     this.field = field;
@@ -75,6 +84,22 @@ public class StructField {
 
   public FieldConverter getConverter() {
     return converter;
+  }
+
+  public FieldResolver getResolver() {
+    return resolver;
+  }
+
+  public void setResolver(FieldResolver resolver) {
+    this.resolver = resolver;
+  }
+
+  public String getCharset() {
+    return charset;
+  }
+
+  public void setCharset(String charset) {
+    this.charset = charset;
   }
 
   /**

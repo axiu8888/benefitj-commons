@@ -1,8 +1,8 @@
 package com.benefitj.javastruct.annotaion;
 
-import com.benefitj.javastruct.convert.DefaultPrimitiveFieldConverter;
 import com.benefitj.javastruct.convert.FieldConverter;
 import com.benefitj.javastruct.field.FieldByteOrder;
+import com.benefitj.javastruct.resovler.FieldResolver;
 
 import java.lang.annotation.*;
 
@@ -33,6 +33,11 @@ public @interface JavaStructField {
    * 转换器
    */
   Class<? extends FieldConverter> converter() default FieldConverter.class;
+
+  /**
+   * 解析器
+   */
+  Class<? extends FieldResolver> resolver() default FieldResolver.class;
 
   /**
    * 字节编码
