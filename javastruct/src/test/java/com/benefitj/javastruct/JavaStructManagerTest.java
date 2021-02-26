@@ -10,22 +10,8 @@ import org.junit.Test;
 import java.util.Date;
 
 public class JavaStructManagerTest {
-  public static void main(String[] args) throws Exception {
-    JavaStructManagerTest test = new JavaStructManagerTest();
 
-    test.setUp();
-
-    test.testConvert();
-
-    test.testResolver();
-
-    test.tearDown();
-
-  }
-
-  private JavaStructManager structManager = JavaStructManager.getInstance();
-
-  private byte[] data;
+  private JavaStructManager manager = JavaStructManager.getInstance();
 
   @Before
   public void setUp() throws Exception {
@@ -49,7 +35,7 @@ public class JavaStructManagerTest {
     person.setTime(System.currentTimeMillis());
     person.setCreateTime(new Date());
 
-    this.data = structManager.convert(person);
+    byte[] data = manager.convert(person);
     String hex = HexUtils.bytesToHex(data);
     System.err.println(hex);
   }
@@ -59,10 +45,16 @@ public class JavaStructManagerTest {
    */
   @Test
   public void testResolver() {
-    Person person = structManager.parse(Person.class, data);
-
+    String hex = "B2CCB9B7000000000000000000000000000000001E0000000000000000000000000000000000000000000000000000000000" +
+        "000000FFEAFBA3F912014D0BFA1C3D273737D640772EFD21740DA50038ECB5EF98F9EEFFF70000000000000000000000000000000000000" +
+        "0000000000000000000015D005D003100FB01CF01B401C9028103010310037A03E904BA04E0053505D506A10700075407DC08EE0A3A0B3B" +
+        "0C6C0DDC0ED20F7C0F370ECB0E190D7E0D170D140B7507F505AD0337022A000A00000000000000000000000000000000000000000000000" +
+        "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000FF" +
+        "F8FF3BFFFF0000FFFFFFFF00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" +
+        "000000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" +
+        "00000000000001BC02DE042804FB05930623063F066F0666059D053F049503E601D60166000000000177DE38FD5C6038E394";
+    Person person = manager.parse(Person.class, HexUtils.hexToBytes(hex));
     System.err.println(JSON.toJSONString(person));
-
   }
 
 }

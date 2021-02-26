@@ -32,9 +32,7 @@ public class DateTimeFieldConverter extends DefaultPrimitiveFieldConverter {
   @Override
   public boolean support(Field field, JavaStructField jsf, PrimitiveType pt) {
     Class<?> type = field.getType();
-    return type.isAssignableFrom(Date.class)
-        || type.isAssignableFrom(Timestamp.class)
-        ;
+    return type.isAssignableFrom(Date.class) || type.isAssignableFrom(Timestamp.class);
   }
 
   /**

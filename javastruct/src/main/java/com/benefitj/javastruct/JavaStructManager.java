@@ -91,9 +91,9 @@ public class JavaStructManager {
    */
   public StructClass getStructClass(Class<?> type, boolean create) {
     if (create) {
-      return this.structClasses.computeIfAbsent(type, this::parseStructClass);
+      return this.getStructClasses().computeIfAbsent(type, this::parseStructClass);
     }
-    return this.structClasses.get(type);
+    return this.getStructClasses().get(type);
   }
 
   /**

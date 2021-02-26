@@ -34,8 +34,7 @@ dependencies {
     compile fileTree(dir: 'libs/jar', include: ['*.jar'])
     compileOnly fileTree(dir: 'libs/source', include: ['*.jar'])
 
-    testCompileOnly 'junit:junit:4.13'
-
+    testCompile 'junit:junit:4.13.2'
 
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
