@@ -2,6 +2,7 @@ package com.benefitj.javastruct.entity;
 
 import com.benefitj.javastruct.annotaion.JavaStructClass;
 import com.benefitj.javastruct.annotaion.JavaStructField;
+import com.benefitj.javastruct.resovler.HexStringResolver;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,12 +38,11 @@ public class Person {
    */
   @JavaStructField(size = 4)
   private Date createTime;
-//  /**
-//   * 时间
-//   */
-//  @JavaStructField(size = 1024 * 3, charset = "UTF-8")
-//  private String remarks;
-
+  /**
+   * 16进制字符串
+   */
+  @JavaStructField(size = 16, resolver = HexStringResolver.class)
+  private String hex;
 
   public String getName() {
     return name;
@@ -82,5 +82,13 @@ public class Person {
 
   public void setCreateTime(Date createTime) {
     this.createTime = createTime;
+  }
+
+  public String getHex() {
+    return hex;
+  }
+
+  public void setHex(String hex) {
+    this.hex = hex;
   }
 }

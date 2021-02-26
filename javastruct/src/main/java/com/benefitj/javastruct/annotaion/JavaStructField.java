@@ -1,6 +1,5 @@
 package com.benefitj.javastruct.annotaion;
 
-import com.benefitj.javastruct.convert.FieldConverter;
 import com.benefitj.javastruct.field.FieldByteOrder;
 import com.benefitj.javastruct.resovler.FieldResolver;
 
@@ -28,11 +27,6 @@ public @interface JavaStructField {
    * 字节顺序
    */
   FieldByteOrder byteOrder() default FieldByteOrder.BIG_ENDIAN;
-
-  /**
-   * 转换器
-   */
-  Class<? extends FieldConverter> converter() default FieldConverter.class;
 
   /**
    * 解析器

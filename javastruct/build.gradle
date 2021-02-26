@@ -6,10 +6,11 @@ description = "java结构体"
 
 dependencies {
 
-  compile project(":core")
+//  annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+//  testCompile "org.projectlombok:lombok:${lombokVersion}"
 
-  annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-  testCompile "org.projectlombok:lombok:${lombokVersion}"
+//  annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+  compile "org.projectlombok:lombok:${lombokVersion}"
 
 }
 

@@ -1,7 +1,6 @@
 package com.benefitj.javastruct.field;
 
 import com.benefitj.core.ReflectUtils;
-import com.benefitj.javastruct.convert.FieldConverter;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -51,9 +50,8 @@ public class StructClass {
     byte[] data = new byte[getSize()];
     int index = 0;
     for (StructField field : getFields()) {
-      FieldConverter fc = field.getConverter();
       Object value = ReflectUtils.getFieldValue(field.getField(), o);
-      byte[] bytes = fc.convert(field, value);
+      byte[] bytes = field.getResolver().convert(field, value);
       System.arraycopy(bytes, 0, data, index, bytes.length);
       index += field.size();
     }
@@ -83,7 +81,7 @@ public class StructClass {
 
     int index = 0;
     for (StructField sf : getFields()) {
-      Object value = sf.getResolver().resolve(sf, data, index);
+      Object value = sf.getResolver().parse(sf, data, index);
       if (value != null) {
         ReflectUtils.setFieldValue(sf.getField(), o, value);
       }

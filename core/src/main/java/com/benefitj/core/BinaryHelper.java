@@ -3,9 +3,9 @@ package com.benefitj.core;
 import java.nio.ByteOrder;
 
 /**
- * 16进制转换
+ * 二进制工具类
  */
-public class HexHelper {
+public class BinaryHelper {
 
   /**
    * 16进制和2进制转换
@@ -34,17 +34,25 @@ public class HexHelper {
   };
 
   /**
-   * 是否使用本地缓冲
-   */
-  private boolean local = false;
-  /**
    * 缓冲
    */
   private final BufCopy bufCopy = BufCopy.newBufCopy();
   /**
+   * 是否使用本地缓冲
+   */
+  private boolean local = false;
+  /**
    * 默认字节序，默认大端字节顺序（高位在前，低位在后）
    */
   private ByteOrder order = ByteOrder.BIG_ENDIAN;
+
+  public BinaryHelper() {
+  }
+
+  public BinaryHelper(boolean local, ByteOrder order) {
+    this.local = local;
+    this.order = order;
+  }
 
   public boolean isLocal() {
     return local;

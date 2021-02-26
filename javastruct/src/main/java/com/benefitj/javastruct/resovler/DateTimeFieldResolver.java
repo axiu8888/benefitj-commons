@@ -12,7 +12,7 @@ import java.util.Date;
 /**
  * 时间戳解析器
  */
-public class DateTimeFieldResolver extends DefaultPrimitiveFieldResolver {
+public class DateTimeFieldResolver extends AbstractFieldResolver<Object> {
 
   public DateTimeFieldResolver() {
   }
@@ -28,19 +28,47 @@ public class DateTimeFieldResolver extends DefaultPrimitiveFieldResolver {
   }
 
   @Override
-  public Object resolve(StructField field, byte[] data, int position) {
+  public byte[] convert(StructField field, Object value) {
+    long time;
+    if (value instanceof Timestamp) {
+      time = ((Timestamp) value).getTime();
+    } else {
+      time = ((Date) value).getTime();
+    }
+    int size = field.size();
+    byte[] bytes;
+    switch (size) {
+      case 4:
+        bytes = HexUtils.intToBytes((int) (time / 1000), field.getByteOrder());
+        break;
+      case 6:
+        byte[] buf = getCache(6);
+        bytes = HexUtils.longToBytes((int) (time / 1000), field.getByteOrder());
+        copy(bytes, 0, buf, 0);
+        bytes = HexUtils.intToBytes((int) time % 1000, field.getByteOrder());
+        return copy(bytes, 0, buf, 4, 2);
+      case 8:
+      default:
+        bytes = HexUtils.longToBytes(time, field.getByteOrder());
+        break;
+    }
+    return copy(bytes, srcPos(bytes, size), getCache(size), destPos(bytes, size));
+  }
+
+  @Override
+  public Object parse(StructField field, byte[] data, int position) {
     long time;
     int size = field.size();
     if (size == 4) {
-      byte[] buf = copy(data, position, getByteBuf(size), 0);
+      byte[] buf = copy(data, position, getCache(size), 0);
       time = HexUtils.bytesToLong(buf, field.getByteOrder()) * 1000;
     } else if (size == 6) {
-      byte[] buf = copy(data, position, getByteBuf(4), 0, 4);
+      byte[] buf = copy(data, position, getCache(4), 0, 4);
       time = HexUtils.bytesToLong(buf, field.getByteOrder());
-      buf = copy(data, position + 4, getByteBuf(2), 0, 2);
+      buf = copy(data, position + 4, getCache(2), 0, 2);
       time += HexUtils.bytesToLong(buf, field.getByteOrder());
     } else {
-      byte[] buf = copy(data, position, getByteBuf(size), 0);
+      byte[] buf = copy(data, position, getCache(size), 0);
       time = HexUtils.bytesToLong(buf);
     }
 

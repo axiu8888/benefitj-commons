@@ -4,23 +4,21 @@ package com.benefitj.javastruct;
 import com.benefitj.core.ReflectUtils;
 import com.benefitj.javastruct.annotaion.JavaStructClass;
 import com.benefitj.javastruct.annotaion.JavaStructField;
-import com.benefitj.javastruct.convert.DateTimeFieldConverter;
-import com.benefitj.javastruct.convert.DefaultPrimitiveFieldConverter;
-import com.benefitj.javastruct.convert.FieldConverter;
-import com.benefitj.javastruct.convert.PrimitiveFieldConverter;
 import com.benefitj.javastruct.field.PrimitiveType;
 import com.benefitj.javastruct.field.StructClass;
 import com.benefitj.javastruct.field.StructField;
 import com.benefitj.javastruct.resovler.DateTimeFieldResolver;
 import com.benefitj.javastruct.resovler.DefaultPrimitiveFieldResolver;
 import com.benefitj.javastruct.resovler.FieldResolver;
-import com.benefitj.javastruct.resovler.PrimitiveFieldResolver;
+import com.benefitj.javastruct.resovler.HexStringResolver;
 
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 结构体管理
@@ -30,7 +28,8 @@ public class JavaStructManager {
   private static final JavaStructManager INSTANCE = new JavaStructManager();
 
   static {
-    INSTANCE.init();
+    INSTANCE.setup();
+    INSTANCE.setCharset(StandardCharsets.UTF_8.name());
   }
 
   public static JavaStructManager getInstance() {
@@ -38,13 +37,9 @@ public class JavaStructManager {
   }
 
   /**
-   * 字段转换器
-   */
-  private final Map<Class<?>, FieldConverter> fieldConverters = new ConcurrentHashMap<>();
-  /**
    * 字段解析器
    */
-  private final Map<Class<?>, FieldResolver<?>> fieldResolvers = new ConcurrentHashMap<>();
+  private final Map<Class<?>, FieldResolver<?>> fieldResolvers = Collections.synchronizedMap(new LinkedHashMap<>());
   /**
    * 缓存的类
    */
@@ -60,14 +55,11 @@ public class JavaStructManager {
   /**
    * 初始化
    */
-  public void init() {
-    // 初始化转换器
-    this.fieldConverters.put(PrimitiveFieldConverter.class, new DefaultPrimitiveFieldConverter());
-    this.fieldConverters.put(DateTimeFieldConverter.class, new DateTimeFieldConverter());
-
+  public void setup() {
     // 初始化解析器
-    this.fieldResolvers.put(PrimitiveFieldResolver.class, new DefaultPrimitiveFieldResolver());
+    this.fieldResolvers.put(DefaultPrimitiveFieldResolver.class, new DefaultPrimitiveFieldResolver());
     this.fieldResolvers.put(DateTimeFieldResolver.class, new DateTimeFieldResolver());
+    this.fieldResolvers.put(HexStringResolver.class, new HexStringResolver());
   }
 
   public String getCharset() {
@@ -94,23 +86,6 @@ public class JavaStructManager {
       return this.getStructClasses().computeIfAbsent(type, this::parseStructClass);
     }
     return this.getStructClasses().get(type);
-  }
-
-  /**
-   * 字段转换器
-   */
-  public Map<Class<?>, FieldConverter> getFieldConverters() {
-    return fieldConverters;
-  }
-
-  /**
-   * 获取字段转换器
-   *
-   * @param converterType 转换器类型
-   * @return 返回对应的转换器
-   */
-  public FieldConverter getFieldConverter(Class<?> converterType) {
-    return getFieldConverters().get(converterType);
   }
 
   /**
@@ -203,12 +178,10 @@ public class JavaStructManager {
           "请指定[%s.%s]的长度", f.getDeclaringClass().getName(), f.getName()));
     }
 
-    FieldConverter fc = findFieldConverter(f, jsf, primitiveType);
     FieldResolver<?> fr = findFieldResolver(f, jsf, primitiveType);
     StructField structField = new StructField(f);
     structField.setPrimitiveType(primitiveType);
     structField.setStructField(jsf);
-    structField.setConverter(fc);
     structField.setResolver(fr);
     String charsetName = jsf.charset().trim();
     structField.setCharset(charsetName.isEmpty() ? getCharset() : charsetName);
@@ -216,56 +189,21 @@ public class JavaStructManager {
   }
 
   /**
-   * 查找字段转换器
-   *
-   * @param f             字段
-   * @param jsf           结构注解
-   * @param primitiveType 基本数据类型
-   * @return 返回转换器
-   */
-  protected FieldConverter findFieldConverter(Field f, JavaStructField jsf, PrimitiveType primitiveType) {
-    FieldConverter fc = null;
-    if (jsf.converter() != FieldConverter.class) {
-      fc = getFieldConverter(jsf.converter());
-    }
-    if (fc == null) {
-      for (Map.Entry<Class<?>, FieldConverter> entry : getFieldConverters().entrySet()) {
-        FieldConverter value = entry.getValue();
-        if (value.support(f, jsf, primitiveType)) {
-          fc = value;
-          break;
-        }
-      }
-    }
-
-    if (fc == null) {
-      throw new IllegalStateException("无法发现转换器: " + jsf.converter().getName());
-    }
-
-    if (!fc.support(f, jsf, primitiveType)) {
-      throw new IllegalArgumentException(String.format(
-          "不支持的数据类型: %s.%s [%s]", f.getDeclaringClass().getName(), f.getName(), f.getType().getName()));
-    }
-    return fc;
-  }
-
-  /**
    * 查找字段解析器
    *
-   * @param f             字段
-   * @param jsf           结构注解
-   * @param primitiveType 基本数据类型
+   * @param f   字段
+   * @param jsf 结构注解
+   * @param pt  基本数据类型
    * @return 返回解析器
    */
-  protected FieldResolver<?> findFieldResolver(Field f, JavaStructField jsf, PrimitiveType primitiveType) {
+  protected FieldResolver<?> findFieldResolver(Field f, JavaStructField jsf, PrimitiveType pt) {
     FieldResolver<?> fr = null;
     if (jsf.resolver() != FieldResolver.class) {
       fr = getFieldResolver(jsf.resolver());
-    }
-    if (fr == null) {
+    } else {
       for (Map.Entry<Class<?>, FieldResolver<?>> entry : getFieldResolvers().entrySet()) {
         FieldResolver<?> value = entry.getValue();
-        if (value.support(f, jsf, primitiveType)) {
+        if (value.support(f, jsf, pt)) {
           fr = value;
           break;
         }
@@ -273,10 +211,10 @@ public class JavaStructManager {
     }
 
     if (fr == null) {
-      throw new IllegalStateException("无法发现解析器: " + jsf.converter().getName());
+      throw new IllegalStateException("无法发现解析器: " + jsf.resolver().getName());
     }
 
-    if (!fr.support(f, jsf, primitiveType)) {
+    if (!fr.support(f, jsf, pt)) {
       throw new IllegalArgumentException(String.format(
           "不支持的数据类型: %s.%s [%s]", f.getDeclaringClass().getName(), f.getName(), f.getType().getName()));
     }

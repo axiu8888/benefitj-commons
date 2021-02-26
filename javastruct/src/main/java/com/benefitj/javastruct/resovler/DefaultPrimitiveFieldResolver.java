@@ -1,7 +1,5 @@
 package com.benefitj.javastruct.resovler;
 
-import com.benefitj.core.BufCopy;
-import com.benefitj.core.HexUtils;
 import com.benefitj.javastruct.annotaion.JavaStructField;
 import com.benefitj.javastruct.field.PrimitiveType;
 import com.benefitj.javastruct.field.StructField;
@@ -14,16 +12,13 @@ import java.nio.charset.Charset;
  *
  * @author DINGXIUAN
  */
-public class DefaultPrimitiveFieldResolver implements PrimitiveFieldResolver<Object> {
-
-  private final BufCopy bufCopy = BufCopy.newBufCopy();
-  private boolean local = false;
+public class DefaultPrimitiveFieldResolver extends AbstractFieldResolver<Object> {
 
   public DefaultPrimitiveFieldResolver() {
   }
 
   public DefaultPrimitiveFieldResolver(boolean local) {
-    this.local = local;
+    super(local);
   }
 
   /**
@@ -39,96 +34,68 @@ public class DefaultPrimitiveFieldResolver implements PrimitiveFieldResolver<Obj
     return pt != null;
   }
 
-  /**
-   * 解析数据
-   *
-   * @param field    字节
-   * @param data     数据
-   * @param position 下表位置
-   * @return 返回解析后的对象
-   */
   @Override
-  public Object resolve(StructField field, byte[] data, int position) {
-    int size = field.size();
+  public byte[] convert(StructField field, Object value) {
+    if (value == null) {
+      return getCache(field.size());
+    }
+    PrimitiveType pt = field.getPrimitiveType();
+    switch (pt) {
+      case BOOLEAN:
+        return convertBoolean(field, value);
+      case BYTE:
+        return convertByte(field, value);
+      case SHORT:
+        return convertShort(field, value);
+      case INTEGER:
+        return convertInteger(field, value);
+      case LONG:
+        return convertLong(field, value);
+      case FLOAT:
+        return convertFloat(field, value);
+      case DOUBLE:
+        return convertDouble(field, value);
+      case STRING:
+        return convertString(field, value);
+      case BOOLEAN_ARRAY:
+        return convertBooleanArray(field, value);
+      case BYTE_ARRAY:
+        return convertByteArray(field, value);
+      case SHORT_ARRAY:
+        return convertShortArray(field, value);
+      case INTEGER_ARRAY:
+        return convertIntegerArray(field, value);
+      case LONG_ARRAY:
+        return convertLongArray(field, value);
+      case FLOAT_ARRAY:
+        return convertFloatArray(field, value);
+      case DOUBLE_ARRAY:
+        return convertDoubleArray(field, value);
+      default:
+        throw new UnsupportedOperationException("Unsupported !");
+    }
+  }
+
+  @Override
+  public Object parse(StructField field, byte[] data, int position) {
     if (field.isArray()) {
-      // 处理数组
-      Class<?> type = field.getField().getType();
-      if (type == byte[].class || type == Byte.class) {
-        if (type == byte[].class) {
-          return copy(data, position, getByteBuf(size, false), 0);
-        } else {
-          Byte[] buf = new Byte[size];
-          for (int i = 0; i < buf.length; i++) {
-            buf[i] = data[position + i];
-          }
-          return buf;
-        }
-      } else if (type == short[].class || type == Short[].class) {
-        int ratio = 2;
-        if (type == short[].class) {
-          short[] array = new short[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = HexUtils.bytesToShort(buf, field.getByteOrder()));
-        } else {
-          Short[] array = new Short[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = HexUtils.bytesToShort(buf, field.getByteOrder()));
-        }
-      } else if (type == int[].class || type == Integer[].class) {
-        int ratio = 4;
-        if (type == int[].class) {
-          int[] array = new int[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = HexUtils.bytesToInt(buf, field.getByteOrder()));
-        } else {
-          Integer[] array = new Integer[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = HexUtils.bytesToInt(buf, field.getByteOrder()));
-        }
-      } else if (type == long[].class || type == Long[].class) {
-        int ratio = 8;
-        if (type == long[].class) {
-          long[] array = new long[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = HexUtils.bytesToLong(buf, field.getByteOrder()));
-        } else {
-          Long[] array = new Long[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = HexUtils.bytesToLong(buf, field.getByteOrder()));
-        }
-      } else if (type == float[].class || type == Float[].class) {
-        int ratio = 4;
-        if (type == float[].class) {
-          float[] array = new float[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = Float.intBitsToFloat(HexUtils.bytesToInt(buf, field.getByteOrder())));
-        } else {
-          Float[] array = new Float[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = Float.intBitsToFloat(HexUtils.bytesToInt(buf, field.getByteOrder())));
-        }
-      } else if (type == double[].class || type == Double[].class) {
-        int ratio = 8;
-        if (type == double[].class) {
-          double[] array = new double[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = Double.longBitsToDouble(HexUtils.bytesToLong(buf, field.getByteOrder())));
-        } else {
-          Double[] array = new Double[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = Double.longBitsToDouble(HexUtils.bytesToLong(buf, field.getByteOrder())));
-        }
-      } else if (type == boolean[].class || type == Boolean[].class) {
-        int ratio = 8;
-        if (type == boolean[].class) {
-          boolean[] array = new boolean[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = HexUtils.bytesToShort(buf) > 0);
-        } else {
-          Boolean[] array = new Boolean[size / ratio];
-          return resolveArray(data, position, array, array.length, ratio
-              , (arr, index, buf) -> arr[index] = HexUtils.bytesToShort(buf) > 0);
-        }
+      PrimitiveType pt = field.getPrimitiveType();
+      switch (pt) {
+        case BYTE_ARRAY:
+          return parseByteArray(field, data, position);
+        case SHORT_ARRAY:
+          return parseShortArray(field, data, position);
+        case INTEGER_ARRAY:
+          return parseIntegerArray(field, data, position);
+        case LONG_ARRAY:
+          return parseLongArray(field, data, position);
+        case FLOAT_ARRAY:
+          return parseFloatArray(field, data, position);
+        case DOUBLE_ARRAY:
+          return parseDoubleArray(field, data, position);
+        case BOOLEAN_ARRAY:
+          return parseBooleanArray(field, data, position);
+        default:
       }
     } else {
       Class<?> type = field.getField().getType();
@@ -147,7 +114,7 @@ public class DefaultPrimitiveFieldResolver implements PrimitiveFieldResolver<Obj
       } else if (type == long.class) {
         return parseLong(field, data, position, true);
       } else if (type == String.class) {
-        byte[] buf = getByteBuf(size);
+        byte[] buf = getCache(field.size());
         copy(data, position, buf, 0);
         return new String(buf, Charset.forName(field.getCharset())).trim();
       }
@@ -155,49 +122,6 @@ public class DefaultPrimitiveFieldResolver implements PrimitiveFieldResolver<Obj
 
     // ~bang
     throw new UnsupportedOperationException();
-  }
-
-  public <T> T resolveArray(byte[] data, int start, T array, int arrayLength, int ratio, ArrayFunction<T> func) {
-    byte[] buf = getByteBuf(ratio);
-    for (int i = 0; i < arrayLength; i++) {
-      copy(data, start + i * ratio, buf, 0, ratio);
-      func.accept(array, i, buf);
-    }
-    return array;
-  }
-
-  public byte[] getByteBuf(int size) {
-    return getByteBuf(size, isLocal());
-  }
-
-  @Override
-  public byte[] getByteBuf(int size, boolean local) {
-    return bufCopy.getCache(size, local);
-  }
-
-  public BufCopy getBufCopy() {
-    return bufCopy;
-  }
-
-  public boolean isLocal() {
-    return local;
-  }
-
-  public void setLocal(boolean local) {
-    this.local = local;
-  }
-
-  public interface ArrayFunction<T> {
-
-    /**
-     * 处理数据
-     *
-     * @param array 数组
-     * @param index 索引
-     * @param buf   读取的缓冲
-     */
-    void accept(T array, int index, byte[] buf);
-
   }
 
 }

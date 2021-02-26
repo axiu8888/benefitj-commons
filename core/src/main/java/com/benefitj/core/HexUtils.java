@@ -7,17 +7,15 @@ import java.nio.ByteOrder;
  */
 public class HexUtils {
 
-  private static final HexHelper INSTANCE;
-
-  static {
-    HexHelper helper = new HexHelper();
-    helper.setLocal(false);
-    helper.setOrder(ByteOrder.BIG_ENDIAN);
-    INSTANCE = helper;
+  static BinaryHelper getInstance() {
+    return Holder.INSTANCE;
   }
 
-  public static HexHelper getInstance() {
-    return HexUtils.INSTANCE;
+  private static class Holder {
+    private static final BinaryHelper INSTANCE;
+    static {
+      INSTANCE = new BinaryHelper(false, ByteOrder.BIG_ENDIAN);
+    }
   }
 
   /**
@@ -474,7 +472,7 @@ public class HexUtils {
    * @param consumer 返回
    * @return 返回16进制字符串或空
    */
-  public static String bytesToHex(byte[] bin, HexHelper.HexConsumer consumer) {
+  public static String bytesToHex(byte[] bin, BinaryHelper.HexConsumer consumer) {
     return getInstance().bytesToHex(bin, consumer);
   }
 

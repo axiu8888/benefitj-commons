@@ -1,7 +1,6 @@
 package com.benefitj.javastruct.field;
 
 import com.benefitj.javastruct.annotaion.JavaStructField;
-import com.benefitj.javastruct.convert.FieldConverter;
 import com.benefitj.javastruct.resovler.FieldResolver;
 
 import java.lang.reflect.Field;
@@ -24,10 +23,6 @@ public class StructField {
    * 注解
    */
   private JavaStructField structField;
-  /**
-   * 转换器
-   */
-  private FieldConverter converter;
   /**
    * 解析器
    */
@@ -78,14 +73,6 @@ public class StructField {
     this.structField = structField;
   }
 
-  public void setConverter(FieldConverter converter) {
-    this.converter = converter;
-  }
-
-  public FieldConverter getConverter() {
-    return converter;
-  }
-
   public FieldResolver getResolver() {
     return resolver;
   }
@@ -100,6 +87,10 @@ public class StructField {
 
   public void setCharset(String charset) {
     this.charset = charset;
+  }
+
+  public Class<?> getType() {
+    return getField().getType();
   }
 
   /**
@@ -126,5 +117,6 @@ public class StructField {
   public ByteOrder getByteOrder() {
     return getStructField().byteOrder().getOrder();
   }
+
 
 }
