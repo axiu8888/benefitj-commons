@@ -10,12 +10,9 @@ dependencies {
 
 //    compile project(":core")
 
-    compileOnly 'commons-io:commons-io:2.6'
-    compileOnly 'com.google.guava:guava:29.0-jre'
-
     // 二维码
-    compileOnly 'com.google.zxing:core:3.4.0'
-    compileOnly 'com.google.zxing:javase:3.4.0'
+    compileOnly 'com.google.zxing:core:3.4.1'
+    compileOnly 'com.google.zxing:javase:3.4.1'
 
     // 验证码
     compileOnly("com.octo.captcha:jcaptcha:1.0") {
@@ -23,5 +20,5 @@ dependencies {
         exclude(module: "imaging")
     }
     // Servlet
-    compileOnly("javax.servlet:javax.servlet-api:4.0.0")
+    compileOnly("javax.servlet:javax.servlet-api:4.0.1")
 }
