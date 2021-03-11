@@ -206,8 +206,8 @@ public class EventBusPoster {
    *
    * @param adapters 事件处理器
    */
-  public void register(Collection<? extends EventAdapter> adapters) {
-    for (EventAdapter handler : adapters) {
+  public void register(Collection<?> adapters) {
+    for (Object handler : adapters) {
       register(handler);
     }
   }
@@ -231,7 +231,7 @@ public class EventBusPoster {
    *
    * @param adapters 事件处理器
    */
-  public void unregister(Collection<Object> adapters) {
+  public void unregister(Collection<?> adapters) {
     for (Object adapter : adapters) {
       unregister(adapter);
     }
