@@ -1,6 +1,9 @@
 package com.benefitj.core;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Function;
@@ -133,6 +136,36 @@ public interface BufCopy {
   default byte[] copy(byte[] src, int start, byte[] dest, int destPos, int len) {
     System.arraycopy(src, start, dest, destPos, len);
     return dest;
+  }
+
+  /**
+   * 拼接字节数组
+   *
+   * @param array 数组
+   * @return 返回拼接好的数据
+   */
+  static byte[] concat(byte[]... array) {
+    return concat(Arrays.asList(array));
+  }
+
+  /**
+   * 拼接字节数组
+   *
+   * @param list 字节列表
+   * @return 返回拼接好的数据
+   */
+  static byte[] concat(List<byte[]> list) {
+    int length = list.stream()
+        .mapToInt(a -> a.length)
+        .sum();
+    try (final ByteArrayOutputStream os = new ByteArrayOutputStream(length);) {
+      for (byte[] bytes : list) {
+        os.write(bytes);
+      }
+      return os.toByteArray();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   /**
