@@ -170,9 +170,8 @@ public class IOUtils {
    *
    * @param filename 文件名
    * @return 返回新创建的目录
-   * @throws IllegalStateException 抛出的异常
    */
-  public static File mkDirs(String filename) throws IllegalStateException {
+  public static File mkDirs(String filename) {
     return createFile(filename, true);
   }
 
@@ -182,9 +181,8 @@ public class IOUtils {
    * @param parentFile 目录
    * @param filename   文件名
    * @return 返回新创建的目录
-   * @throws IllegalStateException 抛出的异常
    */
-  public static File mkDirs(String parentFile, String filename) throws IllegalStateException {
+  public static File mkDirs(String parentFile, String filename) {
     return mkDirs(new File(parentFile), filename);
   }
 
@@ -194,9 +192,8 @@ public class IOUtils {
    * @param parentFile 目录
    * @param filename   文件名
    * @return 返回新创建的目录
-   * @throws IllegalStateException 抛出的异常
    */
-  public static File mkDirs(File parentFile, String filename) throws IllegalStateException {
+  public static File mkDirs(File parentFile, String filename) {
     return createFile(parentFile, filename, true);
   }
 
@@ -205,9 +202,8 @@ public class IOUtils {
    *
    * @param filename 文件名
    * @return 返回新创建的文件
-   * @throws IllegalStateException 抛出的异常
    */
-  public static File createFile(String filename) throws IllegalStateException {
+  public static File createFile(String filename) {
     return createFile(filename, false);
   }
 
@@ -217,9 +213,8 @@ public class IOUtils {
    * @param parentFile 目录
    * @param filename   文件名
    * @return 返回新创建的文件
-   * @throws IllegalStateException 抛出的异常
    */
-  public static File createFile(String parentFile, String filename) throws IllegalStateException {
+  public static File createFile(String parentFile, String filename) {
     return createFile(new File(parentFile), filename, false);
   }
 
@@ -229,9 +224,8 @@ public class IOUtils {
    * @param parentFile 目录
    * @param filename   文件名
    * @return 返回新创建的文件
-   * @throws IllegalStateException 抛出的异常
    */
-  public static File createFile(File parentFile, String filename) throws IllegalStateException {
+  public static File createFile(File parentFile, String filename) {
     return createFile(parentFile, filename, false);
   }
 
@@ -241,9 +235,8 @@ public class IOUtils {
    * @param filename  文件名
    * @param directory 是否为目录
    * @return 返回新创建的文件
-   * @throws IllegalStateException 抛出的异常
    */
-  public static File createFile(String filename, boolean directory) throws IllegalStateException {
+  public static File createFile(String filename, boolean directory) {
     return createFile(null, filename, directory);
   }
 
@@ -254,9 +247,8 @@ public class IOUtils {
    * @param filename   文件名
    * @param directory  是否为目录
    * @return 返回新创建的文件
-   * @throws IllegalStateException 抛出的异常
    */
-  public static File createFile(File parentFile, String filename, boolean directory) throws IllegalStateException {
+  public static File createFile(File parentFile, String filename, boolean directory) {
     File newFile = parentFile != null ? new File(parentFile, filename) : new File(filename);
     if (directory) {
       newFile.mkdirs();
@@ -390,23 +382,9 @@ public class IOUtils {
    *
    * @param file     文件
    * @param consumer 处理回调
-   * @throws IllegalStateException 读取时出现错误抛出的异常
    */
-  public static void read(File file, IBiConsumer<byte[], Integer> consumer) throws IllegalStateException {
+  public static void read(File file, IBiConsumer<byte[], Integer> consumer) {
     read(file, 1024 << 4, consumer);
-  }
-
-  /**
-   * 读取数据，每次读取指定长度的字节，默认闭关流
-   *
-   * @param file     文件
-   * @param size     缓冲区大小
-   * @param consumer 处理回调
-   * @throws IllegalStateException 读取时出现错误抛出的异常
-   */
-  public static void read(File file, int size, IBiConsumer<byte[], Integer> consumer) throws IllegalStateException {
-    FileInputStream fis = newFIS(file);
-    read(fis, size, true, consumer);
   }
 
   /**
@@ -415,9 +393,8 @@ public class IOUtils {
    * @param is       输入流
    * @param size     缓冲区大小
    * @param consumer 处理回调
-   * @throws IllegalStateException 读取时出现错误抛出的异常
    */
-  public static void read(InputStream is, int size, IBiConsumer<byte[], Integer> consumer) throws IllegalStateException {
+  public static void read(InputStream is, int size, IBiConsumer<byte[], Integer> consumer) {
     read(is, size, true, consumer);
   }
 
@@ -428,9 +405,8 @@ public class IOUtils {
    * @param size     缓冲区大小
    * @param close    是否关闭流
    * @param consumer 处理回调
-   * @throws IllegalStateException 读取时出现错误抛出的异常
    */
-  public static void read(InputStream is, int size, boolean close, IBiConsumer<byte[], Integer> consumer) throws IllegalStateException {
+  public static void read(InputStream is, int size, boolean close, IBiConsumer<byte[], Integer> consumer) {
     try {
       byte[] buff = new byte[size];
       int len;
@@ -447,13 +423,75 @@ public class IOUtils {
   }
 
   /**
+   * 读取数据
+   *
+   * @param file     文件
+   * @param size     读取的长度
+   * @param consumer 处理数据
+   */
+  public static void read(final File file, int size, IBiConsumer<byte[], Integer> consumer) {
+    read(file, size, buf -> true, consumer, buf -> false);
+  }
+
+
+  /**
+   * 读取数据
+   *
+   * @param file        文件
+   * @param size        读取的长度
+   * @param filter      过滤出匹配的数据
+   * @param consumer    处理数据
+   * @param interceptor 是否停止读取
+   */
+  public static void read(final File file,
+                          int size,
+                          Predicate<byte[]> filter,
+                          IBiConsumer<byte[], Integer> consumer,
+                          Predicate<byte[]> interceptor) {
+    try (final RandomAccessFile raf = new RandomAccessFile(file, "r");) {
+      read(raf, size, filter, consumer, interceptor);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 读取数据
+   *
+   * @param raf         输入流
+   * @param size        读取的长度
+   * @param filter      过滤出匹配的数据
+   * @param consumer    处理数据
+   * @param interceptor 是否停止读取
+   */
+  public static void read(final RandomAccessFile raf,
+                          int size,
+                          Predicate<byte[]> filter,
+                          IBiConsumer<byte[], Integer> consumer,
+                          Predicate<byte[]> interceptor) {
+    try {
+      byte[] buf = new byte[size];
+      int len;
+      while ((len = raf.read(buf)) > 0) {
+        if (filter.test(buf)) {
+          consumer.accept(buf, len);
+        }
+        if (interceptor.test(buf)) {
+          return;
+        }
+      }
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
    * 读取数据，每次读取一行，默认关闭流
    *
    * @param file     文件
    * @param consumer 处理回调
-   * @throws IllegalStateException 读取时出现错误抛出的异常
    */
-  public static void readLine(File file, IConsumer<String> consumer) throws IllegalStateException {
+  public static void readLine(File file, IConsumer<String> consumer) {
     try (final BufferedReader reader = new BufferedReader(new FileReader(file))) {
       readLine(reader, false, consumer);
     } catch (IOException e) {
@@ -466,9 +504,8 @@ public class IOUtils {
    *
    * @param reader   输入
    * @param consumer 处理回调
-   * @throws IllegalStateException 读取时出现错误抛出的异常
    */
-  public static void readLine(Reader reader, IConsumer<String> consumer) throws IllegalStateException {
+  public static void readLine(Reader reader, IConsumer<String> consumer) {
     readLine(reader, true, consumer);
   }
 
@@ -478,9 +515,8 @@ public class IOUtils {
    * @param reader   输入
    * @param close    是否关闭流
    * @param consumer 处理回调
-   * @throws IllegalStateException 读取时出现错误抛出的异常
    */
-  public static void readLine(Reader reader, boolean close, IConsumer<String> consumer) throws IllegalStateException {
+  public static void readLine(Reader reader, boolean close, IConsumer<String> consumer) {
     final BufferedReader br = wrapReader(reader);
     try {
       String line;
@@ -515,7 +551,7 @@ public class IOUtils {
    * @return 返回读取的字节数组
    * @throws IllegalStateException
    */
-  public static byte[] readFileFully(File file) throws IllegalStateException {
+  public static byte[] readFileFully(File file) {
     return readFileFully(file, 1024 << 4);
   }
 
@@ -526,7 +562,7 @@ public class IOUtils {
    * @return 返回读取的字节数组
    * @throws IllegalArgumentException
    */
-  public static byte[] readFileFully(File file, long maxSize) throws IllegalStateException {
+  public static byte[] readFileFully(File file, long maxSize) {
     if (exists(file)) {
       requireNotOutOfSize(file.length(), maxSize);
       final FileInputStream fis = newFIS(file);
@@ -661,7 +697,7 @@ public class IOUtils {
    * @param os   输出流
    * @param size 缓存大小
    */
-  public static void write(InputStream is, OutputStream os, int size, boolean close) throws IllegalStateException {
+  public static void write(InputStream is, OutputStream os, int size, boolean close) {
     try {
       byte[] buff = new byte[size];
       int len;
@@ -774,7 +810,7 @@ public class IOUtils {
    *
    * @param closes AutoCloseable实现(InputStream、OutputStream)
    */
-  public static void close(AutoCloseable... closes) throws IllegalStateException {
+  public static void close(AutoCloseable... closes) {
     if (closes != null && closes.length > 0) {
       for (AutoCloseable c : closes) {
         try {
