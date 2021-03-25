@@ -1,7 +1,5 @@
 apply from: "${getRootDir()}/buildSystem/base.gradle"
 
-group = "consistent-hash"
-
 description = "一致性hash"
 
 dependencies {

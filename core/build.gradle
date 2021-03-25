@@ -1,10 +1,5 @@
 
-apply plugin: 'java'
-apply plugin: 'maven'
-
 apply from: "${getRootDir()}/buildSystem/base.gradle"
-
-group = "benefitj-core"
 
 dependencies {
 	compile fileTree(dir: 'libs', include: ['*.jar'])

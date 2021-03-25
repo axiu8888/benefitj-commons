@@ -248,4 +248,19 @@ public class EventLoop implements ScheduledExecutorService {
     }
 
   }
+
+  public static void sleep(int delay) {
+    sleep(delay, TimeUnit.SECONDS);
+  }
+
+  public static void sleep(int delay, TimeUnit unit) {
+    try {
+      unit.sleep(delay);
+    } catch (InterruptedException ignore) {}
+  }
+
+  public static String threadName() {
+    return Thread.currentThread().getName();
+  }
+
 }

@@ -50,8 +50,7 @@ sourceJar {
           def project = findProject(getRootProject(), path)
           if (project == null) {
             throw new IllegalStateException(
-                "Not found project for path: ${path}"
-                    + ", compile project: ${getProject().name}")
+                "Not found project for path: ${path}" + ", compile project: ${getProject().name}")
           }
           project.sourceSets.main.allSource
         }
@@ -66,15 +65,27 @@ sourceJar {
 uploadArchives {
   repositories {
     mavenDeployer {
-      pom.groupId = "${groupId}"
-      pom.artifactId = "${artifactPrefix}${artifactId}"
-      pom.version = "${versionId}"
+      pom.groupId = "$group"
+      pom.artifactId = "$artifactId"
+      pom.version = "$version"
 
       if (allInOne) {
         pom.whenConfigured { pom ->
           def deps = pom.dependencies.stream()
-              .filter { dep -> !allProjects.containsKey(dep.groupId) }
-              .collect { dep -> dep }
+                  .filter { dep ->
+                    print("\n--------------- ${dep} ---------------------\n")
+                    def match = getRootProject().getSubprojects()
+                            .stream()
+                            .anyMatch {
+                              def match = it.getGroup() == dep.groupId && it.getName() == dep.artifactId && it.getVersion() == dep.version
+                              println("${dep.groupId}-${dep.artifactId}.v${dep.version}  ==  ${it.getGroup()}-${it.getName()}.v${it.getVersion()} ==>: ${match}")
+                              return match
+                            }
+                    println("dep: ${dep}, find: ${match}")
+                    print("--------------- ${dep} ---------------------\n")
+                    return !match
+                  }
+                  .collect { dep -> dep }
           pom.dependencies.clear()
           pom.dependencies.addAll(deps)
         }
@@ -86,4 +97,5 @@ uploadArchives {
     }
   }
 }
+
 

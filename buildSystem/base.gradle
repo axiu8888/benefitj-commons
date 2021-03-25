@@ -4,12 +4,7 @@ apply plugin: 'maven'
 
 apply from: "${getRootDir()}/buildSystem/repository.gradle"
 
-ext {
-    // 先定义变量
-    groupId = ""
-    artifactId = "${getProject().name}"
-    versionId = ""
-}
+ext.artifactId = "${getProject().name}"
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8

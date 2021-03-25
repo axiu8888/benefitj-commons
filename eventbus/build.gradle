@@ -1,7 +1,5 @@
 apply from: "${getRootDir()}/buildSystem/base.gradle"
 
-group = "eventbus"
-
 description = "EventBus"
 
 dependencies {

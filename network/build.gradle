@@ -1,7 +1,5 @@
 apply from: "${getRootDir()}/buildSystem/base.gradle"
 
-group = "network"
-
 dependencies {
 	compile fileTree(dir: 'libs', include: ['*.jar'])
 

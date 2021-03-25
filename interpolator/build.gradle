@@ -1,7 +1,5 @@
 apply from: "${getRootDir()}/buildSystem/base.gradle"
 
-group = "interpolator"
-
 description = "插值器"
 
 dependencies {

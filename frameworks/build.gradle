@@ -1,7 +1,5 @@
 apply from: "${getRootDir()}/buildSystem/base.gradle"
 
-group = "frameworks"
-
 description = "框架的工具类"
 
 dependencies {

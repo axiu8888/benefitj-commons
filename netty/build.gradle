@@ -1,7 +1,5 @@
 apply from: "${getRootDir()}/buildSystem/base.gradle"
 
-group = "netty"
-
 dependencies {
 
   compileOnly 'io.netty:netty-all:4.1.59.Final'
