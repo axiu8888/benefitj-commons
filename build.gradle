@@ -1,15 +1,3 @@
-//plugins {
-//    id 'org.springframework.boot' version '2.3.6.RELEASE'
-//    id 'java'
-//}
-//allprojects {
-//    apply from: "${getRootDir()}/base.gradle"
-//}
-//
-//subprojects {
-//    apply from: "${getRootDir()}/base.gradle"
-//}
-
 
 ext {
     jacksonVersion = "2.12.1"

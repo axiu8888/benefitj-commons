@@ -205,7 +205,7 @@ public class ClasspathUtils {
       return getJarAbsolutePath(classpath);
     }
     String out = classpath.startsWith(FILE_SCHEME) ? classpath.substring(FILE_SCHEME.length()) : classpath;
-    return trimPath(out, true, true);
+    return trimSeparator(out, true, true);
   }
 
   /**
@@ -336,8 +336,8 @@ public class ClasspathUtils {
    */
   public static void copyFilesFromJarTo(JarFile jarFile, String src, String dest) throws IOException {
     Enumeration<JarEntry> entries = jarFile.entries();
-    String stripSrc = trimPath(src, true, false);
-    String stripDest = trimPath(dest, false, true);
+    String stripSrc = trimSeparator(src, true, false);
+    String stripDest = trimSeparator(dest, false, true);
     while (entries.hasMoreElements()) {
       JarEntry entry = entries.nextElement();
       String entryName = entry.getName();
@@ -404,11 +404,10 @@ public class ClasspathUtils {
     classpath = classpath != null ? classpath : defaultClasspath();
 
     String absolutePath = getAbsolutePath(classpath);
-    File classpathFile = new File(trimPath(absolutePath.substring(0, absolutePath.lastIndexOf("classes")), false, true));
-    File parentFile = classpathFile.getParentFile();
-    File file = parentFile.getName().equals("build") ? classpathFile : parentFile;
-    String resourceName = "/" + (trimPath(resource, true, true));
-    List<File> files = filter(file, f -> filePath(f).endsWith("/classes") || filePath(f).endsWith("/resources"))
+    File classpathFile = new File(trimSeparator(absolutePath.substring(0, absolutePath.lastIndexOf("classes")), false, true));
+    File filterFile = classpathFile.getParentFile().getAbsolutePath().endsWith("build") ? classpathFile.getParentFile() : classpathFile;
+    String resourceName = "/" + (trimSeparator(resource, true, true));
+    List<File> files = filter(filterFile, f -> filePath(f).endsWith("/classes") || filePath(f).endsWith("/resources"))
         .stream()
         .flatMap(f -> filter(f, sf -> filePath(sf).endsWith(resourceName)).stream())
         .collect(Collectors.toList());
@@ -417,9 +416,10 @@ public class ClasspathUtils {
         // 如果是test上下文，优先从test目录获取
         if (classpath.contains("/test/")) {
           return files.stream()
-              .filter(f -> (f.getAbsolutePath().replace("\\", "/")).contains("test"))
+              .filter(f -> replace(f.getAbsolutePath(),"\\", "/").contains("test"))
               .findFirst()
-              .orElse(files.get(0)).toURL();
+              .orElse(files.get(0))
+              .toURL();
         }
         return files.get(0).toURL();
       } catch (MalformedURLException ignore) {/* ignore */}
@@ -447,7 +447,7 @@ public class ClasspathUtils {
   }
 
 
-  private static String trimPath(String path, boolean first, boolean last) {
+  private static String trimSeparator(String path, boolean first, boolean last) {
     String out = path;
     while (first && out.startsWith(PATH_SYMBOL)) {
       out = out.substring(1);
@@ -456,6 +456,10 @@ public class ClasspathUtils {
       out = out.substring(0, out.length() - 1);
     }
     return out;
+  }
+
+  private static String replace(String str, String src, String dest) {
+    return str.replaceAll(str, dest);
   }
 
   /**
