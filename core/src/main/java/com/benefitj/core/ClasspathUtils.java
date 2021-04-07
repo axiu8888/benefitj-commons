@@ -1,5 +1,7 @@
 package com.benefitj.core;
 
+import org.springframework.core.io.ClassPathResource;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
@@ -37,9 +39,26 @@ public class ClasspathUtils {
   private static final String SPRINGBOOT_SUFFIX = ".jar!/";
 
   private static final boolean WINDOWS;
+  /**
+   * 是否为spring环境
+   */
+  private static final boolean SPRING_CLASSPATH;
 
   static {
     WINDOWS = System.getProperty("os.name").contains("Windows");
+
+    boolean springboot;
+    try {
+      Class.forName("org.springframework.core.io.ClassPathResource");
+      springboot = true;
+    } catch (ClassNotFoundException ignore) {
+      springboot = false;
+    }
+    SPRING_CLASSPATH = springboot;
+  }
+
+  public static boolean isSpringClasspath() {
+    return SPRING_CLASSPATH;
   }
 
   private static Class<ClasspathUtils> defaultClass() {
@@ -248,6 +267,14 @@ public class ClasspathUtils {
     }
     if (isJar(classpath)) {
       URL url = classLoader.getResource(src);
+      if (url == null && isSpringClasspath()) {
+        ClassPathResource resource = new ClassPathResource(src);
+        if (resource.exists()) {
+          copyFilesFromJarTo(resource.getURL(), src, dest);
+          return;
+        }
+      }
+
       if (url == null) {
         throw new FileNotFoundException("无法获取classpath下的\"" + src + "\"资源");
       }
@@ -255,6 +282,13 @@ public class ClasspathUtils {
     } else {
       // 拷贝
       URL srcURL = getResourceURL(classLoader, klass, src);
+      if (srcURL == null && isSpringClasspath()) {
+        ClassPathResource resource = new ClassPathResource(src);
+        if (resource.exists()) {
+          copyFilesFromJarTo(resource.getURL(), src, dest);
+          return;
+        }
+      }
       if (srcURL == null) {
         if (klass != null && isJar(getClasspathURL(klass).toExternalForm())) {
           // 在jar包中
@@ -388,6 +422,7 @@ public class ClasspathUtils {
     if (resourceUrl != null) {
       return resourceUrl;
     }
+
     String classpath = getClasspath(classLoader);
     resourceUrl = findResourceURL(classpath, resource);
     if (resourceUrl == null && klass != null) {
@@ -416,7 +451,7 @@ public class ClasspathUtils {
         // 如果是test上下文，优先从test目录获取
         if (classpath.contains("/test/")) {
           return files.stream()
-              .filter(f -> replace(f.getAbsolutePath(),"\\", "/").contains("test"))
+              .filter(f -> replace(f.getAbsolutePath(), "\\", "/").contains("test"))
               .findFirst()
               .orElse(files.get(0))
               .toURL();
