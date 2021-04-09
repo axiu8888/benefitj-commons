@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 
 import java.net.InetSocketAddress;
@@ -249,6 +250,24 @@ public abstract class AbstractDevice implements Device {
   }
 
   /**
+   * 获取pipeline
+   */
+  @Override
+  public ChannelPipeline pipeline() {
+    return channel().pipeline();
+  }
+
+  /**
+   * 往pipeline中发送消息
+   *
+   * @param msg 消息
+   */
+  @Override
+  public void fireRead(Object msg) {
+    pipeline().fireChannelRead(msg);
+  }
+
+  /**
    * 获取Channel的EventLoop
    */
   @Override
@@ -274,6 +293,14 @@ public abstract class AbstractDevice implements Device {
     eventLoop().execute(task);
   }
 
+  /**
+   * 执行调度任务
+   *
+   * @param command 任务
+   * @param delay   延迟时间
+   * @param unit    时间单位
+   * @return 返回 ScheduledFuture
+   */
   @Override
   public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
     return eventLoop().schedule(command, delay, unit);
@@ -285,6 +312,25 @@ public abstract class AbstractDevice implements Device {
   @Override
   public Map<String, Object> attrs() {
     return attributes;
+  }
+
+  /**
+   * 属性数量
+   */
+  @Override
+  public int attributeSize() {
+    return attrs().size();
+  }
+
+  /**
+   * 是否有某个属性
+   *
+   * @param key 属性键
+   * @return 返回判断结果
+   */
+  @Override
+  public boolean hasAttr(String key) {
+    return attrs().containsKey(key);
   }
 
   /**

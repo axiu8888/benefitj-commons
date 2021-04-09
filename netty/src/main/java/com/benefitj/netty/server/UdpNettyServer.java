@@ -69,8 +69,8 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
    * 服务端类型
    */
   @Override
-  public final ServerType serverType() {
-    return ServerType.UDP;
+  public final Type serverType() {
+    return Type.UDP;
   }
 
 }

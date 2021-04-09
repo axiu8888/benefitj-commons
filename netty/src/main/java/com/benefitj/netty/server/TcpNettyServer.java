@@ -83,7 +83,7 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
    * 服务端类型
    */
   @Override
-  public final ServerType serverType() {
-    return ServerType.TCP;
+  public final Type serverType() {
+    return Type.TCP;
   }
 }

@@ -97,6 +97,10 @@ public interface INettyServer<S extends INettyServer<S>> extends INetty<ServerBo
   /**
    * 服务端类型
    */
-  ServerType serverType();
+  Type serverType();
 
+  /**
+   * 服务端类型( TCP / UDP )
+   */
+  enum Type {  TCP, UDP }
 }

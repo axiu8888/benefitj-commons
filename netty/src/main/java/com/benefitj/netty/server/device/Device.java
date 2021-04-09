@@ -3,6 +3,7 @@ package com.benefitj.netty.server.device;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 
 import java.net.InetSocketAddress;
@@ -114,6 +115,18 @@ public interface Device {
   ChannelFuture send(byte[] msg);
 
   /**
+   * 获取pipeline
+   */
+  ChannelPipeline pipeline();
+
+  /**
+   * 往pipeline中发送消息
+   *
+   * @param msg 消息
+   */
+  void fireRead(Object msg);
+
+  /**
    * 获取Channel的EventLoop
    */
   EventLoop eventLoop();
@@ -144,6 +157,19 @@ public interface Device {
    * 属性集合
    */
   Map<String, Object> attrs();
+
+  /**
+   * 属性数量
+   */
+  int attributeSize();
+
+  /**
+   * 是否有某个属性
+   *
+   * @param key 属性键
+   * @return 返回判断结果
+   */
+  boolean hasAttr(String key);
 
   /**
    * 设置属性值
