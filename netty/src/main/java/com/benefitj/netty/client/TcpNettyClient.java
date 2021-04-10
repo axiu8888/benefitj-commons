@@ -13,12 +13,11 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * TCP客户端
@@ -30,13 +29,9 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
    */
   private boolean autoReconnect = false;
   /**
-   * 重连间隔，默认10秒
+   * watchdog
    */
-  private int reconnectPeriod = 10;
-  /**
-   * 重连间隔的时间单位，默认是秒
-   */
-  private TimeUnit reconnectPeriodUnit = TimeUnit.SECONDS;
+  private Watchdog watchdog = new Watchdog();
   /**
    * handler
    */
@@ -45,6 +40,10 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
    * 线程调度
    */
   private ScheduledExecutorService executor;
+  /**
+   * 执行状态
+   */
+  private final AtomicBoolean running = new AtomicBoolean(true);
 
   public TcpNettyClient() {
   }
@@ -80,7 +79,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
     if (autoReconnect()) {
       this.executeWhileNull(super.handler(), () ->
-          super.handler(new WatchdogChannelInitializer(this)));
+          super.handler(watchdog));
     } else {
       super.handler(handler);
     }
@@ -101,12 +100,27 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   @Override
   protected ChannelFuture startOnly(Bootstrap bootstrap, GenericFutureListener<? extends Future<Void>>... listeners) {
-    return bootstrap.connect().addListeners(listeners);
+    if (!isRunning()) {
+      throw new IllegalStateException("yet stopped !");
+    }
+    return bootstrap.connect().addListeners(
+        copyListeners(f -> {
+          if (autoReconnect() && !f.isSuccess()) {
+            // 注册启动时的监听
+            watchdog.startReconnectSchedule();
+          }
+        }, listeners));
   }
 
   @Override
   public TcpNettyClient stop(GenericFutureListener<? extends Future<Void>>... listeners) {
-    return super.stop(listeners);
+    if (isRunning()) {
+      running.set(false);
+      // 注册停止时的监听
+      watchdog.stopReconnectSchedule();
+      return super.stop(listeners);
+    }
+    return self();
   }
 
   /**
@@ -134,25 +148,35 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   }
 
   public int reconnectPeriod() {
-    return reconnectPeriod;
+    return watchdog.period;
   }
 
   public TcpNettyClient reconnectPeriod(int period) {
-    this.reconnectPeriod = period;
+    this.watchdog.period = period;
     return self();
   }
 
   public TimeUnit reconnectPeriodUnit() {
-    return reconnectPeriodUnit;
+    return watchdog.periodUnit;
   }
 
   public TcpNettyClient reconnectPeriodUnit(TimeUnit periodUnit) {
-    this.reconnectPeriodUnit = periodUnit;
+    this.watchdog.periodUnit = periodUnit;
     return self();
   }
 
   public ScheduledExecutorService executor() {
-    return executor;
+    ScheduledExecutorService e = this.executor;
+    if (e == null) {
+      synchronized (this) {
+        if ((e = this.executor) == null) {
+          ThreadFactory factory = new DefaultThreadFactory("tcp-", "-reconnect-", true);
+          this.executor = Executors.newSingleThreadScheduledExecutor(factory);
+          e = this.executor;
+        }
+      }
+    }
+    return e;
   }
 
   public TcpNettyClient executor(ScheduledExecutorService executor) {
@@ -160,44 +184,29 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     return self();
   }
 
+  private boolean isRunning() {
+    return this.running.get();
+  }
+
   /**
    * 自动重连的初始化程序
    */
-  @Slf4j
-  static class WatchdogChannelInitializer extends ChannelInitializer<Channel>
-      implements ActiveChannelHandler.ActiveStateListener {
+  final class Watchdog extends ChannelInitializer<Channel> implements ActiveChannelHandler.ActiveStateListener {
 
     /**
-     * Netty TCP 客户端
+     * 客户端连接的时间
      */
-    private final TcpNettyClient client;
-    private final int period;
-    private final TimeUnit periodUnit;
+    private int period = 30;
     /**
-     * 重连的线程
+     * 客户端连接的时间单位
      */
-    private ScheduledExecutorService executor;
+    private TimeUnit periodUnit = TimeUnit.SECONDS;
     /**
      * 定时器，每隔固定时间检查客户端状态
      */
     private ScheduledFuture<?> timer;
 
-    public WatchdogChannelInitializer(TcpNettyClient client) {
-      this.client = client;
-      this.period = client.reconnectPeriod();
-      this.periodUnit = client.reconnectPeriodUnit();
-
-      ScheduledExecutorService e = client.executor();
-      if (e != null) {
-        this.executor = e;
-      } else {
-        ThreadFactory factory = new DefaultThreadFactory("tcp-", "-reconnect-", true);
-        this.executor = Executors.newSingleThreadScheduledExecutor(factory);
-      }
-      // 注册启动时的监听
-      client.addStartListeners(f -> startReconnectSchedule());
-      // 注册停止时的监听
-      client.addStopListeners(f -> stopReconnectSchedule());
+    public Watchdog() {
     }
 
     @Override
@@ -205,7 +214,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
       ch.pipeline()
           .addLast(ChannelShutdownEventHandler.INSTANCE)
           .addLast(ActiveChannelHandler.newHandler(this))
-          .addLast(client.handler);
+          .addLast(handler);
     }
 
     /**
@@ -216,7 +225,8 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
         ScheduledFuture<?> t = this.timer;
         if (t == null || t.isCancelled()) {
           // 开始调度
-          this.timer = executor.scheduleAtFixedRate(this::startReconnectNow, period, period, periodUnit);
+          this.timer = executor().scheduleAtFixedRate(
+              this::reconnect, period, period, periodUnit);
         }
       }
     }
@@ -231,24 +241,19 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
           t.cancel(true);
           this.timer = null;
         }
-        this.executor.shutdownNow();
+        executor().shutdownNow();
       }
     }
 
     /**
      * 开始重连任务
      */
-    void startReconnectNow() {
+    void reconnect() {
       synchronized (this) {
-        TcpNettyClient tcp = this.client;
-        if (tcp.isConnected()) {
-          return;
+        if (!isConnected()) {
+          stateHolder().set(Thread.State.NEW);
+          start();
         }
-        AtomicReference<Thread.State> holder = tcp.stateHolder();
-        if (holder.get() != Thread.State.NEW) {
-          holder.set(Thread.State.NEW);
-        }
-        tcp.start();
       }
     }
 
@@ -256,9 +261,8 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     public void onChanged(ActiveChannelHandler handler, ChannelHandlerContext ctx, ActiveState state) {
       // 立刻重新尝试开启一个新的连接
       if (state == ActiveState.INACTIVE) {
-        ScheduledExecutorService executor = this.executor;
-        if (!executor.isShutdown()) {
-          executor.schedule(this::startReconnectNow, 1, TimeUnit.MILLISECONDS);
+        if (!executor().isShutdown()) {
+          executor().schedule(this::reconnect, 1, TimeUnit.MILLISECONDS);
         }
       } else {
         ScheduledFuture<?> t = this.timer;

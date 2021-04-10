@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -55,14 +57,6 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
    * 执行状态
    */
   private final AtomicReference<Thread.State> stateHolder = new AtomicReference<>(Thread.State.NEW);
-  /**
-   * 启动时的监听
-   */
-  private final List<GenericFutureListener<? extends Future<Void>>> startListeners = Collections.synchronizedList(new ArrayList<>());
-  /**
-   * 停止时的监听
-   */
-  private final List<GenericFutureListener<? extends Future<Void>>> stopListeners = Collections.synchronizedList(new ArrayList<>());
 
   public AbstractNetty() {
   }
@@ -127,10 +121,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
       useDefaultConfig();
       // 使用默认端口
       executeWhileNotNull(localAddress(), () -> localAddress(checkAndResetPort(localAddress())));
-      List<GenericFutureListener<? extends Future<Void>>> startListeners = new ArrayList<>(startListeners());
-      Collections.addAll(startListeners, listeners);
-      GenericFutureListener[] startListenerArray = startListeners.toArray(new GenericFutureListener[0]);
-      ChannelFuture future = startOnly(b).addListeners(startListenerArray);
+      ChannelFuture future = startOnly(b).addListeners(listeners);
       executeWhileNull(getServeChannel(), () -> setServeChannel(future.channel()));
     } else {
       final Channel c = getServeChannel();
@@ -186,12 +177,9 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   public S stop(GenericFutureListener<? extends Future<Void>>... listeners) {
     Thread.State newState = Thread.State.TERMINATED;
     if (expectAndSet(Thread.State.RUNNABLE, newState) || expectAndSet(Thread.State.NEW, newState)) {
-      List<GenericFutureListener<? extends Future<Void>>> stopListeners = new ArrayList<>(stopListeners());
-      Collections.addAll(stopListeners, listeners);
       // 停止
-      stopListeners.add(f -> setServeChannel(null));
-      GenericFutureListener[] stopListenerArray = stopListeners.toArray(new GenericFutureListener[0]);
-      shutdownGracefully(group(), true, stopListenerArray);
+      shutdownGracefully(group(), true
+          , copyListeners(f -> setServeChannel(null), listeners));
     } else {
       final Channel c = getServeChannel();
       if (c != null) {
@@ -456,36 +444,6 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
    */
   protected AtomicReference<Thread.State> stateHolder() {
     return stateHolder;
-  }
-
-  /**
-   * 启动时的监听
-   */
-  public List<GenericFutureListener<? extends Future<Void>>> startListeners() {
-    return startListeners;
-  }
-
-  /**
-   * 添加启动时的监听
-   */
-  public S addStartListeners(GenericFutureListener<? extends Future<Void>>... listeners) {
-    Collections.addAll(startListeners(), listeners);
-    return self();
-  }
-
-  /**
-   * 停止时的监听
-   */
-  public List<GenericFutureListener<? extends Future<Void>>> stopListeners() {
-    return stopListeners;
-  }
-
-  /**
-   * 添加停止时的监听
-   */
-  public S addStopListeners(GenericFutureListener<? extends Future<Void>>... listeners) {
-    Collections.addAll(stopListeners(), listeners);
-    return self();
   }
 
   /**
