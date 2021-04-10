@@ -21,7 +21,7 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
   /**
    * 设备状态监听
    */
-  private DeviceStateChangeListener<D> stateChangeListener = DeviceStateChangeListener.emptyListener();
+  private DeviceStateListener<D> stateChangeListener = DeviceStateListener.emptyListener();
   /**
    * 设备工厂
    */
@@ -30,7 +30,7 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
   public DefaultDeviceManager() {
   }
 
-  public DefaultDeviceManager(DeviceStateChangeListener<D> stateChangeListener) {
+  public DefaultDeviceManager(DeviceStateListener<D> stateChangeListener) {
     this.stateChangeListener = stateChangeListener;
   }
 
@@ -39,13 +39,13 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
   }
 
   @Override
-  public DeviceStateChangeListener<D> getStateChangeListener() {
+  public DeviceStateListener<D> getStateChangeListener() {
     return stateChangeListener;
   }
 
   @Override
-  public void setStateChangeListener(DeviceStateChangeListener<D> listener) {
-    this.stateChangeListener = (listener != null ? listener : DeviceStateChangeListener.emptyListener());
+  public void setStateChangeListener(DeviceStateListener<D> listener) {
+    this.stateChangeListener = (listener != null ? listener : DeviceStateListener.emptyListener());
   }
 
   @Override

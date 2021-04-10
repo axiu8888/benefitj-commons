@@ -1,7 +1,7 @@
 package com.benefitj.netty.server.udp;
 
 import com.benefitj.netty.server.device.DefaultDeviceManager;
-import com.benefitj.netty.server.device.DeviceStateChangeListener;
+import com.benefitj.netty.server.device.DeviceStateListener;
 import com.benefitj.netty.server.device.UdpDevice;
 
 import java.util.concurrent.TimeUnit;
@@ -42,7 +42,7 @@ public class DefaultUdpDeviceManager<C extends UdpDevice> extends DefaultDeviceM
   public DefaultUdpDeviceManager() {
   }
 
-  public DefaultUdpDeviceManager(DeviceStateChangeListener<C> listener) {
+  public DefaultUdpDeviceManager(DeviceStateListener<C> listener) {
     super(listener);
   }
 

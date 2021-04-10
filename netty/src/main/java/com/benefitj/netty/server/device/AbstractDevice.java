@@ -52,7 +52,7 @@ public abstract class AbstractDevice implements Device {
   /**
    * 属性
    */
-  private Map<String, Object> attributes = new ConcurrentHashMap<>();
+  private final Map<String, Object> attributes = new ConcurrentHashMap<>();
   /**
    * 上线时间
    */
@@ -263,8 +263,9 @@ public abstract class AbstractDevice implements Device {
    * @param msg 消息
    */
   @Override
-  public void fireRead(Object msg) {
+  public Device fireRead(Object msg) {
     pipeline().fireChannelRead(msg);
+    return self();
   }
 
   /**
@@ -307,6 +308,20 @@ public abstract class AbstractDevice implements Device {
   }
 
   /**
+   * 执行调度任务
+   *
+   * @param command      任务
+   * @param initialDelay 延迟时间
+   * @param period       间隔
+   * @param unit         时间单位
+   * @return 返回 ScheduledFuture
+   */
+  @Override
+  public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
+    return eventLoop().scheduleAtFixedRate(command, initialDelay, period, unit);
+  }
+
+  /**
    * 属性集合
    */
   @Override
@@ -341,6 +356,9 @@ public abstract class AbstractDevice implements Device {
    */
   @Override
   public void setAttr(String key, Object value) {
+    if (value == null) {
+      throw new IllegalArgumentException("The value must not null !");
+    }
     attrs().put(key, value);
   }
 

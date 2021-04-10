@@ -124,7 +124,7 @@ public interface Device {
    *
    * @param msg 消息
    */
-  void fireRead(Object msg);
+  Device fireRead(Object msg);
 
   /**
    * 获取Channel的EventLoop
@@ -152,6 +152,17 @@ public interface Device {
    * @return 返回 ScheduledFuture
    */
   ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit);
+
+  /**
+   * 执行调度任务
+   *
+   * @param command 任务
+   * @param initialDelay   延迟时间
+   * @param period  间隔
+   * @param unit    时间单位
+   * @return 返回 ScheduledFuture
+   */
+  ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit);
 
   /**
    * 属性集合

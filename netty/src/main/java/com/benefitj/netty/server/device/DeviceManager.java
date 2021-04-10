@@ -44,14 +44,14 @@ public interface DeviceManager<D extends Device> extends Map<String, D> {
   /**
    * 获取设备状态监听
    */
-  DeviceStateChangeListener<D> getStateChangeListener();
+  DeviceStateListener<D> getStateChangeListener();
 
   /**
    * 设备状态监听
    *
    * @param listener 监听
    */
-  void setStateChangeListener(DeviceStateChangeListener<D> listener);
+  void setStateChangeListener(DeviceStateListener<D> listener);
 
   /**
    * 获取设备，如果不存在就创建

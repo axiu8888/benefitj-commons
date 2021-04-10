@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 /**
  * 设备状态改变的监听
  */
-public interface DeviceStateChangeListener<D extends Device> {
+public interface DeviceStateListener<D extends Device> {
 
   /**
    * 被添加
@@ -31,8 +31,8 @@ public interface DeviceStateChangeListener<D extends Device> {
   /**
    * 设备监听
    */
-  static <D extends Device> DeviceStateChangeListener<D> emptyListener() {
-    return new DeviceStateChangeListener<D>() {};
+  static <D extends Device> DeviceStateListener<D> emptyListener() {
+    return new DeviceStateListener<D>() {};
   }
 
 }

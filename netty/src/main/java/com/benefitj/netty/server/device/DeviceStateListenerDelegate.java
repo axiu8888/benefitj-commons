@@ -9,19 +9,19 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @param <D>
  */
-public class DeviceStateChangeListenerDelegate<D extends Device> implements DeviceStateChangeListener<D> {
+public class DeviceStateListenerDelegate<D extends Device> implements DeviceStateListener<D> {
 
   /**
    * 监听
    */
-  private final List<DeviceStateChangeListener<D>> listeners = new CopyOnWriteArrayList<>();
+  private final List<DeviceStateListener<D>> listeners = new CopyOnWriteArrayList<>();
 
   /**
    * 添加监听
    *
    * @param listener 监听
    */
-  public void addListener(DeviceStateChangeListener<D> listener) {
+  public void addListener(DeviceStateListener<D> listener) {
     this.listeners.add(listener);
   }
 
@@ -30,7 +30,7 @@ public class DeviceStateChangeListenerDelegate<D extends Device> implements Devi
    *
    * @param listener 监听
    */
-  public void removeListener(DeviceStateChangeListener<D> listener) {
+  public void removeListener(DeviceStateListener<D> listener) {
     this.listeners.remove(listener);
   }
 
@@ -43,7 +43,7 @@ public class DeviceStateChangeListenerDelegate<D extends Device> implements Devi
    */
   @Override
   public void onAddition(String id, D newDevice, @Nullable D oldDevice) {
-    for (DeviceStateChangeListener<D> l : this.listeners) {
+    for (DeviceStateListener<D> l : this.listeners) {
       try {
         l.onAddition(id, newDevice, oldDevice);
       } catch (Exception e) {
@@ -60,7 +60,7 @@ public class DeviceStateChangeListenerDelegate<D extends Device> implements Devi
    */
   @Override
   public void onRemoval(String id, D device) {
-    for (DeviceStateChangeListener<D> l : this.listeners) {
+    for (DeviceStateListener<D> l : this.listeners) {
       try {
         l.onRemoval(id, device);
       } catch (Exception e) {
