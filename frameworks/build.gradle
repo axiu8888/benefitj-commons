@@ -9,8 +9,8 @@ dependencies {
 //    compile project(":core")
 
     // 二维码
-    compileOnly 'com.google.zxing:core:3.4.1'
-    compileOnly 'com.google.zxing:javase:3.4.1'
+    compile 'com.google.zxing:core:3.4.1'
+    compile 'com.google.zxing:javase:3.4.1'
 
     // 验证码
     compileOnly("com.octo.captcha:jcaptcha:1.0") {

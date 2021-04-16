@@ -19,7 +19,7 @@ public class DefaultUdpDeviceManager<C extends UdpDevice> extends DefaultDeviceM
    * @return 返回UDP设备客户端管理对象
    */
   public static <C extends UdpDevice> UdpDeviceManager<C> newInstance() {
-    return new DefaultUdpDeviceManager<C>();
+    return new DefaultUdpDeviceManager<>();
   }
 
   /**

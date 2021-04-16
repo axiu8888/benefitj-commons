@@ -9,7 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @param <D>
  */
-public class DeviceStateListenerDelegate<D extends Device> implements DeviceStateListener<D> {
+public class DeviceStateMultiListener<D extends Device> implements DeviceStateListener<D> {
 
   /**
    * 监听

@@ -21,7 +21,7 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
   /**
    * 设备状态监听
    */
-  private DeviceStateListener<D> stateChangeListener = DeviceStateListener.emptyListener();
+  private DeviceStateListener<D> stateListener = DeviceStateListener.emptyListener();
   /**
    * 设备工厂
    */
@@ -30,8 +30,8 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
   public DefaultDeviceManager() {
   }
 
-  public DefaultDeviceManager(DeviceStateListener<D> stateChangeListener) {
-    this.stateChangeListener = stateChangeListener;
+  public DefaultDeviceManager(DeviceStateListener<D> stateListener) {
+    this.stateListener = stateListener;
   }
 
   protected Map<String, D> getDevices() {
@@ -39,13 +39,13 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
   }
 
   @Override
-  public DeviceStateListener<D> getStateChangeListener() {
-    return stateChangeListener;
+  public DeviceStateListener<D> getStateListener() {
+    return stateListener;
   }
 
   @Override
-  public void setStateChangeListener(DeviceStateListener<D> listener) {
-    this.stateChangeListener = (listener != null ? listener : DeviceStateListener.emptyListener());
+  public void setStateListener(DeviceStateListener<D> listener) {
+    this.stateListener = (listener != null ? listener : DeviceStateListener.emptyListener());
   }
 
   @Override
@@ -90,7 +90,7 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
   @Override
   public D put(String key, D value) {
     D old = getDevices().put(key, value);
-    getStateChangeListener().onAddition(key, value, old);
+    getStateListener().onAddition(key, value, old);
     return old;
   }
 
@@ -114,7 +114,7 @@ public class DefaultDeviceManager<D extends Device> implements DeviceManager<D> 
     if (key instanceof String) {
       D device = getDevices().remove(key);
       if (notify && device != null) {
-        getStateChangeListener().onRemoval((String) key, device);
+        getStateListener().onRemoval((String) key, device);
       }
       return device;
     }
