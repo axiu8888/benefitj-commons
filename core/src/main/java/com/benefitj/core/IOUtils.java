@@ -492,7 +492,7 @@ public class IOUtils {
    * @param consumer 处理回调
    */
   public static void readLine(File file, IConsumer<String> consumer) {
-    try (final BufferedReader reader = new BufferedReader(new FileReader(file))) {
+    try (final FileReader reader = new FileReader(file);) {
       readLine(reader, false, consumer);
     } catch (IOException e) {
       throw new IllegalStateException(e);
