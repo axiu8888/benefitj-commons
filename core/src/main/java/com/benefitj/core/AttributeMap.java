@@ -124,6 +124,86 @@ public interface AttributeMap {
     attributes().clear();
   }
 
+  /**
+   * 获取字节
+   *
+   * @param key 键
+   * @return 值
+   */
+  default Byte getByteAttr(String key) {
+    return getAttribute(key);
+  }
+
+  /**
+   * 获取字节数组
+   *
+   * @param key 键
+   * @return 值
+   */
+  default byte[] getByteArrayAttr(String key) {
+    return getAttribute(key);
+  }
+
+  /**
+   * 获取整型值
+   *
+   * @param key 键
+   * @return 值
+   */
+  default Short getShortAttr(String key) {
+    return getAttribute(key);
+  }
+
+  /**
+   * 获取整型值
+   *
+   * @param key 键
+   * @return 值
+   */
+  default Integer getIntegerAttr(String key) {
+    return getAttribute(key);
+  }
+
+  /**
+   * 获取整型值
+   *
+   * @param key 键
+   * @return 值
+   */
+  default Long getLongAttr(String key) {
+    return getAttribute(key);
+  }
+
+  /**
+   * 获取单精度浮点值
+   *
+   * @param key 键
+   * @return 值
+   */
+  default Float getFloatAttr(String key) {
+    return getAttribute(key);
+  }
+
+  /**
+   * 获取双精度浮点值
+   *
+   * @param key 键
+   * @return 值
+   */
+  default Double getDoubleAttr(String key) {
+    return getAttribute(key);
+  }
+
+  /**
+   * 获取布尔值
+   *
+   * @param key 键
+   * @return 值
+   */
+  default Boolean getBooleanAttr(String key) {
+    return getAttribute(key);
+  }
+
 
   /**
    * 创建 AttributeMap 对象

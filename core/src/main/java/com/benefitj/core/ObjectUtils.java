@@ -16,7 +16,7 @@ public class ObjectUtils {
   /**
    * 类以及字段信息
    */
-  private static final Map<String, ClassInfo> classInfoMap = new WeakHashMap<>();
+  private static final Map<Class<?>, ClassInfo> classInfoMap = new WeakHashMap<>();
 
   /**
    * 获取类型信息
@@ -25,7 +25,7 @@ public class ObjectUtils {
    * @return 返回类型信息
    */
   public static ClassInfo getClassInfo(Class<?> type) {
-    return classInfoMap.get(type.getName());
+    return classInfoMap.get(type);
   }
 
   /**
@@ -47,7 +47,7 @@ public class ObjectUtils {
    */
   public static String toString(Object o, Predicate<Field> filter, BiFunction<Field, Object, String> func) {
     final Class<?> type = o.getClass();
-    ClassInfo classInfo = classInfoMap.computeIfAbsent(type.getName(), s -> parseClassInfo(type));
+    ClassInfo classInfo = classInfoMap.computeIfAbsent(type, s -> parseClassInfo(type));
     final StringBuilder sb = new StringBuilder();
     String name = type.getSimpleName();
     sb.append(name);

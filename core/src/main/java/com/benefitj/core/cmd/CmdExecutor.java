@@ -1,5 +1,7 @@
 package com.benefitj.core.cmd;
 
+import com.benefitj.core.EventLoop;
+
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,7 +63,7 @@ public class CmdExecutor {
   /**
    * 调度器
    */
-  private volatile ScheduledExecutorService executor;
+  private ScheduledExecutorService executor = EventLoop.io();
   /**
    * 等待中的执行命令
    */
@@ -87,16 +89,7 @@ public class CmdExecutor {
    * 调度器
    */
   public ScheduledExecutorService getExecutor() {
-    ScheduledExecutorService e = this.executor;
-    if (e == null) {
-      synchronized (this) {
-        if ((e = this.executor) == null) {
-          ThreadFactory threadFactory = new DefaultThreadFactory("cmd-", "-t-", true);
-          e = (this.executor = Executors.newScheduledThreadPool(4, threadFactory));
-        }
-      }
-    }
-    return e;
+    return this.executor;
   }
 
   /**
