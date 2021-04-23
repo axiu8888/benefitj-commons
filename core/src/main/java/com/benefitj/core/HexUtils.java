@@ -13,6 +13,7 @@ public class HexUtils {
 
   private static class Holder {
     private static final BinaryHelper INSTANCE;
+
     static {
       INSTANCE = new BinaryHelper(false, ByteOrder.BIG_ENDIAN);
     }
@@ -198,6 +199,18 @@ public class HexUtils {
    * 字节数组转换成整数
    *
    * @param bytes  字节
+   * @param offset 偏移量
+   * @param len    长度
+   * @return 返回一个整数
+   */
+  public static short bytesToShort(byte[] bytes, int offset, int len) {
+    return getInstance().bytesToShort(bytes, offset, len);
+  }
+
+  /**
+   * 字节数组转换成整数
+   *
+   * @param bytes  字节
    * @param order  字节序
    * @param signed 是否为有符号整数
    * @return 返回一个整数
@@ -242,6 +255,18 @@ public class HexUtils {
    * 字节数组转换成整数
    *
    * @param bytes  字节数组
+   * @param offset 偏移量
+   * @param len    长度
+   * @return 返回整数值
+   */
+  public int bytesToInt(byte[] bytes, int offset, int len) {
+    return getInstance().bytesToInt(bytes, offset, len);
+  }
+
+  /**
+   * 字节数组转换成整数
+   *
+   * @param bytes  字节数组
    * @param order  字节序
    * @param signed 是否为有符号整数
    * @return 返回整数值
@@ -280,6 +305,18 @@ public class HexUtils {
    */
   public static long bytesToLong(byte[] bytes, ByteOrder order) {
     return getInstance().bytesToLong(bytes, order, false);
+  }
+
+  /**
+   * 字节数组转换成长整数
+   *
+   * @param bytes  字节数组
+   * @param offset 偏移量
+   * @param len    长度
+   * @return 返回长整数值
+   */
+  public long bytesToLong(byte[] bytes, int offset, int len) {
+    return getInstance().bytesToLong(bytes, offset, len);
   }
 
   /**

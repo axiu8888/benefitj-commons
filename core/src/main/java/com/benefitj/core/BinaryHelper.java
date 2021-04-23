@@ -300,6 +300,32 @@ public class BinaryHelper {
    * @return 返回一个整数
    */
   public short bytesToShort(byte[] bytes, ByteOrder order, boolean signed) {
+    return bytesToShort(bytes, 0, bytes.length, order, signed);
+  }
+
+  /**
+   * 字节数组转换成整数
+   *
+   * @param bytes  字节
+   * @param offset 偏移量
+   * @param len    长度
+   * @return 返回一个整数
+   */
+  public short bytesToShort(byte[] bytes, int offset, int len) {
+    return bytesToShort(bytes, offset, len, order, false);
+  }
+
+  /**
+   * 字节数组转换成整数
+   *
+   * @param bytes  字节
+   * @param offset 偏移量
+   * @param len    长度
+   * @param order  字节序
+   * @param signed 是否为有符号整数
+   * @return 返回一个整数
+   */
+  public short bytesToShort(byte[] bytes, int offset, int len, ByteOrder order, boolean signed) {
     // 大端字节顺序：高位在前，低位在后
     // 小端字节顺序：低位在前，高位在后
     short value = 0;
@@ -307,27 +333,27 @@ public class BinaryHelper {
     // 正数的原码，高位为0，反码/补码均与原码相同；
     // 负数的原码：高位为1, 其他为正数的原码；反码是除符号位，其它按位取反；补码在反码的基础上 + 1
     if (bigEndian) {
-      if (signed && ((bytes[0] & 0b10000000) >> 7) == 1) {
-        for (byte b : bytes) {
+      if (signed && ((bytes[offset] & 0b10000000) >> 7) == 1) {
+        for (int i = 0; i < len; i++) {
           value <<= 8;
-          value |= ~b & 0xFF;
+          value |= ~bytes[offset + i] & 0xFF;
         }
         value = (short) ((-value) - 1);
       } else {
-        for (byte b : bytes) {
+        for (int i = 0; i < len; i++) {
           value <<= 8;
-          value |= b & 0xFF;
+          value |= bytes[offset + i] & 0xFF;
         }
       }
     } else {
-      if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) == 1) {
-        for (int i = bytes.length - 1; i >= 0; i--) {
+      if (signed && ((bytes[offset + len - 1] & 0b10000000) >> 7) == 1) {
+        for (int i = len - 1; i >= 0; i--) {
           value <<= 8;
-          value |= ~bytes[i] & 0xFF;
+          value |= ~bytes[offset + i] & 0xFF;
         }
         value = (short) ((-value) - 1);
       } else {
-        for (int i = bytes.length - 1; i >= 0; i--) {
+        for (int i = len - 1; i >= 0; i--) {
           value <<= 8;
           value |= bytes[i] & 0xFF;
         }
@@ -373,10 +399,38 @@ public class BinaryHelper {
    *
    * @param bytes  字节数组
    * @param order  字节序
+   * @param order  字节序
    * @param signed 是否为有符号整数
    * @return 返回整数值
    */
   public int bytesToInt(byte[] bytes, ByteOrder order, boolean signed) {
+    return bytesToInt(bytes, 0, bytes.length, order, signed);
+  }
+
+  /**
+   * 字节数组转换成整数
+   *
+   * @param bytes  字节数组
+   * @param offset 偏移量
+   * @param len    长度
+   * @return 返回整数值
+   */
+  public int bytesToInt(byte[] bytes, int offset, int len) {
+    return bytesToInt(bytes, offset, len, order, false);
+  }
+
+  /**
+   * 字节数组转换成整数
+   *
+   * @param bytes  字节数组
+   * @param offset 偏移量
+   * @param len    长度
+   * @param order  字节序
+   * @param order  字节序
+   * @param signed 是否为有符号整数
+   * @return 返回整数值
+   */
+  public int bytesToInt(byte[] bytes, int offset, int len, ByteOrder order, boolean signed) {
     // 大端字节顺序：高位在前，低位在后
     // 小端字节顺序：低位在前，高位在后
     int value = 0;
@@ -384,27 +438,27 @@ public class BinaryHelper {
     // 正数的原码，高位为0，反码/补码均与原码相同；
     // 负数的原码：高位为1, 其他为正数的原码；反码是除符号位，其它按位取反；补码在反码的基础上 + 1
     if (bigEndian) {
-      if (signed && ((bytes[0] & 0b10000000) >> 7) == 1) {
-        for (byte b : bytes) {
+      if (signed && ((bytes[offset] & 0b10000000) >> 7) == 1) {
+        for (int i = 0; i < len; i++) {
           value <<= 8;
-          value |= ~b & 0xFF;
+          value |= ~bytes[offset + i] & 0xFF;
         }
         value = (-value) - 1;
       } else {
-        for (byte b : bytes) {
+        for (int i = 0; i < len; i++) {
           value <<= 8;
-          value |= b & 0xFF;
+          value |= bytes[offset + i] & 0xFF;
         }
       }
     } else {
-      if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) == 1) {
-        for (int i = bytes.length - 1; i >= 0; i--) {
+      if (signed && ((bytes[offset + len - 1] & 0b10000000) >> 7) == 1) {
+        for (int i = len - 1; i >= 0; i--) {
           value <<= 8;
-          value |= ~bytes[i] & 0xFF;
+          value |= ~bytes[offset + i] & 0xFF;
         }
         value = (-value) - 1;
       } else {
-        for (int i = bytes.length - 1; i >= 0; i--) {
+        for (int i = len - 1; i >= 0; i--) {
           value <<= 8;
           value |= bytes[i] & 0xFF;
         }
@@ -454,6 +508,32 @@ public class BinaryHelper {
    * @return 返回长整数值
    */
   public long bytesToLong(byte[] bytes, ByteOrder order, boolean signed) {
+    return bytesToLong(bytes, 0, bytes.length, order, signed);
+  }
+
+  /**
+   * 字节数组转换成长整数
+   *
+   * @param bytes  字节数组
+   * @param offset 偏移量
+   * @param len    长度
+   * @return 返回长整数值
+   */
+  public long bytesToLong(byte[] bytes, int offset, int len) {
+    return bytesToLong(bytes, offset, len, order, false);
+  }
+
+  /**
+   * 字节数组转换成长整数
+   *
+   * @param bytes  字节数组
+   * @param offset 偏移量
+   * @param len    长度
+   * @param order  字节序
+   * @param signed 是否为有符号整数
+   * @return 返回长整数值
+   */
+  public long bytesToLong(byte[] bytes, int offset, int len, ByteOrder order, boolean signed) {
     // 大端字节顺序：高位在前，低位在后
     // 小端字节顺序：低位在前，高位在后
     long value = 0;
@@ -461,27 +541,27 @@ public class BinaryHelper {
     // 正数的原码，高位为0，反码/补码均与原码相同；
     // 负数的原码：高位为1, 其他为正数的原码；反码是除符号位，其它按位取反；补码在反码的基础上 + 1
     if (bigEndian) {
-      if (signed && ((bytes[0] & 0b10000000) >> 7) == 1) {
-        for (byte b : bytes) {
+      if (signed && ((bytes[offset] & 0b10000000) >> 7) == 1) {
+        for (int i = 0; i < len; i++) {
           value <<= 8;
-          value |= ~b & 0xFF;
+          value |= ~bytes[offset + i] & 0xFF;
         }
         value = (-value) - 1;
       } else {
-        for (byte b : bytes) {
+        for (int i = 0; i < len; i++) {
           value <<= 8;
-          value |= b & 0xFF;
+          value |= bytes[offset + i] & 0xFF;
         }
       }
     } else {
-      if (signed && ((bytes[bytes.length - 1] & 0b10000000) >> 7) == 1) {
-        for (int i = bytes.length - 1; i >= 0; i--) {
+      if (signed && ((bytes[offset + len - 1] & 0b10000000) >> 7) == 1) {
+        for (int i = len - 1; i >= 0; i--) {
           value <<= 8;
-          value |= ~bytes[i] & 0xFF;
+          value |= ~bytes[offset + i] & 0xFF;
         }
         value = (-value) - 1;
       } else {
-        for (int i = bytes.length - 1; i >= 0; i--) {
+        for (int i = len - 1; i >= 0; i--) {
           value <<= 8;
           value |= bytes[i] & 0xFF;
         }
