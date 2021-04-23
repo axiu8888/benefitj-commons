@@ -1,5 +1,8 @@
 package com.benefitj.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
@@ -21,6 +24,8 @@ public class EventLoop implements ScheduledExecutorService {
       = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-single-", true));
   private static final SingletonSupplier<EventLoop> IO_EVENT_LOOP
       = SingletonSupplier.of(() -> new GlobalEventLoop(128, "-io-", true));
+
+  private static final Logger logger = LoggerFactory.getLogger(EventLoop.class);
 
   /**
    * 多线程事件
@@ -158,9 +163,7 @@ public class EventLoop implements ScheduledExecutorService {
       try {
         task.run();
       } catch (Exception e) {
-        Thread t = Thread.currentThread();
-        Thread.UncaughtExceptionHandler handler = t.getUncaughtExceptionHandler();
-        handler.uncaughtException(t, e);
+        logger.error("event_loop throws: "+ e.getMessage(), e);
         throw e;
       }
     };
@@ -178,9 +181,7 @@ public class EventLoop implements ScheduledExecutorService {
       try {
         return task.call();
       } catch (Exception e) {
-        Thread t = Thread.currentThread();
-        Thread.UncaughtExceptionHandler handler = t.getUncaughtExceptionHandler();
-        handler.uncaughtException(t, e);
+        logger.error("event_loop throws: "+ e.getMessage(), e);
         throw e;
       }
     };
