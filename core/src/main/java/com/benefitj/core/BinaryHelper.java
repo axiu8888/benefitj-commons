@@ -7,6 +7,9 @@ import java.nio.ByteOrder;
  */
 public class BinaryHelper {
 
+  public static final BinaryHelper BIG_ENDIAN = new BinaryHelper(false, ByteOrder.BIG_ENDIAN);
+  public static final BinaryHelper LITTLE_ENDIAN = new BinaryHelper(false, ByteOrder.LITTLE_ENDIAN);
+
   /**
    * 16进制和2进制转换
    */

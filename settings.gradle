@@ -18,6 +18,7 @@ include ":frameworks" // 一些库的工具
 include ":interpolator" // 插值器
 include ":netty" // netty
 include ":eventbus" // EventBus
+include ":javastruct" // java结构体转换
 
 //// 待实现 TODO 2020-11-17
 //include ":eventloop" // EventLoop
