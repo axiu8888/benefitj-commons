@@ -223,7 +223,7 @@ public class CmdExecutor {
 
   private void readMessage(Process process, CmdCall call) {
     try {
-      Charset charset = Charset.defaultCharset();
+      Charset charset = Charset.forName(System.getProperty("sun.jnu.encoding"));
       try (BufferedReader respBr = new BufferedReader(new InputStreamReader(process.getInputStream(), charset));
            BufferedReader errorBr = new BufferedReader(new InputStreamReader(process.getErrorStream(), charset));) {
         StringBuilder sb = new StringBuilder();
