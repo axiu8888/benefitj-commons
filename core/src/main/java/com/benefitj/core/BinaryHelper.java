@@ -853,6 +853,27 @@ public class BinaryHelper {
   }
 
   /**
+   * 16进制字符串转换成整数值
+   *
+   * @param hex 16进制
+   * @return 返回转换后的数据
+   */
+  public int hexToInt(String hex) {
+    return hexToInt(hex, order == ByteOrder.BIG_ENDIAN);
+  }
+
+  /**
+   * 16进制字符串转换成整数值
+   *
+   * @param hex       16进制
+   * @param bigEndian 是否为大端字节顺序
+   * @return 返回转换后的数据
+   */
+  public int hexToInt(String hex, boolean bigEndian) {
+    return bytesToInt(hexToBytes(hex), bigEndian);
+  }
+
+  /**
    * 是否相等
    *
    * @param src   原数组
