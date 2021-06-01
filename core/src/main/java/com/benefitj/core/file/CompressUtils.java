@@ -1,18 +1,18 @@
 package com.benefitj.core.file;
 
+import com.benefitj.core.IOUtils;
+
 import javax.annotation.Nullable;
 import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.zip.*;
 
 /**
  * 文件压缩或解压
  */
-public class ZipUtils {
+public class CompressUtils {
 
   /**
    * 压缩文件或目录
@@ -145,6 +145,36 @@ public class ZipUtils {
       while ((entry = input.getNextEntry()) != null) {
         consumer.accept(input, entry);
       }
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * GZIP压缩
+   *
+   * @param src  GZIP文件
+   * @param dest 目标文件
+   */
+  public static void gzip(File src, File dest) {
+    try (final GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(dest));
+         final FileInputStream in = new FileInputStream(src);) {
+      IOUtils.write(in, out, 1024 << 4);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * GZIP解压
+   *
+   * @param src  GZIP文件
+   * @param dest 目标文件
+   */
+  public static void ungzip(File src, File dest) {
+    try (final GZIPInputStream in = new GZIPInputStream(new FileInputStream(src));
+         final FileOutputStream out = new FileOutputStream(dest);) {
+      IOUtils.write(in, out, 1024 << 4);
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
