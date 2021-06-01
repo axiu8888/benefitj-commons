@@ -58,6 +58,11 @@ public class DateFmtter {
   public static final String _yMdHms_CN = "yyyy年MM月dd HH时mm分ss秒";
   public static final String _yMdHmsS_CN = "yyyy年MM月dd HH时mm分ss秒.SSS";
 
+  public static final long SECOND = 1000;
+  public static final long MINUTE = 60 * SECOND;
+  public static final long HOUR = 60 * MINUTE;
+  public static final long DAY = 24 * HOUR;
+
   /**
    * 缓存时间格式化
    */
@@ -606,4 +611,77 @@ public class DateFmtter {
       throw new IllegalStateException(e);
     }
   }
+
+  /**
+   * 获取时间戳
+   *
+   * @param year   年
+   * @param month  月
+   * @param day    日
+   * @param hour   时
+   * @param minute 分
+   * @param second 秒
+   * @return 返回时间戳
+   */
+  public static long getTime(int year, int month, int day, int hour, int minute, int second) {
+    Calendar c = Calendar.getInstance();
+    c.set(Calendar.YEAR, year);
+    c.set(Calendar.MONTH, month);
+    c.set(Calendar.DAY_OF_MONTH, day);
+    c.set(Calendar.HOUR_OF_DAY, hour);
+    c.set(Calendar.MINUTE, minute);
+    c.set(Calendar.SECOND, second);
+    return c.getTime().getTime();
+  }
+
+  /**
+   * 获取时间戳
+   *
+   * @param year  年
+   * @param month 月
+   * @param day   日
+   * @return 返回时间戳
+   */
+  public static long getTime(int year, int month, int day) {
+    return getTime(year, month, day, 0, 0, 0);
+  }
+
+  /**
+   * 获取今天的时间
+   *
+   * @param hour   时
+   * @param minute 分
+   * @param second 秒
+   * @return 返回时间戳
+   */
+  public static long getToday(int hour, int minute, int second) {
+    Calendar c = Calendar.getInstance();
+    c.setTime(new Date());
+    return getTime(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), hour, minute, second);
+  }
+
+  /**
+   * 获取昨天的时间
+   *
+   * @param hour   时
+   * @param minute 分
+   * @param second 秒
+   * @return 返回时间戳
+   */
+  public static long getYesterday(int hour, int minute, int second) {
+    return getToday(hour, minute, second) - DAY;
+  }
+
+  /**
+   * 获取明天的时间
+   *
+   * @param hour   时
+   * @param minute 分
+   * @param second 秒
+   * @return 返回时间戳
+   */
+  public static long getTomorrow(int hour, int minute, int second) {
+    return getToday(hour, minute, second) + DAY;
+  }
+
 }
