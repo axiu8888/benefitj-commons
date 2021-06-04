@@ -1,6 +1,7 @@
 package com.benefitj.core.cmd;
 
 import com.benefitj.core.EventLoop;
+import com.benefitj.core.IdUtils;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -10,7 +11,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -184,7 +184,7 @@ public class CmdExecutor {
     final Callback cb = callback != null ? callback : Callback.EMPTY_CALLBACK;
     final long start = now();
     final String[] envparams = envp != null && !envp.isEmpty() ? envp.toArray(new String[0]) : null;
-    final CmdCall call = createCmdCall(uuid());
+    final CmdCall call = createCmdCall(IdUtils.uuid());
     call.setCmd(cmd);
     call.setCtxDir(dir);
     call.setEnvp(envparams);
@@ -293,7 +293,7 @@ public class CmdExecutor {
     final AtomicReference<Thread> sign = this.sign;
     int maxProcess = getMaxCallNum();
     final Thread current = Thread.currentThread();
-    for (; ; ) {
+    for (;;) {
       if (sign.compareAndSet(null, current)) {
         // 执行的命令未达到最大值
         if (aliveProcess.get() < maxProcess) {
@@ -378,52 +378,6 @@ public class CmdExecutor {
      * @param lock 锁
      */
     void accept(Object lock) throws InterruptedException;
-  }
-
-
-  /**
-   * 获取UUID
-   */
-  static String uuid() {
-    return UUID.randomUUID().toString().replaceAll("-", "");
-  }
-
-
-  /**
-   * The default thread factory
-   */
-  static class DefaultThreadFactory implements ThreadFactory {
-
-    private static final AtomicInteger poolNumber = new AtomicInteger(1);
-    private final ThreadGroup group;
-    private final AtomicInteger threadNumber = new AtomicInteger(1);
-    private final String namePrefix;
-    private boolean daemon = false;
-
-
-    public DefaultThreadFactory(String prefix, String suffix, boolean daemon) {
-      SecurityManager s = System.getSecurityManager();
-      this.group = (s != null) ? s.getThreadGroup() :
-          Thread.currentThread().getThreadGroup();
-      this.namePrefix = prefix + poolNumber.getAndIncrement() + suffix;
-      this.daemon = daemon;
-    }
-
-    public DefaultThreadFactory(ThreadGroup group, String prefix, String suffix) {
-      this.group = group;
-      this.namePrefix = prefix + poolNumber.getAndIncrement() + suffix;
-    }
-
-    @Override
-    public Thread newThread(Runnable r) {
-      Thread t = new Thread(group, r,
-          namePrefix + threadNumber.getAndIncrement(), 0);
-      t.setDaemon(daemon);
-      if (t.getPriority() != Thread.NORM_PRIORITY) {
-        t.setPriority(Thread.NORM_PRIORITY);
-      }
-      return t;
-    }
   }
 
 }

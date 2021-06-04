@@ -1,5 +1,7 @@
 package com.benefitj.core.cmd;
 
+import java.util.Locale;
+
 /**
  * 系统
  */
@@ -11,7 +13,7 @@ public enum SystemOS {
   private final String osName;
 
   SystemOS() {
-    this.osName = System.getProperty("os.name");
+    this.osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
     if (isWindows()) {
       this.name = "windows";
     } else if (isMacOSX()) {

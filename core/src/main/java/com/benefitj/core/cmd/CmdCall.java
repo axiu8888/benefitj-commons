@@ -112,7 +112,7 @@ public class CmdCall {
   }
 
   public boolean isSuccessful() {
-    return getCode() == 0 && getError() == null;
+    return getCode() == 0 && (getError() == null || getError().trim().isEmpty());
   }
 
 }
