@@ -21,11 +21,7 @@ public class CompressUtils {
    * @return 返回压缩文件
    */
   public static File zip(File src) {
-    String name = src.getName();
-    String filename = name.lastIndexOf(".") > 0
-        ? name.substring(0, name.lastIndexOf("."))
-        : name;
-    return zip(src, new File(src.getParentFile(), filename + ".zip"));
+    return zip(src, getFilename(src, ".zip"));
   }
 
   /**
@@ -153,13 +149,25 @@ public class CompressUtils {
   /**
    * GZIP压缩
    *
+   * @param src GZIP文件
+   * @return 返回目标文件
+   */
+  public static File gzip(File src) {
+    return gzip(src, getFilename(src, ".gzip"));
+  }
+
+  /**
+   * GZIP压缩
+   *
    * @param src  GZIP文件
    * @param dest 目标文件
+   * @return 返回目标文件
    */
-  public static void gzip(File src, File dest) {
+  public static File gzip(File src, File dest) {
     try (final GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(dest));
          final FileInputStream in = new FileInputStream(src);) {
       IOUtils.write(in, out, 1024 << 4);
+      return dest;
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -170,13 +178,29 @@ public class CompressUtils {
    *
    * @param src  GZIP文件
    * @param dest 目标文件
+   * @return 返回目标文件
    */
-  public static void ungzip(File src, File dest) {
+  public static File ungzip(File src, File dest) {
     try (final GZIPInputStream in = new GZIPInputStream(new FileInputStream(src));
          final FileOutputStream out = new FileOutputStream(dest);) {
       IOUtils.write(in, out, 1024 << 4);
+      return dest;
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
   }
+
+  /**
+   * 获取文件名
+   *
+   * @param src 文件
+   */
+  public static File getFilename(File src, String suffix) {
+    String name = src.getName();
+    String filename = name.lastIndexOf(".") > 0
+        ? name.substring(0, name.lastIndexOf("."))
+        : name;
+    return new File(src.getParentFile(), filename + suffix);
+  }
+
 }
