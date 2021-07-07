@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -711,6 +712,31 @@ public class IOUtils {
       if (close) {
         closeQuietly(is, os);
       }
+    }
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param os    输出流
+   * @param lines 字符串数据
+   */
+  public static void write(OutputStream os, String... lines) {
+    for (String line : lines) {
+      byte[] buff = line.getBytes(StandardCharsets.UTF_8);
+      write(os, buff, 0, buff.length);
+    }
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param os    输出流
+   * @param array 字节缓冲数组
+   */
+  public static void write(OutputStream os, byte[]... array) {
+    for (byte[] bytes : array) {
+      write(os, bytes, 0, array.length);
     }
   }
 

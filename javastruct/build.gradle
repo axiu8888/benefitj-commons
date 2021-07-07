@@ -1,6 +1,6 @@
 apply from: "${getRootDir()}/buildSystem/base.gradle"
 
-description = "插值器"
+description = "结构体"
 
 dependencies {
 
