@@ -63,10 +63,60 @@ public class OutputFile implements AutoCloseable, AttributeMap {
   /**
    * 写入数据
    *
+   * @param buf    字节缓冲
+   * @param offset 偏移量
+   * @param len    长度
+   * @param flush  是否刷新
+   */
+  protected void write0(byte[] buf, int offset, int len, boolean flush) {
+    try {
+      out().write(buf, offset, len);
+      if (flush) {
+        out().flush();
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 刷新
+   */
+  protected void flush0() {
+    try {
+      out().flush();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 刷新
+   */
+  public void flush() {
+    synchronized (this) {
+      flush0();
+    }
+  }
+
+  /**
+   * 写入数据
+   *
    * @param str 字符串
    */
   public void write(String str) {
     write(str.getBytes());
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param strings 字符串
+   */
+  public void write(String... strings) {
+    for (String str : strings) {
+      write(str.getBytes());
+    }
   }
 
   /**
@@ -81,28 +131,24 @@ public class OutputFile implements AutoCloseable, AttributeMap {
   /**
    * 写入数据
    *
-   * @param buf    字节缓冲
-   * @param offset 偏移量
-   * @param len    颤抖
+   * @param array 字节缓冲
    */
-  public void write(byte[] buf, int offset, int len) {
-    try {
-      synchronized (this) {
-        out().write(buf, offset, len);
-      }
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
+  public void write(byte[]... array) {
+    for (byte[] buf : array) {
+      write(buf);
     }
   }
 
   /**
-   * 刷新
+   * 写入数据
+   *
+   * @param buf    字节缓冲
+   * @param offset 偏移量
+   * @param len    长度
    */
-  public void flush() {
-    try {
-      out().flush();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
+  public void write(byte[] buf, int offset, int len) {
+    synchronized (this) {
+      write0(buf, offset, len, false);
     }
   }
 
@@ -113,6 +159,20 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    */
   public void writeAndFlush(String str) {
     writeAndFlush(str.getBytes());
+  }
+
+  /**
+   * 写入并刷新
+   *
+   * @param array 字节缓冲
+   */
+  public void writeAndFlush(byte[]... array) {
+    synchronized (this) {
+      for (byte[] buf : array) {
+        write0(buf, 0, buf.length, false);
+      }
+      flush0();
+    }
   }
 
   /**
@@ -133,8 +193,7 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    */
   public void writeAndFlush(byte[] buf, int offset, int len) {
     synchronized (this) {
-      write(buf, offset, len);
-      flush();
+      write0(buf, offset, len, true);
     }
   }
 
