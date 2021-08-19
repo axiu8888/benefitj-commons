@@ -606,4 +606,51 @@ public class ReflectUtils {
     return type != null ? type.getRawType() : null;
   }
 
+  /**
+   * 创建对象实例
+   *
+   * @param klass 类
+   * @param args  参数
+   * @param <T>   类型
+   * @return 返回对象实例
+   */
+  public static <T> T newInstance(Class<T> klass, Object... args) {
+    try {
+      for (Constructor<?> c : klass.getConstructors()) {
+        if (isParameterTypesMatch(c.getParameterTypes(), args)) {
+          setAccessible(c, true);
+          return (T) c.newInstance(args);
+        }
+      }
+      if (args != null && args.length != 0) {
+        throw new IllegalStateException("无法实例化\"" + klass + "\"的对象，没有对应参数的构造函数!");
+      }
+      return klass.newInstance();
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 检查参数是否匹配
+   *
+   * @param parameterTypes 参数类型
+   * @param args           参数
+   * @return 返回校验结果
+   */
+  public static boolean isParameterTypesMatch(Class<?>[] parameterTypes, Object[] args) {
+    if (parameterTypes != null && args != null) {
+      if (parameterTypes.length != args.length) {
+        return false;
+      }
+      for (int i = 0; i < parameterTypes.length; i++) {
+        if (args[i] != null && !parameterTypes[i].isInstance(args[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return parameterTypes == null && args == null;
+  }
+
 }

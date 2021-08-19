@@ -19,7 +19,7 @@ subprojects {
     apply plugin: 'maven'
 
     group = 'com.benefitj'
-    version = '1.3.4-SNAPSHOT'
+    version = '1.3.5-SNAPSHOT'
     ext.artifactId = "${project.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
