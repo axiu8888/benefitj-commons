@@ -1,4 +1,4 @@
-package com.benefitj.framework;
+package com.benefitj.frameworks;
 
 import org.junit.After;
 import org.junit.Before;

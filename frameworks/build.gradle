@@ -6,7 +6,10 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
 
-//    compile project(":core")
+    compile project(":core")
+
+    // 压缩
+    compile 'org.apache.commons:commons-compress:1.21'
 
     // 二维码
     compile 'com.google.zxing:core:3.4.1'

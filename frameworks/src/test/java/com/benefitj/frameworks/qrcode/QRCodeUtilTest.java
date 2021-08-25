@@ -1,9 +1,7 @@
-package com.benefitj.framework.qrcode;
+package com.benefitj.frameworks.qrcode;
 
 
-import com.benefitj.framework.BaseTest;
-import com.benefitj.frameworks.qrcode.QRCodeOptions;
-import com.benefitj.frameworks.qrcode.QRCodeUtils;
+import com.benefitj.frameworks.BaseTest;
 import org.junit.Test;
 
 import java.awt.*;

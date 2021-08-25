@@ -653,6 +653,21 @@ public class IOUtils {
   /**
    * 写入数据
    *
+   * @param in    输入流
+   * @param out   输出流
+   * @param close 是否关闭流
+   */
+  public static void write(File in, OutputStream out, boolean close) {
+    try (final FileInputStream fis = new FileInputStream(in)) {
+      write(fis, out, 1024 << 8, close);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 写入数据
+   *
    * @param is     输入流
    * @param file   文件
    * @param append 是否为追加

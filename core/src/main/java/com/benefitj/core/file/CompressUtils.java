@@ -193,14 +193,17 @@ public class CompressUtils {
   /**
    * 获取文件名
    *
-   * @param src 文件
+   * @param standard 文件
    */
-  public static File getFilename(File src, String suffix) {
-    String name = src.getName();
+  public static File getFilename(File standard, String suffix) {
+    String name = standard.getName();
+    if (name.endsWith(suffix)) {
+      return new File(standard.getParentFile(), name);
+    }
     String filename = name.lastIndexOf(".") > 0
         ? name.substring(0, name.lastIndexOf("."))
         : name;
-    return new File(src.getParentFile(), filename + suffix);
+    return new File(standard.getParentFile(), filename + suffix);
   }
 
 }
