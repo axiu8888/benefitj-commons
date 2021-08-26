@@ -23,4 +23,10 @@ public class TarUtilsTest extends BaseTest {
     TarUtils.tarGzip(file);
   }
 
+  @Test
+  public void untarGzip() {
+    File file = new File("D:\\code\\samples\\arduino-esp32.tar.gz");
+    TarUtils.untarGzip(file, new File(file.getParentFile(), "arduino-esp32-untar"));
+  }
+
 }

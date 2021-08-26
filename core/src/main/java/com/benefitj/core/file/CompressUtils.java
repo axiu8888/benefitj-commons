@@ -182,10 +182,11 @@ public class CompressUtils {
    */
   public static File ungzip(File src, File dest) {
     try (final GZIPInputStream in = new GZIPInputStream(new FileInputStream(src));
-         final FileOutputStream out = new FileOutputStream(dest);) {
+         final FileOutputStream out = new FileOutputStream(IOUtils.createFile(dest.getAbsolutePath()));) {
       IOUtils.write(in, out, 1024 << 4);
       return dest;
     } catch (IOException e) {
+      dest.delete();
       throw new IllegalStateException(e);
     }
   }
@@ -204,6 +205,11 @@ public class CompressUtils {
         ? name.substring(0, name.lastIndexOf("."))
         : name;
     return new File(standard.getParentFile(), filename + suffix);
+  }
+
+  public static String trimRight(String str, String match, String padding) {
+    int index = str.lastIndexOf(match);
+    return str.substring(0, index >= 0 ? index : str.length()) + padding;
   }
 
 }

@@ -5,16 +5,10 @@ import org.springframework.core.io.ClassPathResource;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
-import java.net.JarURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
@@ -55,6 +49,132 @@ public class ClasspathUtils {
       springboot = false;
     }
     SPRING_CLASSPATH = springboot;
+  }
+
+
+  /**
+   * 查找所有的Class
+   *
+   * @param packageName 包名
+   * @return 返回搜索到的所有Class
+   */
+  public static List<String> findClasses(String packageName) {
+    return findClasses(packageName, true);
+  }
+
+  /**
+   * 查找所有的Class
+   *
+   * @param packageName 包名
+   * @param recursive   是否迭代查询所有子目录
+   * @return 返回搜索到的所有Class
+   */
+  public static List<String> findClasses(String packageName, boolean recursive) {
+    return findClasses(packageName, recursive, s -> true);
+  }
+
+  /**
+   * 查找所有的Class
+   *
+   * @param packageName 包名
+   * @param recursive   是否迭代查询所有子目录
+   * @param filter      过滤
+   * @return 返回搜索到的所有Class
+   */
+  public static List<String> findClasses(String packageName, boolean recursive, Predicate<String> filter) {
+    try {
+      List<String> classes = new ArrayList<>();
+      // 获取包的名字 并进行替换
+      String packageDir = packageName.replace('.', '/');
+      Enumeration<URL> dirs = Thread.currentThread().getContextClassLoader().getResources(packageDir);
+      // 循环迭代下去
+      while (dirs.hasMoreElements()) {
+        // 获取下一个元素
+        URL url = dirs.nextElement();
+        //得到协议的名称
+        String protocol = url.getProtocol();
+        // 如果是以文件的形式保存在服务器上
+        if ("file".equals(protocol)) {
+          // 获取包的物理路径
+          String filePath = URLDecoder.decode(url.getFile(), "UTF-8");
+          // 以文件的方式扫描整个包下的文件 并添加到集合中
+          List<String> subClasses = findClasses(packageName, new File(filePath), recursive, filter);
+          classes.addAll(subClasses);
+        } else if ("jar".equals(protocol)) {
+          JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
+          Enumeration<JarEntry> entries = jar.entries();
+          while (entries.hasMoreElements()) {
+            // 获取jar里的一个实体 可以是目录 和一些jar包里的其他文件 如META-INF等文件
+            JarEntry entry = entries.nextElement();
+            String name = entry.getName();
+            // 如果是以/开头的
+            if (name.charAt(0) == '/') {
+              // 获取后面的字符串
+              name = name.substring(1);
+            }
+            // 如果前半部分和定义的包名相同
+            if (name.startsWith(packageDir)) {
+              int idx = name.lastIndexOf('/');
+              // 如果以"/"结尾 是一个包
+              if (idx != -1) {
+                // 获取包名 把"/"替换成"."
+                packageName = name.substring(0, idx).replace('/', '.');
+              }
+              // 如果可以迭代下去 并且是一个包
+              if ((idx != -1) || recursive) {
+                if (name.endsWith(".class") && !entry.isDirectory()) {
+                  String classname = getClassname(packageName, name);
+                  if (filter.test(classname)) {
+                    classes.add(classname);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      return classes;
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 以文件的形式来获取包下的所有Class
+   *
+   * @param packageName 包名
+   * @param packagePath 包路径
+   * @param recursive   是否递归
+   */
+  public static List<String> findClasses(String packageName, File packagePath, boolean recursive, Predicate<String> filter) {
+    //如果不存在或者 也不是目录就直接返回
+    if (!packagePath.exists() || !packagePath.isDirectory()) {
+      return Collections.emptyList();
+    }
+    List<String> classes = new ArrayList<>();
+    File[] subFiles = packagePath.listFiles(file -> (recursive && file.isDirectory()) || (file.getName().endsWith(".class")));
+    if (subFiles != null && subFiles.length > 0) {
+      for (File subFile : subFiles) {
+        if (subFile.isDirectory()) {
+          List<String> subClasses = findClasses(packageName + "." + subFile.getName(), subFile, recursive, filter);
+          classes.addAll(subClasses);
+        } else {
+          String classname = getClassname(packageName, subFile.getName());
+          if (filter.test(classname)) {
+            classes.add(classname);
+          }
+        }
+      }
+    }
+    return classes;
+  }
+
+  private static String getClassname(String packageName, String filename) {
+    if (filename.indexOf("/") > 0) {
+      String tmpName = filename.replace("/", ".");
+      return tmpName.substring(0, filename.length() - 6);
+    }
+    return packageName + '.' + filename.substring(0, filename.length() - 6);
   }
 
   public static boolean isSpringClasspath() {
@@ -565,5 +685,6 @@ public class ClasspathUtils {
   private static String filePath(File f) {
     return WINDOWS ? f.getAbsolutePath().replace("\\", "/") : f.getAbsolutePath();
   }
+
 
 }

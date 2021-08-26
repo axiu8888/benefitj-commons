@@ -1,8 +1,12 @@
 package com.benefitj.frameworks;
 
 import com.benefitj.core.IOUtils;
+import com.benefitj.core.IdUtils;
+import com.benefitj.core.SystemProperty;
 import com.benefitj.core.file.CompressUtils;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 
 import java.io.File;
@@ -88,6 +92,66 @@ public class TarUtils {
       out.putArchiveEntry(entry);
       IOUtils.write(src, out, false);
       out.closeArchiveEntry();
+    }
+  }
+
+  /**
+   * 解压缩
+   *
+   * @param src 源文件
+   * @return 返回解压后的目录
+   */
+  public static File untarGzip(File src) {
+    return untarGzip(src, new File(src, CompressUtils.trimRight(src.getName(), ".tar.gz", "")));
+  }
+
+  /**
+   * 解压缩
+   *
+   * @param src  源文件
+   * @param dest 目标目录
+   * @return 返回解压后的目录
+   */
+  public static File untarGzip(File src, File dest) {
+    String filename = CompressUtils.trimRight(src.getName(), ".tar.gz", ".tar");
+    File tar = CompressUtils.ungzip(src, new File(SystemProperty.getJavaIOTmpDir() + IdUtils.nextId(10), filename));
+    try {
+      return untar(tar, dest);
+    } finally {
+      IOUtils.deleteFile(tar);
+    }
+  }
+
+  /**
+   * 解压缩
+   *
+   * @param src 源文件
+   * @return 返回解压后的目录
+   */
+  public static File untar(File src) {
+    return untar(src, new File(src, CompressUtils.trimRight(src.getName(), ".tar", "")));
+  }
+
+  /**
+   * 解压缩
+   *
+   * @param src 源文件
+   * @return 返回解压后的目录
+   */
+  public static File untar(File src, File dest) {
+    try (final TarArchiveInputStream in = new TarArchiveInputStream(new FileInputStream(src));) {
+      ArchiveEntry entry;
+      while ((entry = in.getNextEntry()) != null) {
+        if (entry.isDirectory()) {
+          IOUtils.mkDirs(dest, entry.getName());
+        } else {
+          IOUtils.write(in, IOUtils.createFile(dest, entry.getName()), false);
+        }
+      }
+      return dest;
+    } catch (IOException e) {
+      IOUtils.deleteFile(dest);
+      throw new IllegalStateException(e);
     }
   }
 

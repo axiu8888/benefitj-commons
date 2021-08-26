@@ -155,7 +155,7 @@ public class SystemProperty {
   /**
    * java临时缓存目录
    */
-  public static String getJavaIOTmpdir() {
+  public static String getJavaIOTmpDir() {
     // C:\Users\admin\AppData\Local\Temp\
     return getProperty("java.io.tmpdir");
   }
