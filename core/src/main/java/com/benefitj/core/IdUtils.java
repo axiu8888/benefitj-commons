@@ -245,6 +245,12 @@ public class IdUtils {
     return UUID.randomUUID().toString();
   }
 
+  /**
+   * 获取一个 SnowflakeId
+   */
+  public static long snowflakeId() {
+    return SnowflakeIdWorker.getInstance().nextId();
+  }
 
   private static String checkNotNull(String str) {
     return str != null ? str : "";

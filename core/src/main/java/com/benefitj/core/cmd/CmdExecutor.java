@@ -23,19 +23,17 @@ public class CmdExecutor {
   /**
    * 是否为windows
    */
-  private static final boolean WINDOWS;
   public static final String CRLF;
 
   static {
-    WINDOWS = System.getProperty("os.name").contains("Windows");
-    CRLF = WINDOWS ? "\r\n" : "\n";
+    CRLF = SystemOS.LOCALE.isWindows() ? "\r\n" : "\n";
   }
 
   /**
    * 判断是否为Windows
    */
   public static boolean isWindows() {
-    return WINDOWS;
+    return SystemOS.LOCALE.isWindows();
   }
 
   /**

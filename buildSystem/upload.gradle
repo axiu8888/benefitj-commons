@@ -1,0 +1,22 @@
+install {
+    repositories.mavenInstaller {
+        pom.groupId = "$groupId"
+        pom.artifactId = "${artifactPrefix}$artifactId"
+        pom.version = "$versionId"
+    }
+}
+
+//上传到nexus
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            pom.groupId = "$groupId"
+            pom.artifactId = "${artifactPrefix}$artifactId"
+            pom.version = "$versionId"
+            repository(url: "http://${repositoryAddress}/repository/maven-snapshots/") {
+                authentication(userName: "${repositoryUserName}", password: "${repositoryPassword}")
+            }
+        }
+    }
+}
+

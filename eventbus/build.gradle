@@ -7,3 +7,5 @@ dependencies {
     compileOnly 'com.google.guava:guava:29.0-jre'
 
 }
+
+//apply from: "${getRootDir()}/buildSystem/upload.gradle"

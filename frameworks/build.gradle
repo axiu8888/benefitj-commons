@@ -23,3 +23,5 @@ dependencies {
     // Servlet
     compileOnly("javax.servlet:javax.servlet-api:4.0.1")
 }
+
+//apply from: "${getRootDir()}/buildSystem/upload.gradle"

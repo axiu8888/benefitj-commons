@@ -1,5 +1,6 @@
 package com.benefitj.netty.server.device;
 
+import com.benefitj.device.DeviceImpl;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -8,16 +9,14 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
  * 抽象的设备基类
  */
-public abstract class AbstractDevice implements Device {
+public abstract class AbstractDevice extends DeviceImpl implements NettyDevice {
 
   /**
    * 本地地址
@@ -34,10 +33,6 @@ public abstract class AbstractDevice implements Device {
   }
 
   /**
-   * 设备ID
-   */
-  private String id;
-  /**
    * 本地地址
    */
   private InetSocketAddress localAddress;
@@ -49,21 +44,9 @@ public abstract class AbstractDevice implements Device {
    * 通道
    */
   private Channel channel;
-  /**
-   * 属性
-   */
-  private final Map<String, Object> attributes = new ConcurrentHashMap<>();
-  /**
-   * 上线时间
-   */
-  private long onlineTime;
-  /**
-   * 最近一次的接收时间
-   */
-  private volatile long rcvTime = -1;
 
   public AbstractDevice(String id) {
-    this.id = id;
+    super(id);
   }
 
   public AbstractDevice(Channel channel) {
@@ -79,12 +62,13 @@ public abstract class AbstractDevice implements Device {
   }
 
   public AbstractDevice(String id, Channel channel, InetSocketAddress localAddr, InetSocketAddress remoteAddr) {
-    this.id = id;
+    this(id);
     this.channel = channel;
     this.setLocalAddress(localAddr);
     this.setRemoteAddress(remoteAddr);
     // 在线时间
     this.setOnlineTime(System.currentTimeMillis());
+    this.setActiveTime(System.currentTimeMillis());
   }
 
   protected AbstractDevice self() {
@@ -92,23 +76,11 @@ public abstract class AbstractDevice implements Device {
   }
 
   /**
-   * 获取设备ID
+   * 设置当前时间为最新的接收数据包的时间
    */
   @Override
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * 设置设备ID
-   *
-   * @param id ID
-   * @return 返回设备对象
-   */
-  @Override
-  public Device setId(String id) {
-    this.id = id;
-    return self();
+  public void setActiveTimeNow() {
+    setActiveTime(System.currentTimeMillis());
   }
 
   /**
@@ -123,12 +95,10 @@ public abstract class AbstractDevice implements Device {
    * 设置设备的本地地址
    *
    * @param localAddr 本地地址
-   * @return 返回设备对象
    */
   @Override
-  public Device setLocalAddress(InetSocketAddress localAddr) {
+  public void setLocalAddress(InetSocketAddress localAddr) {
     this.localAddress = localAddr;
-    return self();
   }
 
   /**
@@ -146,56 +116,8 @@ public abstract class AbstractDevice implements Device {
    * @return 返回设备对象
    */
   @Override
-  public Device setRemoteAddress(InetSocketAddress remoteAddr) {
+  public void setRemoteAddress(InetSocketAddress remoteAddr) {
     this.remoteAddress = remoteAddr;
-    return self();
-  }
-
-  /**
-   * 设置在线时间
-   *
-   * @param onlineTime 在线时间
-   */
-  @Override
-  public Device setOnlineTime(long onlineTime) {
-    this.onlineTime = onlineTime;
-    return self();
-  }
-
-  /**
-   * 获取在线时间
-   */
-  @Override
-  public long getOnlineTime() {
-    return onlineTime;
-  }
-
-  /**
-   * 获取接收数据包的时间
-   */
-  @Override
-  public long getRcvTime() {
-    return rcvTime;
-  }
-
-  /**
-   * 设置接收数据包的时间
-   *
-   * @param rcvTime 时间
-   */
-  @Override
-  public Device setRcvTime(long rcvTime) {
-    this.rcvTime = rcvTime;
-    return self();
-  }
-
-  /**
-   * 设置当前时间为最新的接收数据包的时间
-   */
-  @Override
-  public Device setRecvTimeNow() {
-    this.setRcvTime(System.currentTimeMillis());
-    return self();
   }
 
   /**
@@ -212,7 +134,7 @@ public abstract class AbstractDevice implements Device {
    * @param channel 通道
    * @return 返回当前设备
    */
-  public Device channel(Channel channel) {
+  public NettyDevice channel(Channel channel) {
     this.channel = channel;
     return self();
   }
@@ -263,7 +185,7 @@ public abstract class AbstractDevice implements Device {
    * @param msg 消息
    */
   @Override
-  public Device fireRead(Object msg) {
+  public NettyDevice fireRead(Object msg) {
     pipeline().fireChannelRead(msg);
     return self();
   }
@@ -322,77 +244,6 @@ public abstract class AbstractDevice implements Device {
   }
 
   /**
-   * 属性集合
-   */
-  @Override
-  public Map<String, Object> attrs() {
-    return attributes;
-  }
-
-  /**
-   * 属性数量
-   */
-  @Override
-  public int attributeSize() {
-    return attrs().size();
-  }
-
-  /**
-   * 是否有某个属性
-   *
-   * @param key 属性键
-   * @return 返回判断结果
-   */
-  @Override
-  public boolean hasAttr(String key) {
-    return attrs().containsKey(key);
-  }
-
-  /**
-   * 设置属性值
-   *
-   * @param key   属性键
-   * @param value 属性值
-   */
-  @Override
-  public void setAttr(String key, Object value) {
-    if (value == null) {
-      throw new IllegalArgumentException("The value must not null !");
-    }
-    attrs().put(key, value);
-  }
-
-  /**
-   * 获取属性值
-   *
-   * @param key 属性键
-   * @return 返回获取的属性值
-   */
-  @Override
-  public <T> T getAttr(String key) {
-    return (T) attrs().get(key);
-  }
-
-  /**
-   * 移除属性值
-   *
-   * @param key 属性键
-   * @return 返回被移除的属性值，如果没有，返回 NULL
-   */
-  @Override
-  public <T> T removeAttr(String key) {
-    return (T) attrs().remove(key);
-  }
-
-  /**
-   * 清空所有属性值
-   */
-  @Override
-  public void clearAttrs() {
-    attrs().clear();
-  }
-
-  /**
    * 关闭通道
    */
   @Override
@@ -424,7 +275,7 @@ public abstract class AbstractDevice implements Device {
         .append(getId())
         .append("#").append(remote.getHostString()).append(":").append(remote.getPort())
         .append("#online[").append(String.format("%.1fs", getDuration(getOnlineTime(), TimeUnit.SECONDS))).append("]")
-        .append("#rcv[").append(String.format("%.1fs", getDuration(getRcvTime(), TimeUnit.SECONDS))).append("]")
+        .append("#active[").append(String.format("%.1fs", getDuration(getActiveTime(), TimeUnit.SECONDS))).append("]")
         .append(")")
         .toString();
   }

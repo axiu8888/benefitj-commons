@@ -1,4 +1,5 @@
-package com.benefitj.netty.server.device;
+package com.benefitj.device;
+
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -9,19 +10,19 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @param <D>
  */
-public class DeviceStateMultiListener<D extends Device> implements DeviceStateListener<D> {
+public class MultiDeviceListener<D extends Device> implements DeviceListener<D> {
 
   /**
    * 监听
    */
-  private final List<DeviceStateListener<D>> listeners = new CopyOnWriteArrayList<>();
+  private final List<DeviceListener<D>> listeners = new CopyOnWriteArrayList<>();
 
   /**
    * 添加监听
    *
    * @param listener 监听
    */
-  public void addListener(DeviceStateListener<D> listener) {
+  public void addListener(DeviceListener<D> listener) {
     this.listeners.add(listener);
   }
 
@@ -30,8 +31,19 @@ public class DeviceStateMultiListener<D extends Device> implements DeviceStateLi
    *
    * @param listener 监听
    */
-  public void removeListener(DeviceStateListener<D> listener) {
+  public void removeListener(DeviceListener<D> listener) {
     this.listeners.remove(listener);
+  }
+
+  /**
+   * 添加监听
+   *
+   * @param listeners 监听
+   */
+  public void addListeners(List<? extends DeviceListener<D>> listeners) {
+    if (listeners != null) {
+      listeners.forEach(this::addListener);
+    }
   }
 
   /**
@@ -43,7 +55,7 @@ public class DeviceStateMultiListener<D extends Device> implements DeviceStateLi
    */
   @Override
   public void onAddition(String id, D newDevice, @Nullable D oldDevice) {
-    for (DeviceStateListener<D> l : this.listeners) {
+    for (DeviceListener<D> l : this.listeners) {
       try {
         l.onAddition(id, newDevice, oldDevice);
       } catch (Exception e) {
@@ -60,7 +72,7 @@ public class DeviceStateMultiListener<D extends Device> implements DeviceStateLi
    */
   @Override
   public void onRemoval(String id, D device) {
-    for (DeviceStateListener<D> l : this.listeners) {
+    for (DeviceListener<D> l : this.listeners) {
       try {
         l.onRemoval(id, device);
       } catch (Exception e) {

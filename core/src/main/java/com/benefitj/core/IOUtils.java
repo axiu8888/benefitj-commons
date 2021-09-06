@@ -659,7 +659,7 @@ public class IOUtils {
    */
   public static void write(File in, OutputStream out, boolean close) {
     try (final FileInputStream fis = new FileInputStream(in)) {
-      write(fis, out, 1024 << 8, close);
+      write(fis, out, 1024 << 4, close);
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }

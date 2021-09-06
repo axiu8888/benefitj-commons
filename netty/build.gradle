@@ -2,7 +2,11 @@ apply from: "${getRootDir()}/buildSystem/base.gradle"
 
 dependencies {
 
+  compile(project(":device"))
+
   compileOnly 'io.netty:netty-all:4.1.59.Final'
   testCompile 'io.netty:netty-all:4.1.59.Final'
 
 }
+
+//apply from: "${getRootDir()}/buildSystem/upload.gradle"

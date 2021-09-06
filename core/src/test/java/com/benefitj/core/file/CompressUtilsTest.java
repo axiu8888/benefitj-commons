@@ -21,8 +21,14 @@ public class CompressUtilsTest extends BaseTest {
 //    File dest = new File("D:\\develop\\CHE\\01000514-2020_02_28-22_26_17带血氧.gzip");
 //    File src = new File("D:\\11000082-2021_05_17-10_54_13-001.CHE");
 //    File dest = new File("D:\\11000082-2021_05_17-10_54_13-001.gzip");
-    File src = new File("D:\\home\\his305\\2021-08-24\\内分泌");
+    File src = new File("D:\\develop\\Virtual Machines\\CentOS_8_x64");
     CompressUtils.zip(src);
+  }
+
+  @Test
+  public void testUnzip() {
+    File zip = new File("D:\\develop\\Virtual Machines\\CentOS 8 64 位.zip");
+    CompressUtils.unzip(zip, new File("D:\\develop\\Virtual Machines\\CentOS-8x64位"));
   }
 
   /**
