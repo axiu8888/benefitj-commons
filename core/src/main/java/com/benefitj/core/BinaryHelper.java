@@ -948,6 +948,44 @@ public class BinaryHelper {
     return false;
   }
 
+  /**
+   * 查找匹配的字节数组的开始位置
+   *
+   * @param src  原数据
+   * @param find 被查找的字节
+   * @return 返回找到的位置，如果未找到返回-1
+   */
+  public int indexOf(byte[] src, byte[] find) {
+    return indexOf(src, 0, src.length, find);
+  }
+
+  /**
+   * 查找匹配的字节数组的开始位置
+   *
+   * @param src   原数据
+   * @param start 开始的位置
+   * @param len   查找的长度
+   * @param find  被查找的字节
+   * @return 返回找到的位置，如果未找到返回-1
+   */
+  public int indexOf(byte[] src, int start, int len, byte[] find) {
+    for (int i = 0; i < len; i++) {
+      if (src[start + i] == find[0]) {
+        int index = start + i;
+        for (int j = 0; j < find.length; j++) {
+          if (src[start + i + j] != find[j]) {
+            index = -1;
+            break;
+          }
+        }
+        if (index >= 0) {
+          return index;
+        }
+      }
+    }
+    return -1;
+  }
+
   private boolean isNotEmpty(String s) {
     return s != null && s.trim().length() > 0;
   }

@@ -595,5 +595,28 @@ public class HexUtils {
   public static boolean isEquals(byte[] src, int srcPos, byte[] dest, int destPos, int len) {
     return getInstance().isEquals(src, srcPos, dest, destPos, len);
   }
+  /**
+   * 查找匹配的字节数组的开始位置
+   *
+   * @param src  原数据
+   * @param find 被查找的字节
+   * @return 返回找到的位置，如果未找到返回-1
+   */
+  public static int indexOf(byte[] src, byte[] find) {
+    return getInstance().indexOf(src, 0, src.length, find);
+  }
+
+  /**
+   * 查找匹配的字节数组的开始位置
+   *
+   * @param src   原数据
+   * @param start 开始的位置
+   * @param len   查找的长度
+   * @param find  被查找的字节
+   * @return 返回找到的位置，如果未找到返回-1
+   */
+  public static int indexOf(byte[] src, int start, int len, byte[] find) {
+    return getInstance().indexOf(src, start, len, find);
+  }
 
 }
