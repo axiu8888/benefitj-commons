@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 简单的设备工厂
+ * 简单的设备管理器
  *
  * @param <T>
  */
