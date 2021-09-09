@@ -15,7 +15,7 @@ ext {
 //    repositoryAddress = '192.168.19.129:9001'
     repositoryUserName = 'admin'
     repositoryPassword = 'admin123'
-    ignoreLocalRepository = true
+    useRepository = false
 }
 
 
