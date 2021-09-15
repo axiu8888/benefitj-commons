@@ -58,6 +58,10 @@ public class EventBusPoster {
    * 默认的发送类型：同步或异步，默认是异步发送
    */
   private final AtomicBoolean asyncState = new AtomicBoolean(true);
+  /**
+   * 包装器
+   */
+  private EventWrapper eventWrapper = new OriginalEventWrapper();
 
   public EventBusPoster() {
     this(null);
@@ -104,6 +108,14 @@ public class EventBusPoster {
 
   public Class<?> getEventType() {
     return eventType;
+  }
+
+  public EventWrapper getEventWrapper() {
+    return eventWrapper;
+  }
+
+  public void setEventWrapper(EventWrapper eventWrapper) {
+    this.eventWrapper = eventWrapper;
   }
 
   /**
@@ -161,10 +173,11 @@ public class EventBusPoster {
     }
 
     if (initialized.get()) {
+      Object wrap = getEventWrapper().wrap(event);
       if (async) {
-        getAsyncEventBus().post(event);
+        getAsyncEventBus().post(wrap);
       } else {
-        getEventBus().post(event);
+        getEventBus().post(wrap);
       }
     }
   }
