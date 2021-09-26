@@ -3,8 +3,6 @@ package com.benefitj.device;
 import com.benefitj.core.ReflectUtils;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 /**
@@ -44,23 +42,9 @@ public class ReflectiveDeviceFactory<T extends Device> implements DeviceFactory<
   }
 
   public T newInstance(String id, Map<String, Object> attrs) {
-    try {
-      T device = null;
-      Class<? extends Device> type = getDeviceType();
-      for (Constructor<?> c : type.getConstructors()) {
-        if (ReflectUtils.isParameterTypesMatch(c.getParameterTypes(), new Object[]{id})) {
-          ReflectUtils.setAccessible(c, true);
-          device = (T) c.newInstance(new Object[]{id});
-        }
-      }
-      if (device == null) {
-        device = (T) type.newInstance();
-      }
-      device.setId(id);
-      return device;
-    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(e);
-    }
+    T device = ReflectUtils.newInstance(getDeviceType());
+    device.setId(id);
+    return device;
   }
 
   public Class<T> getDeviceType() {

@@ -19,7 +19,7 @@ public abstract class AbstractNettyClient<S extends AbstractNettyClient<S>> exte
   }
 
   @Override
-  public abstract S useDefaultConfig();
+  protected abstract S useDefaultConfig();
 
   /**
    * 创建 Bootstrap 实例

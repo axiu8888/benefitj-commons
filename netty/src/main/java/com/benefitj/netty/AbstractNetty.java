@@ -111,7 +111,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   /**
    * 默认配置
    */
-  public S useDefaultConfig() {
+  protected S useDefaultConfig() {
     return self();
   }
 

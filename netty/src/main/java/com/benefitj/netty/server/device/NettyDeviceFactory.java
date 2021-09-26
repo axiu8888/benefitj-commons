@@ -21,8 +21,13 @@ public interface NettyDeviceFactory<T extends NettyDevice> extends DeviceFactory
     Channel ch = null;
     if (attrs != null && !attrs.isEmpty()) {
       ch = (Channel) attrs.get(ATTRS_CHANNEL);
+      attrs.remove(ATTRS_CHANNEL);
     }
-    return create(id, ch);
+    T device = create(id, ch);
+    if (attrs != null && !attrs.isEmpty()) {
+      attrs.forEach(device::setAttr);
+    }
+    return device;
   }
 
   /**

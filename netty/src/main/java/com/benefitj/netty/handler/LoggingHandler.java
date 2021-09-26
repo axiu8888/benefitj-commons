@@ -1,6 +1,6 @@
 package com.benefitj.netty.handler;
 
-import com.benefitj.netty.NettyHexUtils;
+import com.benefitj.core.HexUtils;
 import com.benefitj.netty.log.NettyLogger;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -61,7 +61,7 @@ public class LoggingHandler extends ByteBufCopyInboundHandler<ByteBuf> {
     log.info("remote: {}, size: {}, data: {}"
         , ctx.channel().remoteAddress()
         , msg.readableBytes()
-        , NettyHexUtils.bytesToHex(buf));
+        , HexUtils.bytesToHex(buf));
   }
 
   public int getReadMaxSize() {

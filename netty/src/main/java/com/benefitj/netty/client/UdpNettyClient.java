@@ -22,7 +22,7 @@ public class UdpNettyClient extends AbstractNettyClient<UdpNettyClient> {
   }
 
   @Override
-  public UdpNettyClient useDefaultConfig() {
+  protected UdpNettyClient useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
       this.executeWhileNull(this.group(), () -> group(new EpollEventLoopGroup()));
       this.executeWhileNull(this.channelFactory(), () -> channel(EpollDatagramChannel.class));

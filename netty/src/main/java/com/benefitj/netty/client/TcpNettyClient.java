@@ -54,7 +54,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   }
 
   @Override
-  public TcpNettyClient useDefaultConfig() {
+  protected TcpNettyClient useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
       this.group(new EpollEventLoopGroup());
       this.channel(EpollSocketChannel.class);
@@ -78,8 +78,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     this.options(options);
 
     if (autoReconnect()) {
-      this.executeWhileNull(super.handler(), () ->
-          super.handler(watchdog));
+      this.executeWhileNull(super.handler(), () -> super.handler(watchdog));
     } else {
       super.handler(handler);
     }
