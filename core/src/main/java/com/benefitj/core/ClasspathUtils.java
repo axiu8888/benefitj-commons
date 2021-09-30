@@ -355,8 +355,18 @@ public class ClasspathUtils {
    * @param dest  目标文件
    * @throws IOException
    */
-  public static void copyFilesTo(Class<?> klass, String src, String dest) throws IOException {
+  public static void copyFilesTo(Class<?> klass, String src, String dest) {
     copyFilesTo(klass.getClassLoader(), klass, src, dest);
+  }
+
+  /**
+   * 拷贝文件或文件夹到指定目录，支持从jar包中拷贝
+   *
+   * @param src         原文件
+   * @param dest        目标文件
+   */
+  public static void copyFilesTo(String src, String dest) {
+    copyFilesTo(Thread.currentThread().getContextClassLoader(), src, dest);
   }
 
   /**
@@ -365,9 +375,8 @@ public class ClasspathUtils {
    * @param classLoader 类加载对象
    * @param src         原文件
    * @param dest        目标文件
-   * @throws IOException
    */
-  public static void copyFilesTo(ClassLoader classLoader, String src, String dest) throws IOException {
+  public static void copyFilesTo(ClassLoader classLoader, String src, String dest) {
     copyFilesTo(classLoader, null, src, dest);
   }
 
@@ -380,49 +389,53 @@ public class ClasspathUtils {
    * @param dest        目标文件
    * @throws IOException
    */
-  public static void copyFilesTo(ClassLoader classLoader, @Nullable Class<?> klass, String src, String dest) throws IOException {
-    String classpath = getClasspath(classLoader);
-    if (classpath == null || classpath.isEmpty()) {
-      throw new IllegalArgumentException("classpath is empty");
-    }
-    if (isJar(classpath)) {
-      URL url = classLoader.getResource(src);
-      if (url == null && isSpringClasspath()) {
-        ClassPathResource resource = new ClassPathResource(src);
-        if (resource.exists()) {
-          copyFilesFromJarTo(resource.getURL(), src, dest);
-          return;
-        }
+  public static void copyFilesTo(ClassLoader classLoader, @Nullable Class<?> klass, String src, String dest) {
+    try {
+      String classpath = getClasspath(classLoader);
+      if (classpath == null || classpath.isEmpty()) {
+        throw new IllegalArgumentException("classpath is empty");
       }
+      if (isJar(classpath)) {
+        URL url = classLoader.getResource(src);
+        if (url == null && isSpringClasspath()) {
+          ClassPathResource resource = new ClassPathResource(src);
+          if (resource.exists()) {
+            copyFilesFromJarTo(resource.getURL(), src, dest);
+            return;
+          }
+        }
 
-      if (url == null) {
-        throw new FileNotFoundException("无法获取classpath下的\"" + src + "\"资源");
-      }
-      copyFilesFromJarTo(url, src, dest);
-    } else {
-      // 拷贝
-      URL srcURL = getResourceURL(classLoader, klass, src);
-      if (srcURL == null && isSpringClasspath()) {
-        ClassPathResource resource = new ClassPathResource(src);
-        if (resource.exists()) {
-          copyFilesFromJarTo(resource.getURL(), src, dest);
-          return;
+        if (url == null) {
+          throw new FileNotFoundException("无法获取classpath下的\"" + src + "\"资源");
         }
-      }
-      if (srcURL == null) {
-        if (klass != null && isJar(getClasspathURL(klass).toExternalForm())) {
-          // 在jar包中
-          URL jarURL = getClasspathURL(klass);
-          copyFilesFromJarTo(jarURL, src, dest);
-          return;
+        copyFilesFromJarTo(url, src, dest);
+      } else {
+        // 拷贝
+        URL srcURL = getResourceURL(classLoader, klass, src);
+        if (srcURL == null && isSpringClasspath()) {
+          ClassPathResource resource = new ClassPathResource(src);
+          if (resource.exists()) {
+            copyFilesFromJarTo(resource.getURL(), src, dest);
+            return;
+          }
         }
-        throw new FileNotFoundException("无法获取classpath下的\"" + src + "\"资源");
+        if (srcURL == null) {
+          if (klass != null && isJar(getClasspathURL(klass).toExternalForm())) {
+            // 在jar包中
+            URL jarURL = getClasspathURL(klass);
+            copyFilesFromJarTo(jarURL, src, dest);
+            return;
+          }
+          throw new FileNotFoundException("无法获取classpath下的\"" + src + "\"资源");
+        }
+        File srcFile = new File(srcURL.getPath());
+        if (!srcFile.exists()) {
+          throw new FileNotFoundException("classpath下不存在此文件: " + srcFile.getAbsolutePath());
+        }
+        copyFiles(srcFile, srcFile.getAbsolutePath(), dest);
       }
-      File srcFile = new File(srcURL.getPath());
-      if (!srcFile.exists()) {
-        throw new FileNotFoundException("classpath下不存在此文件: " + srcFile.getAbsolutePath());
-      }
-      copyFiles(srcFile, srcFile.getAbsolutePath(), dest);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
     }
   }
 
