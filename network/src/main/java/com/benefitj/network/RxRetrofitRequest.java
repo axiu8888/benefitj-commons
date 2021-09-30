@@ -7,10 +7,11 @@ import okhttp3.OkHttpClient;
 import retrofit2.CallAdapter;
 import retrofit2.Converter;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +55,11 @@ public class RxRetrofitRequest<Api> extends RetrofitRequest<Api> {
   /**
    * OkHttpClient
    */
-  private volatile OkHttpClient okHttpClient;
+  private volatile OkHttpClient okHttpClient = new OkHttpClient.Builder()
+      .connectTimeout(5, TimeUnit.SECONDS)
+      .readTimeout(30, TimeUnit.SECONDS)
+      .writeTimeout(30, TimeUnit.SECONDS)
+      .build();
 
   private Class<Api> apiType;
 
@@ -82,20 +87,7 @@ public class RxRetrofitRequest<Api> extends RetrofitRequest<Api> {
 
   @Override
   public OkHttpClient getOkHttpClient() {
-    OkHttpClient c = this.okHttpClient;
-    if (c == null) {
-      synchronized (this) {
-        if ((c = this.okHttpClient) == null) {
-          OkHttpClient.Builder builder = new OkHttpClient.Builder()
-              .connectTimeout(5, TimeUnit.SECONDS)
-              .readTimeout(30, TimeUnit.SECONDS)
-              .writeTimeout(30, TimeUnit.SECONDS);
-          getNetworkInterceptor().forEach(builder::addNetworkInterceptor);
-          c = (this.okHttpClient = builder.build());
-        }
-      }
-    }
-    return c;
+    return okHttpClient;
   }
 
   /**
@@ -114,7 +106,19 @@ public class RxRetrofitRequest<Api> extends RetrofitRequest<Api> {
 
   @Override
   public List<Converter.Factory> getConverterFactory() {
-    return Arrays.asList(JacksonConverterFactory.create(), ScalarsConverterFactory.create());
+    List<Converter.Factory> converterFactories = new ArrayList<>(4);
+    try {
+      Class.forName("retrofit2.converter.jackson.JacksonConverterFactory");
+      converterFactories.add(JacksonConverterFactory.create());
+    } catch (ClassNotFoundException e) {
+    }
+    try {
+      Class.forName("retrofit2.converter.gson.GsonConverterFactory");
+      converterFactories.add(GsonConverterFactory.create());
+    } catch (ClassNotFoundException e) {
+    }
+    converterFactories.add(ScalarsConverterFactory.create());
+    return converterFactories;
   }
 
   @Override

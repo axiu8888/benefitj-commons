@@ -2,6 +2,7 @@ package com.benefitj.network;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.CallAdapter;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
@@ -24,6 +25,10 @@ public abstract class RetrofitRequest<Api> implements IRetrofitRequest<Api> {
    * 请求基地址
    */
   private String baseUrl;
+  /**
+   * 日志级别
+   */
+  private HttpLoggingInterceptor.Level loggingLevel = HttpLoggingInterceptor.Level.NONE;
 
   public RetrofitRequest() {
   }
@@ -49,7 +54,15 @@ public abstract class RetrofitRequest<Api> implements IRetrofitRequest<Api> {
 
     Builder builder = new Builder();
     builder.baseUrl(url);
-    builder.client(getOkHttpClient());
+
+    OkHttpClient.Builder client = getOkHttpClient().newBuilder();
+    for (Interceptor interceptor : getNetworkInterceptor()) {
+      client.addNetworkInterceptor(interceptor);
+    }
+    HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+    logging.setLevel(getLoggingLevel());
+    client.addNetworkInterceptor(logging);
+    builder.client(client.build());
 
     List<CallAdapter.Factory> adapterFactories = getCallAdapterFactory();
     if (adapterFactories != null && !adapterFactories.isEmpty()) {
@@ -65,8 +78,7 @@ public abstract class RetrofitRequest<Api> implements IRetrofitRequest<Api> {
       }
     }
 
-    Retrofit retrofit = (this.retrofit = buildRetrofit(builder));
-    return retrofit.create(apiClass);
+    return (this.retrofit = buildRetrofit(builder)).create(apiClass);
   }
 
   /**
@@ -124,5 +136,13 @@ public abstract class RetrofitRequest<Api> implements IRetrofitRequest<Api> {
 
   @Override
   public abstract List<CallAdapter.Factory> getCallAdapterFactory();
+
+  public HttpLoggingInterceptor.Level getLoggingLevel() {
+    return loggingLevel;
+  }
+
+  public void setLoggingLevel(HttpLoggingInterceptor.Level loggingLevel) {
+    this.loggingLevel = loggingLevel;
+  }
 }
 
