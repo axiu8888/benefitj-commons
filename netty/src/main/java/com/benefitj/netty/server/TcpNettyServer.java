@@ -47,13 +47,15 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
   }
 
   @Override
-  public TcpNettyServer useDefaultConfig() {
+  protected TcpNettyServer useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
-      this.executeWhileNull(this.workerGroup(), () -> this.group(new EpollEventLoopGroup(), new EpollEventLoopGroup()));
+      this.executeWhileNull(this.workerGroup(), () ->
+          this.group(new EpollEventLoopGroup(newBoss(name())), new EpollEventLoopGroup(newWorker(name()))));
       this.executeWhileNull(this.channelFactory(), () -> this.channel(EpollServerSocketChannel.class));
       this.option(UnixChannelOption.SO_REUSEPORT, true);
     } else {
-      this.executeWhileNull(this.workerGroup(), () -> this.group(new NioEventLoopGroup(), new NioEventLoopGroup()));
+      this.executeWhileNull(this.workerGroup(), () ->
+          this.group(new NioEventLoopGroup(newBoss(name())), new NioEventLoopGroup(newWorker(name()))));
       this.executeWhileNull(this.channelFactory(), () -> channel(NioServerSocketChannel.class));
     }
 

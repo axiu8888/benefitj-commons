@@ -59,7 +59,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
       this.group(new EpollEventLoopGroup());
       this.channel(EpollSocketChannel.class);
     } else {
-      this.executeWhileNull(group(), () -> group(new NioEventLoopGroup()));
+      this.executeWhileNull(group(), () -> group(new NioEventLoopGroup(newThreadFactory(name(), "-client-", false))));
       this.executeWhileNull(channelFactory(), () -> channel(NioSocketChannel.class));
     }
 

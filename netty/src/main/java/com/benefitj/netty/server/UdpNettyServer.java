@@ -21,15 +21,15 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
   }
 
   @Override
-  public UdpNettyServer useDefaultConfig() {
+  protected UdpNettyServer useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
       this.executeWhileNull(bossGroup(), () ->
-          this.group(new NioEventLoopGroup(1), new DefaultEventLoopGroup()));
+          this.group(new NioEventLoopGroup(1, newBoss(name())), new DefaultEventLoopGroup(newWorker(name()))));
       this.executeWhileNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
       this.option(UnixChannelOption.SO_REUSEPORT, false);
     } else {
       this.executeWhileNull(bossGroup(), () ->
-          this.group(new NioEventLoopGroup(1), new DefaultEventLoopGroup()));
+          this.group(new NioEventLoopGroup(1, newBoss(name())), new DefaultEventLoopGroup(newWorker(name()))));
       this.executeWhileNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
     }
     this.option(ChannelOption.SO_BROADCAST, true);

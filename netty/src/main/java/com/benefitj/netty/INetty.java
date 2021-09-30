@@ -8,9 +8,11 @@ import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.internal.PlatformDependent;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.SocketAddress;
 import java.util.Map;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * 服务端/客户端 的Netty接口
@@ -345,6 +347,24 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
   default String getOsName() {
     String osName = System.getProperties().getProperty("os.name");
     return osName != null ? osName : "";
+  }
+
+  default ThreadFactory newBoss(String name) {
+    if (StringUtils.isBlank(name)) {
+      return null;
+    }
+    return newThreadFactory(name + "-", "-boss-", false);
+  }
+
+  default ThreadFactory newWorker(String name) {
+    if (StringUtils.isBlank(name)) {
+      return null;
+    }
+    return newThreadFactory(name + "-", "-worker-", false);
+  }
+
+  default ThreadFactory newThreadFactory(String prefix, String suffix, boolean daemon) {
+    return new DefaultThreadFactory(prefix, suffix, daemon);
   }
 
   GenericFutureListener<? extends Future<Void>> EMPTY_LISTENER = future -> { /*do nothing*/ };

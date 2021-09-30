@@ -25,6 +25,7 @@ public class DefaultThreadFactory implements ThreadFactory {
     SecurityManager s = System.getSecurityManager();
     group = (s != null) ? s.getThreadGroup() :
         Thread.currentThread().getThreadGroup();
+    prefix = prefix != null ? prefix : "pool-";
     namePrefix = prefix + poolNumber.getAndIncrement() + suffix;
     this.daemon = daemon;
   }
