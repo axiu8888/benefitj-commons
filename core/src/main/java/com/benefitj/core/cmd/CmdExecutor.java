@@ -1,13 +1,13 @@
 package com.benefitj.core.cmd;
 
 import com.benefitj.core.EventLoop;
+import com.benefitj.core.IOUtils;
 import com.benefitj.core.IdUtils;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -222,20 +222,10 @@ public class CmdExecutor {
   private void readMessage(Process process, CmdCall call) {
     try {
       Charset charset = Charset.forName(System.getProperty("sun.jnu.encoding"));
-      try (BufferedReader respBr = new BufferedReader(new InputStreamReader(process.getInputStream(), charset));
-           BufferedReader errorBr = new BufferedReader(new InputStreamReader(process.getErrorStream(), charset));) {
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = respBr.readLine()) != null) {
-          sb.append(line).append(CRLF);
-        }
-        call.setMessage(sb.toString());
-
-        sb.setLength(0);
-        while ((line = errorBr.readLine()) != null) {
-          sb.append(line).append(CRLF);
-        }
-        call.setError(sb.toString());
+      try (BufferedReader reader = IOUtils.wrapReader(process.getInputStream(), charset);
+           BufferedReader errorReader = IOUtils.wrapReader(process.getErrorStream(), charset);) {
+        call.setMessage(String.join(CRLF, IOUtils.readLines(reader)));
+        call.setError(String.join(CRLF, IOUtils.readLines(errorReader)));
       }
     } catch (IOException e) {
       call.setError(e.getMessage());

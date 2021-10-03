@@ -7,11 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -366,6 +364,17 @@ public class IOUtils {
     return tryThrow(() -> new BufferedWriter(new FileWriter(file)));
   }
 
+  /**
+   * 包装成BufferedReader
+   *
+   * @param in 输入流
+   * @param charset 编码
+   * @return 返回 BufferedReader
+   */
+  public static BufferedReader wrapReader(InputStream in, Charset charset) {
+    return wrapReader(new InputStreamReader(in, charset  != null ? charset :  Charset.defaultCharset()));
+  }
+
   public static BufferedReader wrapReader(Reader reader) {
     return reader instanceof BufferedReader
         ? (BufferedReader) reader
@@ -531,6 +540,17 @@ public class IOUtils {
         closeQuietly(br);
       }
     }
+  }
+
+  /**
+   * 读取数据，每次读取一行，默认关闭流
+   *
+   * @param reader   输入
+   */
+  public static List<String> readLines(Reader reader) {
+    List<String> lines = new LinkedList<>();
+    readLine(reader, lines::add);
+    return lines;
   }
 
   /**
