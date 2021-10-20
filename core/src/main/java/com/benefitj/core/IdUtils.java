@@ -3,6 +3,7 @@ package com.benefitj.core;
 import java.lang.ref.SoftReference;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /**
  * 生成随机字符串，可能会重复
@@ -250,6 +251,35 @@ public class IdUtils {
    */
   public static long snowflakeId() {
     return SnowflakeIdWorker.getInstance().nextId();
+  }
+
+  /**
+   * 检查并获取
+   *
+   * @param len  长度
+   * @param test 匹配函数
+   * @return 返回结果
+   */
+  public static String checkAndGet(int len, Predicate<String> test) {
+    return checkAndGet(CHARS_ARRAY, len, test);
+  }
+
+  /**
+   * 检查并获取
+   *
+   * @param chars 字符
+   * @param len  长度
+   * @param test 匹配函数
+   * @return 返回结果
+   */
+  public static String checkAndGet(char[] chars, int len, Predicate<String> test) {
+    String nextId;
+    for (;;) {
+      nextId = IdUtils.nextId(chars, len);
+      if (test.test(nextId)) {
+        return nextId;
+      }
+    }
   }
 
   private static String checkNotNull(String str) {
