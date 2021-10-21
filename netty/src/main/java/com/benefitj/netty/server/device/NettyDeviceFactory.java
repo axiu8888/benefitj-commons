@@ -12,7 +12,7 @@ import java.util.Map;
  *
  * @param <T>
  */
-public interface NettyDeviceFactory<T extends NettyDevice> extends DeviceFactory<T> {
+public interface NettyDeviceFactory<T extends NettyDevice> extends DeviceFactory<String, T> {
 
   String ATTRS_CHANNEL = "channel";
 

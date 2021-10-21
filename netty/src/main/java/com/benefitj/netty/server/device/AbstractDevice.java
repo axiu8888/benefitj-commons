@@ -1,6 +1,6 @@
 package com.benefitj.netty.server.device;
 
-import com.benefitj.device.DeviceImpl;
+import com.benefitj.device.SimpleDevice;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 抽象的设备基类
  */
-public abstract class AbstractDevice extends DeviceImpl implements NettyDevice {
+public abstract class AbstractDevice extends SimpleDevice implements NettyDevice {
 
   /**
    * 本地地址

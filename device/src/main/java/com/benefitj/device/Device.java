@@ -7,19 +7,19 @@ import java.util.Set;
 /**
  * 设备
  */
-public interface Device {
+public interface Device<Id> {
 
   /**
    * 获取ID
    */
-  String getId();
+  Id getId();
 
   /**
    * 设置ID
    *
    * @param id 设备唯一主键
    */
-  void setId(String id);
+  void setId(Id id);
 
   /**
    * 获取名称

@@ -8,7 +8,7 @@ import java.util.Map;
  *
  * @param <T>
  */
-public interface DeviceFactory<T extends Device> {
+public interface DeviceFactory<Id, T extends Device<Id>> {
 
   /**
    * 创建设备
@@ -17,6 +17,6 @@ public interface DeviceFactory<T extends Device> {
    * @param attrs 附加属性
    * @return 返回新创建的设备对象
    */
-  T create(String id, @Nullable Map<String, Object> attrs);
+  T create(Id id, @Nullable Map<String, Object> attrs);
 
 }

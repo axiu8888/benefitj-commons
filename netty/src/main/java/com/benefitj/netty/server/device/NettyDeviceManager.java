@@ -8,7 +8,7 @@ import io.netty.channel.Channel;
  *
  * @param <D> 设备类型
  */
-public interface NettyDeviceManager<D extends NettyDevice> extends DeviceManager<D> {
+public interface NettyDeviceManager<D extends NettyDevice> extends DeviceManager<String, D> {
 
   /**
    * 获取设备，如果不存在就创建

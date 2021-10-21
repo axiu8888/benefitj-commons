@@ -10,19 +10,19 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @param <D>
  */
-public class MultiDeviceListener<D extends Device> implements DeviceListener<D> {
+public class MultiDeviceListener<Id, D extends Device<Id>> implements DeviceListener<Id, D> {
 
   /**
    * 监听
    */
-  private final List<DeviceListener<D>> listeners = new CopyOnWriteArrayList<>();
+  private final List<DeviceListener<Id, D>> listeners = new CopyOnWriteArrayList<>();
 
   /**
    * 添加监听
    *
    * @param listener 监听
    */
-  public void addListener(DeviceListener<D> listener) {
+  public void addListener(DeviceListener<Id, D> listener) {
     this.listeners.add(listener);
   }
 
@@ -31,7 +31,7 @@ public class MultiDeviceListener<D extends Device> implements DeviceListener<D> 
    *
    * @param listener 监听
    */
-  public void removeListener(DeviceListener<D> listener) {
+  public void removeListener(DeviceListener<Id, D> listener) {
     this.listeners.remove(listener);
   }
 
@@ -40,7 +40,7 @@ public class MultiDeviceListener<D extends Device> implements DeviceListener<D> 
    *
    * @param listeners 监听
    */
-  public void addListeners(List<? extends DeviceListener<D>> listeners) {
+  public void addListeners(List<? extends DeviceListener<Id, D>> listeners) {
     if (listeners != null) {
       listeners.forEach(this::addListener);
     }
@@ -54,8 +54,8 @@ public class MultiDeviceListener<D extends Device> implements DeviceListener<D> 
    * @param oldDevice 旧的设备
    */
   @Override
-  public void onAddition(String id, D newDevice, @Nullable D oldDevice) {
-    for (DeviceListener<D> l : this.listeners) {
+  public void onAddition(Id id, D newDevice, @Nullable D oldDevice) {
+    for (DeviceListener<Id, D> l : this.listeners) {
       try {
         l.onAddition(id, newDevice, oldDevice);
       } catch (Exception e) {
@@ -71,8 +71,8 @@ public class MultiDeviceListener<D extends Device> implements DeviceListener<D> 
    * @param device 设备
    */
   @Override
-  public void onRemoval(String id, D device) {
-    for (DeviceListener<D> l : this.listeners) {
+  public void onRemoval(Id id, D device) {
+    for (DeviceListener<Id, D> l : this.listeners) {
       try {
         l.onRemoval(id, device);
       } catch (Exception e) {

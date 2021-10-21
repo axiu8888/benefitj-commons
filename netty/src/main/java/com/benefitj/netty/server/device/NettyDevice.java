@@ -8,14 +8,13 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
  * 设备
  */
-public interface NettyDevice extends Device {
+public interface NettyDevice extends Device<String> {
 
   /**
    * 获取设备的本地地址
@@ -112,10 +111,10 @@ public interface NettyDevice extends Device {
   /**
    * 执行调度任务
    *
-   * @param command 任务
-   * @param initialDelay   延迟时间
-   * @param period  间隔
-   * @param unit    时间单位
+   * @param command      任务
+   * @param initialDelay 延迟时间
+   * @param period       间隔
+   * @param unit         时间单位
    * @return 返回 ScheduledFuture
    */
   ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit);

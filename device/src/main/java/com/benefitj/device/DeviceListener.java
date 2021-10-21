@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
  *
  * @param <T>
  */
-public interface DeviceListener<T> {
+public interface DeviceListener<Id, T> {
 
   /**
    * 被添加
@@ -16,7 +16,7 @@ public interface DeviceListener<T> {
    * @param newDevice 新的设备
    * @param oldDevice 旧的设备
    */
-  default void onAddition(String id, T newDevice, @Nullable T oldDevice) {
+  default void onAddition(Id id, T newDevice, @Nullable T oldDevice) {
     // ~
   }
 
@@ -26,7 +26,7 @@ public interface DeviceListener<T> {
    * @param id     设备ID
    * @param device 设备
    */
-  default void onRemoval(String id, T device) {
+  default void onRemoval(Id id, T device) {
     // ~
   }
 

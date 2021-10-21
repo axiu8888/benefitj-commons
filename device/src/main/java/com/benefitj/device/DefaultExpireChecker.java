@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <T>
  */
-public class DefaultExpiredChecker<T extends Device> implements ExpiredChecker<T> {
+public class DefaultExpireChecker<Id, T extends Device<Id>> implements ExpireChecker<Id, T> {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -37,22 +37,25 @@ public class DefaultExpiredChecker<T extends Device> implements ExpiredChecker<T
   /**
    * 设备管理器
    */
-  private DeviceManager<T> deviceManager;
+  private DeviceManager<Id, T> deviceManager;
   /**
    * 定时任务
    */
-  private ScheduledFuture<?> timer;
+  private volatile ScheduledFuture<?> timer;
 
   /**
    * 被移除的设备
    */
-  private final ThreadLocal<Map<String, T>> localRemovalMap = ThreadLocal.withInitial(LinkedHashMap::new);
+  private final ThreadLocal<Map<Id, T>> localRemovalMap = ThreadLocal.withInitial(LinkedHashMap::new);
 
-  public DefaultExpiredChecker(DeviceManager<T> deviceManager) {
+  public DefaultExpireChecker() {
+  }
+
+  public DefaultExpireChecker(DeviceManager<Id, T> deviceManager) {
     this.deviceManager = deviceManager;
   }
 
-  public Map<String, T> getRemovalMap() {
+  public Map<Id, T> getRemovalMap() {
     return localRemovalMap.get();
   }
 
@@ -75,10 +78,10 @@ public class DefaultExpiredChecker<T extends Device> implements ExpiredChecker<T
   }
 
   @Override
-  public void check(DeviceManager<T> manager) {
+  public void check(DeviceManager<Id, T> manager) {
     if (manager.size() > 0) {
-      final Map<String, T> removalMap = getRemovalMap();
-      for (Map.Entry<String, T> entry : manager.getDevices().entrySet()) {
+      final Map<Id, T> removalMap = getRemovalMap();
+      for (Map.Entry<Id, T> entry : manager.getDevices().entrySet()) {
         final T device = entry.getValue();
         if (isExpired(device)) {
           removalMap.put(entry.getKey(), device);
@@ -86,7 +89,7 @@ public class DefaultExpiredChecker<T extends Device> implements ExpiredChecker<T
       }
 
       if (!removalMap.isEmpty()) {
-        for (Map.Entry<String, T> entry : removalMap.entrySet()) {
+        for (Map.Entry<Id, T> entry : removalMap.entrySet()) {
           try {
             getDeviceManager().remove(entry.getKey());
           } catch (Exception e) {
@@ -126,40 +129,45 @@ public class DefaultExpiredChecker<T extends Device> implements ExpiredChecker<T
     return initialDelay;
   }
 
-  public void setInitialDelay(long initialDelay) {
+  public DefaultExpireChecker<Id, T> setInitialDelay(long initialDelay) {
     this.initialDelay = initialDelay;
+    return this;
   }
 
   public long getDelay() {
     return delay;
   }
 
-  public void setDelay(long delay) {
+  public DefaultExpireChecker<Id, T> setDelay(long delay) {
     this.delay = delay;
+    return this;
   }
 
   public long getTimeout() {
     return timeout;
   }
 
-  public void setTimeout(long timeout) {
+  public DefaultExpireChecker<Id, T> setTimeout(long timeout) {
     this.timeout = timeout;
+    return this;
   }
 
   public TimeUnit getUnit() {
     return unit;
   }
 
-  public void setUnit(TimeUnit unit) {
+  public DefaultExpireChecker<Id, T> setUnit(TimeUnit unit) {
     this.unit = unit;
+    return this;
   }
 
-  public DeviceManager<T> getDeviceManager() {
+  public DeviceManager<Id, T> getDeviceManager() {
     return deviceManager;
   }
 
-  public void setDeviceManager(DeviceManager<T> deviceManager) {
+  public DefaultExpireChecker<Id, T> setDeviceManager(DeviceManager<Id, T> deviceManager) {
     this.deviceManager = deviceManager;
+    return this;
   }
 
 }

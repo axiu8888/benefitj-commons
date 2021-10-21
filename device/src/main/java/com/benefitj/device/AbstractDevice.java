@@ -1,17 +1,14 @@
 package com.benefitj.device;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 设备
- */
-public class DeviceImpl implements Device {
-
+public abstract class AbstractDevice<Id extends Serializable> implements Device<Id> {
   /**
    * ID
    */
-  private String id;
+  private Id id;
   /**
    * 名称
    */
@@ -37,31 +34,16 @@ public class DeviceImpl implements Device {
    */
   private long activeTime = -1;
 
-  public DeviceImpl() {
-  }
-
-  public DeviceImpl(String id) {
-    this.id = id;
-  }
-
-  public DeviceImpl(String id, String name) {
-    this.id = id;
-    this.name = name;
-  }
-
-  public DeviceImpl(String id, String name, String type) {
-    this.id = id;
-    this.name = name;
-    this.type = type;
+  public AbstractDevice() {
   }
 
   @Override
-  public String getId() {
+  public Id getId() {
     return id;
   }
 
   @Override
-  public void setId(String id) {
+  public void setId(Id id) {
     this.id = id;
   }
 

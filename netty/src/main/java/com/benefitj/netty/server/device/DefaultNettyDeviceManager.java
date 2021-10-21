@@ -9,10 +9,10 @@ import com.benefitj.device.DeviceListener;
  * @param <D> 设备类型
  */
 public class DefaultNettyDeviceManager<D extends NettyDevice>
-    extends DefaultDeviceManager<D> implements NettyDeviceManager<D> {
+    extends DefaultDeviceManager<String, D> implements NettyDeviceManager<D> {
 
   @Override
-  public void setDeviceListener(DeviceListener<D> listener) {
+  public void setDeviceListener(DeviceListener<String, D> listener) {
     if (!(listener instanceof NettyDeviceListener)) {
       throw new IllegalArgumentException("不支持的监听类型");
     }

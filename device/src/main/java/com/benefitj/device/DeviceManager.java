@@ -9,12 +9,12 @@ import java.util.Set;
  *
  * @param <T>
  */
-public interface DeviceManager<T extends Device> {
+public interface DeviceManager<Id, T extends Device<Id>> {
 
   /**
    * 获取全部的设备
    */
-  Map<String, T> getDevices();
+  Map<Id, T> getDevices();
 
   /**
    * 保存设备
@@ -22,7 +22,7 @@ public interface DeviceManager<T extends Device> {
    * @param id     设备ID
    * @param device 设备
    */
-  default void put(String id, T device) {
+  default void put(Id id, T device) {
     T oldDevice = getDevices().put(id, device);
     getDeviceListener().onAddition(id, device, oldDevice);
   }
@@ -33,7 +33,7 @@ public interface DeviceManager<T extends Device> {
    * @param id 设备ID
    * @return 返回设备
    */
-  default T get(String id) {
+  default T get(Id id) {
     return getDevices().get(id);
   }
 
@@ -43,7 +43,7 @@ public interface DeviceManager<T extends Device> {
    * @param id 设备ID
    * @return 返回被移除的设备
    */
-  default T remove(String id) {
+  default T remove(Id id) {
     T device = getDevices().remove(id);
     if (device != null) {
       getDeviceListener().onRemoval(id, device);
@@ -58,7 +58,7 @@ public interface DeviceManager<T extends Device> {
    * @param attrs 设备属性
    * @return 返回新创建的设备对象
    */
-  default T create(String id, Map<String, Object> attrs) {
+  default T create(Id id, Map<String, Object> attrs) {
     return getDeviceFactory().create(id, attrs);
   }
 
@@ -69,7 +69,7 @@ public interface DeviceManager<T extends Device> {
    * @param attrs 属性
    * @return 返回新创建的设备对象
    */
-  default T computeIfAbsent(String id, Map<String, Object> attrs) {
+  default T computeIfAbsent(Id id, Map<String, Object> attrs) {
     T device = get(id);
     if (device == null) {
       synchronized (this) {
@@ -95,14 +95,14 @@ public interface DeviceManager<T extends Device> {
    * @param id 设备ID
    * @return 返回检查结果
    */
-  default boolean contains(String id) {
+  default boolean contains(Id id) {
     return getDevices().containsKey(id);
   }
 
   /**
    * 获取全部的设备ID
    */
-  default Set<String> ids() {
+  default Set<Id> ids() {
     return getDevices().keySet();
   }
 
@@ -118,23 +118,23 @@ public interface DeviceManager<T extends Device> {
    *
    * @param factory 工厂
    */
-  void setDeviceFactory(DeviceFactory<T> factory);
+  void setDeviceFactory(DeviceFactory<Id, T> factory);
 
   /**
    * 获取设备工厂
    */
-  DeviceFactory<T> getDeviceFactory();
+  DeviceFactory<Id, T> getDeviceFactory();
 
   /**
    * 获取设备监听
    */
-  DeviceListener<T> getDeviceListener();
+  DeviceListener<Id, T> getDeviceListener();
 
   /**
    * 设置设备监听
    *
    * @param listener 监听
    */
-  void setDeviceListener(DeviceListener<T> listener);
+  void setDeviceListener(DeviceListener<Id, T> listener);
 
 }

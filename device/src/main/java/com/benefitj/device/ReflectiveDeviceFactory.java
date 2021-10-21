@@ -8,19 +8,19 @@ import java.util.Map;
 /**
  * 默认的设备工厂
  */
-public class ReflectiveDeviceFactory<T extends Device> implements DeviceFactory<T> {
+public class ReflectiveDeviceFactory<Id, T extends Device<Id>> implements DeviceFactory<Id, T> {
 
   /**
    * 创建设备工厂
    */
-  public static DeviceFactory<DeviceImpl> newBasicFactory() {
-    return newInstance(DeviceImpl.class);
+  public static DeviceFactory<String, SimpleDevice> newBasicFactory() {
+    return newInstance(SimpleDevice.class);
   }
 
   /**
    * 创建设备工厂
    */
-  public static <T extends Device> DeviceFactory<T> newInstance(Class<T> deviceType) {
+  public static <Id, T extends Device<Id>> DeviceFactory<Id, T> newInstance(Class<T> deviceType) {
     return new ReflectiveDeviceFactory<>(deviceType);
   }
 
@@ -31,7 +31,7 @@ public class ReflectiveDeviceFactory<T extends Device> implements DeviceFactory<
   }
 
   @Override
-  public T create(String id, @Nullable Map<String, Object> attrs) {
+  public T create(Id id, @Nullable Map<String, Object> attrs) {
     T device = newInstance(id, attrs);
     device.setOnlineTime(System.currentTimeMillis());
     device.setActiveTime(System.currentTimeMillis());
@@ -41,7 +41,7 @@ public class ReflectiveDeviceFactory<T extends Device> implements DeviceFactory<
     return device;
   }
 
-  public T newInstance(String id, Map<String, Object> attrs) {
+  public T newInstance(Id id, Map<String, Object> attrs) {
     T device = ReflectUtils.newInstance(getDeviceType());
     device.setId(id);
     return device;

@@ -6,13 +6,13 @@ package com.benefitj.device;
  *
  * @param <T>
  */
-public interface ExpiredChecker<T extends Device> {
+public interface ExpireChecker<Id, T extends Device<Id>> {
 
   /**
    * 检测
    *
    * @param manager 设备管理器
    */
-  void check(DeviceManager<T> manager);
+  void check(DeviceManager<Id, T> manager);
 
 }
