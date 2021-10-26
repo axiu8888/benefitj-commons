@@ -1,5 +1,6 @@
-package com.benefitj.core;
+package com.benefitj.core.mqtt;
 
+import com.benefitj.core.Slicer;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -58,7 +59,7 @@ public class MqttTopic {
   }
 
   public boolean match(String topic) {
-    return match(new MqttTopic(topic));
+    return match(MqttTopic.get(topic));
   }
 
   public boolean match(MqttTopic topic) {
@@ -86,6 +87,8 @@ public class MqttTopic {
   public static final String SINGLE = "+";
 
   public static final Node EMPTY_NODE = new Node("", null, null, 0);
+  public static final Node MULTI_NODE = new Node("#", null, null, 0);
+  public static final Node SINGLE_NODE = new Node("+", null, null, 0);
 
   private static final Predicate<Node> PURE_FILTER = n -> !(n.part.equals(MULTI) || n.part.equals(SINGLE));
 
