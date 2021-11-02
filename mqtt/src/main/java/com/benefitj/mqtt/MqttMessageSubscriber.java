@@ -1,4 +1,4 @@
-package com.benefitj.core.mqtt;
+package com.benefitj.mqtt;
 
 
 /**

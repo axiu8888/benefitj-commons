@@ -1,9 +1,8 @@
-package com.benefitj.core.mqtt;
+package com.benefitj.mqtt;
 
 import com.benefitj.core.concurrent.ConcurrentHashSet;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -14,12 +13,12 @@ import java.util.stream.Collectors;
 public interface MqttMessageDispatcher<T> {
 
   /**
-   * 创建新的消息分发起器
+   * 创建新的消息分发器
    *
    * @param <T> 消息类型
    * @return 返回消息分发器
    */
-  static <T> MqttMessageDispatcher<T> dispatcher() {
+  static <T> MqttMessageDispatcher<T> newDispatcher() {
     return new MqttMessageDispatcherImpl<>();
   }
 
@@ -45,6 +44,9 @@ public interface MqttMessageDispatcher<T> {
     }
   }
 
+  /**
+   * 订阅
+   */
   Map<MqttMessageSubscriber<T>, Set<MqttTopic>> getSubscribers();
 
   /**
@@ -128,19 +130,26 @@ public interface MqttMessageDispatcher<T> {
   }
 
   /**
-   * MQTT消息分发
-   *
-   * @param <T>
+   * 获取所有的订阅主题
    */
-  class MqttMessageDispatcherImpl<T> implements MqttMessageDispatcher<T> {
-    /**
-     * 订阅
-     */
-    private final Map<MqttMessageSubscriber<T>, Set<MqttTopic>> subscribers = new ConcurrentHashMap<>();
-
-    @Override
-    public Map<MqttMessageSubscriber<T>, Set<MqttTopic>> getSubscribers() {
-      return subscribers;
-    }
+  default List<MqttTopic> getMqttTopics() {
+    return getSubscribers().values()
+        .stream()
+        .flatMap(Collection::stream)
+        .distinct()
+        .collect(Collectors.toList());
   }
+
+  /**
+   * 获取消息订阅的主题数组
+   */
+  default String[] getMqttTopicArray() {
+    return getSubscribers().values()
+        .stream()
+        .flatMap(Collection::stream)
+        .map(MqttTopic::getTopicName)
+        .distinct()
+        .toArray(String[]::new);
+  }
+
 }

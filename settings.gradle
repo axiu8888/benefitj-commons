@@ -20,6 +20,7 @@ include ":netty"            // netty
 include ":eventbus"         // EventBus
 include ":javastruct"       // java结构体转换
 include ":device"           // 设备
+include ":mqtt"             // mqtt
 
 
 //// 待实现 TODO 2020-11-17

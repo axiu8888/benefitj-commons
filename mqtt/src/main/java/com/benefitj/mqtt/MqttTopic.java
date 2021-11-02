@@ -1,4 +1,4 @@
-package com.benefitj.core.mqtt;
+package com.benefitj.mqtt;
 
 import com.benefitj.core.Slicer;
 import org.apache.commons.lang3.StringUtils;
