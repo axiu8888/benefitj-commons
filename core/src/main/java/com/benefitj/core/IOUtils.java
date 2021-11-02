@@ -367,12 +367,12 @@ public class IOUtils {
   /**
    * 包装成BufferedReader
    *
-   * @param in 输入流
+   * @param in      输入流
    * @param charset 编码
    * @return 返回 BufferedReader
    */
   public static BufferedReader wrapReader(InputStream in, Charset charset) {
-    return wrapReader(new InputStreamReader(in, charset  != null ? charset :  Charset.defaultCharset()));
+    return wrapReader(new InputStreamReader(in, charset != null ? charset : Charset.defaultCharset()));
   }
 
   public static BufferedReader wrapReader(Reader reader) {
@@ -545,12 +545,22 @@ public class IOUtils {
   /**
    * 读取数据，每次读取一行，默认关闭流
    *
-   * @param reader   输入
+   * @param reader 输入
    */
   public static List<String> readLines(Reader reader) {
     List<String> lines = new LinkedList<>();
     readLine(reader, lines::add);
     return lines;
+  }
+
+  /**
+   * 读取数据
+   *
+   * @param is 输入流
+   * @return 返回读取的内存数据流
+   */
+  public static ByteArrayOutputStream readFully(File is) {
+    return readFully(newFIS(is));
   }
 
   /**
@@ -573,7 +583,7 @@ public class IOUtils {
    * @throws IllegalStateException
    */
   public static byte[] readFileFully(File file) {
-    return readFileFully(file, 1024 << 4);
+    return readFileFully(file, 10 * MB);
   }
 
   /**
