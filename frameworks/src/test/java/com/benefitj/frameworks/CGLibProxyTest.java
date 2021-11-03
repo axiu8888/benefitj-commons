@@ -14,7 +14,7 @@ public class CGLibProxyTest {
 
   @Test
   public void testCreateProxy() {
-    Coder coder = CGLibProxy.createProxy(Coder.class, (obj, method, args, proxy) -> {
+    Coder coderProxy = CGLibProxy.createProxy(Coder.class, (obj, method, args, proxy) -> {
       String key = method.getDeclaringClass().getSimpleName() + "." + method.getName();
       System.err.println(
           "\n.............. [" + key + "] .............."
@@ -24,13 +24,13 @@ public class CGLibProxyTest {
       );
       return proxy.invokeSuper(obj, args);
     });
-    coder.say();
+    coderProxy.say();
   }
 
   @Test
   public void testCreateProxy2() {
     Coder source = new Coder();
-    Coder coder = CGLibProxy.createProxy(Coder.class, (obj, method, args, proxy) -> {
+    Coder coderProxy = CGLibProxy.createProxy(Coder.class, (obj, method, args, proxy) -> {
       String key = method.getDeclaringClass().getSimpleName() + "." + method.getName();
       System.err.println(
           "\n.............. [" + key + "] .............."
@@ -40,7 +40,7 @@ public class CGLibProxyTest {
       );
       return method.invoke(source, args);
     });
-    coder.say();
+    coderProxy.say();
   }
 
 

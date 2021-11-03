@@ -15,6 +15,7 @@ dependencies {
     compile project(":netty")
     compile project(":interpolator")
     compile project(":device")
+    compile project(":mqtt")
 
     // network start *****************************************************/
     compile project(":network")
@@ -39,6 +40,7 @@ dependencies {
 
     // frameworks start *****************************************************/
     compile project(":frameworks")
+    compile 'cglib:cglib:3.3.0'
     // 二维码
     compile 'com.google.zxing:javase:3.4.0'
     // 验证码
@@ -49,6 +51,15 @@ dependencies {
     // Servlet
     compileOnly("javax.servlet:javax.servlet-api:4.0.0")
     // frameworks end *****************************************************/
+
+    def vertxVersion = "4.1.5"
+    compile "io.vertx:vertx-core:${vertxVersion}"
+//	compile "io.vertx:vertx-codegen:${vertxVersion}"
+    compile 'io.vertx:vertx-codegen:4.1.5'
+//	compile "io.vertx:vertx-codetrans:${vertxVersion}"
+    compile 'io.vertx:vertx-codetrans:4.0.3'
+    compile "io.vertx:vertx-unit:${vertxVersion}"
+    compile "io.vertx:vertx-mqtt:${vertxVersion}"
 
 }
 
