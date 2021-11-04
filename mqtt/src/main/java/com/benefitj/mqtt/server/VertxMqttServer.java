@@ -16,9 +16,12 @@
 
 package com.benefitj.mqtt.server;
 
+import com.benefitj.core.ReflectUtils;
 import com.benefitj.mqtt.MqttTopic;
 import com.benefitj.mqtt.VerticleInitializer;
-import io.vertx.core.AbstractVerticle;
+import io.vertx.core.*;
+import io.vertx.core.impl.Deployment;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttServer;
@@ -26,11 +29,14 @@ import io.vertx.mqtt.MqttServerOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -48,11 +54,11 @@ public class VertxMqttServer extends AbstractVerticle {
   /**
    * 服务端配置
    */
-  private io.vertx.mqtt.MqttServerOptions options = new io.vertx.mqtt.MqttServerOptions();
+  private MqttServerOptions options = new MqttServerOptions();
   /**
    * 服务端
    */
-  private MqttServer original;
+  private MqttServer mqttServer;
   /**
    * 客户端状态处理器
    */
@@ -72,6 +78,9 @@ public class VertxMqttServer extends AbstractVerticle {
 
   @Override
   public void start() {
+    if (getMqttServer() != null) {
+      return;
+    }
 
     if (getOptions() == null) {
       this.setOptions(new MqttServerOptions());
@@ -84,9 +93,6 @@ public class VertxMqttServer extends AbstractVerticle {
           .setKeyCertOptions(new PemKeyCertOptions()
               .setKeyPath(prop.getKeyPath())
               .setCertPath(prop.getCertPath()));
-      if (prop.getPort() == 1883) {
-        prop.setPort(8883);
-      }
     }
     getOptions()
         .setMaxMessageSize(prop.getMaxMessageSize())
@@ -96,13 +102,14 @@ public class VertxMqttServer extends AbstractVerticle {
     // 初始化
     getInitializer().onInitialize(this);
     // 创见服务端
-    this.setOriginal(MqttServer.create(vertx, getOptions()));
+    this.setMqttServer(MqttServer.create(getVertx(), getOptions()));
     // 监听客户端连接
-    this.getOriginal().endpointHandler(this::processEndpointConnect);
+    this.getMqttServer().endpointHandler(this::onEndpointHandle);
+    this.getMqttServer().exceptionHandler(this::onExceptionHandle);
     // 监听
-    this.getOriginal().listen(ar -> {
+    this.getMqttServer().listen(ar -> {
       if (ar.succeeded()) {
-        log.debug("MQTT server started and listening on port {}", original.actualPort());
+        log.debug("MQTT server started and listening on port {}", mqttServer.actualPort());
       } else {
         log.warn("MQTT server error on start: " + ar.cause().getMessage(), ar.cause());
       }
@@ -111,21 +118,41 @@ public class VertxMqttServer extends AbstractVerticle {
 
   @Override
   public void stop() {
-    final MqttServer server = this.getOriginal();
-    server.close(event -> {
-      if (event.succeeded()) {
-        log.debug("MQTT server stop success on port {}", server.actualPort());
-      } else {
-        log.warn("MQTT server stop failure on port {}", server.actualPort());
-      }
-      // 清空连接
-      getEndpoints().clear();
+    final MqttServer server = this.getMqttServer();
+    if (server != null) {
+      this.setMqttServer(null);
       // 重置服务端
-      setOriginal(null);
-    });
+      server.close()
+          .onSuccess(event -> log.debug("MQTT server stop success on port {}", server.actualPort()))
+          .onFailure(err -> log.warn("MQTT server stop failure on port {}", server.actualPort() + ", error: " + err.getMessage()))
+          // 清空连接
+          .onComplete(event -> getEndpoints().clear());
+    }
   }
 
-  protected void processEndpointConnect(MqttEndpoint endpoint) {
+  /**
+   * 部署
+   */
+  public Future<String> deploy(Vertx vertx) {
+    return vertx.deployVerticle(this);
+  }
+
+  /**
+   * 卸载
+   */
+  public Future<Void> undeploy() {
+    if (getMqttServer() != null) {
+      return getVertx().undeploy(deploymentID());
+    }
+    return Future.succeededFuture();
+  }
+
+  /**
+   * 客户端连接处理
+   *
+   * @param endpoint 客户端
+   */
+  protected void onEndpointHandle(MqttEndpoint endpoint) {
     // 处理连接
     getEndpointHandler().onConnect(VertxMqttServer.this, endpoint);
     VertxMqttEndpoint vme = getEndpoint(endpoint.clientIdentifier());
@@ -167,6 +194,15 @@ public class VertxMqttServer extends AbstractVerticle {
     ;
   }
 
+  /**
+   * 异常处理
+   *
+   * @param error 异常
+   */
+  protected void onExceptionHandle(Throwable error) {
+    error.printStackTrace();
+  }
+
   public MqttServerProperty getProperty() {
     return property;
   }
@@ -182,11 +218,11 @@ public class VertxMqttServer extends AbstractVerticle {
     return this;
   }
 
-  public io.vertx.mqtt.MqttServerOptions getOptions() {
+  public MqttServerOptions getOptions() {
     return options;
   }
 
-  public VertxMqttServer setOptions(io.vertx.mqtt.MqttServerOptions options) {
+  public VertxMqttServer setOptions(MqttServerOptions options) {
     this.options = options;
     return this;
   }
@@ -200,12 +236,12 @@ public class VertxMqttServer extends AbstractVerticle {
     return this;
   }
 
-  public MqttServer getOriginal() {
-    return original;
+  public MqttServer getMqttServer() {
+    return mqttServer;
   }
 
-  public VertxMqttServer setOriginal(MqttServer original) {
-    this.original = original;
+  public VertxMqttServer setMqttServer(MqttServer mqttServer) {
+    this.mqttServer = mqttServer;
     return this;
   }
 
