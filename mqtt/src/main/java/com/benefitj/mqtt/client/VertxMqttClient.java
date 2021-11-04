@@ -44,7 +44,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   /**
    * 客户端
    */
-  private MqttClient original;
+  private MqttClient mqttClient;
   /**
    * 处理
    */
@@ -52,7 +52,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   /**
    * 重新连接的定时器
    */
-  private ReconnectTimer reconnectTimer = new ReconnectTimer(false);
+  private AutoConnectTimer autoConnectTimer = new AutoConnectTimer(false);
   /**
    * 属性
    */
@@ -69,24 +69,25 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
 
   @Override
   public void start() throws Exception {
-    if (original != null) {
+    if (getMqttClient() != null) {
       return;
     }
 
     if (StringUtils.isBlank(getOptions().getClientId())) {
-      getOptions().setClientId(IdUtils.nextLetterId("vertx-", null, 20));
+      getOptions().setClientId(IdUtils.nextLetterId("vertx-", null, 12));
     }
-    this.original = MqttClient.create(vertx, getOptions());
+    AutoConnectTimer acTimer = getAutoConnectTimer();
+    getOptions().setConnectTimeout(Math.min((int) acTimer.getUnit().toMillis(acTimer.getPeriod()), getOptions().getConnectTimeout()));
+    // 初始化
+    this.getInitializer().onInitialize(this);
+    // 创建客户端
+    this.setMqttClient(MqttClient.create(getVertx(), getOptions()));
 
-    ReconnectTimer timer = getReconnectTimer();
-    timer.setStopped(false);
-    getOptions().setConnectTimeout(Math.min((int) timer.getUnit().toMillis(timer.getPeriod()), getOptions().getConnectTimeout()));
-    getInitializer().onInitialize(this);
-    this.getOriginal()
+    this.getMqttClient()
         // 连接
         .connect(getPort(), getHost(), event -> {
           if (!event.succeeded()) {
-            getReconnectTimer().start(VertxMqttClient.this);
+            getAutoConnectTimer().start(VertxMqttClient.this);
           }
           getHandler().onConnected(VertxMqttClient.this, event, false);
         })
@@ -109,7 +110,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
         // 关闭
         .closeHandler(ignore -> {
           // 重连
-          getReconnectTimer().start(VertxMqttClient.this);
+          getAutoConnectTimer().start(VertxMqttClient.this);
           // 连接断开
           getHandler().onClose(VertxMqttClient.this);
         })
@@ -118,9 +119,22 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
 
   @Override
   public void stop() throws Exception {
-    getReconnectTimer().setStopped(true).stop();
-    this.original.disconnect(event ->
-        logger.info("mqtt client disconnected, {}:{}, status: {}", getHost(), getPort(), event.succeeded()));
+    MqttClient client = this.getMqttClient();
+    if (client != null) {
+      this.setMqttClient(null);
+      client.disconnect(event ->
+          logger.info("mqtt client disconnected, {}:{}, status: {}", getHost(), getPort(), event.succeeded()));
+      getAutoConnectTimer().setAutoConnect(false).stop();
+    }
+  }
+
+  public MqttClient getMqttClient() {
+    return mqttClient;
+  }
+
+  public VertxMqttClient setMqttClient(MqttClient mqttClient) {
+    this.mqttClient = mqttClient;
+    return this;
   }
 
   /**
@@ -129,7 +143,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   public VertxMqttClient reconnect() {
     if (!isConnected()) {
       // 连接
-      this.getOriginal().connect(getPort(), getHost(), event -> {
+      this.getMqttClient().connect(getPort(), getHost(), event -> {
         if (event.succeeded()) {
           // 重连成功
           getHandler().onConnected(VertxMqttClient.this, event, true);
@@ -179,12 +193,12 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
     return this;
   }
 
-  public ReconnectTimer getReconnectTimer() {
-    return reconnectTimer;
+  public AutoConnectTimer getAutoConnectTimer() {
+    return autoConnectTimer;
   }
 
-  public VertxMqttClient setReconnectTimer(ReconnectTimer reconnectTimer) {
-    this.reconnectTimer = reconnectTimer;
+  public VertxMqttClient setAutoConnectTimer(AutoConnectTimer autoConnectTimer) {
+    this.autoConnectTimer = autoConnectTimer;
     return this;
   }
 
@@ -197,15 +211,11 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
     return this;
   }
 
-  public MqttClient getOriginal() {
-    return original;
-  }
-
   /**
    * 是否已连接
    */
   public boolean isConnected() {
-    MqttClient client = getOriginal();
+    MqttClient client = getMqttClient();
     return client != null && client.isConnected();
   }
 
@@ -241,7 +251,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
    * @return 返回MQTT客户端
    */
   public VertxMqttClient subscribe(String topic, MqttQoS qosLevel, Handler<AsyncResult<Integer>> subscribeSentHandler) {
-    getOriginal().subscribe(topic, qosLevel.value(), subscribeSentHandler);
+    getMqttClient().subscribe(topic, qosLevel.value(), subscribeSentHandler);
     return this;
   }
 
@@ -263,7 +273,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
    * @return 返回MQTT客户端
    */
   public VertxMqttClient subscribe(Map<String, Integer> topics, Handler<AsyncResult<Integer>> subscribeSentHandler) {
-    getOriginal().subscribe(topics, subscribeSentHandler);
+    getMqttClient().subscribe(topics, subscribeSentHandler);
     return this;
   }
 
@@ -276,7 +286,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
    */
   public VertxMqttClient unsubscribe(String topic, Handler<AsyncResult<Integer>> unsubscribeSentHandler) {
     if (StringUtils.isNotBlank(topic)) {
-      getOriginal().unsubscribe(topic, unsubscribeSentHandler);
+      getMqttClient().unsubscribe(topic, unsubscribeSentHandler);
     }
     return this;
   }
@@ -394,7 +404,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
    * @return 返回MQTT客户端
    */
   public VertxMqttClient publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, Handler<AsyncResult<Integer>> publishSentHandler) {
-    getOriginal().publish(topic, payload, qosLevel, isDup, isRetain, publishSentHandler);
+    getMqttClient().publish(topic, payload, qosLevel, isDup, isRetain, publishSentHandler);
     return this;
   }
 

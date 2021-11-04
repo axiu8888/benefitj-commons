@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * 自动重连的定时器
  */
-public class ReconnectTimer {
+public class AutoConnectTimer {
 
   private final AtomicReference<ScheduledFuture<?>> timerRef = new AtomicReference<>();
   /**
@@ -26,16 +26,11 @@ public class ReconnectTimer {
    */
   private volatile boolean autoConnect = true;
 
-  /**
-   * 是否已经stop
-   */
-  private volatile boolean stopped = false;
-
-  public ReconnectTimer() {
+  public AutoConnectTimer() {
     this(true);
   }
 
-  public ReconnectTimer(boolean autoConnect) {
+  public AutoConnectTimer(boolean autoConnect) {
     this.setAutoConnect(autoConnect);
   }
 
@@ -76,7 +71,7 @@ public class ReconnectTimer {
     return period;
   }
 
-  public ReconnectTimer setPeriod(int period) {
+  public AutoConnectTimer setPeriod(int period) {
     this.period = period;
     return this;
   }
@@ -85,7 +80,7 @@ public class ReconnectTimer {
     return unit;
   }
 
-  public ReconnectTimer setUnit(TimeUnit unit) {
+  public AutoConnectTimer setUnit(TimeUnit unit) {
     this.unit = unit;
     return this;
   }
@@ -94,17 +89,9 @@ public class ReconnectTimer {
     return autoConnect;
   }
 
-  public ReconnectTimer setAutoConnect(boolean autoConnect) {
+  public AutoConnectTimer setAutoConnect(boolean autoConnect) {
     this.autoConnect = autoConnect;
     return this;
   }
 
-  protected boolean isStopped() {
-    return stopped;
-  }
-
-  protected ReconnectTimer setStopped(boolean stopped) {
-    this.stopped = stopped;
-    return this;
-  }
 }

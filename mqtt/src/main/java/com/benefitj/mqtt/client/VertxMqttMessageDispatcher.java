@@ -8,19 +8,19 @@ import io.vertx.mqtt.messages.MqttConnAckMessage;
 import io.vertx.mqtt.messages.MqttPublishMessage;
 
 /**
- * 消息分发器
+ * MQTT消息分发器
  */
-public class VertxMessageDispatcher extends MqttMessageDispatcherImpl<MqttPublishMessage>
+public class VertxMqttMessageDispatcher extends MqttMessageDispatcherImpl<MqttPublishMessage>
     implements VertxClientHandler {
   /**
    * 自动订阅
    */
   private boolean autoSubscribe = true;
 
-  public VertxMessageDispatcher() {
+  public VertxMqttMessageDispatcher() {
   }
 
-  public VertxMessageDispatcher(boolean autoSubscribe) {
+  public VertxMqttMessageDispatcher(boolean autoSubscribe) {
     this.autoSubscribe = autoSubscribe;
   }
 
@@ -44,7 +44,7 @@ public class VertxMessageDispatcher extends MqttMessageDispatcherImpl<MqttPublis
     return autoSubscribe;
   }
 
-  public VertxMessageDispatcher setAutoSubscribe(boolean autoSubscribe) {
+  public VertxMqttMessageDispatcher setAutoSubscribe(boolean autoSubscribe) {
     this.autoSubscribe = autoSubscribe;
     return this;
   }

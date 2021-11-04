@@ -1,13 +1,10 @@
 package com.benefitj.mqtt.client;
 
 import com.benefitj.core.EventLoop;
-import com.benefitj.mqtt.MqttMessageSubscriber;
-import com.benefitj.mqtt.VerticleInitializer;
 import com.benefitj.mqtt.VertxHolder;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.mqtt.messages.MqttPublishMessage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +23,7 @@ public class VertxMqttClientTest {
 
   private VertxMqttClient client;
 
-  private VertxMessageDispatcher dispatcher = new VertxMessageDispatcher(true);
+  private VertxMqttMessageDispatcher dispatcher = new VertxMqttMessageDispatcher(true);
 
   @Before
   public void setUp() throws Exception {
@@ -36,7 +33,7 @@ public class VertxMqttClientTest {
         .setInitializer(verticle -> {
           // 初始化
         })
-        .setReconnectTimer(new ReconnectTimer(true).setPeriod(10))
+        .setAutoConnectTimer(new AutoConnectTimer(true).setPeriod(10))
 //        .setRemoteAddress("127.0.0.1", 1883))
         .setRemoteAddress("192.168.1.203", 1883))
         .onComplete(event -> {
@@ -51,7 +48,7 @@ public class VertxMqttClientTest {
 
   @Test
   public void testPublish() {
-    for(;;) {
+    for (; ; ) {
       if (client.isConnected()) {
         client.publish("/message/hello", "Hello World !", MqttQoS.AT_LEAST_ONCE
             , event -> log.info("publish  {}, {}", event.result(), event.succeeded()));
@@ -64,16 +61,19 @@ public class VertxMqttClientTest {
   @Test
   public void testSubscribe() {
     // 订阅消息
-    dispatcher.subscribe("/message/hello", (topicName, message) ->
-        log.info("rcv topic[{}], msg: {}", topicName, message.payload().toString()));
+    client.subscribe("/message/#", MqttQoS.AT_LEAST_ONCE, event ->
+        dispatcher.subscribe("/message/#", (topicName, message) ->
+            log.info("rcv topic[{}], msg: {}", topicName, message.payload().toString()))
+    );
 
-    EventLoop.sleepSecond(1);
+    EventLoop.sleepSecond(120);
   }
 
   @After
   public void tearDown() throws Exception {
     if (client != null) {
       VertxHolder.undeploy(client.deploymentID())
+          .onFailure(Throwable::printStackTrace)
           .onComplete(event -> log.info("undeploy: {}", event.succeeded()));
       EventLoop.sleepSecond(1);
     }
@@ -81,7 +81,7 @@ public class VertxMqttClientTest {
 
 
   public static void loop(Callable<Boolean> callable) {
-    for(;;) {
+    for (; ; ) {
       try {
         Boolean status = callable.call();
         if (Boolean.TRUE.equals(status)) {

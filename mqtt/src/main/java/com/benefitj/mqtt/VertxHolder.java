@@ -1,9 +1,6 @@
 package com.benefitj.mqtt;
 
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
-import io.vertx.core.Verticle;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 
 
 public class VertxHolder {
@@ -27,6 +24,16 @@ public class VertxHolder {
    */
   public static Future<String> deploy(Verticle verticle, DeploymentOptions options) {
     return getInstance().deployVerticle(verticle, options);
+  }
+
+  /**
+   * 取消部署
+   *
+   * @param verticle Verticle对象
+   * @return 返回结果
+   */
+  public static Future<Void> undeploy(AbstractVerticle verticle) {
+    return undeploy(verticle.deploymentID());
   }
 
   /**
