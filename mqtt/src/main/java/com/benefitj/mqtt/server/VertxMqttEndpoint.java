@@ -57,19 +57,20 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
    *
    * @param subscription 主题
    */
-  void subscribe(Subscription subscription);
+  VertxMqttEndpoint subscribe(Subscription subscription);
 
   /**
    * 订阅
    *
    * @param subscriptions 主题
    */
-  default void subscribe(List<Subscription> subscriptions) {
+  default VertxMqttEndpoint subscribe(List<Subscription> subscriptions) {
     if (subscriptions != null && !subscriptions.isEmpty()) {
       for (Subscription subscription : subscriptions) {
         subscribe(subscription);
       }
     }
+    return this;
   }
 
   /**
@@ -77,17 +78,18 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
    *
    * @param topic 主题
    */
-  void unsubscribe(MqttTopic topic);
+  VertxMqttEndpoint unsubscribe(MqttTopic topic);
 
   /**
    * 取消订阅
    *
    * @param topics 主题
    */
-  default void unsubscribe(List<MqttTopic> topics) {
+  default VertxMqttEndpoint unsubscribe(List<MqttTopic> topics) {
     for (MqttTopic topic : topics) {
       unsubscribe(topic);
     }
+    return this;
   }
 
   /**
@@ -174,8 +176,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publishAutoAck(boolean isPublishAutoAck) {
-    return getOriginal().publishAutoAck(isPublishAutoAck);
+  default VertxMqttEndpoint publishAutoAck(boolean isPublishAutoAck) {
+    getOriginal().publishAutoAck(isPublishAutoAck);
+    return this;
   }
 
   @Override
@@ -184,8 +187,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint autoKeepAlive(boolean isAutoKeepAlive) {
-    return getOriginal().autoKeepAlive(isAutoKeepAlive);
+  default VertxMqttEndpoint autoKeepAlive(boolean isAutoKeepAlive) {
+    getOriginal().autoKeepAlive(isAutoKeepAlive);
+    return this;
   }
 
   @Override
@@ -199,108 +203,129 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint setClientIdentifier(String clientIdentifier) {
-    return getOriginal().setClientIdentifier(clientIdentifier);
+  default VertxMqttEndpoint setClientIdentifier(String clientIdentifier) {
+    getOriginal().setClientIdentifier(clientIdentifier);
+    return this;
   }
 
   @Override
-  default MqttEndpoint disconnectHandler(Handler<Void> handler) {
-    return getOriginal().disconnectHandler(handler);
+  default VertxMqttEndpoint disconnectHandler(Handler<Void> handler) {
+    getOriginal().disconnectHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint subscribeHandler(Handler<MqttSubscribeMessage> handler) {
-    return getOriginal().subscribeHandler(handler);
+  default VertxMqttEndpoint subscribeHandler(Handler<MqttSubscribeMessage> handler) {
+    getOriginal().subscribeHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint unsubscribeHandler(Handler<MqttUnsubscribeMessage> handler) {
-    return getOriginal().unsubscribeHandler(handler);
+  default VertxMqttEndpoint unsubscribeHandler(Handler<MqttUnsubscribeMessage> handler) {
+    getOriginal().unsubscribeHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint publishHandler(Handler<MqttPublishMessage> handler) {
-    return getOriginal().publishHandler(handler);
+  default VertxMqttEndpoint publishHandler(Handler<MqttPublishMessage> handler) {
+    getOriginal().publishHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint publishAcknowledgeHandler(Handler<Integer> handler) {
-    return getOriginal().publishAcknowledgeHandler(handler);
+  default VertxMqttEndpoint publishAcknowledgeHandler(Handler<Integer> handler) {
+    getOriginal().publishAcknowledgeHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint publishReceivedHandler(Handler<Integer> handler) {
-    return getOriginal().publishReceivedHandler(handler);
+  default VertxMqttEndpoint publishReceivedHandler(Handler<Integer> handler) {
+    getOriginal().publishReceivedHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint publishReleaseHandler(Handler<Integer> handler) {
-    return getOriginal().publishReceivedHandler(handler);
+  default VertxMqttEndpoint publishReleaseHandler(Handler<Integer> handler) {
+    getOriginal().publishReceivedHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint publishCompletionHandler(Handler<Integer> handler) {
-    return getOriginal().publishCompletionHandler(handler);
+  default VertxMqttEndpoint publishCompletionHandler(Handler<Integer> handler) {
+    getOriginal().publishCompletionHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint pingHandler(Handler<Void> handler) {
-    return getOriginal().pingHandler(handler);
+  default VertxMqttEndpoint pingHandler(Handler<Void> handler) {
+    getOriginal().pingHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint closeHandler(Handler<Void> handler) {
-    return getOriginal().closeHandler(handler);
+  default VertxMqttEndpoint closeHandler(Handler<Void> handler) {
+    getOriginal().closeHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint exceptionHandler(Handler<Throwable> handler) {
-    return getOriginal().exceptionHandler(handler);
+  default VertxMqttEndpoint exceptionHandler(Handler<Throwable> handler) {
+    getOriginal().exceptionHandler(handler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint accept() {
-    return getOriginal().accept();
+  default VertxMqttEndpoint accept() {
+    getOriginal().accept();
+    return this;
   }
 
   @Override
-  default MqttEndpoint accept(boolean sessionPresent) {
-    return getOriginal().accept(sessionPresent);
+  default VertxMqttEndpoint accept(boolean sessionPresent) {
+    getOriginal().accept(sessionPresent);
+    return this;
   }
 
   @Override
-  default MqttEndpoint reject(MqttConnectReturnCode returnCode) {
-    return getOriginal().reject(returnCode);
+  default VertxMqttEndpoint reject(MqttConnectReturnCode returnCode) {
+    getOriginal().reject(returnCode);
+    return this;
   }
 
   @Override
-  default MqttEndpoint subscribeAcknowledge(int subscribeMessageId, List<MqttQoS> grantedQoSLevels) {
-    return getOriginal().subscribeAcknowledge(subscribeMessageId, grantedQoSLevels);
+  default VertxMqttEndpoint subscribeAcknowledge(int subscribeMessageId, List<MqttQoS> grantedQoSLevels) {
+    getOriginal().subscribeAcknowledge(subscribeMessageId, grantedQoSLevels);
+    return this;
   }
 
   @Override
-  default MqttEndpoint unsubscribeAcknowledge(int unsubscribeMessageId) {
-    return getOriginal().unsubscribeAcknowledge(unsubscribeMessageId);
+  default VertxMqttEndpoint unsubscribeAcknowledge(int unsubscribeMessageId) {
+    getOriginal().unsubscribeAcknowledge(unsubscribeMessageId);
+    return this;
   }
 
   @Override
-  default MqttEndpoint publishAcknowledge(int publishMessageId) {
-    return getOriginal().publishAcknowledge(publishMessageId);
+  default VertxMqttEndpoint publishAcknowledge(int publishMessageId) {
+    getOriginal().publishAcknowledge(publishMessageId);
+    return this;
   }
 
   @Override
-  default MqttEndpoint publishReceived(int publishMessageId) {
-    return getOriginal().publishReceived(publishMessageId);
+  default VertxMqttEndpoint publishReceived(int publishMessageId) {
+    getOriginal().publishReceived(publishMessageId);
+    return this;
   }
 
   @Override
-  default MqttEndpoint publishRelease(int publishMessageId) {
-    return getOriginal().publishRelease(publishMessageId);
+  default VertxMqttEndpoint publishRelease(int publishMessageId) {
+    getOriginal().publishRelease(publishMessageId);
+    return this;
   }
 
   @Override
-  default MqttEndpoint publishComplete(int publishMessageId) {
-    return getOriginal().publishComplete(publishMessageId);
+  default VertxMqttEndpoint publishComplete(int publishMessageId) {
+    getOriginal().publishComplete(publishMessageId);
+    return this;
   }
 
   @Override
@@ -309,8 +334,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, Handler<AsyncResult<Integer>> publishSentHandler) {
-    return getOriginal().publish(topic, payload, qosLevel, isDup, isRetain, publishSentHandler);
+  default VertxMqttEndpoint publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, Handler<AsyncResult<Integer>> publishSentHandler) {
+    getOriginal().publish(topic, payload, qosLevel, isDup, isRetain, publishSentHandler);
+    return this;
   }
 
   @Override
@@ -319,13 +345,15 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, Handler<AsyncResult<Integer>> publishSentHandler) {
-    return getOriginal().publish(topic, payload, qosLevel, isDup, isRetain, messageId, publishSentHandler);
+  default VertxMqttEndpoint publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, Handler<AsyncResult<Integer>> publishSentHandler) {
+    getOriginal().publish(topic, payload, qosLevel, isDup, isRetain, messageId, publishSentHandler);
+    return this;
   }
 
   @Override
-  default MqttEndpoint pong() {
-    return getOriginal().pong();
+  default VertxMqttEndpoint pong() {
+    getOriginal().pong();
+    return this;
   }
 
 }

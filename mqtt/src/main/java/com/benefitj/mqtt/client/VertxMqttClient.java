@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -253,6 +254,29 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   public VertxMqttClient subscribe(String topic, MqttQoS qosLevel, Handler<AsyncResult<Integer>> subscribeSentHandler) {
     getMqttClient().subscribe(topic, qosLevel.value(), subscribeSentHandler);
     return this;
+  }
+
+  /**
+   * 订阅主题
+   *
+   * @param topics 主题
+   * @return 返回MQTT客户端
+   */
+  public VertxMqttClient subscribe(List<String> topics) {
+    return subscribe(topics, IGNORE_HANDLER);
+  }
+
+  /**
+   * 订阅主题
+   *
+   * @param topics               主题
+   * @param subscribeSentHandler 订阅回调
+   * @return 返回MQTT客户端
+   */
+  public VertxMqttClient subscribe(List<String> topics, Handler<AsyncResult<Integer>> subscribeSentHandler) {
+    Map<String, Integer> topicMap = new HashMap<>(topics.size());
+    topics.forEach(s -> topicMap.put(s, MqttQoS.AT_MOST_ONCE.value()));
+    return subscribe(topicMap, subscribeSentHandler);
   }
 
   /**

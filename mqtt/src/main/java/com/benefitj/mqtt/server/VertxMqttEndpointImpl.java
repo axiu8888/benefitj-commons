@@ -22,8 +22,8 @@ public class VertxMqttEndpointImpl implements VertxMqttEndpoint {
    */
   private final Map<MqttTopic, Subscription> subscriptions = new ConcurrentHashMap<>();
 
-  public VertxMqttEndpointImpl(MqttEndpoint source) {
-    this.original = source;
+  public VertxMqttEndpointImpl(MqttEndpoint original) {
+    this.original = original;
   }
 
   @Override
@@ -66,8 +66,9 @@ public class VertxMqttEndpointImpl implements VertxMqttEndpoint {
    * @param subscription 主题
    */
   @Override
-  public void subscribe(Subscription subscription) {
+  public VertxMqttEndpoint subscribe(Subscription subscription) {
     getSubscriptions().put(subscription.getTopic(), subscription);
+    return this;
   }
 
   /**
@@ -76,8 +77,9 @@ public class VertxMqttEndpointImpl implements VertxMqttEndpoint {
    * @param topic 主题
    */
   @Override
-  public void unsubscribe(MqttTopic topic) {
+  public VertxMqttEndpoint unsubscribe(MqttTopic topic) {
     getSubscriptions().remove(topic);
+    return this;
   }
 
   /**

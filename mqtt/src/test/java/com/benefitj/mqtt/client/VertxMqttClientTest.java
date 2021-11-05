@@ -3,8 +3,6 @@ package com.benefitj.mqtt.client;
 import com.benefitj.core.EventLoop;
 import com.benefitj.mqtt.VertxHolder;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,10 +59,9 @@ public class VertxMqttClientTest {
   @Test
   public void testSubscribe() {
     // 订阅消息
-    client.subscribe("/message/#", MqttQoS.AT_LEAST_ONCE, event ->
-        dispatcher.subscribe("/message/#", (topicName, message) ->
-            log.info("rcv topic[{}], msg: {}", topicName, message.payload().toString()))
-    );
+    dispatcher.subscribe("/message/#", (topicName, message) ->
+        log.info("rcv topic[{}], msg: {}", topicName, message.payload().toString()));
+    dispatcher.subscribe(client);
 
     EventLoop.sleepSecond(120);
   }

@@ -639,15 +639,15 @@ public class BinaryHelper {
   public String bytesToBinary(byte[] bytes, String split, int len) {
     StringBuilder sb = new StringBuilder(bytes.length * 8);
     for (int i = 0; i < bytes.length; i++) {
+      // 分割
+      if (split != null && (i - 1) % len == 0) {
+        sb.append(i > 0 && (i - 1) < bytes.length - 1 ? split : "");
+      }
       byte b = bytes[i];
       // 高四位
       sb.append(BINARY_STR[(b & 0xF0) >> 4]);
       // 低四位
       sb.append(BINARY_STR[b & 0x0F]);
-      // 分割
-      if (split != null && i % len == 0) {
-        sb.append(i > 0 && i < bytes.length - 1 ? split : "");
-      }
     }
     return sb.toString();
   }

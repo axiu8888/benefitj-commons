@@ -2,10 +2,12 @@ package com.benefitj.mqtt.client;
 
 import com.benefitj.mqtt.MqttMessageDispatcherImpl;
 import com.benefitj.mqtt.MqttTopic;
-import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.AsyncResult;
 import io.vertx.mqtt.messages.MqttConnAckMessage;
 import io.vertx.mqtt.messages.MqttPublishMessage;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * MQTT消息分发器
@@ -27,11 +29,23 @@ public class VertxMqttMessageDispatcher extends MqttMessageDispatcherImpl<MqttPu
   @Override
   public void onConnected(VertxMqttClient client, AsyncResult<MqttConnAckMessage> event, boolean reconnect) {
     if (event.succeeded() && isAutoSubscribe()) {
-      getMqttTopics()
-          .stream()
-          .map(MqttTopic::getTopicName)
-          .distinct()
-          .forEach(topic -> client.subscribe(topic, MqttQoS.AT_MOST_ONCE));
+      subscribe(client);
+    }
+  }
+
+  /**
+   * 订阅
+   *
+   * @param client 客户端
+   */
+  public void subscribe(VertxMqttClient client) {
+    List<String> topics = getMqttTopics()
+        .stream()
+        .map(MqttTopic::getTopicName)
+        .distinct()
+        .collect(Collectors.toList());
+    if (!topics.isEmpty()) {
+      client.subscribe(topics);
     }
   }
 
