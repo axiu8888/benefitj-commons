@@ -25,7 +25,7 @@ public class DefaultPropertiesConverterTest extends BaseTest {
     String filename = "abb_application-dev.properties";
     File dest = new File(SystemProperty.getJavaIOTmpDir(), filename);
     try {
-      ClasspathUtils.copyFilesTo(filename, dest.getAbsolutePath());
+      ClasspathUtils.copy(filename, dest.getAbsolutePath());
       PropertiesConverter converter = new DefaultPropertiesConverter(dest);
 //      converter.getAll().forEach((key, value)
 //          -> System.err.println(key + " ==>: " + value));

@@ -81,8 +81,9 @@ public class RxRetrofitRequest<Api> extends RetrofitRequest<Api> {
     return klass;
   }
 
-  public void setOkHttpClient(OkHttpClient client) {
+  public RetrofitRequest<Api> setOkHttpClient(OkHttpClient client) {
     this.okHttpClient = client;
+    return this;
   }
 
   @Override
@@ -93,8 +94,9 @@ public class RxRetrofitRequest<Api> extends RetrofitRequest<Api> {
   /**
    * 默认调度器
    */
-  public void setObserverScheduler(Scheduler observerScheduler) {
+  public RetrofitRequest<Api> setObserverScheduler(Scheduler observerScheduler) {
     this.observerScheduler = observerScheduler;
+    return this;
   }
 
   /**

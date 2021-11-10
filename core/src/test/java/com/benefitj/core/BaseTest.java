@@ -2,12 +2,21 @@ package com.benefitj.core;
 
 import org.junit.After;
 import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseTest {
 
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
+
 	@Before
-	public abstract void setUp();
-	
+	public void setUp() {
+		logger.info("------------- setUp ----------------");
+	}
+
 	@After
-	public abstract void tearDown();
+	public void tearDown() {
+		logger.info("------------- tearDown ----------------");
+	}
+
 }

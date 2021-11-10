@@ -501,9 +501,9 @@ public class IOUtils {
    * @param file     文件
    * @param consumer 处理回调
    */
-  public static void readLine(File file, IConsumer<String> consumer) {
+  public static void readLines(File file, IConsumer<String> consumer) {
     try (final FileReader reader = new FileReader(file);) {
-      readLine(reader, false, consumer);
+      readLines(reader, false, consumer);
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -515,8 +515,8 @@ public class IOUtils {
    * @param reader   输入
    * @param consumer 处理回调
    */
-  public static void readLine(Reader reader, IConsumer<String> consumer) {
-    readLine(reader, true, consumer);
+  public static void readLines(Reader reader, IConsumer<String> consumer) {
+    readLines(reader, true, consumer);
   }
 
   /**
@@ -526,7 +526,7 @@ public class IOUtils {
    * @param close    是否关闭流
    * @param consumer 处理回调
    */
-  public static void readLine(Reader reader, boolean close, IConsumer<String> consumer) {
+  public static void readLines(Reader reader, boolean close, IConsumer<String> consumer) {
     final BufferedReader br = wrapReader(reader);
     try {
       String line;
@@ -549,7 +549,7 @@ public class IOUtils {
    */
   public static List<String> readLines(Reader reader) {
     List<String> lines = new LinkedList<>();
-    readLine(reader, lines::add);
+    readLines(reader, lines::add);
     return lines;
   }
 
@@ -582,8 +582,8 @@ public class IOUtils {
    * @return 返回读取的字节数组
    * @throws IllegalStateException
    */
-  public static byte[] readFileFully(File file) {
-    return readFileFully(file, 10 * MB);
+  public static byte[] readFileBytes(File file) {
+    return readFileBytes(file, 10 * MB);
   }
 
   /**
@@ -593,7 +593,7 @@ public class IOUtils {
    * @return 返回读取的字节数组
    * @throws IllegalArgumentException
    */
-  public static byte[] readFileFully(File file, long maxSize) {
+  public static byte[] readFileBytes(File file, long maxSize) {
     if (exists(file)) {
       requireNotOutOfSize(file.length(), maxSize);
       final FileInputStream fis = newFIS(file);
@@ -665,9 +665,10 @@ public class IOUtils {
    *
    * @param is   输入流
    * @param file 文件
+   * @return 返回写入的长度
    */
-  public static void write(InputStream is, File file, boolean close) {
-    write(is, file, false, close);
+  public static long write(InputStream is, File file, boolean close) {
+    return write(is, file, false, close);
   }
 
   /**
@@ -675,9 +676,10 @@ public class IOUtils {
    *
    * @param file 文件
    * @param os   输出流
+   * @return 返回写入的长度
    */
-  public static void write(File file, OutputStream os) {
-    write(newFIS(file), os, 1024 << 4);
+  public static long write(File file, OutputStream os) {
+    return write(newFIS(file), os, 1024 << 4);
   }
 
   /**
@@ -686,10 +688,11 @@ public class IOUtils {
    * @param in    输入流
    * @param out   输出流
    * @param close 是否关闭流
+   * @return 返回写入的长度
    */
-  public static void write(File in, OutputStream out, boolean close) {
+  public static long write(File in, OutputStream out, boolean close) {
     try (final FileInputStream fis = new FileInputStream(in)) {
-      write(fis, out, 1024 << 4, close);
+      return write(fis, out, 1024 << 4, close);
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -702,11 +705,12 @@ public class IOUtils {
    * @param file   文件
    * @param append 是否为追加
    * @param close  是否关闭流
+   * @return 返回写入的长度
    */
-  public static void write(InputStream is, File file, boolean append, boolean close) {
+  public static long write(InputStream is, File file, boolean append, boolean close) {
     final FileOutputStream fos = newFOS(file, append);
     try {
-      write(is, fos, 1024 << 4, close);
+      return write(is, fos, 1024 << 4, close);
     } finally {
       closeQuietly(fos);
       if (close) {
@@ -720,9 +724,10 @@ public class IOUtils {
    *
    * @param is 输入流
    * @param os 输出流
+   * @return 返回写入的长度
    */
-  public static void write(InputStream is, OutputStream os) {
-    write(is, os, 1024 << 4);
+  public static long write(InputStream is, OutputStream os) {
+    return write(is, os, 1024 << 4);
   }
 
   /**
@@ -731,9 +736,10 @@ public class IOUtils {
    * @param is   输入流
    * @param os   输出流
    * @param size 缓存大小
+   * @return 返回写入的长度
    */
-  public static void write(InputStream is, OutputStream os, int size) {
-    write(is, os, size, true);
+  public static long write(InputStream is, OutputStream os, int size) {
+    return write(is, os, size, true);
   }
 
   /**
@@ -742,15 +748,19 @@ public class IOUtils {
    * @param is   输入流
    * @param os   输出流
    * @param size 缓存大小
+   * @return 返回写入的长度
    */
-  public static void write(InputStream is, OutputStream os, int size, boolean close) {
+  public static long write(InputStream is, OutputStream os, int size, boolean close) {
     try {
-      byte[] buff = new byte[size];
+      long totalLength = 0;
+      byte[] buf = new byte[size];
       int len;
-      while ((len = is.read(buff)) > 0) {
-        os.write(buff, 0, len);
+      while ((len = is.read(buf)) > 0) {
+        os.write(buf, 0, len);
         os.flush();
+        totalLength += len;
       }
+      return totalLength;
     } catch (IOException e) {
       throw new IllegalStateException(e);
     } finally {
@@ -965,50 +975,44 @@ public class IOUtils {
         boolean delete = f.delete();
         if (!delete && clear) {
           // 删除失败，将文件清空
-          clearFile(f);
+          clearFiles(f);
         }
       }
     }
   }
 
   /**
-   * 清空文件
+   * 清空文件，但不删除
    *
    * @param fs 文件数组
    */
   public static void clearFiles(File... fs) {
-    if (fs != null && fs.length > 0) {
-      for (File f : fs) {
-        if (f.isDirectory()) {
-          clearFiles(f.listFiles());
-        } else {
-          clearFile(f);
-        }
-      }
-    }
+    clearFiles(fs, true);
   }
 
   /**
-   * 清空文件
+   * 清空文件，但不删除
    *
-   * @param f 文件
+   * @param fs       文件数组
+   * @param subFiles 是否包含子文件
    */
-  public static void clearFile(File f) {
-    if (f != null && f.exists()) {
-      if (f.isDirectory()) {
-        File[] files = f.listFiles();
-        if (files != null && files.length > 0) {
-          for (File file : files) {
-            clearFile(file);
+  public static void clearFiles(File[] fs, boolean subFiles) {
+    if (fs != null && fs.length > 0) {
+      for (File f : fs) {
+        if (f != null && f.exists()) {
+          if (f.isDirectory()) {
+            if (subFiles) {
+              clearFiles(f.listFiles(), true);
+            }
+          } else {
+            if (f.length() > 0) {
+              // 重置数据
+              try (final FileOutputStream fos = new FileOutputStream(f)) {
+                fos.write(new byte[0]);
+                fos.flush();
+              } catch (IOException ignore) {/*...*/}
+            }
           }
-        }
-      } else {
-        if (f.length() > 0) {
-          // 重置数据
-          try (final FileOutputStream fos = new FileOutputStream(f)) {
-            fos.write(new byte[0]);
-            fos.flush();
-          } catch (IOException ignore) {/*...*/}
         }
       }
     }

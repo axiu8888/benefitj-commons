@@ -89,11 +89,12 @@ public abstract class RetrofitRequest<Api> implements IRetrofitRequest<Api> {
     return baseUrl;
   }
 
-  public void setBaseUrl(String baseUrl) {
+  public RetrofitRequest<Api> setBaseUrl(String baseUrl) {
     if (isBlank(baseUrl)) {
       throw new IllegalArgumentException("baseUrl");
     }
     this.baseUrl = baseUrl;
+    return this;
   }
 
   @Override
@@ -141,8 +142,10 @@ public abstract class RetrofitRequest<Api> implements IRetrofitRequest<Api> {
     return loggingLevel;
   }
 
-  public void setLoggingLevel(HttpLoggingInterceptor.Level loggingLevel) {
+  public RetrofitRequest<Api> setLoggingLevel(HttpLoggingInterceptor.Level loggingLevel) {
     this.loggingLevel = loggingLevel;
+    return this;
   }
+
 }
 
