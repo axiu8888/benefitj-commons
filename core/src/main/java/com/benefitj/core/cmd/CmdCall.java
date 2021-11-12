@@ -115,4 +115,34 @@ public class CmdCall {
     return getCode() == 0 && (getError() == null || getError().trim().isEmpty());
   }
 
+  /**
+   * 打印
+   *
+   * @param tag 标记
+   */
+  public void print(String tag) {
+    print(this, tag);
+  }
+
+  /**
+   * 打印
+   *
+   * @param call 调用对象
+   * @param tag  标记
+   */
+  public static void print(CmdCall call, String tag) {
+    System.err.println("\n----------------- cmd[" + tag + "] -----------------");
+    System.err.println("successful: " + call.isSuccessful());
+    if (call.getMessage().endsWith("\n")) {
+      call.setMessage(call.getMessage().substring(0, call.getMessage().length() - 1));
+    }
+    if (call.getError().endsWith("\n")) {
+      call.setError(call.getError().substring(0, call.getError().length() - 1));
+    }
+    System.err.println("message: " + call.getMessage());
+    System.err.println("error: " + call.getError());
+    System.err.println("cmd: " + call.getCmd());
+    System.err.println("exitCode: " + call.getCode());
+    System.err.println("----------------- cmd[" + tag + "] -----------------\n");
+  }
 }

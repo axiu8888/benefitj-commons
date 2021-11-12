@@ -10,7 +10,7 @@ public class ClasspathUtilsTest extends BaseTest {
 
   @Test
   public void testClasspath() {
-    String classpathDir = ClasspathUtils.defaultClasspathDir();
+    String classpathDir = ClasspathUtils.getDefaultClasspathDir();
     logger.info("currentClasspathDir: {}", classpathDir);
 
     URL url = ClasspathUtils.getURL("abb_application-dev.properties", null);

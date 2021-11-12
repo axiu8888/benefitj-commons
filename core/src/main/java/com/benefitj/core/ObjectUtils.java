@@ -2,9 +2,12 @@ package com.benefitj.core;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
@@ -16,7 +19,52 @@ public class ObjectUtils {
   /**
    * 类以及字段信息
    */
-  private static final Map<Class<?>, ClassInfo> classInfoMap = new WeakHashMap<>();
+  private static final Map<Class<?>, ClassInfo> classInfos = new WeakHashMap<>();
+  /**
+   * 默认的转换器
+   */
+  private static final Map<Class<?>, BiFunction<Field, Object, String>> converters;
+
+  static {
+    Map<Class<?>, BiFunction<Field, Object, String>> map = new HashMap<>();
+
+    map.put(byte[].class, (field, value) -> Arrays.toString((byte[]) value));
+    map.put(short[].class, (field, value) -> Arrays.toString((short[]) value));
+    map.put(int[].class, (field, value) -> Arrays.toString((int[]) value));
+    map.put(long[].class, (field, value) -> Arrays.toString((long[]) value));
+    map.put(float[].class, (field, value) -> Arrays.toString((float[]) value));
+    map.put(double[].class, (field, value) -> Arrays.toString((double[]) value));
+    map.put(boolean[].class, (field, value) -> Arrays.toString((boolean[]) value));
+    map.put(String[].class, (field, value) -> Arrays.toString((String[]) value));
+    map.put(char[].class, (field, value) -> Arrays.toString((char[]) value));
+
+    map.put(Byte[].class, (field, value) -> Arrays.toString((Byte[]) value));
+    map.put(Short[].class, (field, value) -> Arrays.toString((Short[]) value));
+    map.put(Integer[].class, (field, value) -> Arrays.toString((Integer[]) value));
+    map.put(Long[].class, (field, value) -> Arrays.toString((Long[]) value));
+    map.put(Float[].class, (field, value) -> Arrays.toString((Float[]) value));
+    map.put(Double[].class, (field, value) -> Arrays.toString((Double[]) value));
+    map.put(Boolean[].class, (field, value) -> Arrays.toString((Boolean[]) value));
+    map.put(Character[].class, (field, value) -> Arrays.toString((Character[]) value));
+
+    map.put(Date.class, (field, value) -> DateFmtter.fmt(value));
+    map.put(java.sql.Date.class, (field, value) -> DateFmtter.fmt(value));
+    map.put(Timestamp.class, (field, value) -> DateFmtter.fmtS(value));
+    map.put(LocalDate.class, (field, value) -> ((LocalDate) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+    map.put(LocalTime.class, (field, value) -> ((LocalTime) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+    map.put(LocalDateTime.class, (field, value) -> ((LocalDateTime) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+    converters = Collections.unmodifiableMap(map);
+  }
+
+  private static final BiFunction<Field, Object, String> DEFAULT_CONVERTER = (field, value) -> {
+    if (value != null) {
+      BiFunction<Field, Object, String> converter = getConverter(value.getClass());
+      return converter != null ? converter.apply(field, value) : value.toString();
+    }
+    return null;
+  };
+
 
   /**
    * 获取类型信息
@@ -25,46 +73,29 @@ public class ObjectUtils {
    * @return 返回类型信息
    */
   public static ClassInfo getClassInfo(Class<?> type) {
-    return classInfoMap.get(type);
+    return classInfos.get(type);
   }
 
   /**
-   * 转换 toString
-   *
-   * @param o 对象
-   * @return 返回 toString
+   * 获取对应的转换器
    */
-  public static String toString(Object o) {
-    return toString(o, null, (field, value) -> value != null ? String.valueOf(value) : "");
+  public static BiFunction<Field, Object, String> getConverter(Class<?> type) {
+    return getConverter(type, false);
   }
 
   /**
-   * 转换 toString
-   *
-   * @param o      对象
-   * @param filter 过滤器
-   * @return 返回 toString
+   * 获取对应的转换器
    */
-  public static String toString(Object o, Predicate<Field> filter, BiFunction<Field, Object, String> func) {
-    final Class<?> type = o.getClass();
-    ClassInfo classInfo = classInfoMap.computeIfAbsent(type, s -> parseClassInfo(type));
-    final StringBuilder sb = new StringBuilder();
-    String name = type.getSimpleName();
-    sb.append(name);
-    sb.append("(");
-    classInfo.getFields().forEach((field, s) -> {
-          if (filter == null || filter.test(field)) {
-            Object value = ReflectUtils.getFieldValue(field, o);
-            String show = func.apply(field, value);
-            sb.append(", ").append(field.getName())
-                .append("=")
-                .append(show);
-          }
+  public static BiFunction<Field, Object, String> getConverter(Class<?> type, boolean assignable) {
+    BiFunction<Field, Object, String> converter = converters.get(type);
+    if (converter == null && assignable) {
+      for (Map.Entry<Class<?>, BiFunction<Field, Object, String>> entry : converters.entrySet()) {
+        if (type.isAssignableFrom(entry.getKey())) {
+          return entry.getValue();
         }
-    );
-    sb.append(")");
-    sb.replace(name.length() + 1, name.length() + 3, "");
-    return sb.toString();
+      }
+    }
+    return converter;
   }
 
   /**
@@ -98,6 +129,47 @@ public class ObjectUtils {
     );
     return classInfo;
   }
+
+
+  /**
+   * 转换 toString
+   *
+   * @param o 对象
+   * @return 返回 toString
+   */
+  public static String toString(Object o) {
+    return toString(o, null, DEFAULT_CONVERTER);
+  }
+
+  /**
+   * 转换 toString
+   *
+   * @param o      对象
+   * @param filter 过滤器
+   * @return 返回 toString
+   */
+  public static String toString(Object o, Predicate<Field> filter, BiFunction<Field, Object, String> converter) {
+    final Class<?> type = o.getClass();
+    ClassInfo classInfo = classInfos.computeIfAbsent(type, s -> parseClassInfo(type));
+    final StringBuilder sb = new StringBuilder();
+    String name = type.getSimpleName();
+    sb.append(name);
+    sb.append("(");
+    classInfo.getFields().forEach((field, s) -> {
+          if (filter == null || filter.test(field)) {
+            Object value = ReflectUtils.getFieldValue(field, o);
+            String show = converter.apply(field, value);
+            sb.append(", ").append(field.getName())
+                .append("=")
+                .append(show);
+          }
+        }
+    );
+    sb.append(")");
+    sb.replace(name.length() + 1, name.length() + 3, "");
+    return sb.toString();
+  }
+
 
   private static boolean isNotStaticOrFinal(int modifiers) {
     return !ReflectUtils.isStaticOrFinal(modifiers);

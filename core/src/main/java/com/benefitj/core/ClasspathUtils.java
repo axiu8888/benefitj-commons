@@ -20,6 +20,9 @@ import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * classpath 工具
+ */
 public class ClasspathUtils {
 
   /**
@@ -95,8 +98,21 @@ public class ClasspathUtils {
     return SPRING_CLASSPATH;
   }
 
-  public static String defaultClasspathDir() {
+  /**
+   * 默认的Classpath目录
+   */
+  public static String getDefaultClasspathDir() {
     return getURL(".").getPath();
+  }
+
+  /**
+   * 获取文件对象
+   *
+   * @param filename 文件名
+   * @return 返回文件对象
+   */
+  public static File getFile(String filename) {
+    return new File(getURL(filename).getFile());
   }
 
   /**
@@ -221,7 +237,7 @@ public class ClasspathUtils {
           if (entry.isDirectory()) {
             name = entry.getName().substring(stripSrc.length());
           } else {
-            if(entry.getName().endsWith(stripSrc)) {
+            if (entry.getName().endsWith(stripSrc)) {
               name = trim(entry.getName(), false, true);
               name = name.substring(Math.max(name.lastIndexOf("/") + 1, 0));
             } else {
@@ -294,7 +310,6 @@ public class ClasspathUtils {
   public static long transferTo(InputStream in, OutputStream out, boolean close) {
     return IOUtils.write(in, out, 1024 << 8, close);
   }
-
 
 
   /**
@@ -431,6 +446,5 @@ public class ClasspathUtils {
     }
     return packageName + '.' + filename.substring(0, filename.length() - 6);
   }
-
 
 }

@@ -13,13 +13,13 @@ public class CompressUtilsTest extends BaseTest {
    */
   @Test
   public void testZip() {
-    File src = new File(ClasspathUtils.defaultClasspathDir());
+    File src = new File(ClasspathUtils.getDefaultClasspathDir());
     CompressUtils.zip(src);
   }
 
   @Test
   public void testUnzip() {
-    File dir = new File(ClasspathUtils.defaultClasspathDir());
+    File dir = new File(ClasspathUtils.getDefaultClasspathDir());
     File zip = new File(dir.getAbsolutePath() + ".zip");
     CompressUtils.unzip(zip, new File(dir.getParentFile(), "unzip"));
   }
