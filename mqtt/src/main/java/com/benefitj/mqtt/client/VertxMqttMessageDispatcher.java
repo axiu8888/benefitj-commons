@@ -18,6 +18,10 @@ public class VertxMqttMessageDispatcher extends MqttMessageDispatcherImpl<MqttPu
    * 自动订阅
    */
   private boolean autoSubscribe = true;
+  /**
+   * 客户端
+   */
+  private VertxMqttClient client;
 
   public VertxMqttMessageDispatcher() {
   }
@@ -29,29 +33,46 @@ public class VertxMqttMessageDispatcher extends MqttMessageDispatcherImpl<MqttPu
   @Override
   public void onConnected(VertxMqttClient client, AsyncResult<MqttConnAckMessage> event, boolean reconnect) {
     if (event.succeeded() && isAutoSubscribe()) {
-      subscribe(client);
-    }
-  }
-
-  /**
-   * 订阅
-   *
-   * @param client 客户端
-   */
-  public void subscribe(VertxMqttClient client) {
-    List<String> topics = getMqttTopics()
-        .stream()
-        .map(MqttTopic::getTopicName)
-        .distinct()
-        .collect(Collectors.toList());
-    if (!topics.isEmpty()) {
-      client.subscribe(topics);
+      this.client = client;
+      List<String> topics = getMqttTopics()
+          .stream()
+          .map(MqttTopic::getTopicName)
+          .distinct()
+          .collect(Collectors.toList());
+      if (!topics.isEmpty()) {
+        client.subscribe(topics);
+      }
     }
   }
 
   @Override
   public final void onPublishMessage(VertxMqttClient client, MqttPublishMessage message) {
     handleMessage(message.topicName(), message);
+  }
+
+  @Override
+  public void onClose(VertxMqttClient client) {
+    this.client = null;
+  }
+
+  @Override
+  public void subscribeNotify(List<String> topics) {
+    VertxMqttClient client = getClient();
+    if (client != null && topics != null && !topics.isEmpty()) {
+      client.subscribe(topics);
+    }
+  }
+
+  @Override
+  public void unsubscribeNotify(List<String> topics) {
+    VertxMqttClient client = getClient();
+    if (client != null && topics != null && !topics.isEmpty()) {
+      client.unsubscribe(topics);
+    }
+  }
+
+  public VertxMqttClient getClient() {
+    return client;
   }
 
   public boolean isAutoSubscribe() {

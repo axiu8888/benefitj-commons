@@ -304,6 +304,16 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   /**
    * 取消订阅
    *
+   * @param topic 主题
+   * @return 返回MQTT客户端
+   */
+  public VertxMqttClient unsubscribe(String topic) {
+    return unsubscribe(topic, IGNORE_HANDLER);
+  }
+
+  /**
+   * 取消订阅
+   *
    * @param topic                  主题
    * @param unsubscribeSentHandler 取消订阅处理
    * @return 返回MQTT客户端
@@ -313,6 +323,17 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
       getMqttClient().unsubscribe(topic, unsubscribeSentHandler);
     }
     return this;
+  }
+
+
+  /**
+   * 取消订阅
+   *
+   * @param topics 主题
+   * @return 返回MQTT客户端
+   */
+  public VertxMqttClient unsubscribe(List<String> topics) {
+    return unsubscribe(topics, IGNORE_HANDLER);
   }
 
   /**

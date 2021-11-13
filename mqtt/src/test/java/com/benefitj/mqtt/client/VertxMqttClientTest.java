@@ -33,7 +33,7 @@ public class VertxMqttClientTest {
         })
         .setAutoConnectTimer(new AutoConnectTimer(true).setPeriod(10))
 //        .setRemoteAddress("127.0.0.1", 1883))
-        .setRemoteAddress("192.168.1.203", 1883))
+        .setRemoteAddress("192.168.19.129", 1883))
         .onComplete(event -> {
           latch.countDown();
           log.info("deploy: {}", event.result());
@@ -46,7 +46,7 @@ public class VertxMqttClientTest {
 
   @Test
   public void testPublish() {
-    for (; ; ) {
+    for (;;) {
       if (client.isConnected()) {
         client.publish("/message/hello", "Hello World !", MqttQoS.AT_LEAST_ONCE
             , event -> log.info("publish  {}, {}", event.result(), event.succeeded()));
@@ -61,7 +61,6 @@ public class VertxMqttClientTest {
     // 订阅消息
     dispatcher.subscribe("/message/#", (topicName, message) ->
         log.info("rcv topic[{}], msg: {}", topicName, message.payload().toString()));
-    dispatcher.subscribe(client);
 
     EventLoop.sleepSecond(120);
   }

@@ -80,6 +80,16 @@ public interface MqttMessageDispatcher<T> {
     topicSet.addAll(topics.stream()
         .map(MqttTopic::get)
         .collect(Collectors.toSet()));
+    subscribeNotify(topics);
+  }
+
+  /**
+   * 订阅通知
+   *
+   * @param topics 主题
+   */
+  default void subscribeNotify(List<String> topics) {
+    // ignore
   }
 
   /**
@@ -117,7 +127,17 @@ public interface MqttMessageDispatcher<T> {
       if (topicSet.isEmpty()) {
         getSubscribers().remove(subscriber);
       }
+      unsubscribeNotify(topics);
     }
+  }
+
+  /**
+   * 取消订阅的通知
+   *
+   * @param topics 主题
+   */
+  default void unsubscribeNotify(List<String> topics) {
+    // ignore
   }
 
   /**
