@@ -9,4 +9,10 @@ public class StackUtilsTest extends BaseTest {
     System.err.println(StackUtils.getTag() + ": hello world!");
   }
 
+  @Test
+  public void testFilter() {
+    StackUtils.filterClass(StackUtilsTest.class, element
+        -> System.err.println("" + element.getClassName() + "." + element.getMethodName() + ", " + element.getLineNumber()));
+  }
+
 }

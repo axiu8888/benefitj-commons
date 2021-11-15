@@ -1,5 +1,6 @@
 package com.benefitj.core;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
@@ -57,14 +58,7 @@ public class ObjectUtils {
     converters = Collections.unmodifiableMap(map);
   }
 
-  private static final BiFunction<Field, Object, String> DEFAULT_CONVERTER = (field, value) -> {
-    if (value != null) {
-      BiFunction<Field, Object, String> converter = getConverter(value.getClass());
-      return converter != null ? converter.apply(field, value) : value.toString();
-    }
-    return null;
-  };
-
+  private static final BiFunction<Field, Object, String> DEFAULT_CONVERTER = ObjectUtils::defaultToString;
 
   /**
    * 获取类型信息
@@ -130,6 +124,20 @@ public class ObjectUtils {
     return classInfo;
   }
 
+  /**
+   * 默认的toString
+   *
+   * @param field 字段
+   * @param value 值或对象
+   * @return 返回toString的字符串，或null值
+   */
+  public static String defaultToString(@Nullable Field field, Object value) {
+    if (value != null) {
+      BiFunction<Field, Object, String> converter = getConverter(value.getClass());
+      return converter != null ? converter.apply(field, value) : value.toString();
+    }
+    return null;
+  }
 
   /**
    * 转换 toString
@@ -139,6 +147,16 @@ public class ObjectUtils {
    */
   public static String toString(Object o) {
     return toString(o, null, DEFAULT_CONVERTER);
+  }
+
+  /**
+   * 转换 toString
+   *
+   * @param o 对象
+   * @return 返回 toString
+   */
+  public static String toString(Object o, BiFunction<Field, Object, String> converter) {
+    return toString(o, f -> true, converter);
   }
 
   /**

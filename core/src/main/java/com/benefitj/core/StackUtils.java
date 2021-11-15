@@ -1,6 +1,13 @@
 package com.benefitj.core;
 
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
 public class StackUtils {
+
+  public static StackTraceElement[] getStackTraceElements() {
+    return Thread.currentThread().getStackTrace();
+  }
 
   /**
    * 获取指定的栈追踪元素
@@ -51,6 +58,69 @@ public class StackUtils {
    */
   public static String getSimpleClassName(String className) {
     return className.substring(className.lastIndexOf(".") + 1);
+  }
+
+  /**
+   * 过滤符合的报名
+   *
+   * @param packageName 报名
+   * @param consumer    处理
+   */
+  public static void filterPackage(String packageName, Consumer<StackTraceElement> consumer) {
+    filter(getStackTraceElements(), ste -> ste.getClassName().startsWith(packageName), consumer);
+  }
+
+  /**
+   * 过滤符合的报名
+   *
+   * @param elements    栈追踪元素
+   * @param packageName 报名
+   * @param consumer    处理
+   */
+  public static void filterPackage(StackTraceElement[] elements,
+                                   String packageName,
+                                   Consumer<StackTraceElement> consumer) {
+    filter(elements, ste -> ste.getClassName().startsWith(packageName), consumer);
+  }
+
+  /**
+   * 过滤符合的类名
+   *
+   * @param type     类
+   * @param consumer 处理
+   */
+  public static void filterClass(Class<?> type, Consumer<StackTraceElement> consumer) {
+    filterClass(getStackTraceElements(), type, consumer);
+  }
+
+  /**
+   * 过滤符合的类名
+   *
+   * @param elements 栈追踪元素
+   * @param type     类
+   * @param consumer 处理
+   */
+  public static void filterClass(StackTraceElement[] elements,
+                                 Class<?> type,
+                                 Consumer<StackTraceElement> consumer) {
+    filter(elements, ste -> ste.getClassName().equals(type.getName()), consumer);
+  }
+
+  /**
+   * 过滤
+   *
+   * @param elements 栈追踪元素
+   * @param matcher  匹配
+   * @param consumer 处理
+   */
+  public static void filter(StackTraceElement[] elements,
+                            Predicate<StackTraceElement> matcher,
+                            Consumer<StackTraceElement> consumer) {
+    for (StackTraceElement element : elements) {
+      if (matcher.test(element)) {
+        consumer.accept(element);
+      }
+    }
   }
 
 }
