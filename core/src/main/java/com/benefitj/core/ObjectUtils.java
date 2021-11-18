@@ -10,7 +10,9 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * 对象工具
@@ -20,11 +22,11 @@ public class ObjectUtils {
   /**
    * 类以及字段信息
    */
-  private static final Map<Class<?>, ClassInfo> classInfos = new WeakHashMap<>();
+  private static final Map<Class<?>, ClassInfo> CLASS_INFOS = new WeakHashMap<>();
   /**
    * 默认的转换器
    */
-  private static final Map<Class<?>, BiFunction<Field, Object, String>> converters;
+  private static final Map<Class<?>, BiFunction<Field, Object, String>> CONVERTERS;
 
   static {
     Map<Class<?>, BiFunction<Field, Object, String>> map = new HashMap<>();
@@ -47,6 +49,9 @@ public class ObjectUtils {
     map.put(Double[].class, (field, value) -> Arrays.toString((Double[]) value));
     map.put(Boolean[].class, (field, value) -> Arrays.toString((Boolean[]) value));
     map.put(Character[].class, (field, value) -> Arrays.toString((Character[]) value));
+    map.put(Object[].class, (field, value) -> "Object[" + Arrays.stream((Object[]) value)
+        .map(o -> defaultToString(null, o))
+        .collect(Collectors.joining(", ")) + "]");
 
     map.put(Date.class, (field, value) -> DateFmtter.fmt(value));
     map.put(java.sql.Date.class, (field, value) -> DateFmtter.fmt(value));
@@ -54,8 +59,25 @@ public class ObjectUtils {
     map.put(LocalDate.class, (field, value) -> ((LocalDate) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     map.put(LocalTime.class, (field, value) -> ((LocalTime) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
     map.put(LocalDateTime.class, (field, value) -> ((LocalDateTime) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+    map.put(List.class, (field, value) -> (String) ((List) value)
+        .stream()
+        .map((Function<Object, String>) o -> defaultToString(null, o))
+        .collect(Collectors.joining(", ")));
+    map.put(Map.class, (field, o) -> {
+      StringBuilder sb = new StringBuilder();
+      sb.append(o.getClass().getSimpleName()).append("(");
+      ((Map) o).forEach((key, value) ->
+          sb.append(defaultToString(null, key))
+              .append("=")
+              .append(defaultToString(null, value))
+              .append(", ")
+      );
+      sb.delete(sb.length() - 2, sb.length());
+      sb.append(")");
+      return sb.toString();
+    });
 
-    converters = Collections.unmodifiableMap(map);
+    CONVERTERS = Collections.unmodifiableMap(map);
   }
 
   private static final BiFunction<Field, Object, String> DEFAULT_CONVERTER = ObjectUtils::defaultToString;
@@ -67,24 +89,24 @@ public class ObjectUtils {
    * @return 返回类型信息
    */
   public static ClassInfo getClassInfo(Class<?> type) {
-    return classInfos.get(type);
+    return CLASS_INFOS.get(type);
   }
 
   /**
    * 获取对应的转换器
    */
   public static BiFunction<Field, Object, String> getConverter(Class<?> type) {
-    return getConverter(type, false);
+    return getConverter(type, true);
   }
 
   /**
    * 获取对应的转换器
    */
   public static BiFunction<Field, Object, String> getConverter(Class<?> type, boolean assignable) {
-    BiFunction<Field, Object, String> converter = converters.get(type);
+    BiFunction<Field, Object, String> converter = CONVERTERS.get(type);
     if (converter == null && assignable) {
-      for (Map.Entry<Class<?>, BiFunction<Field, Object, String>> entry : converters.entrySet()) {
-        if (type.isAssignableFrom(entry.getKey())) {
+      for (Map.Entry<Class<?>, BiFunction<Field, Object, String>> entry : CONVERTERS.entrySet()) {
+        if (entry.getKey().isAssignableFrom(type)) {
           return entry.getValue();
         }
       }
@@ -167,8 +189,12 @@ public class ObjectUtils {
    * @return 返回 toString
    */
   public static String toString(Object o, Predicate<Field> filter, BiFunction<Field, Object, String> converter) {
+    BiFunction<Field, Object, String> defaultConverter = getConverter(o.getClass());
+    if (defaultConverter != null) {
+      return defaultConverter.apply(null, o);
+    }
     final Class<?> type = o.getClass();
-    ClassInfo classInfo = classInfos.computeIfAbsent(type, s -> parseClassInfo(type));
+    ClassInfo classInfo = CLASS_INFOS.computeIfAbsent(type, s -> parseClassInfo(type));
     final StringBuilder sb = new StringBuilder();
     String name = type.getSimpleName();
     sb.append(name);

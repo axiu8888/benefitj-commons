@@ -2,14 +2,16 @@ package com.benefitj.core;
 
 import junit.framework.TestCase;
 import org.junit.Test;
+import org.slf4j.Logger;
 
-import java.lang.reflect.Field;
 import java.util.Date;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ObjectUtilsTest extends TestCase {
 
+
+  private final Logger logger = StackLogger.getLogger();
 
   @Test
   public void testObject_ToString() {
@@ -20,6 +22,16 @@ public class ObjectUtilsTest extends TestCase {
     userinfo.setArray(new byte[]{0x09, (byte) 0x88, (byte) 0x82});
     System.err.println(ObjectUtils.toString(userinfo, (field, o) ->
         (o instanceof byte[]) ? HexUtils.bytesToHex((byte[]) o) : ObjectUtils.defaultToString(field, o)));
+
+    // 测试map
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put("abc1", "hhh1");
+    map.put("abc2", "hhh2");
+    map.put("abc3", "hhh3");
+    System.err.println(ObjectUtils.toString(map));
+
+    logger.info(ObjectUtils.toString(map));
+
   }
 
 

@@ -30,6 +30,7 @@ public class ReflectUtilsTest extends BaseTest {
 
   }
 
+
   static class TestA {
     public TestA() {
       System.err.printf("3. name[%s], birthday[%s]%n", "...", "...");

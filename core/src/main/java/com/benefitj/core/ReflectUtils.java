@@ -72,12 +72,32 @@ public class ReflectUtils {
    * @return 返回是否被注释
    */
   public static boolean isAnnotationPresent(AnnotatedElement element, Class<? extends Annotation>... annotations) {
-    for (Class<? extends Annotation> annotation : annotations) {
-      if (!element.isAnnotationPresent(annotation)) {
-        return false;
+    return isAnnotationPresent(element, annotations, false);
+  }
+
+  /**
+   * 是否被注解注释
+   *
+   * @param element     Class、Field、Method
+   * @param annotations 注解
+   * @return 返回是否被注释
+   */
+  public static boolean isAnnotationPresent(AnnotatedElement element, Class<? extends Annotation>[] annotations, boolean allMatches) {
+    if (annotations != null && annotations.length > 0) {
+      for (Class<? extends Annotation> annotation : annotations) {
+        if (allMatches) {
+          if (!element.isAnnotationPresent(annotation)) {
+            return false;
+          }
+        } else {
+          if (element.isAnnotationPresent(annotation)) {
+            return true;
+          }
+        }
       }
+      return true;
     }
-    return annotations.length > 0;
+    return false;
   }
 
   /**
@@ -657,7 +677,60 @@ public class ReflectUtils {
       }
       return true;
     }
-    return parameterTypes == null && args == null;
+    return parameterTypes == null && (args == null || args.length == 0);
+  }
+
+  /**
+   * 查找匹配的参数值
+   *
+   * @param argType 要求的类型
+   * @param args    参数对象
+   * @return 返回符合的参数值
+   */
+  public static Object findMatch(Class<?> argType, Object[] args) {
+    return findMatch(argType, args, 0);
+  }
+
+  /**
+   * 查找匹配的参数值
+   *
+   * @param argType 参数的类型
+   * @param args    参数对象
+   * @param start   开始的位置
+   * @return 返回符合的参数值
+   */
+  public static Object findMatch(Class<?> argType, Object[] args, int start) {
+    return findMatch(args, start, (arg, position) -> argType.isInstance(arg));
+  }
+
+  /**
+   * 查找匹配的参数值
+   *
+   * @param args  参数对象
+   * @param start 开始的位置
+   * @return 返回符合的参数值
+   */
+  public static Object findMatch(Object[] args, int start, FindMatcher matcher) {
+    if (start <= args.length) {
+      for (int i = start; i < args.length; i++) {
+        if (matcher.match(args[i], i)) {
+          return args[i];
+        }
+      }
+    }
+    return null;
+  }
+
+  public interface FindMatcher {
+
+    /**
+     * 是否匹配
+     *
+     * @param value    值
+     * @param position 下标
+     * @return 返回是否匹配
+     */
+    boolean match(Object value, int position);
   }
 
 }

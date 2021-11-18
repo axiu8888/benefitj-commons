@@ -6,7 +6,7 @@ public class StackUtilsTest extends BaseTest {
 
   @Test
   public void testPrintStack() {
-    System.err.println(StackUtils.getTag() + ": hello world!");
+    System.err.println(StackUtils.getTag(": ") + "hello world!");
   }
 
   @Test

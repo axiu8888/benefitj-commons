@@ -29,14 +29,21 @@ public class StackUtils {
   /**
    * 获取标签
    */
-  public static String getTag() {
-    StackTraceElement stack = get(3);
+  public static String getTag(String append) {
+    return getTag(get(3), append);
+  }
+
+  /**
+   * 获取标签
+   */
+  public static String getTag(StackTraceElement stack, String append) {
     String className = getSimpleClassName(stack);
-    return String.format("[(%s) - %s.%s(%d)]"
+    return String.format("[(%s) - %s.%s(%d)]%s"
         , Thread.currentThread().getName()
         , className
         , stack.getMethodName()
         , stack.getLineNumber()
+        , append
     );
   }
 

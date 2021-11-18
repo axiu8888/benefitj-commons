@@ -16,8 +16,10 @@ public class EventLoop implements ScheduledExecutorService {
 
   private static final int PROCESSOR_SIZE = Runtime.getRuntime().availableProcessors();
   /**
-   * 全局事件实例
+   * 主线程
    */
+  private static final SingletonSupplier<EventLoop> MAIN_EVENT_LOOP
+      = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-main-", false));
   private static final SingletonSupplier<EventLoop> MULTI_EVENT_LOOP
       = SingletonSupplier.of(() -> new GlobalEventLoop(PROCESSOR_SIZE, "-multi-", true));
   private static final SingletonSupplier<EventLoop> SINGLE_EVENT_LOOP
@@ -26,6 +28,13 @@ public class EventLoop implements ScheduledExecutorService {
       = SingletonSupplier.of(() -> new GlobalEventLoop(128, "-io-", true));
 
   private static final Logger logger = LoggerFactory.getLogger(EventLoop.class);
+
+  /**
+   * 多线程事件
+   */
+  public static EventLoop main() {
+    return MAIN_EVENT_LOOP.get();
+  }
 
   /**
    * 多线程事件
@@ -225,14 +234,14 @@ public class EventLoop implements ScheduledExecutorService {
   private static final AtomicInteger ID = new AtomicInteger(0);
 
   private static ThreadFactory defaultThreadFactory(boolean daemon) {
-    String prefix = String.format("eventLoop%d-", ID.incrementAndGet());
-    return new DefaultThreadFactory(prefix, "-T-", daemon);
+    String prefix = String.format("loop%d-", ID.incrementAndGet());
+    return new DefaultThreadFactory(prefix, "-thread-", daemon);
   }
 
   static final class GlobalEventLoop extends EventLoop {
 
     private GlobalEventLoop(int corePoolSize, String suffix, boolean daemon) {
-      super(corePoolSize, new DefaultThreadFactory("global-", suffix, daemon));
+      super(corePoolSize, new DefaultThreadFactory("loop-", suffix, daemon));
       if (!daemon) {
         ShutdownHook.register(super::shutdown);
       }
