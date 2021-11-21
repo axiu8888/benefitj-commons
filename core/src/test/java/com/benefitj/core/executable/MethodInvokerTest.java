@@ -18,7 +18,7 @@ public class MethodInvokerTest extends TestCase {
 //    Object[] args = new Object[] {"/device/110101000", new byte[]{0x01, 0x02, 0x03}};
     Object[] args = new Object[]{new byte[]{0x01, 0x02, 0x03}, "/device/110101000", "hello world"};
 
-    Method method = ReflectUtils.getMethod(TestAbc.class, m -> m.getName().equals("onMessage"));
+    Method method = ReflectUtils.getMethod(TestAbc.class, "onMessage");
     SimpleMethodInvoker invoker = new SimpleMethodInvoker(new TestAbc(), method);
     invoker.invoke(args);
   }

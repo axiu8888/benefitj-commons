@@ -1,6 +1,7 @@
 package com.benefitj.core;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
@@ -49,9 +50,6 @@ public class ObjectUtils {
     map.put(Double[].class, (field, value) -> Arrays.toString((Double[]) value));
     map.put(Boolean[].class, (field, value) -> Arrays.toString((Boolean[]) value));
     map.put(Character[].class, (field, value) -> Arrays.toString((Character[]) value));
-    map.put(Object[].class, (field, value) -> "Object[" + Arrays.stream((Object[]) value)
-        .map(o -> defaultToString(null, o))
-        .collect(Collectors.joining(", ")) + "]");
 
     map.put(Date.class, (field, value) -> DateFmtter.fmt(value));
     map.put(java.sql.Date.class, (field, value) -> DateFmtter.fmt(value));
@@ -124,21 +122,21 @@ public class ObjectUtils {
     ClassInfo classInfo = new ClassInfo(type);
     // 字段
     Map<Field, String> fields = classInfo.getFields();
-    ReflectUtils.foreachField(type
+    ReflectUtils.findFields(type
         , f -> isNotStaticOrFinal(f.getModifiers())
         , f -> fields.put(f, f.getName())
         , f -> false
     );
     // setter方法
     Map<String, Method> setterMethods = classInfo.getSetterMethods();
-    ReflectUtils.foreachMethod(type
+    ReflectUtils.findMethods(type
         , m -> isNotStaticOrFinal(m.getModifiers()) && ReflectUtils.isSetterMethod(m)
         , m -> setterMethods.putIfAbsent(m.getName(), m)
         , m -> false
     );
     // getter方法
     Map<String, Method> getterMethods = classInfo.getGetterMethods();
-    ReflectUtils.foreachMethod(type
+    ReflectUtils.findMethods(type
         , m -> isNotStaticOrFinal(m.getModifiers()) && ReflectUtils.isGetterMethod(m)
         , m -> getterMethods.putIfAbsent(m.getName(), m)
         , m -> false
@@ -189,28 +187,41 @@ public class ObjectUtils {
    * @return 返回 toString
    */
   public static String toString(Object o, Predicate<Field> filter, BiFunction<Field, Object, String> converter) {
+    if (o == null) {
+      return null;
+    }
+
     BiFunction<Field, Object, String> defaultConverter = getConverter(o.getClass());
     if (defaultConverter != null) {
       return defaultConverter.apply(null, o);
     }
+
+    if (o.getClass().isArray()) {
+      int length = Array.getLength(o);
+      StringBuilder sb = new StringBuilder();
+      sb.append(o.getClass().getSimpleName()).append("(");
+      for (int i = 0; i < length; i++) {
+        sb.append(toString(Array.get(o, i), filter, converter)).append(", ");
+      }
+      sb.delete(sb.length() - 2, sb.length());
+      sb.append(")");
+      return sb.toString();
+    }
+
     final Class<?> type = o.getClass();
     ClassInfo classInfo = CLASS_INFOS.computeIfAbsent(type, s -> parseClassInfo(type));
     final StringBuilder sb = new StringBuilder();
-    String name = type.getSimpleName();
-    sb.append(name);
-    sb.append("(");
+    sb.append(type.getSimpleName()).append("(");
     classInfo.getFields().forEach((field, s) -> {
           if (filter == null || filter.test(field)) {
             Object value = ReflectUtils.getFieldValue(field, o);
             String show = converter.apply(field, value);
-            sb.append(", ").append(field.getName())
-                .append("=")
-                .append(show);
+            sb.append(field.getName()).append("=").append(show).append(", ");
           }
         }
     );
+    sb.delete(sb.length() - 2, sb.length());
     sb.append(")");
-    sb.replace(name.length() + 1, name.length() + 3, "");
     return sb.toString();
   }
 

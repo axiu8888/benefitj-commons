@@ -32,6 +32,19 @@ public class ObjectUtilsTest extends TestCase {
 
     logger.info(ObjectUtils.toString(map));
 
+    logger.info(ObjectUtils.toString(new Object[]{
+        new LinkedHashMap(){{
+          put("1.key1", "value1");
+          put("2.key2", "value2");
+          put("3.key3", "value3");
+        }},
+        new LinkedHashMap(){{
+          put("1.key1", "value1");
+          put("2.key2", "value2");
+          put("3.key3", "value3");
+        }},
+    }));
+
   }
 
 

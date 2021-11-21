@@ -37,7 +37,7 @@ public interface Slicer {
       }
       builder.append(cs.charAt(i));
     }
-    if (!builder.isEmpty()) {
+    if (builder.length() != 0) {
       lines.add(builder.toString());
     }
     return lines;

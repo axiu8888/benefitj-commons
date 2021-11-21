@@ -4,9 +4,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -171,12 +172,12 @@ public class ReflectUtils {
    * @param consumer    消费者
    * @param interceptor 拦截器 -> 返回true表示停止循环
    */
-  public static <T> void foreach(final Class<?> type,
-                                 final Function<Class<?>, T[]> call,
-                                 final Predicate<T> filter,
-                                 final Consumer<T> consumer,
-                                 final Predicate<T> interceptor) {
-    foreach(type, call, filter, consumer, interceptor, true);
+  public static <T> void find(final Class<?> type,
+                              final Function<Class<?>, T[]> call,
+                              final Predicate<T> filter,
+                              final Consumer<T> consumer,
+                              final Predicate<T> interceptor) {
+    find(type, call, filter, consumer, interceptor, true);
   }
 
   /**
@@ -189,12 +190,12 @@ public class ReflectUtils {
    * @param interceptor 拦截器 -> 返回true表示停止循环
    * @param superclass  是否继续迭代父类
    */
-  public static <T> void foreach(final Class<?> type,
-                                 final Function<Class<?>, T[]> call,
-                                 final Predicate<T> filter,
-                                 final Consumer<T> consumer,
-                                 final Predicate<T> interceptor,
-                                 boolean superclass) {
+  public static <T> void find(final Class<?> type,
+                              final Function<Class<?>, T[]> call,
+                              final Predicate<T> filter,
+                              final Consumer<T> consumer,
+                              final Predicate<T> interceptor,
+                              boolean superclass) {
     if (type == null || type == Object.class) {
       return;
     }
@@ -213,24 +214,23 @@ public class ReflectUtils {
     }
 
     if (superclass) {
-      foreach(type.getSuperclass(), call, filter, consumer, interceptor, superclass);
+      find(type.getSuperclass(), call, filter, consumer, interceptor, superclass);
     }
   }
-
 
   /**
    * 迭代 field
    *
    * @param type        类
-   * @param filter      过滤器
-   * @param consumer    消费者
-   * @param interceptor 拦截器
+   * @param filter      过滤器，过滤出匹配的字段
+   * @param consumer    消费者，处理接收到的结果
+   * @param interceptor 拦截器，返回true表示结束循环
    */
-  public static void foreachField(Class<?> type,
-                                  Predicate<Field> filter,
-                                  Consumer<Field> consumer,
-                                  Predicate<Field> interceptor) {
-    foreachField(type, filter, consumer, interceptor, true);
+  public static void findFields(Class<?> type,
+                                Predicate<Field> filter,
+                                Consumer<Field> consumer,
+                                Predicate<Field> interceptor) {
+    findFields(type, filter, consumer, interceptor, true);
   }
 
   /**
@@ -242,40 +242,60 @@ public class ReflectUtils {
    * @param interceptor 拦截器
    * @param superclass  是否继续迭代父类
    */
-  public static void foreachField(Class<?> type,
-                                  Predicate<Field> filter,
-                                  Consumer<Field> consumer,
-                                  Predicate<Field> interceptor,
-                                  boolean superclass) {
-    foreach(type, Class::getDeclaredFields, filter, consumer, interceptor, superclass);
+  public static void findFields(Class<?> type,
+                                Predicate<Field> filter,
+                                Consumer<Field> consumer,
+                                Predicate<Field> interceptor,
+                                boolean superclass) {
+    find(type, Class::getDeclaredFields, filter, consumer, interceptor, superclass);
   }
 
   /**
    * 迭代字段，并返回处理后的结果集
    *
-   * @param type     类型
-   * @param filter   过滤器，过滤出匹配的字段
-   * @param function 处理Field，并返回结果
-   * @param <T>      类型
+   * @param type           类型
+   * @param filter         过滤器，过滤出匹配的字段
+   * @param mappedFunction 处理Field，并返回结果
+   * @param <T>            类型
    * @return 返回处理后的结果集
    */
-  public static <T> List<T> foreachFields(Class<?> type, Predicate<Field> filter, Function<Field, T> function) {
+  public static <T> List<T> getFields(Class<?> type, Predicate<Field> filter, Function<Field, T> mappedFunction) {
     final List<T> list = new LinkedList<>();
-    foreachField(type
+    findFields(type
         , filter
-        , f -> list.add(function.apply(f))
-        , f -> false);
+        , f -> list.add(mappedFunction.apply(f))
+        , f -> false
+    );
     return list;
   }
 
   /**
-   * 是否为泛型字段: 如果字段不为空，判断getType() == getGenericType()
+   * 迭代字段，并返回处理后的结果集
    *
-   * @param field 字段
-   * @return 如果相等，返回true
+   * @param type   类型
+   * @param filter 过滤器，过滤出匹配的字段
+   * @return 返回处理后的结果集
    */
-  public static boolean isFieldTypeEquals(Field field) {
-    return field != null && (field.getType() == field.getGenericType());
+  public static Map<String, Field> getFieldMap(Class<?> type, Predicate<Field> filter) {
+    final Map<String, Field> fieldMap = new LinkedHashMap<>();
+    findFields(type
+        , filter
+        , f -> fieldMap.putIfAbsent(f.getName(), f)
+        , f -> false
+    );
+    return fieldMap;
+  }
+
+  /**
+   * 获取某个字段
+   *
+   * @param type 类型
+   * @param name 字段名
+   * @return 返回获取的字段对象
+   */
+  @Nullable
+  public static Field getField(Class<?> type, String name) {
+    return getField(type, f -> f.getName().equals(name));
   }
 
   /**
@@ -285,29 +305,11 @@ public class ReflectUtils {
    * @param matcher 匹配
    * @return 返回获取的字段对象
    */
-  public static Field getField(Class<?> type, Predicate<Field> matcher) {
-    AtomicReference<Field> field = new AtomicReference<>();
-    foreachField(type, matcher, field::set, f -> field.get() != null);
-    return field.get();
-  }
-
-  /**
-   * 获取某个字段
-   *
-   * @param type  类型
-   * @param field 字段
-   * @return 返回获取的字段对象
-   */
   @Nullable
-  public static Field getField(Class<?> type, String field) {
-    if (type != null && field != null
-        && !field.isEmpty() && type != Object.class) {
-      try {
-        return type.getDeclaredField(field);
-      } catch (NoSuchFieldException e) {/* ~ */}
-      return getField(type.getSuperclass(), field);
-    }
-    return null;
+  public static Field getField(Class<?> type, Predicate<Field> matcher) {
+    AtomicReference<Field> fieldRef = new AtomicReference<>();
+    findFields(type, matcher, fieldRef::set, f -> fieldRef.get() != null);
+    return fieldRef.get();
   }
 
   /**
@@ -318,14 +320,14 @@ public class ReflectUtils {
    * @return 返回字段的类型
    */
   @Nullable
-  public static Type getFieldOfType(Field field, Object obj) {
+  public static Class<?> getFieldOfType(Field field, @Nullable Object obj) {
     Type genericType = field.getGenericType();
     if (genericType instanceof TypeVariable) {
-      return getGenericType(obj.getClass(), 0);
+      return (Class<?>) ((TypeVariable) genericType).getBounds()[0];
     } else if (genericType instanceof ParameterizedType) {
-      return getRawType((ParameterizedType) genericType);
+      return (Class<?>) ((ParameterizedType) genericType).getRawType();
     } else {
-      return genericType;
+      return (Class<?>) genericType;
     }
   }
 
@@ -338,11 +340,11 @@ public class ReflectUtils {
    * @return 返回获取到的值
    */
   public static <V> V getFieldValue(Object obj, Predicate<Field> matcher) {
-    if (obj != null) {
-      Field field = getField(obj.getClass(), matcher);
-      return field != null ? getFieldValue(field, obj) : null;
+    if (obj == null) {
+      return null;
     }
-    return null;
+    Field field = getField(obj.getClass(), matcher);
+    return field != null ? getFieldValue(field, obj) : null;
   }
 
   /**
@@ -381,48 +383,6 @@ public class ReflectUtils {
   }
 
   /**
-   * 获取指定注解的全部属性
-   *
-   * @param klass           class
-   * @param annotationClass 注解
-   * @return 返回获取的全部属性
-   */
-  public static Field getFieldByAnnotation(Class<?> klass,
-                                           Class<? extends Annotation> annotationClass) {
-    List<Field> fieldList = getFieldByAnnotation(klass, annotationClass, true);
-    return fieldList.isEmpty() ? null : fieldList.get(0);
-  }
-
-  /**
-   * 获取指定注解的全部属性
-   *
-   * @param klass           class
-   * @param annotationClass 注解
-   * @return 返回获取的全部属性
-   */
-  public static List<Field> getFieldByAnnotation(Class<?> klass,
-                                                 Class<? extends Annotation> annotationClass,
-                                                 boolean first) {
-    if (klass == null || klass == Object.class) {
-      return Collections.emptyList();
-    }
-
-    final List<Field> fields = new LinkedList<>();
-    for (Field field : klass.getDeclaredFields()) {
-      if (field.isAnnotationPresent(annotationClass)) {
-        fields.add(field);
-        if (first) {
-          return fields;
-        }
-      }
-    }
-    List<Field> nextFields = getFieldByAnnotation(klass.getSuperclass(), annotationClass, first);
-    fields.addAll(nextFields);
-    return fields;
-  }
-
-
-  /**
    * 迭代 method
    *
    * @param type        类
@@ -431,12 +391,12 @@ public class ReflectUtils {
    * @param interceptor 拦截器
    * @param superclass  是否继续迭代父类
    */
-  public static void foreachMethod(Class<?> type,
-                                   Predicate<Method> filter,
-                                   Consumer<Method> consumer,
-                                   Predicate<Method> interceptor,
-                                   boolean superclass) {
-    foreach(type, Class::getDeclaredMethods, filter, consumer, interceptor, superclass);
+  public static void findMethods(Class<?> type,
+                                 Predicate<Method> filter,
+                                 Consumer<Method> consumer,
+                                 Predicate<Method> interceptor,
+                                 boolean superclass) {
+    find(type, Class::getDeclaredMethods, filter, consumer, interceptor, superclass);
   }
 
   /**
@@ -447,11 +407,11 @@ public class ReflectUtils {
    * @param consumer    处理器
    * @param interceptor 拦截器
    */
-  public static void foreachMethod(Class<?> type,
-                                   Predicate<Method> filter,
-                                   Consumer<Method> consumer,
-                                   Predicate<Method> interceptor) {
-    foreachMethod(type, filter, consumer, interceptor, true);
+  public static void findMethods(Class<?> type,
+                                 Predicate<Method> filter,
+                                 Consumer<Method> consumer,
+                                 Predicate<Method> interceptor) {
+    findMethods(type, filter, consumer, interceptor, true);
   }
 
   /**
@@ -463,13 +423,25 @@ public class ReflectUtils {
    * @param <T>      类型
    * @return 返回处理后的结果集
    */
-  public static <T> List<T> foreachMethods(Class<?> type, Predicate<Method> filter, Function<Method, T> function) {
+  public static <T> List<T> findMethods(Class<?> type, Predicate<Method> filter, Function<Method, T> function) {
     final List<T> list = new LinkedList<>();
-    foreachMethod(type
+    findMethods(type
         , filter
         , m -> list.add(function.apply(m))
-        , m -> false);
+        , m -> false
+    );
     return list;
+  }
+
+  /**
+   * 获取 method
+   *
+   * @param type 类
+   * @param name 方法名
+   * @return 返回获取到的Method
+   */
+  public static Method getMethod(Class<?> type, String name) {
+    return getMethod(type, m -> m.getName().equals(name));
   }
 
   /**
@@ -481,7 +453,7 @@ public class ReflectUtils {
    */
   public static Method getMethod(Class<?> type, @Nonnull Predicate<Method> matcher) {
     AtomicReference<Method> method = new AtomicReference<>();
-    foreachMethod(type, matcher, method::set, m -> method.get() != null);
+    findMethods(type, matcher, method::set, m -> method.get() != null);
     return method.get();
   }
 
@@ -492,9 +464,9 @@ public class ReflectUtils {
    * @param matcher 匹配器
    * @return 返回 methods
    */
-  public static LinkedList<Method> getMethods(Class<?> type, @Nullable Predicate<Method> matcher) {
+  public static List<Method> getMethods(Class<?> type, @Nullable Predicate<Method> matcher) {
     final LinkedList<Method> methods = new LinkedList<>();
-    foreachMethod(type, matcher, methods::add, m -> false);
+    findMethods(type, matcher, methods::add, m -> false);
     return methods;
   }
 
@@ -504,10 +476,8 @@ public class ReflectUtils {
    * @param type 类
    * @return 返回 methods
    */
-  public static LinkedList<Method> getGetterMethods(Class<?> type) {
-    final LinkedList<Method> methods = new LinkedList<>();
-    foreachMethod(type, ReflectUtils::isGetterMethod, methods::add, m -> false);
-    return methods;
+  public static List<Method> getGetterMethods(Class<?> type) {
+    return getMethods(type, ReflectUtils::isGetterMethod);
   }
 
   /**
@@ -516,10 +486,8 @@ public class ReflectUtils {
    * @param type 类
    * @return 返回 methods
    */
-  public static LinkedList<Method> getSetterMethods(Class<?> type) {
-    final LinkedList<Method> methods = new LinkedList<>();
-    foreachMethod(type, ReflectUtils::isSetterMethod, methods::add, m -> false);
-    return methods;
+  public static List<Method> getSetterMethods(Class<?> type) {
+    return getMethods(type, ReflectUtils::isSetterMethod);
   }
 
   /**
@@ -530,8 +498,7 @@ public class ReflectUtils {
    */
   public static boolean isGetterMethod(Method m) {
     if (m.getReturnType() != void.class && m.getParameterCount() == 0) {
-      String name = m.getName();
-      return name.startsWith("get") || name.startsWith("is");
+      return m.getName().startsWith("get") || m.getName().startsWith("is");
     }
     return false;
   }
@@ -562,75 +529,6 @@ public class ReflectUtils {
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(e);
     }
-  }
-
-  /**
-   * 获取泛型参数，默认返回 null
-   *
-   * @return 如果是泛型类型，返回类上的泛型数组
-   */
-  public static Type[] getActualTypeArguments(Type genericSuperclass) {
-    return getActualTypeArguments(genericSuperclass, null);
-  }
-
-  /**
-   * 获取泛型参数
-   *
-   * @param defaultValues 默认值
-   * @return 如果是泛型类型，返回类上的泛型数组
-   */
-  public static Type[] getActualTypeArguments(Type genericSuperclass, Type[] defaultValues) {
-    if (genericSuperclass instanceof ParameterizedType) {
-      Type[] arguments = ((ParameterizedType) genericSuperclass).getActualTypeArguments();
-      return arguments != null ? arguments : defaultValues;
-    }
-    return defaultValues;
-  }
-
-  /**
-   * 获取某一个位置的泛型参数类型
-   *
-   * @param index 参数位置
-   * @return 返回对应的参数类型
-   */
-  public static <V> Class<V> getActualType(Type genericSuperclass, int index) {
-    Type[] arguments = getActualTypeArguments(genericSuperclass);
-    if (arguments != null && arguments.length > index) {
-      return (Class<V>) arguments[index];
-    }
-    return null;
-  }
-
-  /**
-   * 获取当前类的泛型类型
-   *
-   * @param clazz 当前类
-   * @param index 获取的泛型类型
-   * @return 返回对应的泛型类型
-   */
-  public static Type getGenericType(Class<?> clazz, int index) {
-    Type[] params = getActualTypeArguments(clazz.getGenericSuperclass());
-
-    if (index >= params.length || index < 0) {
-      return Object.class;
-    }
-
-    if (!(params[index] instanceof Class)) {
-      return Object.class;
-    }
-
-    return params[index];
-  }
-
-  /**
-   * 获取原类型
-   *
-   * @param type 原类型
-   * @return 返回对应的原类型或Null
-   */
-  @Nullable
-  public static Type getRawType(ParameterizedType type) {
-    return type != null ? type.getRawType() : null;
   }
 
   /**

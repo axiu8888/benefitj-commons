@@ -29,7 +29,7 @@ public class DefaultStructResolver implements StructResolver {
 
     StructClass structClass = new StructClass(type);
     structClass.setInstantiator(instantiator);
-    ReflectUtils.foreachField(type
+    ReflectUtils.findFields(type
         , f -> f.isAnnotationPresent(JavaStructField.class)
         , f -> structClass.getFields().add(createStructField(manager, f))
         , f -> false

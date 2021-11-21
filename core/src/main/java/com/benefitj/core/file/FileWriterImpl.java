@@ -11,21 +11,29 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 输出文件
+ * 文件写入功能
  */
-public class OutputFile implements AutoCloseable, AttributeMap {
+public class FileWriterImpl implements IWriter, AttributeMap {
 
   private final File source;
   private final BufferedOutputStream out;
   private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
-  public OutputFile(File source) {
+  public FileWriterImpl(File source) {
     this.source = source;
     try {
       this.out = new BufferedOutputStream(new FileOutputStream(source));
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  /**
+   * 附加属性的集合
+   */
+  @Override
+  public Map<String, Object> attributes() {
+    return attributes;
   }
 
   public File getSource() {
@@ -93,6 +101,7 @@ public class OutputFile implements AutoCloseable, AttributeMap {
   /**
    * 刷新
    */
+  @Override
   public void flush() {
     synchronized (this) {
       flush0();
@@ -104,6 +113,7 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    *
    * @param str 字符串
    */
+  @Override
   public void write(String str) {
     write(str.getBytes());
   }
@@ -113,6 +123,7 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    *
    * @param strings 字符串
    */
+  @Override
   public void write(String... strings) {
     for (String str : strings) {
       write(str.getBytes());
@@ -124,6 +135,7 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    *
    * @param buf 字节缓冲
    */
+  @Override
   public void write(byte[] buf) {
     write(buf, 0, buf.length);
   }
@@ -133,6 +145,7 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    *
    * @param array 字节缓冲
    */
+  @Override
   public void write(byte[]... array) {
     for (byte[] buf : array) {
       write(buf);
@@ -146,6 +159,7 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    * @param offset 偏移量
    * @param len    长度
    */
+  @Override
   public void write(byte[] buf, int offset, int len) {
     synchronized (this) {
       write0(buf, offset, len, false);
@@ -157,8 +171,19 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    *
    * @param str 字符串
    */
+  @Override
   public void writeAndFlush(String str) {
     writeAndFlush(str.getBytes());
+  }
+
+  @Override
+  public void writeAndFlush(String... strings) {
+    synchronized (this) {
+      for (int i = 0; i < strings.length; i++) {
+        byte[] buf = strings[i].getBytes();
+        write0(buf, 0, buf.length, i == (strings.length - 1));
+      }
+    }
   }
 
   /**
@@ -166,6 +191,7 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    *
    * @param array 字节缓冲
    */
+  @Override
   public void writeAndFlush(byte[]... array) {
     synchronized (this) {
       for (byte[] buf : array) {
@@ -180,6 +206,7 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    *
    * @param buf 字节缓冲
    */
+  @Override
   public void writeAndFlush(byte[] buf) {
     writeAndFlush(buf, 0, buf.length);
   }
@@ -191,6 +218,7 @@ public class OutputFile implements AutoCloseable, AttributeMap {
    * @param offset 偏移量
    * @param len    长度
    */
+  @Override
   public void writeAndFlush(byte[] buf, int offset, int len) {
     synchronized (this) {
       write0(buf, offset, len, true);
@@ -205,14 +233,6 @@ public class OutputFile implements AutoCloseable, AttributeMap {
     synchronized (this) {
       IOUtils.closeQuietly(out());
     }
-  }
-
-  /**
-   * 附加属性的集合
-   */
-  @Override
-  public Map<String, Object> attributes() {
-    return attributes;
   }
 
 }
