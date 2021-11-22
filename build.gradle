@@ -1,7 +1,7 @@
 
 ext {
-    jacksonVersion = "2.12.1"
-    lombokVersion = "1.18.18"
+    jacksonVersion = "2.13.0"
+    lombokVersion = "1.18.22"
 
     rxJavaVersion = '2.2.21'
     okHttpVersion = '4.9.2'
