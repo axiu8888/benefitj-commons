@@ -76,12 +76,13 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * @param len    长度
    * @param flush  是否刷新
    */
-  protected void write0(byte[] buf, int offset, int len, boolean flush) {
+  protected FileWriterImpl write0(byte[] buf, int offset, int len, boolean flush) {
     try {
       out().write(buf, offset, len);
       if (flush) {
         out().flush();
       }
+      return this;
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -102,10 +103,11 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * 刷新
    */
   @Override
-  public void flush() {
+  public FileWriterImpl flush() {
     synchronized (this) {
       flush0();
     }
+    return this;
   }
 
   /**
@@ -114,8 +116,8 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * @param str 字符串
    */
   @Override
-  public void write(String str) {
-    write(str.getBytes());
+  public FileWriterImpl write(String str) {
+    return write(str.getBytes());
   }
 
   /**
@@ -124,10 +126,11 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * @param strings 字符串
    */
   @Override
-  public void write(String... strings) {
+  public FileWriterImpl write(String... strings) {
     for (String str : strings) {
       write(str.getBytes());
     }
+    return this;
   }
 
   /**
@@ -136,8 +139,8 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * @param buf 字节缓冲
    */
   @Override
-  public void write(byte[] buf) {
-    write(buf, 0, buf.length);
+  public FileWriterImpl write(byte[] buf) {
+    return write(buf, 0, buf.length);
   }
 
   /**
@@ -146,10 +149,11 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * @param array 字节缓冲
    */
   @Override
-  public void write(byte[]... array) {
+  public FileWriterImpl write(byte[]... array) {
     for (byte[] buf : array) {
       write(buf);
     }
+    return this;
   }
 
   /**
@@ -160,10 +164,11 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * @param len    长度
    */
   @Override
-  public void write(byte[] buf, int offset, int len) {
+  public FileWriterImpl write(byte[] buf, int offset, int len) {
     synchronized (this) {
       write0(buf, offset, len, false);
     }
+    return this;
   }
 
   /**
@@ -172,18 +177,19 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * @param str 字符串
    */
   @Override
-  public void writeAndFlush(String str) {
-    writeAndFlush(str.getBytes());
+  public FileWriterImpl writeAndFlush(String str) {
+    return writeAndFlush(str.getBytes());
   }
 
   @Override
-  public void writeAndFlush(String... strings) {
+  public FileWriterImpl writeAndFlush(String... strings) {
     synchronized (this) {
       for (int i = 0; i < strings.length; i++) {
         byte[] buf = strings[i].getBytes();
         write0(buf, 0, buf.length, i == (strings.length - 1));
       }
     }
+    return this;
   }
 
   /**
@@ -192,13 +198,14 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * @param array 字节缓冲
    */
   @Override
-  public void writeAndFlush(byte[]... array) {
+  public FileWriterImpl writeAndFlush(byte[]... array) {
     synchronized (this) {
       for (byte[] buf : array) {
         write0(buf, 0, buf.length, false);
       }
       flush0();
     }
+    return this;
   }
 
   /**
@@ -207,8 +214,8 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * @param buf 字节缓冲
    */
   @Override
-  public void writeAndFlush(byte[] buf) {
-    writeAndFlush(buf, 0, buf.length);
+  public FileWriterImpl writeAndFlush(byte[] buf) {
+    return writeAndFlush(buf, 0, buf.length);
   }
 
   /**
@@ -219,10 +226,11 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * @param len    长度
    */
   @Override
-  public void writeAndFlush(byte[] buf, int offset, int len) {
+  public FileWriterImpl writeAndFlush(byte[] buf, int offset, int len) {
     synchronized (this) {
       write0(buf, offset, len, true);
     }
+    return this;
   }
 
   /**

@@ -11,7 +11,8 @@ public class UnitTest extends TestCase {
 
   @Test
   public void testMB() {
-    System.err.println("MB: " + Unit.ofMB(122, 4));
+    System.err.println("MB: " + Unit.fmtKB(122, "0.00"));
+    System.err.println("MB: " + Unit.fmtMB(8 * 1024 + 10.5 * Unit.MB, "0.00"));
   }
 
 

@@ -1,5 +1,7 @@
 package com.benefitj.core.file;
 
+import java.io.File;
+
 public interface IWriter extends AutoCloseable {
 
   /**
@@ -7,28 +9,28 @@ public interface IWriter extends AutoCloseable {
    *
    * @param str 字符串
    */
-  void write(String str);
+  IWriter write(String str);
 
   /**
    * 写入数据
    *
    * @param strings 字符串
    */
-  void write(String... strings);
+  IWriter write(String... strings);
 
   /**
    * 写入数据
    *
    * @param buf 字节缓冲
    */
-  void write(byte[] buf);
+  IWriter write(byte[] buf);
 
   /**
    * 写入数据
    *
    * @param array 字节缓冲
    */
-  void write(byte[]... array);
+  IWriter write(byte[]... array);
 
   /**
    * 写入数据
@@ -37,35 +39,35 @@ public interface IWriter extends AutoCloseable {
    * @param offset 偏移量
    * @param len    长度
    */
-  void write(byte[] buf, int offset, int len);
+  IWriter write(byte[] buf, int offset, int len);
 
   /**
    * 写入并刷新
    *
    * @param str 字符串
    */
-  void writeAndFlush(String str);
+  IWriter writeAndFlush(String str);
 
   /**
    * 写入并刷新
    *
    * @param strings 字符串
    */
-  void writeAndFlush(String ...strings);
+  IWriter writeAndFlush(String... strings);
 
   /**
    * 写入并刷新
    *
    * @param array 字节缓冲
    */
-  void writeAndFlush(byte[]... array);
+  IWriter writeAndFlush(byte[]... array);
 
   /**
    * 写入并刷新
    *
    * @param buf 字节缓冲
    */
-  void writeAndFlush(byte[] buf);
+  IWriter writeAndFlush(byte[] buf);
 
   /**
    * 写入并刷新
@@ -74,14 +76,35 @@ public interface IWriter extends AutoCloseable {
    * @param offset 偏移量
    * @param len    长度
    */
-  void writeAndFlush(byte[] buf, int offset, int len);
+  IWriter writeAndFlush(byte[] buf, int offset, int len);
 
   /**
    * 刷新
    */
-  void flush();
+  IWriter flush();
 
   @Override
   void close();
+
+
+  /**
+   * 创建文件写入器
+   *
+   * @param file 文件
+   * @return 返回文件写入器
+   */
+  static IWriter newFileWriter(String file) {
+    return newFileWriter(new File(file));
+  }
+
+  /**
+   * 创建文件写入器
+   *
+   * @param file 文件
+   * @return 返回文件写入器
+   */
+  static IWriter newFileWriter(File file) {
+    return new FileWriterImpl(file);
+  }
 
 }

@@ -89,6 +89,32 @@ public class IOUtils {
   /**
    * 计算文件大小
    *
+   * @param files 文件
+   * @return 返回计算的文件大小
+   */
+  public static long length(File[] files) {
+    return length(files, null, false);
+  }
+
+  /**
+   * 计算文件大小
+   *
+   * @param files      文件
+   * @param filter     过滤器
+   * @param multiLevel 是否包含子文件
+   * @return 返回计算的文件大小
+   */
+  public static long length(File[] files, FileFilter filter, boolean multiLevel) {
+    long length = 0;
+    for (File file : files) {
+      length += length(file, filter, multiLevel);
+    }
+    return length;
+  }
+
+  /**
+   * 计算文件大小
+   *
    * @param file 文件
    * @return 返回计算的文件大小
    */
@@ -1019,6 +1045,40 @@ public class IOUtils {
   }
 
   /**
+   * 处理文件
+   *
+   * @param files    文件数据
+   * @param consumer 处理者
+   * @param listener 进度监听
+   */
+  public static void process(File[] files, ProgressConsumer consumer, ProgressListener listener) {
+    try {
+      // 总长度
+      long totalLength = length(files);
+      // 进度
+      long totalProgress = 0;
+      for (File file : files) {
+        try (final FileInputStream fis = new FileInputStream(file);) {
+          // 新文件
+          listener.onProgressRefresh(totalLength, totalProgress, file, 0);
+          int len;
+          byte[] buf = new byte[1024 << 8];
+          long progress = 0;
+          while ((len = fis.read(buf)) > 0) {
+            progress += len;
+            totalProgress += len;
+            consumer.accept(file, buf, len);
+            // 每次写入后刷新
+            listener.onProgressRefresh(totalLength, totalProgress, file, progress);
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
    * try{} catch(e){}
    */
   public static <T> T tryThrow(Callable<T> call) {
@@ -1039,6 +1099,7 @@ public class IOUtils {
       throw new IllegalStateException(e);
     }
   }
+
 
   /**
    * 要求不超过一定大小
@@ -1067,6 +1128,38 @@ public class IOUtils {
       String errMsg = String.format("数据不能超过%.2f%s, 当前数据长度为%.2f%s", max, unit, size, unit);
       throw new IllegalArgumentException(errMsg);
     }
+  }
+
+  /**
+   * 进度监听
+   */
+  public interface ProgressListener {
+
+    /**
+     * 刷新
+     *
+     * @param totalLength   总长度
+     * @param totalProgress 总进度
+     * @param source        文件
+     * @param progress      进度
+     */
+    void onProgressRefresh(long totalLength, long totalProgress, File source, long progress);
+
+  }
+
+  @FunctionalInterface
+  public interface ProgressConsumer {
+
+    /**
+     * 接收数据
+     *
+     * @param source 源文件
+     * @param buf    读取的字节缓冲
+     * @param len    数据的长度
+     * @throws Exception
+     */
+    void accept(File source, byte[] buf, int len) throws Exception;
+
   }
 
 }

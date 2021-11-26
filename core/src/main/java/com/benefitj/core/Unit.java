@@ -1,5 +1,8 @@
 package com.benefitj.core;
 
+import java.text.DecimalFormat;
+import java.util.concurrent.TimeUnit;
+
 /**
  * 单位
  */
@@ -26,6 +29,62 @@ public class Unit {
     return Math.round(v * dividend) * 1.0 / dividend;
   }
 
+  /**
+   * 秒(毫秒)
+   *
+   * @param delta 秒数
+   * @return 返回时间
+   */
+  public static long ofSeconds(int delta) {
+    return TimeUnit.SECONDS.toMillis(delta);
+  }
+
+  /**
+   * 分钟(毫秒)
+   *
+   * @param delta 分钟数
+   * @return 返回时间
+   */
+  public static long ofMinutes(int delta) {
+    return TimeUnit.MINUTES.toMillis(delta);
+  }
+
+  /**
+   * 小时(毫秒)
+   *
+   * @param delta 小时数
+   * @return 返回时间
+   */
+  public static long ofHours(int delta) {
+    return TimeUnit.HOURS.toMillis(delta);
+  }
+
+  /**
+   * 天(毫秒)
+   *
+   * @param delta 天数
+   * @return 返回时间
+   */
+  public static long ofDays(int delta) {
+    return TimeUnit.DAYS.toMillis(delta);
+  }
+
+  /**
+   * 获取当前时间
+   */
+  public static long now() {
+    return System.currentTimeMillis();
+  }
+
+  /**
+   * 和当前时间的差值
+   *
+   * @param delta 时间
+   * @return 返回与当前时间的差
+   */
+  public static long diffNow(long delta) {
+    return now() - delta;
+  }
 
   public static final long KB = 1024L;
   public static final long MB = 1024L * KB;
@@ -118,6 +177,50 @@ public class Unit {
 
   private static double ofSize(long len, int digits, long unit) {
     return digits((len * 1.0) / unit, digits);
+  }
+
+  /**
+   * 格式化 KB
+   *
+   * @param v       数值
+   * @param pattern 格式: 0.00，保留小数点后2位
+   * @return 返回格式化的结果
+   */
+  public static String fmtKB(double v, String pattern) {
+    return fmt(v / KB, pattern);
+  }
+
+  /**
+   * 格式化 MB
+   *
+   * @param v       数值
+   * @param pattern 格式: 0.00，保留小数点后2位
+   * @return 返回格式化的结果
+   */
+  public static String fmtMB(double v, String pattern) {
+    return fmt(v / MB, pattern);
+  }
+
+  /**
+   * 格式化 GB
+   *
+   * @param v       数值
+   * @param pattern 格式: 0.00，保留小数点后2位
+   * @return 返回格式化的结果
+   */
+  public static String fmtGB(double v, String pattern) {
+    return fmt(v / GB, pattern);
+  }
+
+  /**
+   * 格式化
+   *
+   * @param v       数值
+   * @param pattern 格式: 0.00，保留小数点后2位
+   * @return 返回格式化的结果
+   */
+  public static String fmt(double v, String pattern) {
+    return new DecimalFormat(pattern).format(v);
   }
 
 }

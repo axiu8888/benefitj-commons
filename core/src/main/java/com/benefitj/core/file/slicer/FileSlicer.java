@@ -59,58 +59,60 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
   }
 
   @Override
-  public void write(String str) {
-    writeAndFlush(str.getBytes());
+  public FileSlicer<T> write(String str) {
+    return writeAndFlush(str.getBytes());
   }
 
   @Override
-  public void write(String... strings) {
-    writeAndFlush(strings);
+  public FileSlicer<T> write(String... strings) {
+    return writeAndFlush(strings);
   }
 
   @Override
-  public void write(byte[] buf) {
-    writeAndFlush(buf);
+  public FileSlicer<T> write(byte[] buf) {
+    return writeAndFlush(buf);
   }
 
   @Override
-  public void write(byte[]... array) {
-    writeAndFlush(array);
+  public FileSlicer<T> write(byte[]... array) {
+    return writeAndFlush(array);
   }
 
   @Override
-  public void write(byte[] buf, int offset, int len) {
-    writeAndFlush(buf, offset, len);
+  public FileSlicer<T> write(byte[] buf, int offset, int len) {
+    return writeAndFlush(buf, offset, len);
   }
 
   @Override
-  public void writeAndFlush(String str) {
-    writeAndFlush(str.getBytes());
+  public FileSlicer<T> writeAndFlush(String str) {
+    return writeAndFlush(str.getBytes());
   }
 
   @Override
-  public void writeAndFlush(String... strings) {
+  public FileSlicer<T> writeAndFlush(String... strings) {
     for (int i = 0; i < strings.length; i++) {
       byte[] buf = strings[i].getBytes();
       write0(buf, 0, buf.length, i == strings.length - 1);
     }
+    return this;
   }
 
   @Override
-  public void writeAndFlush(byte[]... array) {
+  public FileSlicer<T> writeAndFlush(byte[]... array) {
     for (int i = 0; i < array.length; i++) {
       write0(array[i], 0, array[i].length, i == array.length - 1);
     }
+    return this;
   }
 
   @Override
-  public void writeAndFlush(byte[] buf) {
-    write0(buf, 0, buf.length);
+  public FileSlicer<T> writeAndFlush(byte[] buf) {
+    return write0(buf, 0, buf.length);
   }
 
   @Override
-  public void writeAndFlush(byte[] buf, int offset, int len) {
-    write0(buf, offset, len);
+  public FileSlicer<T> writeAndFlush(byte[] buf, int offset, int len) {
+    return write0(buf, offset, len);
   }
 
   /**
@@ -120,8 +122,8 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
    * @param offset 偏移量
    * @param len    长度
    */
-  protected void write0(byte[] buf, int offset, int len) {
-    write0(buf, offset, len, true);
+  protected FileSlicer<T> write0(byte[] buf, int offset, int len) {
+    return write0(buf, offset, len, true);
   }
 
   /**
@@ -132,7 +134,7 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
    * @param len       长度
    * @param checkSize 是否检查文件大小
    */
-  protected void write0(byte[] buf, int offset, int len, boolean checkSize) {
+  protected FileSlicer<T> write0(byte[] buf, int offset, int len, boolean checkSize) {
     boolean newFile = false;
     T writer;
     synchronized (this) {
@@ -149,10 +151,11 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
     if (newFile) {
       getFileListener().onHandle(writer, writer.getSource());
     }
+    return this;
   }
 
   @Override
-  public void flush() {
+  public FileSlicer<T> flush() {
     T writer;
     synchronized (this) {
       writer = getWriter(false);
@@ -164,6 +167,7 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
     if (writer != null) {
       getFileListener().onHandle(writer, writer.getSource());
     }
+    return this;
   }
 
   @Override
@@ -242,32 +246,36 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
     return cacheDir;
   }
 
-  public void setCacheDir(File cacheDir) {
+  public FileSlicer<T> setCacheDir(File cacheDir) {
     this.cacheDir = cacheDir;
+    return this;
   }
 
   public long getMaxSize() {
     return maxSize;
   }
 
-  public void setMaxSize(long maxSize) {
+  public FileSlicer<T> setMaxSize(long maxSize) {
     this.maxSize = maxSize > (1024 << 10) ? maxSize : (1024 << 10);
+    return this;
   }
 
   public FileFactory<T> getFileFactory() {
     return fileFactory;
   }
 
-  public void setFileFactory(FileFactory<T> fileFactory) {
+  public FileSlicer<T> setFileFactory(FileFactory<T> fileFactory) {
     this.fileFactory = fileFactory;
+    return this;
   }
 
   public FileListener<T> getFileListener() {
     return fileListener;
   }
 
-  public void setFileListener(FileListener<T> fileListener) {
+  public FileSlicer<T> setFileListener(FileListener<T> fileListener) {
     this.fileListener = fileListener;
+    return this;
   }
 
 }

@@ -17,14 +17,14 @@ public class ArrayUtils {
    * @param array    数组
    * @param consumer 处理函数
    */
-  public static void arrayTo(Object array, Consumer<Object> consumer) {
+  public static <T> void arrayTo(Object array, Consumer<T> consumer) {
     if (!array.getClass().isArray()) {
       throw new IllegalStateException("仅支持数组类型!");
     }
 
     int length = Array.getLength(array);
     for (int i = 0; i < length; i++) {
-      consumer.accept(Array.get(array, i));
+      consumer.accept((T) Array.get(array, i));
     }
   }
 
@@ -33,12 +33,12 @@ public class ArrayUtils {
    *
    * @param array          数组
    * @param mappedFunction 转换函数
-   * @param <T>            类型
+   * @param <R>            类型
    * @return 返回列表
    */
-  public static <T> List<T> arrayToList(Object array, Function<Object, T> mappedFunction) {
-    List<T> list = new ArrayList<>(Array.getLength(array));
-    arrayTo(array, element -> list.add(mappedFunction.apply(element)));
+  public static <T, R> List<R> arrayToList(Object array, Function<T, R> mappedFunction) {
+    List<R> list = new ArrayList<>(Array.getLength(array));
+    arrayTo(array, (Consumer<T>) element -> list.add(mappedFunction.apply(element)));
     return list;
   }
 
@@ -49,7 +49,7 @@ public class ArrayUtils {
    * @return 返回转换后的列表
    */
   public static List<Short> arrayToShort(Object array) {
-    return arrayToList(array, o -> ((Number) o).shortValue());
+    return arrayToList(array, Number::shortValue);
   }
 
   /**
@@ -59,7 +59,7 @@ public class ArrayUtils {
    * @return 返回转换后的列表
    */
   public static List<Integer> arrayToInteger(Object array) {
-    return arrayToList(array, o -> ((Number) o).intValue());
+    return arrayToList(array, Number::intValue);
   }
 
   /**
@@ -69,7 +69,7 @@ public class ArrayUtils {
    * @return 返回转换后的列表
    */
   public static List<Long> arrayToLong(Object array) {
-    return arrayToList(array, o -> ((Number) o).longValue());
+    return arrayToList(array, Number::longValue);
   }
 
   /**
@@ -79,7 +79,7 @@ public class ArrayUtils {
    * @return 返回转换后的列表
    */
   public static List<Float> arrayToFloat(Object array) {
-    return arrayToList(array, o -> ((Number) o).floatValue());
+    return arrayToList(array, Number::floatValue);
   }
 
   /**
@@ -89,7 +89,7 @@ public class ArrayUtils {
    * @return 返回转换后的列表
    */
   public static List<Double> arrayToDouble(Object array) {
-    return arrayToList(array, o -> ((Number) o).doubleValue());
+    return arrayToList(array, Number::doubleValue);
   }
 
 }
