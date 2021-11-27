@@ -50,7 +50,7 @@ public class BodyUtils {
    * @param consumer 处理数据
    * @param listener 进度监听
    */
-  public static void process(ResponseBody body, IBiConsumer<byte[], Integer> consumer, ProgressListener listener) {
+  public static void progressResponseBody(ResponseBody body, IBiConsumer<byte[], Integer> consumer, ProgressListener listener) {
     ProgressResponseBody prb = new ProgressResponseBody(body, listener);
     try (final InputStream is = prb.byteStream();) {
       byte[] buf = new byte[1024 << 8];
