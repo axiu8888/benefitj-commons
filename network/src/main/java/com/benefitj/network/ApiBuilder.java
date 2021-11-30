@@ -105,17 +105,25 @@ public interface ApiBuilder<T> {
   ApiBuilder<T> addConverterFactories(Converter.Factory... factories);
 
   /**
+   * 添加转换器工厂 <br/>
+   *
+   * @param factory 转换器工厂
+   * @return 返回 RetrofitApi
+   */
+  ApiBuilder<T> addConverterFactoryIfAbsent(Converter.Factory factory);
+
+  /**
    * 添加默认转换器工厂
    */
   default ApiBuilder<T> useDefaultConverterFactories() {
     if (isClassExist("retrofit2.converter.scalars.ScalarsConverterFactory")) {
-      addConverterFactories(ScalarsConverterFactory.create());
+      addConverterFactoryIfAbsent(ScalarsConverterFactory.create());
     }
     if (isClassExist("retrofit2.converter.jackson.JacksonConverterFactory")) {
-      addConverterFactories(JacksonConverterFactory.create());
+      addConverterFactoryIfAbsent(JacksonConverterFactory.create());
     }
     if (isClassExist("retrofit2.converter.gson.GsonConverterFactory")) {
-      addConverterFactories(GsonConverterFactory.create());
+      addConverterFactoryIfAbsent(GsonConverterFactory.create());
     }
     return this;
   }
@@ -135,11 +143,18 @@ public interface ApiBuilder<T> {
   ApiBuilder<T> addCallAdapterFactories(CallAdapter.Factory... factories);
 
   /**
+   * 添加调用适配器工厂，如: <br/>
+   * <p>
+   * {@link retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory#create()} <br/>
+   */
+  ApiBuilder<T> addCallAdapterFactoryIfAbsent(CallAdapter.Factory factory);
+
+  /**
    * 添加默认调用适配器工厂
    */
   default ApiBuilder<T> useDefaultCallAdapterFactories() {
     if (isClassExist("retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory")) {
-      addCallAdapterFactories(RxJava2CallAdapterFactory.create());
+      addCallAdapterFactoryIfAbsent(RxJava2CallAdapterFactory.create());
     }
     return this;
   }

@@ -6,9 +6,7 @@ import retrofit2.CallAdapter;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -38,11 +36,11 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
   /**
    * 转换器工厂
    */
-  private final List<Converter.Factory> converterFactories = new LinkedList<>();
+  private final LinkedHashMap<Class<? extends Converter.Factory>, Converter.Factory> converterFactories = new LinkedHashMap<>();
   /**
    * 调用适配器工厂
    */
-  private final List<CallAdapter.Factory> callAdapterFactories = new LinkedList<>();
+  private final LinkedHashMap<Class<? extends CallAdapter.Factory>, CallAdapter.Factory> callAdapterFactories = new LinkedHashMap<>();
 
   private boolean useDefault = true;
 
@@ -105,23 +103,39 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
 
   @Override
   public List<Converter.Factory> getConverterFactories() {
-    return converterFactories;
+    return new ArrayList<>(converterFactories.values());
   }
 
   @Override
   public ApiBuilderImpl<T> addConverterFactories(Converter.Factory... factories) {
-    this.converterFactories.addAll(Arrays.asList(factories));
+    for (Converter.Factory factory : factories) {
+      this.converterFactories.put(factory.getClass(), factory);
+    }
+    return this;
+  }
+
+  @Override
+  public ApiBuilder<T> addConverterFactoryIfAbsent(Converter.Factory factory) {
+    this.converterFactories.putIfAbsent(factory.getClass(), factory);
     return this;
   }
 
   @Override
   public List<CallAdapter.Factory> getCallAdapterFactories() {
-    return callAdapterFactories;
+    return new ArrayList<>(callAdapterFactories.values());
   }
 
   @Override
   public ApiBuilderImpl<T> addCallAdapterFactories(CallAdapter.Factory... factories) {
-    this.callAdapterFactories.addAll(Arrays.asList(factories));
+    for (CallAdapter.Factory factory : factories) {
+      this.callAdapterFactories.put(factory.getClass(), factory);
+    }
+    return this;
+  }
+
+  @Override
+  public ApiBuilder<T> addCallAdapterFactoryIfAbsent(CallAdapter.Factory factory) {
+    this.callAdapterFactories.putIfAbsent(factory.getClass(), factory);
     return this;
   }
 
