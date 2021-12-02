@@ -1,7 +1,5 @@
 package com.benefitj.mqtt;
 
-import com.benefitj.core.concurrent.ConcurrentHashSet;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,25 +27,32 @@ public interface MqttMessageDispatcher<T> {
    * @param message   消息
    */
   default void handleMessage(String topicName, T message) {
-    MqttTopic topic = MqttTopic.get(topicName);
-    for (Map.Entry<MqttMessageSubscriber<T>, Set<MqttTopic>> entry : getSubscribers().entrySet()) {
-      try {
-        for (MqttTopic filter : entry.getValue()) {
-          if (filter.match(topic)) {
-            entry.getKey().onMessage(topicName, message);
-            break;
-          }
+    final MqttTopic topic = MqttTopic.get(topicName);
+    getSubscribers().forEach((subscriber, subscription) -> {
+      if (subscription.match(topic)) {
+        try {
+          subscriber.onMessage(topicName, message);
+        } catch (Exception e) {
+          e.printStackTrace();
         }
-      } catch (Exception e) {
-        e.printStackTrace();
       }
-    }
+    });
   }
 
   /**
    * 订阅
    */
-  Map<MqttMessageSubscriber<T>, Set<MqttTopic>> getSubscribers();
+  Map<MqttMessageSubscriber<T>, TopicSubscription<T>> getSubscribers();
+
+  /**
+   * 获取一个新的或存在的订阅者
+   *
+   * @param subscriber 订阅回调
+   * @return 返回对应的订阅者
+   */
+  default TopicSubscription<T> obtainSubscriber(MqttMessageSubscriber<T> subscriber) {
+    return getSubscribers().computeIfAbsent(subscriber, TopicSubscription::new);
+  }
 
   /**
    * 订阅
@@ -76,19 +81,24 @@ public interface MqttMessageDispatcher<T> {
    * @param subscriber 订阅回调
    */
   default void subscribe(List<String> topics, MqttMessageSubscriber<T> subscriber) {
-    Set<MqttTopic> topicSet = getSubscribers().computeIfAbsent(subscriber, key -> new ConcurrentHashSet<>());
-    topicSet.addAll(topics.stream()
-        .map(MqttTopic::get)
-        .collect(Collectors.toSet()));
-    subscribeNotify(topics);
+    TopicSubscription<T> subscription = obtainSubscriber(subscriber);
+    Collection<MqttTopic> mqttTopics = wrap(topics);
+    // 过滤出重复的topic
+    List<String> uniqueTopics = getUniqueTopics(mqttTopics);
+    subscription.addAll(mqttTopics);
+    subscribeNotify(subscription, topics, uniqueTopics);
   }
 
   /**
    * 订阅通知
    *
-   * @param topics 主题
+   * @param subscription 主题订阅者
+   * @param topics       主题
+   * @param uniqueTopics 唯一的主题
    */
-  default void subscribeNotify(List<String> topics) {
+  default void subscribeNotify(TopicSubscription<T> subscription,
+                               List<String> topics,
+                               List<String> uniqueTopics) {
     // ignore
   }
 
@@ -119,24 +129,27 @@ public interface MqttMessageDispatcher<T> {
    * @param subscriber 订阅回调
    */
   default void unsubscribe(List<String> topics, MqttMessageSubscriber<T> subscriber) {
-    Set<MqttTopic> topicSet = getSubscribers().get(subscriber);
-    if (topicSet != null) {
-      topicSet.removeAll(topics.stream()
-          .map(MqttTopic::get)
-          .collect(Collectors.toSet()));
-      if (topicSet.isEmpty()) {
+    TopicSubscription<T> subscription = getSubscribers().get(subscriber);
+    if (subscription != null) {
+      Collection<MqttTopic> mqttTopics = wrap(topics);
+      subscription.removeAll(mqttTopics);
+      if (subscription.isEmpty()) {
         getSubscribers().remove(subscriber);
       }
-      unsubscribeNotify(topics);
+      unsubscribeNotify(subscription, topics, getUniqueTopics(mqttTopics));
     }
   }
 
   /**
    * 取消订阅的通知
    *
-   * @param topics 主题
+   * @param subscription 主题订阅者
+   * @param topics       主题
+   * @param uniqueTopics 唯一的主题
    */
-  default void unsubscribeNotify(List<String> topics) {
+  default void unsubscribeNotify(TopicSubscription<T> subscription,
+                                 List<String> topics,
+                                 List<String> uniqueTopics) {
     // ignore
   }
 
@@ -146,30 +159,82 @@ public interface MqttMessageDispatcher<T> {
    * @param subscriber 订阅回调
    */
   default void unsubscribe(MqttMessageSubscriber<T> subscriber) {
-    unsubscribe("#", subscriber);
+    TopicSubscription<T> subscription = getSubscribers().remove(subscriber);
+    if (subscription != null) {
+      unsubscribeNotify(subscription, subscription.getTopicNames(), getUniqueTopics(subscription));
+    }
+  }
+
+  /**
+   * 是否存在主题
+   *
+   * @param topic 主题
+   * @return 如果存在返回true，否则返回false
+   */
+  default boolean hasMqttTopic(String topic) {
+    return hasMqttTopic(MqttTopic.get(topic));
+  }
+
+  /**
+   * 是否存在主题
+   *
+   * @param topic 主题
+   * @return 如果存在返回true，否则返回false
+   */
+  default boolean hasMqttTopic(MqttTopic topic) {
+    for (TopicSubscription<T> subscription : getSubscribers().values()) {
+      if (subscription.contains(topic)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * 获取唯一的主题
+   *
+   * @param topics 判断的主题集合
+   * @return 返回唯一的主题
+   */
+  default List<String> getUniqueTopics(Collection<MqttTopic> topics) {
+    return topics.stream()
+        .filter(topic -> !hasMqttTopic(topic))
+        .map(MqttTopic::getTopicName)
+        .collect(Collectors.toList());
   }
 
   /**
    * 获取所有的订阅主题
    */
-  default List<MqttTopic> getMqttTopics() {
+  default Set<MqttTopic> getMqttTopics() {
     return getSubscribers().values()
         .stream()
         .flatMap(Collection::stream)
-        .distinct()
-        .collect(Collectors.toList());
+        .collect(Collectors.toSet());
   }
 
   /**
    * 获取消息订阅的主题数组
    */
-  default String[] getMqttTopicArray() {
+  default String[] getTopicArray() {
     return getSubscribers().values()
         .stream()
         .flatMap(Collection::stream)
         .map(MqttTopic::getTopicName)
         .distinct()
         .toArray(String[]::new);
+  }
+
+  default Collection<MqttTopic> wrap(Collection<String> topics) {
+    return topics.stream()
+        .map(MqttTopic::get)
+        .collect(Collectors.toSet());
+  }
+
+  default Collection<String> unwrap(Collection<MqttTopic> topics) {
+    return topics.stream()
+        .map(MqttTopic::getTopicName)
+        .collect(Collectors.toSet());
   }
 
 }

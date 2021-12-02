@@ -13,10 +13,10 @@ public class MqttMessageDispatcherImpl<T> implements MqttMessageDispatcher<T> {
   /**
    * 订阅
    */
-  private final Map<MqttMessageSubscriber<T>, Set<MqttTopic>> subscribers = new ConcurrentHashMap<>();
+  private final Map<MqttMessageSubscriber<T>, TopicSubscription<T>> subscribers = new ConcurrentHashMap<>();
 
   @Override
-  public Map<MqttMessageSubscriber<T>, Set<MqttTopic>> getSubscribers() {
+  public Map<MqttMessageSubscriber<T>, TopicSubscription<T>> getSubscribers() {
     return subscribers;
   }
 }

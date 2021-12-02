@@ -1,13 +1,13 @@
 package com.benefitj.mqtt.client;
 
 import com.benefitj.mqtt.MqttMessageDispatcherImpl;
-import com.benefitj.mqtt.MqttTopic;
+import com.benefitj.mqtt.TopicSubscription;
 import io.vertx.core.AsyncResult;
 import io.vertx.mqtt.messages.MqttConnAckMessage;
 import io.vertx.mqtt.messages.MqttPublishMessage;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * MQTT消息分发器
@@ -34,13 +34,9 @@ public class VertxMqttMessageDispatcher extends MqttMessageDispatcherImpl<MqttPu
   public void onConnected(VertxMqttClient client, AsyncResult<MqttConnAckMessage> event, boolean reconnect) {
     if (event.succeeded() && isAutoSubscribe()) {
       this.client = client;
-      List<String> topics = getMqttTopics()
-          .stream()
-          .map(MqttTopic::getTopicName)
-          .distinct()
-          .collect(Collectors.toList());
-      if (!topics.isEmpty()) {
-        client.subscribe(topics);
+      String[] array = getTopicArray();
+      if (array.length > 0) {
+        client.subscribe(Arrays.asList(array));
       }
     }
   }
@@ -56,18 +52,26 @@ public class VertxMqttMessageDispatcher extends MqttMessageDispatcherImpl<MqttPu
   }
 
   @Override
-  public void subscribeNotify(List<String> topics) {
-    VertxMqttClient client = getClient();
-    if (client != null && topics != null && !topics.isEmpty()) {
-      client.subscribe(topics);
+  public void subscribeNotify(TopicSubscription<MqttPublishMessage> subscription,
+                              List<String> topics,
+                              List<String> uniqueTopics) {
+    if (!uniqueTopics.isEmpty()) {
+      VertxMqttClient client = getClient();
+      if (client != null) {
+        client.subscribe(topics);
+      }
     }
   }
 
   @Override
-  public void unsubscribeNotify(List<String> topics) {
-    VertxMqttClient client = getClient();
-    if (client != null && topics != null && !topics.isEmpty()) {
-      client.unsubscribe(topics);
+  public void unsubscribeNotify(TopicSubscription<MqttPublishMessage> subscription,
+                                List<String> topics,
+                                List<String> uniqueTopics) {
+    if (!uniqueTopics.isEmpty()) {
+      VertxMqttClient client = getClient();
+      if (client != null) {
+        client.unsubscribe(topics);
+      }
     }
   }
 
