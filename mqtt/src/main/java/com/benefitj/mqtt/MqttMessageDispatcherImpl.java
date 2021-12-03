@@ -1,7 +1,6 @@
 package com.benefitj.mqtt;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**

@@ -1,8 +1,8 @@
-package com.benefitj.mqtt.client;
+package com.benefitj.mqtt.vertx.client;
 
 import com.benefitj.core.AttributeMap;
 import com.benefitj.core.IdUtils;
-import com.benefitj.mqtt.VerticleInitializer;
+import com.benefitj.mqtt.vertx.VerticleInitializer;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;

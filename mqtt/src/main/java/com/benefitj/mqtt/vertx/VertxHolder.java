@@ -1,4 +1,4 @@
-package com.benefitj.mqtt;
+package com.benefitj.mqtt.vertx;
 
 import io.vertx.core.*;
 

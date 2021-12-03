@@ -1,4 +1,4 @@
-package com.benefitj.mqtt.client;
+package com.benefitj.mqtt.vertx.client;
 
 import com.benefitj.mqtt.MqttMessageDispatcherImpl;
 import com.benefitj.mqtt.TopicSubscription;

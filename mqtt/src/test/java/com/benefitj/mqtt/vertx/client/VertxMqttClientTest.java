@@ -1,7 +1,7 @@
-package com.benefitj.mqtt.client;
+package com.benefitj.mqtt.vertx.client;
 
 import com.benefitj.core.EventLoop;
-import com.benefitj.mqtt.VertxHolder;
+import com.benefitj.mqtt.vertx.VertxHolder;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.After;
 import org.junit.Before;

@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package com.benefitj.mqtt.server;
+package com.benefitj.mqtt.vertx.server;
 
-import com.benefitj.core.ReflectUtils;
 import com.benefitj.mqtt.MqttTopic;
-import com.benefitj.mqtt.VerticleInitializer;
+import com.benefitj.mqtt.vertx.VerticleInitializer;
 import io.vertx.core.*;
-import io.vertx.core.impl.Deployment;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttServer;
@@ -29,14 +26,11 @@ import io.vertx.mqtt.MqttServerOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**

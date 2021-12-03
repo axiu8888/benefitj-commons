@@ -1,8 +1,7 @@
-package com.benefitj.mqtt.server;
+package com.benefitj.mqtt.vertx.server;
 
 import com.benefitj.core.EventLoop;
-import com.benefitj.mqtt.VerticleInitializer;
-import com.benefitj.mqtt.VertxHolder;
+import com.benefitj.mqtt.vertx.VertxHolder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

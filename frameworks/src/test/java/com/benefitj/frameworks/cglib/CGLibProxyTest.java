@@ -1,8 +1,6 @@
 package com.benefitj.frameworks.cglib;
 
 import com.benefitj.core.ReflectUtils;
-import com.benefitj.frameworks.cglib.CGLibProxy;
-import com.benefitj.frameworks.cglib.EnhancerBuilder;
 import net.sf.cglib.proxy.MethodInterceptor;
 import org.junit.After;
 import org.junit.Before;
@@ -10,6 +8,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CGLibProxyTest {
 
@@ -77,6 +76,25 @@ public class CGLibProxyTest {
 
   }
 
+  @Test
+  public void testInterfaceSource() {
+
+    Object[] proxyObjects = new Object[]{new ConcurrentHashMap<>()};
+    MapWrapper wrapper = InterfaceSourceProxy.newProxy(new Class<?>[]{MapWrapper.class}, proxyObjects);
+
+    wrapper.put("key-1", "1");
+    wrapper.put("key-2", "2");
+    wrapper.put("key-3", "3");
+
+    System.err.println(wrapper.keySet());
+    System.err.println(wrapper.values());
+    System.err.println("wrapper: " + wrapper);
+
+    System.err.println("proxyObjects: " + proxyObjects[0]);
+
+
+  }
+
 
   @After
   public void tearDown() throws Exception {
@@ -90,6 +108,10 @@ public class CGLibProxyTest {
       return "hello world !";
     }
 
+  }
+
+
+  public interface MapWrapper extends Map<String, Object> {
   }
 
 

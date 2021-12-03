@@ -1,4 +1,4 @@
-package com.benefitj.mqtt.client;
+package com.benefitj.mqtt.vertx.client;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.mqtt.messages.MqttConnAckMessage;

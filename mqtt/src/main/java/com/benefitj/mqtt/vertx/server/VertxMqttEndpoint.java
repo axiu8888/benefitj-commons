@@ -1,4 +1,4 @@
-package com.benefitj.mqtt.server;
+package com.benefitj.mqtt.vertx.server;
 
 import com.benefitj.mqtt.MqttTopic;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;

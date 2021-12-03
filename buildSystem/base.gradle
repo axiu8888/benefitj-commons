@@ -32,7 +32,6 @@ dependencies {
     testCompile 'junit:junit:4.13.2'
 
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
 
     def myDependencies = [
             "org.projectlombok:lombok:${lombokVersion}",
