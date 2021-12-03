@@ -28,7 +28,7 @@ public class QRCodeUtilTest extends BaseTest {
         .setWidth(500)// 设置二维码的宽高，如果不相等，二维码会变小
         .setHeight(500) // 设置二维码的宽高，如果不相等，二维码会变小
         .setColor(Color.BLACK.getRGB())// 设置二维码的颜色
-        .setBgColor(Color.YELLOW.getRGB())// 设置二维码的背景色色
+        .setBgColor(Color.YELLOW.getRGB())// 设置二维码的背景色
         .setIconInput(new FileInputStream(iconFile)) // 嵌入图标
         .setIconHeight(150)
         .setIconWidth(150)

@@ -116,7 +116,7 @@ public interface EnhancerBuilder {
    * @param <T> 对象类型
    * @return 返回创建的对象
    */
-  default <T> T create() {
+  default <T> T build() {
     return (T) enhancer().create();
   }
 
@@ -128,7 +128,7 @@ public interface EnhancerBuilder {
    * @param <T>           对象类型
    * @return 返回创建的对象
    */
-  default <T> T create(Class[] argumentTypes, Object[] arguments) {
+  default <T> T build(Class[] argumentTypes, Object[] arguments) {
     return (T) enhancer().create(argumentTypes, arguments);
   }
 

@@ -36,9 +36,10 @@ public class StackLogger implements Logger {
       synchronized (this) {
         try {
           StackTraceElement stack = StackUtils.get(4);
+          String methodName = stack.getMethodName();
           ReflectUtils.setFieldValue(nameField, log, String.format("%s.%s(%d)"
               , StackUtils.getSimpleClassName(stack)
-              , stack.getMethodName()
+              , methodName.startsWith("lambda") ? "lambda" : methodName
               , stack.getLineNumber()
           ));
           r.run();

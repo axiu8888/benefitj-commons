@@ -3,6 +3,9 @@ package com.benefitj.frameworks.cglib;
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 
+/**
+ * 方法过滤器
+ */
 public class MethodFilter {
 
   private static final Class<?>[] EMPTY_TYPES = new Class<?>[0];
@@ -44,7 +47,6 @@ public class MethodFilter {
     if (method.equals(getMethod())) {
       return true;
     }
-
     if (method.getName().equals(getName())) {
       Class<?>[] types = getParameterTypes();
       types = types != null ? types : EMPTY_TYPES;
@@ -57,7 +59,6 @@ public class MethodFilter {
         return true;
       }
     }
-
     return false;
   }
 

@@ -331,8 +331,8 @@ public class QRCodeUtils {
 
     // 压缩icon
     if (options.isCompress()) {
-      width = width > options.getIconWidth() ? options.getIconWidth() : width;
-      height = height > options.getIconHeight() ? options.getIconHeight() : height;
+      width = Math.min(width, options.getIconWidth());
+      height = Math.min(height, options.getIconHeight());
 
       Image tempImage = iconImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
       Graphics g = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB).getGraphics();
