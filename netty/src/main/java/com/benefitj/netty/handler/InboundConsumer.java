@@ -2,7 +2,7 @@ package com.benefitj.netty.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 
-public interface InboundHandlerBiConsumer<I> {
+public interface InboundConsumer<I> {
 
   /**
    * 处理消息
@@ -11,6 +11,6 @@ public interface InboundHandlerBiConsumer<I> {
    * @param ctx     上下文对象
    * @param msg     消息
    */
-  void accept(ByteBufCopyInboundHandler<I> handler, ChannelHandlerContext ctx, I msg);
+  void accept(InboundHandler<I> handler, ChannelHandlerContext ctx, I msg);
 
 }

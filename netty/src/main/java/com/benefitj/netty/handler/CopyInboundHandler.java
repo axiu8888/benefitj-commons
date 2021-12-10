@@ -10,28 +10,23 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * @param <I>
  */
 @ChannelHandler.Sharable
-public abstract class ByteBufCopyInboundHandler<I> extends SimpleChannelInboundHandler<I>
-  implements ByteBufCopy {
+public abstract class CopyInboundHandler<I> extends SimpleChannelInboundHandler<I> implements ByteBufCopy {
 
   private final ByteBufCopy bufCopy = ByteBufCopy.newByteBufCopy();
 
-  public ByteBufCopyInboundHandler() {
+  public CopyInboundHandler() {
   }
 
-  public ByteBufCopyInboundHandler(boolean autoRelease) {
+  public CopyInboundHandler(boolean autoRelease) {
     super(autoRelease);
   }
 
-  public ByteBufCopyInboundHandler(Class<? extends I> inboundMessageType) {
+  public CopyInboundHandler(Class<? extends I> inboundMessageType) {
     super(inboundMessageType);
   }
 
-  public ByteBufCopyInboundHandler(Class<? extends I> inboundMessageType, boolean autoRelease) {
+  public CopyInboundHandler(Class<? extends I> inboundMessageType, boolean autoRelease) {
     super(inboundMessageType, autoRelease);
-  }
-
-  public ByteBufCopy getBufCopy() {
-    return bufCopy;
   }
 
   @Override

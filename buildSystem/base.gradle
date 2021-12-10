@@ -33,7 +33,7 @@ dependencies {
 
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-    def myDependencies = [
+    def deps = [
             "org.projectlombok:lombok:${lombokVersion}",
             'javax.inject:javax.inject:1',
             'com.google.code.findbugs:jsr305:3.0.2',
@@ -45,9 +45,9 @@ dependencies {
             'com.alibaba:fastjson:1.2.78',
     ]
 
-    myDependencies.forEach({
+    deps.forEach({
         implementation(it)
-        testCompile(it)
+        testImplementation(it)
     })
 
 }

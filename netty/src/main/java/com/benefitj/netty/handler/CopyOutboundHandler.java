@@ -5,17 +5,17 @@ import io.netty.channel.*;
 import io.netty.util.internal.TypeParameterMatcher;
 
 @ChannelHandler.Sharable
-public abstract class ByteBufCopyOutboundHandler<I> extends ChannelOutboundHandlerAdapter
+public abstract class CopyOutboundHandler<I> extends ChannelOutboundHandlerAdapter
     implements ByteBufCopy {
 
   private final ByteBufCopy bufCopy = ByteBufCopy.newByteBufCopy();
   private final TypeParameterMatcher matcher;
 
-  public ByteBufCopyOutboundHandler() {
-    this.matcher = TypeParameterMatcher.find(this, ByteBufCopyOutboundHandler.class, "I");
+  public CopyOutboundHandler() {
+    this.matcher = TypeParameterMatcher.find(this, CopyOutboundHandler.class, "I");
   }
 
-  public ByteBufCopyOutboundHandler(Class<? extends I> outboundMessageType) {
+  public CopyOutboundHandler(Class<? extends I> outboundMessageType) {
     this.matcher = TypeParameterMatcher.get(outboundMessageType);
   }
 

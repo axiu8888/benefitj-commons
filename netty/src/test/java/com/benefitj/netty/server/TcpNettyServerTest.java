@@ -2,9 +2,8 @@ package com.benefitj.netty.server;
 
 import com.benefitj.core.EventLoop;
 import com.benefitj.netty.NettyFactory;
-import com.benefitj.netty.handler.BiConsumerInboundHandler;
-import com.benefitj.netty.handler.ByteBufCopyInboundHandler;
-import com.benefitj.netty.handler.InboundHandlerBiConsumer;
+import com.benefitj.netty.handler.InboundHandler;
+import com.benefitj.netty.handler.InboundConsumer;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -25,7 +24,6 @@ public class TcpNettyServerTest {
 
   @Before
   public void setUp() throws Exception {
-
   }
 
   @Test
@@ -41,7 +39,7 @@ public class TcpNettyServerTest {
                 // http 消息聚合器，512*1024为接收的最大contentlength
                 .addLast(new HttpObjectAggregator(512 * 1024))
                 // 请求处理器
-                .addLast(BiConsumerInboundHandler.newHandler(FullHttpRequest.class, new HttpRequestConsumer()))
+                .addLast(InboundHandler.newHandler(FullHttpRequest.class, new HttpRequestConsumer()))
             ;
           }
         })
@@ -56,9 +54,9 @@ public class TcpNettyServerTest {
   }
 
 
-  static class HttpRequestConsumer implements InboundHandlerBiConsumer<FullHttpRequest> {
+  static class HttpRequestConsumer implements InboundConsumer<FullHttpRequest> {
     @Override
-    public void accept(ByteBufCopyInboundHandler<FullHttpRequest> handler, ChannelHandlerContext ctx, FullHttpRequest req) {
+    public void accept(InboundHandler<FullHttpRequest> handler, ChannelHandlerContext ctx, FullHttpRequest req) {
       //100 Continue
       if (HttpUtil.is100ContinueExpected(req)) {
         ctx.write(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));

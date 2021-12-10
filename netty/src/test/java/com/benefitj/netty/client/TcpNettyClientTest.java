@@ -1,6 +1,6 @@
 package com.benefitj.netty.client;
 
-import com.benefitj.netty.handler.BiConsumerInboundHandler;
+import com.benefitj.netty.handler.InboundHandler;
 import com.benefitj.netty.log.Log4jNettyLogger;
 import com.benefitj.netty.log.NettyLogger;
 import io.netty.channel.Channel;
@@ -54,7 +54,7 @@ public class TcpNettyClientTest {
         ch.pipeline()
             .addLast(new StringDecoder(StandardCharsets.UTF_8))
             .addLast(new StringEncoder(StandardCharsets.UTF_8))
-            .addLast(BiConsumerInboundHandler.newByteBufHandler((handler, ctx, msg) -> {
+            .addLast(InboundHandler.newByteBufHandler((handler, ctx, msg) -> {
               byte[] data = handler.copy(msg);
               log.info("receive[{}], remote: {}, data: {}"
                   , ctx.channel().id().asShortText()

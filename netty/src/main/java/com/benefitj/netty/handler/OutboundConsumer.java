@@ -3,7 +3,7 @@ package com.benefitj.netty.handler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 
-public interface OutboundHandlerBiConsumer<I> {
+public interface OutboundConsumer<I> {
 
   /**
    * 处理消息
@@ -12,6 +12,6 @@ public interface OutboundHandlerBiConsumer<I> {
    * @param ctx     上下文对象
    * @param msg     消息
    */
-  void accept(ByteBufCopyOutboundHandler<I> handler, ChannelHandlerContext ctx, I msg, ChannelPromise promise);
+  void accept(OutboundHandler<I> handler, ChannelHandlerContext ctx, I msg, ChannelPromise promise);
 
 }
