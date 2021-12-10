@@ -89,13 +89,15 @@ public class StructClass {
 
     // 创建对象
     Object o = getInstantiator().create(getType());
-    int index = 0;
+    int index = start, startAt;
     for (StructField sf : getFields()) {
       if ((sf.size() + index) > (data.length - start)) {
         // 多余数据不做处理
         break;
       }
-      Object value = sf.getConverter().parse(sf, data, index);
+      startAt = sf.getAnnotation().startAt();
+      startAt = startAt > -1 ? start + startAt : index;
+      Object value = sf.getConverter().parse(sf, data, startAt);
       if (value != null) {
         ReflectUtils.setFieldValue(sf.getField(), o, value);
       }

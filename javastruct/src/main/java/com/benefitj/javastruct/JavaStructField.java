@@ -16,6 +16,10 @@ import java.lang.annotation.*;
 public @interface JavaStructField {
 
   /**
+   * 开始的位置，如果指定了此参数，则使用此参数
+   */
+  int startAt() default -1;
+  /**
    * 单个元素的比例，如：
    * int[]{20, 20, 45}，单个元素为4字节，单个长度(4) * 数组长度(3) = 总长度(12字节)
    */

@@ -3,7 +3,7 @@ package com.benefitj.core.reflection;
 import javax.annotation.Nullable;
 import java.lang.reflect.*;
 
-public interface FieldDelegate {
+public interface FieldDescriptor {
 
   /**
    * 创建字段类型
@@ -11,8 +11,8 @@ public interface FieldDelegate {
    * @param field 字段
    * @return 返回对象
    */
-  static FieldDelegate of(Field field) {
-    return new FieldDelegateImpl(field);
+  static FieldDescriptor of(Field field) {
+    return new FieldDescriptorImpl(field);
   }
 
   /**
@@ -157,14 +157,14 @@ public interface FieldDelegate {
   }
 
 
-  class FieldDelegateImpl implements FieldDelegate {
+  class FieldDescriptorImpl implements FieldDescriptor {
 
     private Field field;
 
-    public FieldDelegateImpl() {
+    public FieldDescriptorImpl() {
     }
 
-    public FieldDelegateImpl(Field field) {
+    public FieldDescriptorImpl(Field field) {
       this.field = field;
     }
 

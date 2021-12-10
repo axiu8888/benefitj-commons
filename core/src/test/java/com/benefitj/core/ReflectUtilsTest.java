@@ -1,6 +1,6 @@
 package com.benefitj.core;
 
-import com.benefitj.core.reflection.FieldDelegate;
+import com.benefitj.core.reflection.FieldDescriptor;
 import org.junit.Test;
 
 import java.lang.reflect.*;
@@ -53,7 +53,7 @@ public class ReflectUtilsTest extends BaseTest {
 //    field = ReflectUtils.getField(abb.getClass(), f -> f.getName().equals("value"));
 //    field = ReflectUtils.getField(abb.getClass(), f -> f.getName().equals("items"));
 //    field = ReflectUtils.getField(abb.getClass(), f -> f.getName().equals("items2"));
-    FieldDelegate fd = FieldDelegate.of(field);
+    FieldDescriptor fd = FieldDescriptor.of(field);
     System.err.println("getActualType: " + fd.getActualType(abb));
     System.err.println("getActualType: " + fd.getActualType(null));
     System.err.println("getGenericTypeName: " + fd.getTypeName());

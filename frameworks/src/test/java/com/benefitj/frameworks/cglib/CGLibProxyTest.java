@@ -1,6 +1,7 @@
 package com.benefitj.frameworks.cglib;
 
 import com.alibaba.fastjson.JSON;
+import com.benefitj.core.AttributeMap;
 import com.benefitj.core.StackLogger;
 import org.junit.After;
 import org.junit.Before;
@@ -87,7 +88,11 @@ public class CGLibProxyTest {
               }
             }
           }
-          return CGLibProxy.invoke(obj, method, args, proxy, interfaces, objects);
+          Object returnValue = CGLibProxy.invoke(obj, method, args, proxy, interfaces, objects);
+          if (returnValue instanceof ScheduledFuture) {
+            return new CancelableScheduledFuture<>((ScheduledFuture<?>) returnValue);
+          }
+          return returnValue;
         });
 
 
@@ -97,7 +102,21 @@ public class CGLibProxyTest {
       throw new IllegalStateException("不可知的错误");
     }, 1, TimeUnit.SECONDS);
 
-    TimeUnit.SECONDS.sleep(2);
+
+    ScheduledFuture<Object> future = eventLoop.schedule(() -> {
+      log.info("乖乖，出错了....");
+      throw new IllegalStateException("不可知的错误");
+    }, 2, TimeUnit.SECONDS);
+
+    eventLoop.schedule(() -> {
+      // 结束
+      if (!future.isDone() && !future.isCancelled()) {
+        log.info("取消...., {}", future.getClass().getSimpleName());
+        future.cancel(true);
+      }
+    }, 1, TimeUnit.SECONDS);
+
+    TimeUnit.SECONDS.sleep(3);
 
 
   }
@@ -185,6 +204,69 @@ public class CGLibProxyTest {
     return tasks.stream()
         .map(CGLibProxyTest::wrapped)
         .collect(Collectors.toList());
+  }
+
+
+  static class CancelableScheduledFuture<V> implements ScheduledFuture<V>, AttributeMap {
+
+    private final ScheduledFuture<V> original;
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+
+    public CancelableScheduledFuture(ScheduledFuture<V> original) {
+      this.original = original;
+    }
+
+    public ScheduledFuture<V> original() {
+      return original;
+    }
+
+    @Override
+    public long getDelay(TimeUnit unit) {
+      return original().getDelay(unit);
+    }
+
+    @Override
+    public int compareTo(Delayed o) {
+      return original().compareTo(o);
+    }
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+      return original().cancel(mayInterruptIfRunning);
+    }
+
+    @Override
+    public boolean isCancelled() {
+      return original().isCancelled();
+    }
+
+    @Override
+    public boolean isDone() {
+      return original().isDone();
+    }
+
+    @Override
+    public V get() {
+      try {
+        return original().get();
+      } catch (InterruptedException | ExecutionException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
+    @Override
+    public V get(long timeout, TimeUnit unit) {
+      try {
+        return original().get(timeout, unit);
+      } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
+    @Override
+    public Map<String, Object> attributes() {
+      return attributes;
+    }
   }
 
 }
