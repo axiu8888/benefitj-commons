@@ -2,12 +2,17 @@ package com.benefitj.javastruct;
 
 import com.alibaba.fastjson.JSON;
 import com.benefitj.core.BinaryHelper;
+import com.benefitj.core.ClasspathUtils;
+import com.benefitj.core.HexUtils;
+import com.benefitj.core.IOUtils;
+import com.benefitj.javastruct.entity.CollectorPacket;
 import com.benefitj.javastruct.entity.LeadWave;
 import com.benefitj.javastruct.entity.Person;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Date;
 
 public class JavaStructManagerTest {
@@ -79,6 +84,15 @@ public class JavaStructManagerTest {
     LeadWave lw = manager.parseObject(LeadWave.class, binary.hexToBytes(hex));
     System.err.println("testResolver时间: " + (System.nanoTime() - start));
     System.err.println(JSON.toJSONString(lw));
+  }
+
+  @Test
+  public void testCollector() {
+    File file = ClasspathUtils.getFile("collector.hex");
+    byte[] data = IOUtils.readFileBytes(file);
+    JavaStructManager manager = JavaStructManager.INSTANCE;
+    CollectorPacket packet = manager.parseObject(CollectorPacket.class, HexUtils.hexToBytes(new String(data)));
+    System.err.println(JSON.toJSONString(packet));
   }
 
 }

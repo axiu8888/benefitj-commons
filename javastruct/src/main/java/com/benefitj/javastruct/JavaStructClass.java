@@ -14,9 +14,9 @@ import java.lang.annotation.*;
 public @interface JavaStructClass {
 
   /**
-   * 结构体的长度，0为根据数据类型自动计算
+   * 结构体的长度，-1为根据数据类型自动计算
    */
-  int value() default 0;
+  int value() default -1;
 
   /**
    * 实例化器
