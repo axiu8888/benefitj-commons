@@ -43,12 +43,28 @@ public class ApiBuilderTest extends TestCase {
 
   @Test
   public void testRequest() {
-    api.getJS()
-        .subscribe(js -> log.info("js: \n{}", js));
+//    api.getJS()
+//        .subscribe(js -> log.info("js: \n{}", js));
 
 //    // 写入文件
 //    api.getBody()
 //        .subscribe(body -> BodyUtils.transferTo(body, new File("D:/opt/tmp/super_load-eb15f1e5a8.js")));
+    // 写入文件
+//    api.getImg()
+//        .subscribe(body -> BodyUtils.transferTo(body, new File("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png")));
+    api.getImg()
+        .subscribe(body -> {
+          final IWriter img = IWriter.newFileWriter(new File("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png"));
+          BodyUtils.progressResponseBody(body
+              , (buf, len) -> img.write(buf, 0, len)
+              , (totalLength, progress, done) ->
+                  log.info("总长度: {}, 已上传: {}, 进度: {}%， done[{}]"
+                      , totalLength
+                      , progress
+                      , Unit.fmt((progress * 100.f) / totalLength, "0.00")
+                      , done
+                  ));
+        });
   }
 
   @Test
@@ -66,12 +82,7 @@ public class ApiBuilderTest extends TestCase {
             );
           }
         }))
-        .subscribe(new SimpleObserver<String>() {
-          @Override
-          public void onNext(@NotNull String result) {
-            log.info("上传结果: {}", result);
-          }
-        });
+        .subscribe(SimpleObserver.create(result -> log.info("上传结果: {}", result)));
     log.info("耗时: {}", Unit.diffNow(start));
   }
 
@@ -80,41 +91,30 @@ public class ApiBuilderTest extends TestCase {
     // 下载
     long start = Unit.now();
     api.download("simulator.zip")
-        .subscribe(new SimpleObserver<Response<ResponseBody>>() {
-          @Override
-          public void onNext(@NotNull Response<ResponseBody> response) {
-            if (!response.isSuccessful()) {
-              log.info("请求失败, {}, {}", response.code(), response.message());
-              return;
-            }
-            // 处理响应
-            final AtomicInteger index = new AtomicInteger();
-            IWriter writer = IWriter.newFileWriter(new File("D:/opt/tmp/simulator2.zip"));
-            BodyUtils.progressResponseBody(response.body()
-                , (buf, len) -> {
-                  // 写入道文件中
-                  writer.write(buf, 0, len).flush();
-                }, (totalLength, progress, done) -> {
-                  if (index.incrementAndGet() % 50 == 0 || done) {
-                    log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
-                        , totalLength
-                        , progress
-                        , Unit.fmt((progress * 100.f) / totalLength, "0.00")
-                        , done
-                    );
-                  }
-                  if (done) {
-                    writer.close();
-                  }
-                });
+        .subscribe(SimpleObserver.create(response -> {
+          if (!response.isSuccessful()) {
+            log.info("请求失败, {}, {}", response.code(), response.message());
+            return;
           }
-
-          @Override
-          public void onError(Throwable e) {
-            log.info("错误: {}", e.getMessage());
-            super.onError(e);
-          }
-        });
+          // 处理响应
+          final AtomicInteger index = new AtomicInteger();
+          IWriter writer = IWriter.newFileWriter(new File("D:/opt/tmp/simulator2.zip"));
+          BodyUtils.progressResponseBody(response.body()
+              , (buf, len) -> writer.write(buf, 0, len).flush() // 写入文件中
+              , (totalLength, progress, done) -> {
+                if (index.incrementAndGet() % 50 == 0 || done) {
+                  log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
+                      , totalLength
+                      , progress
+                      , Unit.fmt((progress * 100.f) / totalLength, "0.00")
+                      , done
+                  );
+                }
+                if (done) {
+                  writer.close();
+                }
+              });
+        }));
     log.info("耗时: {}", Unit.diffNow(start));
   }
 
@@ -173,14 +173,18 @@ public class ApiBuilderTest extends TestCase {
 
   interface ServiceApi {
 
-    String BASE_URL = "https://dss0.bdstatic.com/";
+    //    String BASE_URL = "https://dss0.bdstatic.com/";
 //    String BASE_URL = "http://127.0.0.1:80/api/";
+    String BASE_URL = "https://image.taoguba.com.cn/";
 
     @GET("5aV1bjqh_Q23odCf/static/superman/js/super_load-eb15f1e5a8.js")
     Observable<String> getJS();
 
     @GET("5aV1bjqh_Q23odCf/static/superman/js/super_load-eb15f1e5a8.js")
     Observable<ResponseBody> getBody();
+
+    @GET("img/2021/12/14/ew4nf5737jvn.jpg_760w.png")
+    Observable<ResponseBody> getImg();
 
 
     @POST("simple/upload")

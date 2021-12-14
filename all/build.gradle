@@ -16,6 +16,7 @@ dependencies {
     compile project(":interpolator")
     compile project(":device")
     compile project(":mqtt")
+    compile project(":javastruct")
 
     // network start *****************************************************/
     compile project(":network")
