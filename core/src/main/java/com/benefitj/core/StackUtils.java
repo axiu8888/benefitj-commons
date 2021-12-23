@@ -34,6 +34,13 @@ public class StackUtils {
   }
 
   /**
+   * 获取文件名
+   */
+  public static String getFileName() {
+    return get(3).getFileName();
+  }
+
+  /**
    * 获取标签
    */
   public static String getTag(StackTraceElement stack, String append) {

@@ -532,6 +532,20 @@ public class ReflectUtils {
   }
 
   /**
+   * 是否被注解注释
+   *
+   * @param target     检车对象(Class/Method/Field/Constructor)
+   * @param annotation 注解
+   * @return 返回结果
+   */
+  public static boolean isAnnotationPresent(Object target, Class<Annotation> annotation) {
+    if (target instanceof AnnotatedElement) {
+      return ((AnnotatedElement) target).isAnnotationPresent(annotation);
+    }
+    return target != null && target.getClass().isAnnotationPresent(annotation);
+  }
+
+  /**
    * 创建对象实例
    *
    * @param klass 类

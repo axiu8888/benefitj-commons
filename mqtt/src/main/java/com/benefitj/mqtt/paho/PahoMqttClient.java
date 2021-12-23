@@ -5,6 +5,7 @@ import com.benefitj.core.Unit;
 import com.benefitj.core.functions.IConsumer;
 import com.benefitj.core.functions.IFunction;
 import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,9 +27,20 @@ public class PahoMqttClient implements IPahoMqttClient {
    * @return 返回MQTT客户端对象
    */
   public static IMqttClient provide(MqttConnectOptions options, String clientId) {
+    return provide(options, clientId, new MemoryPersistence());
+  }
+
+  /**
+   * 创建MQTT客户端
+   *
+   * @param options  配置可选项
+   * @param clientId 客户端ID
+   * @return 返回MQTT客户端对象
+   */
+  public static IMqttClient provide(MqttConnectOptions options, String clientId, MqttClientPersistence persistence) {
     try {
       clientId = clientId != null ? clientId : IdUtils.uuid();
-      return new MqttClient(options.getServerURIs()[0], clientId);
+      return new MqttClient(options.getServerURIs()[0], clientId, persistence);
     } catch (MqttException e) {
       throw new MqttPahoClientException(e);
     }

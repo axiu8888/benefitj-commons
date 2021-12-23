@@ -1,5 +1,7 @@
 package com.benefitj.network;
 
+import com.benefitj.core.IOUtils;
+import com.benefitj.core.file.IWriter;
 import com.benefitj.core.functions.IBiConsumer;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -60,6 +62,19 @@ public class BodyUtils {
       }
     } catch (Exception e) {
       throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 处理响应体
+   *
+   * @param body     响应体
+   * @param dest     目标文件
+   * @param listener 进度监听
+   */
+  public static void progressResponseBody(ResponseBody body, File dest, ProgressListener listener) {
+    try (final IWriter writer = IWriter.newFileWriter(IOUtils.createFile(dest.getAbsolutePath()))) {
+      progressResponseBody(body, (buf, len) -> writer.write(buf, 0, len), listener);
     }
   }
 
