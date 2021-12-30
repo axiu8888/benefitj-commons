@@ -1,8 +1,6 @@
 package com.benefitj.core.concurrent;
 
-import java.util.AbstractSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -16,6 +14,10 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> {
 
   public ConcurrentHashSet() {
     super();
+  }
+
+  public ConcurrentHashSet(Collection<E> c) {
+    this.addAll(c);
   }
 
   @Override

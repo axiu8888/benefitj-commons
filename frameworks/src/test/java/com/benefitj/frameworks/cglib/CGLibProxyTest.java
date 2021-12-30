@@ -55,8 +55,6 @@ public class CGLibProxyTest {
 
     coder.setBirthday(TimeUtils.toDate(1982, 10, 2));
     log.info("age: {}", coder.getAge());
-
-
   }
 
   @Test

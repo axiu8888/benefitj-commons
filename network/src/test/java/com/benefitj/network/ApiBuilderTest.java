@@ -59,7 +59,7 @@ public class ApiBuilderTest extends TestCase {
           BodyUtils.progressResponseBody(body
               , (buf, len) -> img.write(buf, 0, len)
               , (totalLength, progress, done) ->
-                  log.info("总长度: {}, 已上传: {}, 进度: {}%， done[{}]"
+                  log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
                       , totalLength
                       , progress
                       , Unit.fmt((progress * 100.f) / totalLength, "0.00")
@@ -99,9 +99,8 @@ public class ApiBuilderTest extends TestCase {
           }
           // 处理响应
           final AtomicInteger index = new AtomicInteger();
-          IWriter writer = IWriter.newFileWriter(new File("D:/opt/tmp/simulator2.zip"));
           BodyUtils.progressResponseBody(response.body()
-              , (buf, len) -> writer.write(buf, 0, len).flush() // 写入文件中
+              , new File("D:/opt/tmp/simulator2.zip") // 写入文件中
               , (totalLength, progress, done) -> {
                 if (index.incrementAndGet() % 50 == 0 || done) {
                   log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
@@ -111,11 +110,29 @@ public class ApiBuilderTest extends TestCase {
                       , done
                   );
                 }
-                if (done) {
-                  writer.close();
-                }
               });
         }));
+    log.info("耗时: {}", Unit.diffNow(start));
+  }
+
+  @Test
+  public void testDownloadFile() {
+    long start = Unit.now();
+    HttpUtils http = new HttpUtils();
+    okhttp3.Response response = http.get("https://downloads.gradle-dn.com/distributions/gradle-7.3.2-all.zip");
+    final AtomicInteger index = new AtomicInteger();
+    BodyUtils.progressResponseBody(response.body()
+        , IOUtils.createFile("D:/opt/tmp/gradle-7.3.2-all.zip")
+        , (totalLength, progress, done) -> {
+          if (index.incrementAndGet() % 100 == 0 || done) {
+            log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
+                , totalLength
+                , progress
+                , Unit.fmt((progress * 100.f) / totalLength, "0.00")
+                , done
+            );
+          }
+        });
     log.info("耗时: {}", Unit.diffNow(start));
   }
 

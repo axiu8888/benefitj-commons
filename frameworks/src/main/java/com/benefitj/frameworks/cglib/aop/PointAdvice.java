@@ -1,6 +1,9 @@
 package com.benefitj.frameworks.cglib.aop;
 
-public interface AopAdvice {
+/**
+ * 通知
+ */
+public interface PointAdvice {
 
   /**
    * 执行前

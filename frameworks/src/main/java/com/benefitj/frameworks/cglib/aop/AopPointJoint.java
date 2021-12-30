@@ -4,11 +4,10 @@ import net.sf.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
 
+/**
+ * AOP切入点
+ */
 public interface AopPointJoint {
-
-  boolean isSupport();
-
-  void setSupport(boolean support);
 
   /**
    * 获取方法代理
@@ -42,14 +41,6 @@ public interface AopPointJoint {
    */
   void setReturnValue(Object value);
 
-  /**
-   * 创建切入点对象
-   *
-   * @return 返回切入点
-   */
-  static AopPointJoint newPointJoint(boolean support) {
-    return new AopPointJointImpl(support);
-  }
 
   /**
    * 创建切入点对象
