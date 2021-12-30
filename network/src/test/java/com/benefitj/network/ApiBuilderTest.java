@@ -2,6 +2,7 @@ package com.benefitj.network;
 
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.HexUtils;
+import com.benefitj.core.IOUtils;
 import com.benefitj.core.Unit;
 import com.benefitj.core.file.IWriter;
 import io.reactivex.Observable;
@@ -54,7 +55,7 @@ public class ApiBuilderTest extends TestCase {
 //        .subscribe(body -> BodyUtils.transferTo(body, new File("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png")));
     api.getImg()
         .subscribe(body -> {
-          final IWriter img = IWriter.newFileWriter(new File("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png"));
+          final IWriter img = IWriter.newFileWriter(IOUtils.createFile("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png"));
           BodyUtils.progressResponseBody(body
               , (buf, len) -> img.write(buf, 0, len)
               , (totalLength, progress, done) ->

@@ -21,6 +21,7 @@ include ":eventbus"         // EventBus
 include ":javastruct"       // java结构体转换
 include ":device"           // 设备
 include ":mqtt"             // mqtt
+include ":jdbc"             // jdbc
 
 
 //// 待实现 TODO 2020-11-17

@@ -24,6 +24,10 @@ dependencies {
     }
     // Servlet
     compileOnly("javax.servlet:javax.servlet-api:4.0.1")
+
+    // email
+    compile 'org.apache.commons:commons-email:1.5'
+
 }
 
 //apply from: "${getRootDir()}/buildSystem/upload.gradle"

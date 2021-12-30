@@ -1,0 +1,17 @@
+
+apply from: "${getRootDir()}/buildSystem/base.gradle"
+
+jar {
+    archiveName("jdbc.jar")
+}
+
+dependencies {
+
+    compile(project(":core"))
+    compile(project(":frameworks"))
+
+    compile 'mysql:mysql-connector-java:8.0.27'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
+
+}
+

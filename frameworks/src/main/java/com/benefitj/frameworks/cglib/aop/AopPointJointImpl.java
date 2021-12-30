@@ -6,6 +6,11 @@ import java.lang.reflect.Method;
 
 public class AopPointJointImpl implements AopPointJoint {
 
+  /**
+   * 是否支持
+   */
+  private boolean support = false;
+
   private MethodProxy proxy;
   private Object source;
   private Method method;
@@ -16,11 +21,24 @@ public class AopPointJointImpl implements AopPointJoint {
   public AopPointJointImpl() {
   }
 
+  public AopPointJointImpl(boolean support) {
+    this.support = support;
+  }
+
   public AopPointJointImpl(MethodProxy proxy, Object source, Method method, Object[] args) {
     this.proxy = proxy;
     this.source = source;
     this.method = method;
     this.args = args;
+    this.support = true;
+  }
+
+  public boolean isSupport() {
+    return support;
+  }
+
+  public void setSupport(boolean support) {
+    this.support = support;
   }
 
   @Override

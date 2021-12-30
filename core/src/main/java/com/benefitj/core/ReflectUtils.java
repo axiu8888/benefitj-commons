@@ -3,6 +3,7 @@ package com.benefitj.core;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -452,9 +453,28 @@ public class ReflectUtils {
    * @return 返回获取到的Method
    */
   public static Method getMethod(Class<?> type, @Nonnull Predicate<Method> matcher) {
-    AtomicReference<Method> method = new AtomicReference<>();
+    final AtomicReference<Method> method = new AtomicReference<>();
     findMethods(type, matcher, method::set, m -> method.get() != null);
     return method.get();
+  }
+
+  /**
+   * 获取 method
+   *
+   * @param type            类
+   * @param name            方法名
+   * @param parametersTypes 参数类型
+   * @return 返回获取到的Method
+   */
+  public static Method getMethod(Class<?> type, String name, Class<?>[] parametersTypes) {
+    if (type != Object.class) {
+      try {
+        return type.getDeclaredMethod(name, parametersTypes);
+      } catch (NoSuchMethodException e) {
+        return getMethod(type.getSuperclass(), name, parametersTypes);
+      }
+    }
+    return null;
   }
 
   /**
@@ -532,6 +552,42 @@ public class ReflectUtils {
   }
 
   /**
+   * 调用接口的默认方法
+   *
+   * @param obj    对象
+   * @param method 方法
+   * @param args   参数
+   * @param <T>    返回值类型
+   * @return 返回返回值
+   */
+  public static <T> T invokeDefault(MethodHandles.Lookup lookup, Object obj, Method method, Object... args) {
+    try {
+      return (T) lookup.unreflectSpecial(method, method.getDeclaringClass())
+          .bindTo(obj)
+          .invokeWithArguments(args);
+    } catch (Throwable e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 调用接口的默认方法
+   *
+   * @param obj    对象
+   * @param method 方法
+   * @param args   参数
+   * @param <T>    返回值类型
+   * @return 返回返回值
+   */
+  public static <T> T invokeDefault(Object obj, Method method, Object... args) {
+    if (!method.isDefault()) {
+      throw new IllegalArgumentException("不是默认方法!");
+    }
+    MethodHandles.Lookup lookup = newInstance(MethodHandles.Lookup.class, method.getDeclaringClass());
+    return invokeDefault(lookup, obj, method, args);
+  }
+
+  /**
    * 是否被注解注释
    *
    * @param target     检车对象(Class/Method/Field/Constructor)
@@ -555,7 +611,7 @@ public class ReflectUtils {
    */
   public static <T> T newInstance(Class<T> klass, Object... args) {
     try {
-      for (Constructor<?> c : klass.getConstructors()) {
+      for (Constructor<?> c : klass.getDeclaredConstructors()) {
         if (isParameterTypesMatch(c.getParameterTypes(), args)) {
           setAccessible(c, true);
           return (T) c.newInstance(args);
@@ -568,6 +624,16 @@ public class ReflectUtils {
     } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  /**
+   * 创建Lookup对象
+   *
+   * @param method 方法
+   * @return 返回创建的对象
+   */
+  public static MethodHandles.Lookup newLookup(Method method) {
+    return newInstance(MethodHandles.Lookup.class, method.getDeclaringClass());
   }
 
   /**

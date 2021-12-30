@@ -64,8 +64,12 @@ public abstract class AbstractConverter<T> extends BufCopyConverter<T> {
    */
   public byte[] convertBoolean(StructField field, Object value) {
     return convert(field, value, o -> {
-      byte[] buf = getCache(1);
-      buf[0] = (byte) (Boolean.TRUE.equals(o) ? 1 : 0);
+      byte[] buf = getCache(field.size());
+      if (field.isLittleEndian()) {
+        buf[buf.length - 1] = (byte) (Boolean.TRUE.equals(o) ? 1 : 0);
+      } else {
+        buf[0] = (byte) (Boolean.TRUE.equals(o) ? 1 : 0);
+      }
       return buf;
     });
   }
@@ -79,8 +83,12 @@ public abstract class AbstractConverter<T> extends BufCopyConverter<T> {
    */
   public byte[] convertByte(StructField field, Object value) {
     return convert(field, value, o -> {
-      byte[] buf = getCache(1);
-      buf[0] = (byte) o;
+      byte[] buf = getCache(field.size());
+      if (field.isLittleEndian()) {
+        buf[buf.length - 1] = (byte) o;
+      } else {
+        buf[0] = (byte) o;
+      }
       return buf;
     });
   }
@@ -192,14 +200,26 @@ public abstract class AbstractConverter<T> extends BufCopyConverter<T> {
       boolean[] array = (boolean[]) value;
       byte[] buf = new byte[field.size()];
       return convertArray(field, i -> {
-        buf[0] = (byte) (array[i] ? 1 : 0);
+        if (field.isLittleEndian()) {
+          buf[buf.length - 1 - (i * field.size())] = (byte) (array[i] ? 1 : 0);
+        } else {
+          buf[0] = (byte) (array[i] ? 1 : 0);
+        }
         return buf;
       });
     } else {
       Boolean[] array = (Boolean[]) value;
       byte[] buf = new byte[1];
       return convertArray(field, i -> {
-        buf[0] = (byte) (Boolean.TRUE.equals(array[i]) ? 1 : 0);
+        if (field.isLittleEndian()) {
+          buf[buf.length - 1 - (i * field.size())] = (byte) (Boolean.TRUE.equals(array[i]) ? 1 : 0);
+        } else {
+          if (array[i] != null) {
+            buf[i * field.size()] = (byte) (Boolean.TRUE.equals(array[i]) ? 1 : 0);
+          } else {
+
+          }
+        }
         return buf;
       });
     }

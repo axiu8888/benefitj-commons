@@ -2,13 +2,16 @@ package com.benefitj.frameworks.cglib;
 
 import com.alibaba.fastjson.JSON;
 import com.benefitj.core.AttributeMap;
+import com.benefitj.core.DateFmtter;
 import com.benefitj.core.StackLogger;
+import com.benefitj.core.TimeUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -46,6 +49,14 @@ public class CGLibProxyTest {
     coder.say();
     log.info("coder: {}", coder);
     log.info("coder json: {}", JSON.toJSONString(coder));
+
+    coder.setSource("Hello ???");
+    log.info("source: {}", coder.getSource());
+
+    coder.setBirthday(TimeUtils.toDate(1982, 10, 2));
+    log.info("age: {}", coder.getAge());
+
+
   }
 
   @Test
@@ -88,7 +99,9 @@ public class CGLibProxyTest {
               }
             }
           }
-          Object returnValue = CGLibProxy.invoke(obj, method, args, proxy, interfaces, objects);
+
+          CGLibMethodInvoker invoker = new CGLibMethodInvoker(obj, method, proxy, interfaces, objects);
+          Object returnValue = invoker.invoke(args);
           if (returnValue instanceof ScheduledFuture) {
             return new CancelableScheduledFuture<>((ScheduledFuture<?>) returnValue);
           }
@@ -127,11 +140,31 @@ public class CGLibProxyTest {
   }
 
 
-  public static abstract class Coder implements Map<String, Object> {
+  public static abstract class Coder extends SourceRoot<String> implements IPerson, Map<String, Object> {
+
+    private Date birthday;
 
     public String say() {
       System.err.println("hello world: " + getClass().getSimpleName() + "\n");
       return "hello world !";
+    }
+
+    @Override
+    public Date getBirthday() {
+      return birthday;
+    }
+
+    public void setBirthday(Date birthday) {
+      this.birthday = birthday;
+    }
+  }
+
+  public interface IPerson {
+
+    Date getBirthday();
+
+    default int getAge() {
+      return TimeUtils.getAge(getBirthday());
     }
 
   }
