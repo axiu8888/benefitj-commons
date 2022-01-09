@@ -473,7 +473,7 @@ public class DateFmtter {
       Date date = parseOrThrows(dateStr, srcPattern);
       return fmt(date, destPattern);
     } catch (ParseException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

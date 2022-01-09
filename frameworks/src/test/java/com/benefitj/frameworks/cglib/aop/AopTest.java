@@ -10,22 +10,22 @@ public class AopTest {
   public void testAround() {
     Person person = AopAdviceProxy.newProxy(new Person("小明"), new PointAdvice() {
       @Override
-      public void onBefore(AopPointJoint joint) {
+      public void doBefore(AopPointJoint joint) {
         System.err.println("onBefore: " + Arrays.toString(joint.getArgs()));
       }
 
       @Override
-      public void onAfter(AopPointJoint joint) {
+      public void doAfter(AopPointJoint joint) {
         System.err.println("onAfter: " + joint.getReturnValue());
       }
 
       @Override
-      public void onAfterReturning(AopPointJoint joint) {
+      public void doAfterReturning(AopPointJoint joint) {
         System.err.println("onAfterReturning: " + joint.getReturnValue());
       }
 
       @Override
-      public void onError(AopPointJoint joint, Throwable ex) {
+      public void doError(AopPointJoint joint, Throwable ex) {
         ex.printStackTrace();
       }
     });

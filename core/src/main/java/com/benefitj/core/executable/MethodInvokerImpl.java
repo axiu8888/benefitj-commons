@@ -1,5 +1,7 @@
 package com.benefitj.core.executable;
 
+import com.benefitj.core.TryCatchUtils;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -25,7 +27,7 @@ public class MethodInvokerImpl implements MethodInvoker {
       Object[] args = getArgs(method, providedArgs);
       return method.invoke(bean, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

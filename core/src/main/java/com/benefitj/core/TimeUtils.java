@@ -2,7 +2,11 @@ package com.benefitj.core;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
+/**
+ * 时间工具
+ */
 public class TimeUtils {
 
   public static final long SECOND = 1000;
@@ -11,10 +15,71 @@ public class TimeUtils {
   public static final long DAY = 24 * HOUR;
 
   /**
-   * @return 当前时间
+   * 秒(毫秒)
+   *
+   * @param delta 秒数
+   * @return 返回时间
+   */
+  public static long ofSeconds(int delta) {
+    return TimeUnit.SECONDS.toMillis(delta);
+  }
+
+  /**
+   * 分钟(毫秒)
+   *
+   * @param delta 分钟数
+   * @return 返回时间
+   */
+  public static long ofMinutes(int delta) {
+    return TimeUnit.MINUTES.toMillis(delta);
+  }
+
+  /**
+   * 小时(毫秒)
+   *
+   * @param delta 小时数
+   * @return 返回时间
+   */
+  public static long ofHours(int delta) {
+    return TimeUnit.HOURS.toMillis(delta);
+  }
+
+  /**
+   * 天(毫秒)
+   *
+   * @param delta 天数
+   * @return 返回时间
+   */
+  public static long ofDays(int delta) {
+    return TimeUnit.DAYS.toMillis(delta);
+  }
+
+  /**
+   * 获取当前时间
    */
   public static long now() {
     return System.currentTimeMillis();
+  }
+
+  /**
+   * 和当前时间的差值
+   *
+   * @param delta 时间
+   * @return 返回与当前时间的差
+   */
+  public static long diffNow(long delta) {
+    return now() - delta;
+  }
+
+  /**
+   * 判断是否超时
+   *
+   * @param start   开始时间
+   * @param timeout 超时时长
+   * @return 返回是否超时的判断
+   */
+  public static boolean isTimeout(long start, long timeout) {
+    return now() - start > timeout;
   }
 
   /**

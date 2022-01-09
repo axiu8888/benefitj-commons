@@ -1,5 +1,7 @@
 package com.benefitj.core.reflection;
 
+import com.benefitj.core.TryCatchUtils;
+
 import javax.annotation.Nullable;
 import java.lang.reflect.*;
 
@@ -90,7 +92,7 @@ public interface FieldDescriptor {
       f.setAccessible(true);
       return f.get(obj);
     } catch (IllegalAccessException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -106,7 +108,7 @@ public interface FieldDescriptor {
       f.setAccessible(true);
       f.set(obj, value);
     } catch (IllegalAccessException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

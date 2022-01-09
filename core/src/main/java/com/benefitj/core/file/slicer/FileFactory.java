@@ -1,6 +1,7 @@
 package com.benefitj.core.file.slicer;
 
 import com.benefitj.core.IdUtils;
+import com.benefitj.core.TryCatchUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +53,7 @@ public interface FileFactory<T extends SliceFileWriter> {
       file.createNewFile();
       return file;
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

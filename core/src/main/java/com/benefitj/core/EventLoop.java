@@ -275,7 +275,7 @@ public class EventLoop implements ScheduledExecutorService {
     try {
       unit.sleep(duration);
     } catch (InterruptedException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

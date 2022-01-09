@@ -1,6 +1,7 @@
 package com.benefitj.core.concurrent;
 
 import com.benefitj.core.AttributeMap;
+import com.benefitj.core.TryCatchUtils;
 
 import java.util.Map;
 import java.util.concurrent.*;
@@ -53,7 +54,7 @@ public class CancelableScheduledFuture<V> implements ScheduledFuture<V>, Attribu
     try {
       return original().get();
     } catch (InterruptedException | ExecutionException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -62,7 +63,7 @@ public class CancelableScheduledFuture<V> implements ScheduledFuture<V>, Attribu
     try {
       return original().get(timeout, unit);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

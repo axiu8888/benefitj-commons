@@ -6,6 +6,7 @@ import org.slf4j.Marker;
 
 import java.lang.reflect.Field;
 
+@Deprecated
 public class StackLogger implements Logger {
 
   public static Logger getLogger() {

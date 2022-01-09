@@ -286,7 +286,7 @@ public class IOUtils {
         try {
           newFile.createNewFile();
         } catch (IOException e) {
-          throw new IllegalStateException(e);
+          throw TryCatchUtils.throwing(e, IllegalStateException.class);
         }
       }
     }
@@ -450,7 +450,7 @@ public class IOUtils {
         consumer.accept(buff, len);
       }
     } catch (Exception e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(is);
@@ -487,7 +487,7 @@ public class IOUtils {
     try (final RandomAccessFile raf = new RandomAccessFile(file, "r");) {
       read(raf, size, filter, consumer, interceptor);
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -517,7 +517,7 @@ public class IOUtils {
         }
       }
     } catch (Exception e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -531,7 +531,7 @@ public class IOUtils {
     try (final FileReader reader = new FileReader(file);) {
       readLines(reader, false, consumer);
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -560,7 +560,7 @@ public class IOUtils {
         consumer.accept(line);
       }
     } catch (Exception e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(br);
@@ -720,7 +720,7 @@ public class IOUtils {
     try (final FileInputStream fis = new FileInputStream(in)) {
       return write(fis, out, 1024 << 4, close);
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -788,7 +788,7 @@ public class IOUtils {
       }
       return totalLength;
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(is, os);
@@ -844,7 +844,7 @@ public class IOUtils {
       os.write(buff, start, len);
       os.flush();
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -874,7 +874,7 @@ public class IOUtils {
         writer.flush();
       }
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(reader, writer);
@@ -923,7 +923,7 @@ public class IOUtils {
         try {
           c.close();
         } catch (Exception e) {
-          throw new IllegalStateException(e);
+          throw TryCatchUtils.throwing(e, IllegalStateException.class);
         }
       }
     }
@@ -1074,7 +1074,7 @@ public class IOUtils {
         }
       }
     } catch (Exception e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -1082,22 +1082,14 @@ public class IOUtils {
    * try{} catch(e){}
    */
   public static <T> T tryThrow(Callable<T> call) {
-    try {
-      return call.call();
-    } catch (Exception e) {
-      throw new IllegalStateException(e);
-    }
+    return TryCatchUtils.tryThrow(call);
   }
 
   /**
    * try{} catch(e){}
    */
   public static void tryThrow(IRunnable r) {
-    try {
-      r.run();
-    } catch (Exception e) {
-      throw new IllegalStateException(e);
-    }
+    TryCatchUtils.tryThrow(r);
   }
 
 

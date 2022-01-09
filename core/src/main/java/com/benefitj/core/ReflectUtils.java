@@ -547,7 +547,7 @@ public class ReflectUtils {
       setAccessible(method, true);
       return (T) method.invoke(obj, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -566,7 +566,7 @@ public class ReflectUtils {
           .bindTo(obj)
           .invokeWithArguments(args);
     } catch (Throwable e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -622,7 +622,7 @@ public class ReflectUtils {
       }
       return klass.newInstance();
     } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -633,6 +633,11 @@ public class ReflectUtils {
    * @return 返回创建的对象
    */
   public static MethodHandles.Lookup newLookup(Method method) {
+    Method newLookup = getMethod(MethodHandles.Lookup.class, "newLookup", new Class[]{Class.class, Class.class, int.class});
+    if (newLookup != null && Modifier.isStatic(newLookup.getModifiers())) {
+      return invoke(null, newLookup, new Object[]{method.getDeclaringClass(), null
+          , MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC});
+    }
     return newInstance(MethodHandles.Lookup.class, method.getDeclaringClass());
   }
 

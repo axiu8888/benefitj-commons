@@ -34,7 +34,7 @@ public class IOUtilsTest extends TestCase {
                 , totalLength
                 , totalProgress
                 , source.getName()
-                , Unit.fmt(currentProgress, "0.00")
+                , DUtils.fmt(currentProgress, "0.00")
             );
           }
         });

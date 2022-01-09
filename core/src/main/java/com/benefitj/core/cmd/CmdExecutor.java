@@ -3,6 +3,7 @@ package com.benefitj.core.cmd;
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.IdUtils;
+import com.benefitj.core.TryCatchUtils;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -213,7 +214,7 @@ public class CmdExecutor {
         return call;
       });
     } catch (Exception e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       cb.onFinish(call);
     }

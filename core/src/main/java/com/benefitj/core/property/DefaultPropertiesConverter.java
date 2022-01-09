@@ -1,5 +1,7 @@
 package com.benefitj.core.property;
 
+import com.benefitj.core.TryCatchUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,7 +20,7 @@ public class DefaultPropertiesConverter implements PropertiesConverter {
     try (final FileInputStream fis = new FileInputStream(file)) {
       this.source.load(fis);
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw TryCatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

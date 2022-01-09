@@ -2,7 +2,7 @@ package com.benefitj.jdbc;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.benefitj.core.Unit;
+import com.benefitj.core.TimeUtils;
 import com.benefitj.jdbc.sql.DatabaseConnector;
 import com.benefitj.jdbc.sql.EnhanceStatement;
 import com.benefitj.jdbc.sql.TableDDL;
@@ -106,7 +106,7 @@ public class JdbcApplicationTests {
   public void testShowCreateTableDDL() {
     EnhanceStatement stmt = getConnector().createStmt();
 
-    long start = Unit.now();
+    long start = TimeUtils.now();
     List<TableDDL> ddls = stmt.showTableDDLs("jeecg-boot");
     System.err.println(JSON.toJSONString(ddls));
 
@@ -125,7 +125,31 @@ public class JdbcApplicationTests {
 //    }, false);
 
     stmt.close();
-    System.err.println("耗时: " + Unit.diffNow(start));
+    System.err.println("耗时: " + TimeUtils.diffNow(start));
+  }
+
+  @Test
+  public void testQuery() {
+    long start1 = TimeUtils.now();
+    EnhanceStatement stmt = getConnector().createStmt();
+    stmt.use("hsrg");
+    long start2 = TimeUtils.now();
+    List<JSONObject> json = stmt.queryList("SELECT count(t.type) AS count, t.type\n" +
+        "FROM (SELECT DISTINCT hrt.zid AS reportZid, hrt.person_zid AS personZid, hrt.type AS type\n" +
+        "      FROM HS_REPORT_TASK AS hrt\n" +
+        "      LEFT JOIN HS_INPATIENT AS hi ON hi.org_zid = hrt.org_zid\n" +
+        "      LEFT JOIN HS_ORG AS ho ON ho.zid = hi.org_zid\n" +
+        "      WHERE hrt.`status` in ('FINISH') AND hrt.type in ('activity', 'jsyl', 'mse', 'hrv', 'physical', 'sleepStageAhi', 'holter') \t\t        AND (hi.org_zid = '0' OR (ho.auto_code LIKE concat( ( SELECT auto_code FROM HS_ORG WHERE zid = '0' LIMIT 1 ), ':%')))\n" +
+        "\t) AS t\n" +
+        "GROUP BY t.type");
+
+    System.err.println(json);
+
+    // 关闭
+    stmt.close();
+
+    System.err.println("耗时1: " + TimeUtils.diffNow(start1));
+    System.err.println("耗时2: " + TimeUtils.diffNow(start2));
   }
 
 }

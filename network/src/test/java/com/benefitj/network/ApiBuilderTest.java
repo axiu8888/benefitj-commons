@@ -3,7 +3,7 @@ package com.benefitj.network;
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.HexUtils;
 import com.benefitj.core.IOUtils;
-import com.benefitj.core.Unit;
+import com.benefitj.core.DUtils;
 import com.benefitj.core.file.IWriter;
 import io.reactivex.Observable;
 import junit.framework.TestCase;
@@ -62,7 +62,7 @@ public class ApiBuilderTest extends TestCase {
                   log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
                       , totalLength
                       , progress
-                      , Unit.fmt((progress * 100.f) / totalLength, "0.00")
+                      , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
                       , done
                   ));
         });
@@ -70,7 +70,7 @@ public class ApiBuilderTest extends TestCase {
 
   @Test
   public void testUploadFile() {
-    long start = Unit.now();
+    long start = DUtils.now();
     File file = new File("D:/develop/tools/simulator.zip");
     final AtomicInteger index = new AtomicInteger();
     api.upload(BodyUtils.progressRequestBody(file, "files", (totalLength, progress, done) -> {
@@ -78,19 +78,19 @@ public class ApiBuilderTest extends TestCase {
             log.info("总长度: {}, 已上传: {}, 进度: {}%， done[{}]"
                 , totalLength
                 , progress
-                , Unit.fmt((progress * 100.f) / totalLength, "0.00")
+                , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
                 , done
             );
           }
         }))
         .subscribe(SimpleObserver.create(result -> log.info("上传结果: {}", result)));
-    log.info("耗时: {}", Unit.diffNow(start));
+    log.info("耗时: {}", DUtils.diffNow(start));
   }
 
   @Test
   public void testDownload() {
     // 下载
-    long start = Unit.now();
+    long start = DUtils.now();
     api.download("simulator.zip")
         .subscribe(SimpleObserver.create(response -> {
           if (!response.isSuccessful()) {
@@ -106,18 +106,18 @@ public class ApiBuilderTest extends TestCase {
                   log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
                       , totalLength
                       , progress
-                      , Unit.fmt((progress * 100.f) / totalLength, "0.00")
+                      , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
                       , done
                   );
                 }
               });
         }));
-    log.info("耗时: {}", Unit.diffNow(start));
+    log.info("耗时: {}", DUtils.diffNow(start));
   }
 
   @Test
   public void testDownloadFile() {
-    long start = Unit.now();
+    long start = DUtils.now();
     HttpUtils http = new HttpUtils();
     okhttp3.Response response = http.get("https://downloads.gradle-dn.com/distributions/gradle-7.3.2-all.zip");
     final AtomicInteger index = new AtomicInteger();
@@ -128,12 +128,12 @@ public class ApiBuilderTest extends TestCase {
             log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
                 , totalLength
                 , progress
-                , Unit.fmt((progress * 100.f) / totalLength, "0.00")
+                , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
                 , done
             );
           }
         });
-    log.info("耗时: {}", Unit.diffNow(start));
+    log.info("耗时: {}", DUtils.diffNow(start));
   }
 
   @Test

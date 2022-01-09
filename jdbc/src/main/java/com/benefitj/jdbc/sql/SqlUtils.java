@@ -3,12 +3,16 @@ package com.benefitj.jdbc.sql;
 import com.alibaba.fastjson.JSONObject;
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.IOUtils;
+import com.benefitj.core.TryCatchUtils;
 import com.benefitj.core.functions.IRunnable;
 import com.benefitj.frameworks.cglib.CGLibProxy;
 import com.benefitj.frameworks.cglib.SourceRoot;
 
 import java.lang.reflect.Method;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -224,10 +228,8 @@ public class SqlUtils {
   public static <T> T tryThrow(Callable<T> call) {
     try {
       return call.call();
-    } catch (IllegalSQLException e) {
-      throw e;
     } catch (Exception e) {
-      throw new IllegalSQLException(e);
+      throw TryCatchUtils.throwing(e, IllegalSQLException.class);
     }
   }
 
@@ -237,10 +239,8 @@ public class SqlUtils {
   public static void tryThrow(IRunnable r) {
     try {
       r.run();
-    } catch (IllegalSQLException e) {
-      throw e;
     } catch (Exception e) {
-      throw new IllegalSQLException(e);
+      throw TryCatchUtils.throwing(e, IllegalSQLException.class);
     }
   }
 

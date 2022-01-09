@@ -60,16 +60,16 @@ public class AopAdviceProxy<T> implements MethodInterceptor {
       AopPointJoint joint = new AopPointJointImpl(proxy, target, method, args);
       PointAdvice advice = this.getAdvice();
       try {
-        advice.onBefore(joint);
+        advice.doBefore(joint);
         Object resultValue = proxy.invoke(target, args);
         joint.setReturnValue(resultValue);
-        advice.onAfter(joint);
+        advice.doAfter(joint);
         return joint.getReturnValue();
       } catch (Throwable e) {
-        advice.onError(joint, e);
+        advice.doError(joint, e);
         throw e;
       } finally {
-        advice.onAfterReturning(joint);
+        advice.doAfterReturning(joint);
       }
     }
     return proxy.invoke(this.getTarget(), args);

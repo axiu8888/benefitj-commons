@@ -44,25 +44,25 @@ jar {
     }
 }
 
-sourceJar {
-    from {
-        if (allInOne) {
-            return configurations.compile.collect {
-                if (it.getAbsolutePath().startsWith(rootDirPath)) {
-                    def path = it.getAbsolutePath();
-                    def project = findProject(getRootProject(), path)
-                    if (project == null) {
-                        throw new IllegalStateException(
-                                "Not found project for path: ${path}, compile project: ${getProject().name}")
-                    }
-                    project.sourceSets.main.allSource
-                }
-            }
-        } else {
-            return sourceSets.main.allSource
-        }
-    }
-}
+//sourceJar {
+//    from {
+//        if (allInOne) {
+//            return configurations.compile.collect {
+//                if (it.getAbsolutePath().startsWith(rootDirPath)) {
+//                    def path = it.getAbsolutePath();
+//                    def project = findProject(getRootProject(), path)
+//                    if (project == null) {
+//                        throw new IllegalStateException(
+//                                "Not found project for path: ${path}, compile project: ${getProject().name}")
+//                    }
+//                    project.sourceSets.main.allSource
+//                }
+//            }
+//        } else {
+//            return sourceSets.main.allSource
+//        }
+//    }
+//}
 
 
 //上传到nexus

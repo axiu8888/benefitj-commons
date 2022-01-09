@@ -20,11 +20,10 @@ public class IdUtils {
 
   private static final ThreadLocal<SoftReference<Random>> randomLocal = ThreadLocal.withInitial(() -> new SoftReference<>(new Random()));
 
-  private static Random getRandom() {
+  public static Random getRandom() {
     Random r = randomLocal.get().get();
     if (r != null) {
-      r = new Random();
-      randomLocal.set(new SoftReference<>(r));
+      randomLocal.set(new SoftReference<>(r = new Random()));
     }
     return r;
   }
