@@ -3,19 +3,25 @@ package com.benefitj.jdbc.sql;
 import com.alibaba.fastjson.JSONObject;
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.IOUtils;
+import com.benefitj.core.Slicer;
 import com.benefitj.core.TryCatchUtils;
 import com.benefitj.core.functions.IRunnable;
 import com.benefitj.frameworks.cglib.CGLibProxy;
 import com.benefitj.frameworks.cglib.SourceRoot;
+import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Method;
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public class SqlUtils {
 
@@ -28,7 +34,7 @@ public class SqlUtils {
    * @return 返回代理
    */
   public static <T> T newProxy(Class<? extends T> interfaceType, Object target) {
-    return newProxy(interfaceType, target, SourceRoot.class);
+    return newProxy(interfaceType, target, StatementRoot.class);
   }
 
   /**
@@ -172,55 +178,9 @@ public class SqlUtils {
     }
   }
 
-  /**
-   * 判断是否为 Getter 方法
-   *
-   * @param name 方法名称
-   * @return 返回是否为Getter方法
-   */
-  public static boolean isGetter(String name) {
-    return name.startsWith("get") || name.startsWith("is");
-  }
-
-  /**
-   * 获取字段名
-   *
-   * @param name 方法名
-   * @return 返回字段名
-   */
-  public static String getFieldName(String name) {
-    if (name.startsWith("get")) {
-      return Character.toLowerCase(name.charAt(3)) + name.substring(4);
-    } else if (name.startsWith("is")) {
-      return Character.toLowerCase(name.charAt(2)) + name.substring(3);
-    }
-    return name;
-  }
-
-  /**
-   * 判断参数类型
-   *
-   * @param method Method对象
-   * @param types  类型数组
-   * @return 返回是否匹配
-   */
-  public static boolean isParameterType(Method method, Class<?>... types) {
-    if (types != null && types.length == method.getParameterCount()) {
-      for (int i = 0; i < types.length; i++) {
-        //if (!types[i].isAssignableFrom(method.getParameterTypes()[i])) {
-        if (types[i] != method.getParameterTypes()[i]) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return types != null && types.length == 0;
-  }
-
   public static String fmt(Object time) {
     return time != null ? DateFmtter.fmt(time) : "";
   }
-
 
   /**
    * try{} catch(e){}
@@ -258,4 +218,59 @@ public class SqlUtils {
     sb.delete(0, sb.length());
     return sb.toString();
   }
+
+  public static List<String> refine(File sqlScript) {
+    final List<String> lines = new LinkedList<>();
+    final AtomicBoolean start = new AtomicBoolean(false);
+    IOUtils.readLines(sqlScript, line -> {
+      String tmp = refine(line, start);
+      if (tmp != null) {
+        lines.add(tmp);
+      }
+    });
+    // 无换行符
+    //line.replaceAll("\\s{2,}", " ");
+    return lines;
+  }
+
+  public static String refine(String sql) {
+    final AtomicBoolean start = new AtomicBoolean(false);
+    return Slicer.slice(sql, Slicer.ofNewLine())
+        .stream()
+        .map(line -> refine(line, start))
+        .filter(Objects::nonNull)
+        .collect(Collectors.joining("\n"));
+  }
+
+  public static String refine(String line, final AtomicBoolean start) {
+    // 去空格
+    String tmp = line.replace("\\s{2,}", " ");
+    if (StringUtils.isBlank(tmp)) {
+      return null;
+    }
+    // 去除同一行/* */注释
+    if (tmp.contains("/*") && tmp.contains("*/")) {
+      // 最小匹配
+      tmp = tmp.replaceAll("\\/\\*.*?\\*\\/", "");
+    } else if (tmp.contains("/*") && !tmp.contains("*/") && !tmp.contains("--")) {
+      // /*开始
+      start.set(true);
+    } else if (tmp.contains("/*") && tmp.contains("--") && tmp.indexOf("--") < tmp.indexOf("/*")) {
+      // 同时存在--/*
+      tmp = tmp.replaceAll("--.*", "");
+    }
+    if (start.get() && tmp.contains("*/")) {
+      // */结束
+      start.set(false);
+      return null;
+    }
+    // 去除同一行的--注释
+    tmp = tmp.replaceAll("--.*", "");
+    if (!start.get()) {
+      // 保留换行符
+      return tmp;
+    }
+    return null;
+  }
+
 }

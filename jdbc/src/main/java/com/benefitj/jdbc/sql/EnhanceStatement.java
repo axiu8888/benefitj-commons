@@ -8,6 +8,11 @@ import java.sql.Statement;
 public interface EnhanceStatement extends Statement, IStatement<EnhanceStatement> {
 
   @Override
+  default StatementRoot getRoot()  {
+    return (StatementRoot) this;
+  }
+
+  @Override
   ResultSet executeQuery(String sql);
 
   @Override

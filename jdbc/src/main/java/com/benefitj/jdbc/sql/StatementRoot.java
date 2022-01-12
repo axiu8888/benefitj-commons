@@ -1,12 +1,19 @@
 package com.benefitj.jdbc.sql;
 
+import com.benefitj.core.functions.WrappedMap;
 import com.benefitj.frameworks.cglib.SourceRoot;
 
-import java.sql.Savepoint;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class StatementRoot extends SourceRoot<EnhanceStatement> {
+public class StatementRoot extends SourceRoot<Statement> implements WrappedMap<String, Object> {
 
-  private final ThreadLocal<Savepoint> savepointLocal = new ThreadLocal<>();
+  private final ThreadLocal<Boolean> transactionLocal = new ThreadLocal<>();
+
+  private final Map<String, Object> map = new ConcurrentHashMap<>();
 
   public StatementRoot() {
   }
@@ -15,16 +22,35 @@ public class StatementRoot extends SourceRoot<EnhanceStatement> {
     super(source);
   }
 
-  public void setSavepoint(Savepoint savepoint) {
-    savepointLocal.set(savepoint);
+  @Override
+  public Map<String, Object> getOriginal() {
+    return map;
   }
 
-  public Savepoint getSavepoint() {
-    return savepointLocal.get();
-  }
-
-  public void removeSavepoint() {
-    savepointLocal.remove();
+  public <T> T safeTransaction(Callable<T> call) throws Exception {
+    Boolean active = transactionLocal.get();
+    if (!Boolean.TRUE.equals(active)) {
+      Connection conn = getSource().getConnection();
+      boolean autoCommit = conn.getAutoCommit();
+      try {
+        transactionLocal.set(Boolean.TRUE);
+        if (autoCommit) {
+          conn.setAutoCommit(false);
+        }
+        T result = call.call();
+        conn.commit();
+        return result;
+      } catch (Exception e) {
+        conn.rollback();
+        throw e;
+      } finally {
+        transactionLocal.remove();
+        if (autoCommit) {
+          conn.setAutoCommit(autoCommit);
+        }
+      }
+    }
+    return call.call();
   }
 
 }

@@ -2,16 +2,22 @@ package com.benefitj.jdbc;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.benefitj.core.IOUtils;
 import com.benefitj.core.TimeUtils;
 import com.benefitj.jdbc.sql.DatabaseConnector;
 import com.benefitj.jdbc.sql.EnhanceStatement;
+import com.benefitj.jdbc.sql.SqlUtils;
 import com.benefitj.jdbc.sql.TableDDL;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 public class JdbcApplicationTests {
 
@@ -150,6 +156,64 @@ public class JdbcApplicationTests {
 
     System.err.println("耗时1: " + TimeUtils.diffNow(start1));
     System.err.println("耗时2: " + TimeUtils.diffNow(start2));
+  }
+
+  @Test
+  public void testLoadSql() {
+    EnhanceStatement stmt = getConnector().createStmt();
+    stmt.use("quartz");
+    try {
+//      File sql = new File("D:\\临时文件\\quartz.sql");
+//      List<String> lines = SqlUtils.refine(sql)
+//          .stream()
+//          .filter(StringUtils::isNotBlank)
+//          .collect(Collectors.toList());
+//      System.err.println("\n-----------------------------------------\n");
+//      System.err.println(String.join("\n", lines));
+//      System.err.println("\n-----------------------------------------\n");
+//
+//      //stmt.execute(String.join("\n", lines), true);
+//
+//      for (String line : lines) {
+//        if (!line.startsWith("SET")) {
+//          stmt.addBatch(line);
+//        }
+//      }
+//      stmt.executeBatch();
+
+      stmt.getRoot().safeTransaction(() -> {
+
+        String sql = "DROP TABLE IF EXISTS `QRTZ_BLOB_TRIGGERS`; " +
+            "CREATE TABLE `QRTZ_BLOB_TRIGGERS`  (\n" +
+            "  `SCHED_NAME` varchar(120) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n" +
+            "  `TRIGGER_NAME` varchar(190) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n" +
+            "  `TRIGGER_GROUP` varchar(190) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n" +
+            "  `BLOB_DATA` blob NULL,\n" +
+            "  PRIMARY KEY (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`) USING BTREE,\n" +
+            "  INDEX `SCHED_NAME`(`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`) USING BTREE,\n" +
+            "  CONSTRAINT `QRTZ_BLOB_TRIGGERS_ibfk_1` FOREIGN KEY (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`) REFERENCES `QRTZ_TRIGGERS` (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`) ON DELETE RESTRICT ON UPDATE RESTRICT\n" +
+            ") ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;"
+                .replace("\n", "")
+                .replace("\\s{2,}", " ");
+        System.err.println("sql: " + sql);
+        boolean execute = stmt.execute(sql);
+        System.err.println("execute: " + execute);
+
+        return null;
+      });
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      stmt.close();
+    }
+
+
+//    File sql = new File("D:\\临时文件\\quartz.sql");
+//    List<String> lines = SqlUtils.refine(sql);
+//    System.err.println(String.join("\n", lines));
+
+
   }
 
 }

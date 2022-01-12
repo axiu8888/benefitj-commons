@@ -37,6 +37,7 @@ public interface Instantiator {
           for (Constructor<?> c : type.getConstructors()) {
             // 匹配参数
             if (isParameterTypesMatch(c.getParameterTypes(), args)) {
+              c.setAccessible(true);
               return (T) c.newInstance(args);
             }
           }

@@ -1,5 +1,7 @@
 package com.benefitj.jdbc.sql;
 
+import com.benefitj.frameworks.cglib.SourceRoot;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -8,6 +10,11 @@ import java.sql.*;
 import java.util.Calendar;
 
 public interface EnhancePreparedStatement extends PreparedStatement, IStatement<EnhancePreparedStatement> {
+
+  @Override
+  default StatementRoot getRoot()  {
+    return (StatementRoot) ((SourceRoot) this).getSource();
+  }
 
   @Override
   ResultSet executeQuery(String sql);
