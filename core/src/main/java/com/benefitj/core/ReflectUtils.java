@@ -5,10 +5,7 @@ import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -69,11 +66,26 @@ public class ReflectUtils {
   /**
    * 是否被注解注释
    *
+   * @param target     检车对象(Class/Method/Field/Constructor)
+   * @param annotation 注解
+   * @return 返回结果
+   */
+  public static boolean isAnnotationPresent(Object target, Class<Annotation> annotation) {
+    if (target instanceof AnnotatedElement) {
+      return ((AnnotatedElement) target).isAnnotationPresent(annotation);
+    }
+    return target.getClass().isAnnotationPresent(annotation);
+  }
+
+  /**
+   * 是否被注解注释
+   *
    * @param element     Class、Field、Method
    * @param annotations 注解
    * @return 返回是否被注释
    */
-  public static boolean isAnnotationPresent(AnnotatedElement element, Class<? extends Annotation>... annotations) {
+  public static boolean isAnyAnnotationPresent(AnnotatedElement element,
+                                               Collection<Class<? extends Annotation>> annotations) {
     return isAnnotationPresent(element, annotations, false);
   }
 
@@ -84,8 +96,35 @@ public class ReflectUtils {
    * @param annotations 注解
    * @return 返回是否被注释
    */
-  public static boolean isAnnotationPresent(AnnotatedElement element, Class<? extends Annotation>[] annotations, boolean allMatches) {
-    if (annotations != null && annotations.length > 0) {
+  public static boolean isAllAnnotationPresent(AnnotatedElement element,
+                                               Collection<Class<? extends Annotation>> annotations) {
+    return isAnnotationPresent(element, annotations, true);
+  }
+
+  /**
+   * 是否被注解注释
+   *
+   * @param element     Class、Field、Method
+   * @param annotations 注解
+   * @return 返回是否被注释
+   */
+  public static boolean isAnnotationPresent(AnnotatedElement element,
+                                            Class<? extends Annotation>[] annotations,
+                                            boolean allMatches) {
+    return isAnnotationPresent(element, Arrays.asList(annotations), allMatches);
+  }
+
+  /**
+   * 是否被注解注释
+   *
+   * @param element     Class、Field、Method
+   * @param annotations 注解
+   * @return 返回是否被注释
+   */
+  public static boolean isAnnotationPresent(AnnotatedElement element,
+                                            Collection<Class<? extends Annotation>> annotations,
+                                            boolean allMatches) {
+    if (annotations != null && !annotations.isEmpty()) {
       for (Class<? extends Annotation> annotation : annotations) {
         if (allMatches) {
           if (!element.isAnnotationPresent(annotation)) {
@@ -97,7 +136,6 @@ public class ReflectUtils {
           }
         }
       }
-      return true;
     }
     return false;
   }
@@ -585,20 +623,6 @@ public class ReflectUtils {
     }
     MethodHandles.Lookup lookup = newInstance(MethodHandles.Lookup.class, method.getDeclaringClass());
     return invokeDefault(lookup, obj, method, args);
-  }
-
-  /**
-   * 是否被注解注释
-   *
-   * @param target     检车对象(Class/Method/Field/Constructor)
-   * @param annotation 注解
-   * @return 返回结果
-   */
-  public static boolean isAnnotationPresent(Object target, Class<Annotation> annotation) {
-    if (target instanceof AnnotatedElement) {
-      return ((AnnotatedElement) target).isAnnotationPresent(annotation);
-    }
-    return target != null && target.getClass().isAnnotationPresent(annotation);
   }
 
   /**
