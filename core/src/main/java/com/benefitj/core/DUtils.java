@@ -82,6 +82,20 @@ public class DUtils {
   }
 
   /**
+   * 以某个连接符串拼接两个字符串
+   *
+   * @param prefix 前缀
+   * @param suffix 后缀
+   * @param joint  分隔符
+   * @return 返回拼接的字符串
+   */
+  public static String joint(String prefix, String suffix, String joint) {
+    prefix = endWiths(prefix, joint);
+    suffix = isStartWiths(suffix, joint) ? suffix.substring(joint.length()) : suffix;
+    return prefix + joint + suffix;
+  }
+
+  /**
    * 分割列表
    *
    * @param list    列表
