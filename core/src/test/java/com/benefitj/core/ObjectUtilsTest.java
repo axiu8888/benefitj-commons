@@ -18,7 +18,7 @@ public class ObjectUtilsTest extends TestCase {
     Userinfo userinfo = new Userinfo();
     userinfo.setName("华天");
     userinfo.setGender("男");
-    userinfo.setBirthday(DateFmtter.toDate(2000, 10, 8));
+    userinfo.setBirthday(TimeUtils.toDate(2000, 10, 8));
     userinfo.setArray(new byte[]{0x09, (byte) 0x88, (byte) 0x82});
     System.err.println(ObjectUtils.toString(userinfo, (field, o) ->
         (o instanceof byte[]) ? HexUtils.bytesToHex((byte[]) o) : ObjectUtils.defaultToString(field, o)));

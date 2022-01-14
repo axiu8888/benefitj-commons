@@ -194,12 +194,22 @@ public class ReflectUtils {
    * 设置是否可以访问
    *
    * @param ao   可访问对象
+   */
+  public static <T extends AccessibleObject> T setAccessible(T ao) {
+    return setAccessible(ao, true);
+  }
+
+  /**
+   * 设置是否可以访问
+   *
+   * @param ao   可访问对象
    * @param flag 是否可以访问
    */
-  public static void setAccessible(AccessibleObject ao, boolean flag) {
+  public static <T extends AccessibleObject> T setAccessible(T ao, boolean flag) {
     if (ao != null) {
       ao.setAccessible(flag);
     }
+    return ao;
   }
 
   /**

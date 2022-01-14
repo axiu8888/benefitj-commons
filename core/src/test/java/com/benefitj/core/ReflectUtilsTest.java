@@ -1,8 +1,13 @@
 package com.benefitj.core;
 
+import com.benefitj.core.functions.IFunction;
+import com.benefitj.core.lambda.LambdaMeta;
+import com.benefitj.core.lambda.LambdaUtils;
 import com.benefitj.core.reflection.FieldDescriptor;
 import org.junit.Test;
 
+import java.io.Serializable;
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.Date;
@@ -105,6 +110,32 @@ public class ReflectUtilsTest extends BaseTest {
     System.err.println("---------------- " + name + " ----------------\n");
   }
 
+  @Test
+  public void testSerializable() {
+
+    TryCatchUtils.tryThrow(() -> {
+      IFunction<SysUser, String> func = SysUser::getName;
+      LambdaMeta lambda = LambdaUtils.getLambda(func);
+      System.err.println(lambda.getImplMethodName());
+
+    });
+
+  }
+
+
+
+  public static class SysUser {
+
+    private String name;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+  }
 
   static class TestA {
     public TestA() {

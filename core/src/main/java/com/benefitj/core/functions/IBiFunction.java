@@ -1,7 +1,9 @@
 package com.benefitj.core.functions;
 
+import java.io.Serializable;
+
 @FunctionalInterface
-public interface IBiFunction<T, U, R> {
+public interface IBiFunction<T, U, R> extends Serializable {
 
   /**
    * Applies this function to the given arguments.
