@@ -24,10 +24,17 @@ public class Regex {
     return pattern;
   }
 
-  public List<String> find(String str) {
+  public boolean matches(CharSequence cs) {
+    synchronized (this) {
+      Matcher matcher = getPattern().matcher(cs);
+      return matcher.matches();
+    }
+  }
+
+  public List<String> find(CharSequence cs) {
     final List<String> find = new LinkedList<>();
     synchronized (this) {
-      Matcher matcher = getPattern().matcher(str);
+      Matcher matcher = getPattern().matcher(cs);
       while (matcher.find()) {
         find.add(matcher.group());
       }
@@ -47,6 +54,7 @@ public class Regex {
    * IPv4
    */
   public static final String IPV4 = "((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}";
+
   /**
    * 密码，必须包含大小写字母和数字的组合
    *
