@@ -85,7 +85,7 @@ public class StackUtils {
   }
 
   /**
-   * 过滤符合的报名
+   * 过滤符合的包名
    *
    * @param elements    栈追踪元素
    * @param packageName 报名

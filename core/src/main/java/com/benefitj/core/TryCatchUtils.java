@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * 异常处理
@@ -102,4 +101,12 @@ public class TryCatchUtils {
       mappedFunc.accept(e);
     }
   }
+
+  /**
+   * 忽略异常
+   */
+  public static void ignore(IRunnable r) {
+    tryThrow(r, e -> {/* ~ */});
+  }
+
 }
