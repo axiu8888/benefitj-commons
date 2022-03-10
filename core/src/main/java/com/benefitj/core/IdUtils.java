@@ -239,6 +239,27 @@ public class IdUtils {
   }
 
   /**
+   * 获取UUID
+   *
+   * @param start 开始截取的位置
+   * @param end 结束截取的位置
+   * @return 返回截取的UUID
+   */
+  public static String uuid(int start, int end) {
+    return uuid().substring(Math.max(start, 0), Math.min(end, 32));
+  }
+
+  /**
+   * 获取UUID
+   *
+   * @param length UUID的长度
+   * @return 返回截取的UUID
+   */
+  public static String uuid(int length) {
+    return uuid(0, length);
+  }
+
+  /**
    * 获取原始的UUID
    */
   public static String rawUUID() {
@@ -267,13 +288,13 @@ public class IdUtils {
    * 检查并获取
    *
    * @param chars 字符
-   * @param len  长度
-   * @param test 匹配函数
+   * @param len   长度
+   * @param test  匹配函数
    * @return 返回结果
    */
   public static String checkAndGet(char[] chars, int len, Predicate<String> test) {
     String nextId;
-    for (;;) {
+    for (; ; ) {
       nextId = IdUtils.nextId(chars, len);
       if (test.test(nextId)) {
         return nextId;

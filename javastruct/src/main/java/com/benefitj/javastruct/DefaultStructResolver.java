@@ -33,7 +33,6 @@ public class DefaultStructResolver implements StructResolver {
         , f -> f.isAnnotationPresent(JavaStructField.class)
         , f -> structClass.getFields().add(createStructField(manager, f))
         , f -> false
-        , false
     );
     // 结构体大小
     structClass.setSize(Math.max(jsc.value(), structClass.getFields().stream()

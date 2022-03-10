@@ -193,7 +193,7 @@ public class ReflectUtils {
   /**
    * 设置是否可以访问
    *
-   * @param ao   可访问对象
+   * @param ao 可访问对象
    */
   public static <T extends AccessibleObject> T setAccessible(T ao) {
     return setAccessible(ao, true);
@@ -226,44 +226,59 @@ public class ReflectUtils {
                               final Predicate<T> filter,
                               final Consumer<T> consumer,
                               final Predicate<T> interceptor) {
-    find(type, call, filter, consumer, interceptor, true);
+    find(type, call, filter, consumer, interceptor, true, false);
   }
 
   /**
    * 迭代Class
    *
-   * @param type        类
-   * @param call        *
-   * @param filter      过滤器 -> 返回true表示符合要求，需要处理
-   * @param consumer    消费者
-   * @param interceptor 拦截器 -> 返回true表示停止循环
-   * @param superclass  是否继续迭代父类
+   * @param type            类
+   * @param call            *
+   * @param filter          过滤器 -> 返回true表示符合要求，需要处理
+   * @param consumer        消费者
+   * @param interceptor     拦截器 -> 返回true表示停止循环
+   * @param superclass      是否继续迭代父类
+   * @param fromTopToBottom 是否从上往下查找
    */
   public static <T> void find(final Class<?> type,
                               final Function<Class<?>, T[]> call,
                               final Predicate<T> filter,
                               final Consumer<T> consumer,
                               final Predicate<T> interceptor,
-                              boolean superclass) {
+                              boolean superclass,
+                              boolean fromTopToBottom) {
     if (type == null || type == Object.class) {
       return;
     }
-    T[] ts = call.apply(type);
-    for (T field : ts) {
-      if (filter != null) {
-        if (filter.test(field)) {
-          consumer.accept(field);
-        }
+
+    List<Class<?>> classes = new LinkedList<>();
+    Class<?> cls = type;
+    do {
+      classes.add(cls);
+      if (superclass) {
+        cls = cls.getSuperclass();
       } else {
-        consumer.accept(field);
+        cls = Object.class;
       }
-      if (interceptor.test(field)) {
-        return;
-      }
+    } while (cls != Object.class);
+    if (fromTopToBottom) {
+      Collections.reverse(classes);
     }
 
-    if (superclass) {
-      find(type.getSuperclass(), call, filter, consumer, interceptor, superclass);
+    for (Class<?> klass : classes) {
+      T[] ts = call.apply(klass);
+      for (T field : ts) {
+        if (filter != null) {
+          if (filter.test(field)) {
+            consumer.accept(field);
+          }
+        } else {
+          consumer.accept(field);
+        }
+        if (interceptor.test(field)) {
+          return;
+        }
+      }
     }
   }
 
@@ -279,7 +294,7 @@ public class ReflectUtils {
                                 Predicate<Field> filter,
                                 Consumer<Field> consumer,
                                 Predicate<Field> interceptor) {
-    findFields(type, filter, consumer, interceptor, true);
+    findFields(type, filter, consumer, interceptor, true, false);
   }
 
   /**
@@ -290,13 +305,15 @@ public class ReflectUtils {
    * @param consumer    消费者
    * @param interceptor 拦截器
    * @param superclass  是否继续迭代父类
+   * @param fromTopToBottom 是否从上往下查找
    */
   public static void findFields(Class<?> type,
                                 Predicate<Field> filter,
                                 Consumer<Field> consumer,
                                 Predicate<Field> interceptor,
-                                boolean superclass) {
-    find(type, Class::getDeclaredFields, filter, consumer, interceptor, superclass);
+                                boolean superclass,
+                                boolean fromTopToBottom) {
+    find(type, Class::getDeclaredFields, filter, consumer, interceptor, superclass, fromTopToBottom);
   }
 
   /**
@@ -439,13 +456,15 @@ public class ReflectUtils {
    * @param consumer    处理器
    * @param interceptor 拦截器
    * @param superclass  是否继续迭代父类
+   * @param fromTopToBottom 是否从上往下查找
    */
   public static void findMethods(Class<?> type,
                                  Predicate<Method> filter,
                                  Consumer<Method> consumer,
                                  Predicate<Method> interceptor,
-                                 boolean superclass) {
-    find(type, Class::getDeclaredMethods, filter, consumer, interceptor, superclass);
+                                 boolean superclass,
+                                 boolean fromTopToBottom) {
+    find(type, Class::getDeclaredMethods, filter, consumer, interceptor, superclass, fromTopToBottom);
   }
 
   /**
@@ -460,7 +479,7 @@ public class ReflectUtils {
                                  Predicate<Method> filter,
                                  Consumer<Method> consumer,
                                  Predicate<Method> interceptor) {
-    findMethods(type, filter, consumer, interceptor, true);
+    findMethods(type, filter, consumer, interceptor, true, false);
   }
 
   /**

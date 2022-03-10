@@ -216,4 +216,39 @@ public class JdbcApplicationTests {
 
   }
 
+  @Test
+  public void testCreateTable() {
+    EnhanceStatement stmt = getConnector().createStmt();
+    stmt.use("test");
+    try {
+      stmt.getRoot().safeTransaction(() -> {
+
+        String sql = "create table sys_role_permission (\n" +
+            "       id bigint comment '主键' not null auto_increment,\n" +
+            "        active tinyint(1) NOT NULL DEFAULT 1 comment '是否可用，默认可用',\n" +
+            "        create_time datetime comment '创建时间',\n" +
+            "        deleted tinyint(1) NOT NULL DEFAULT 1 comment '逻辑删除的状态: 否(0)/是(1)',\n" +
+            "        update_time datetime DEFAULT NULL ON UPDATE current_timestamp() comment '修改时间',\n" +
+            "        version int comment '乐观锁',\n" +
+            "        permission_id varchar(32) comment '权限ID' not null,\n" +
+            "        role_id varchar(32) comment '角色ID' not null,\n" +
+            "        primary key (id)\n" +
+            "    ) engine=InnoDB;"
+                .replace("\n", "")
+                .replace("\\s{2,}", " ");
+        System.err.println("sql: " + sql);
+        boolean execute = stmt.execute(sql);
+        System.err.println("execute: " + execute);
+
+
+        return null;
+      });
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      stmt.close();
+    }
+  }
+
 }
