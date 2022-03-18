@@ -70,7 +70,7 @@ public class ReflectUtils {
    * @param annotation 注解
    * @return 返回结果
    */
-  public static boolean isAnnotationPresent(Object target, Class<Annotation> annotation) {
+  public static boolean isAnnotationPresent(Object target, Class<? extends Annotation> annotation) {
     if (target instanceof AnnotatedElement) {
       return ((AnnotatedElement) target).isAnnotationPresent(annotation);
     }
