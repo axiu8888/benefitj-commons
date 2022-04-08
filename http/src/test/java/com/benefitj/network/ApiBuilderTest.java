@@ -5,6 +5,7 @@ import com.benefitj.core.HexUtils;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.DUtils;
 import com.benefitj.core.file.IWriter;
+import com.benefitj.http.*;
 import io.reactivex.Observable;
 import junit.framework.TestCase;
 import okhttp3.RequestBody;
@@ -25,6 +26,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -55,7 +57,7 @@ public class ApiBuilderTest extends TestCase {
 //        .subscribe(body -> BodyUtils.transferTo(body, new File("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png")));
     api.getImg()
         .subscribe(body -> {
-          final IWriter img = IWriter.newFileWriter(IOUtils.createFile("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png"));
+          final IWriter img = IWriter.newFileWriter("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png");
           BodyUtils.progressResponseBody(body
               , (buf, len) -> img.write(buf, 0, len)
               , (totalLength, progress, done) ->

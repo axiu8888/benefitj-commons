@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.Slicer;
-import com.benefitj.core.TryCatchUtils;
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.functions.IRunnable;
 import com.benefitj.frameworks.cglib.CGLibProxy;
 import com.benefitj.frameworks.cglib.SourceRoot;
@@ -189,7 +189,7 @@ public class SqlUtils {
     try {
       return call.call();
     } catch (Exception e) {
-      throw TryCatchUtils.throwing(e, IllegalSQLException.class);
+      throw CatchUtils.throwing(e, IllegalSQLException.class);
     }
   }
 
@@ -200,7 +200,7 @@ public class SqlUtils {
     try {
       r.run();
     } catch (Exception e) {
-      throw TryCatchUtils.throwing(e, IllegalSQLException.class);
+      throw CatchUtils.throwing(e, IllegalSQLException.class);
     }
   }
 

@@ -1,5 +1,7 @@
 package com.benefitj.core.file;
 
+import com.benefitj.core.IOUtils;
+
 import java.io.File;
 
 public interface IWriter extends AutoCloseable {
@@ -104,6 +106,7 @@ public interface IWriter extends AutoCloseable {
    * @return 返回文件写入器
    */
   static IWriter newFileWriter(File file) {
+    IOUtils.createFile(file.getAbsolutePath());
     return new FileWriterImpl(file);
   }
 

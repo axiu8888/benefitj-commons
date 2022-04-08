@@ -614,7 +614,7 @@ public class ReflectUtils {
       setAccessible(method, true);
       return (T) method.invoke(obj, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -633,7 +633,7 @@ public class ReflectUtils {
           .bindTo(obj)
           .invokeWithArguments(args);
     } catch (Throwable e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -675,7 +675,7 @@ public class ReflectUtils {
       }
       return klass.newInstance();
     } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

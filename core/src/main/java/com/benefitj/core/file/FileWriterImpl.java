@@ -2,7 +2,7 @@ package com.benefitj.core.file;
 
 import com.benefitj.core.AttributeMap;
 import com.benefitj.core.IOUtils;
-import com.benefitj.core.TryCatchUtils;
+import com.benefitj.core.CatchUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -25,7 +25,7 @@ public class FileWriterImpl implements IWriter, AttributeMap {
     try {
       this.out = new BufferedOutputStream(new FileOutputStream(source));
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -85,7 +85,7 @@ public class FileWriterImpl implements IWriter, AttributeMap {
       }
       return this;
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -96,7 +96,7 @@ public class FileWriterImpl implements IWriter, AttributeMap {
     try {
       out().flush();
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

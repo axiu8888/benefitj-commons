@@ -12,7 +12,7 @@ rootProject.name = 'benefitj-commons'
 include ":all"              // 全部的依赖
 include ":core"             // 常用工具
 include ":pipeline"         // pipeline
-include ":network"          // HTTP请求，OkHttp + Retrofit + RxJava
+include ":http"             // HTTP请求，OkHttp + Retrofit + RxJava
 include ":consistent-hash"  // 一致性Hash
 include ":frameworks"       // 一些库的工具
 include ":interpolator"     // 插值器

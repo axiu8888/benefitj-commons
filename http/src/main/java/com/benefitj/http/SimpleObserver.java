@@ -1,4 +1,4 @@
-package com.benefitj.network;
+package com.benefitj.http;
 
 import io.reactivex.observers.DefaultObserver;
 import org.jetbrains.annotations.NotNull;

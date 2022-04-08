@@ -1,6 +1,6 @@
 package com.benefitj.core.concurrent;
 
-import com.benefitj.core.TryCatchUtils;
+import com.benefitj.core.CatchUtils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Condition;
@@ -31,7 +31,7 @@ public class LockDelegate {
     try {
       return c.call();
     } catch (Exception e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       lock.unlock();
     }

@@ -1,6 +1,6 @@
 package com.benefitj.core.file;
 
-import com.benefitj.core.TryCatchUtils;
+import com.benefitj.core.CatchUtils;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
@@ -181,7 +181,7 @@ public class FileCopy {
         }
         return true;
       } catch (IOException e) {
-        throw TryCatchUtils.throwing(e, IllegalStateException.class);
+        throw CatchUtils.throwing(e, IllegalStateException.class);
       }
     }
     return false;
@@ -195,7 +195,7 @@ public class FileCopy {
       try {
         f.createNewFile();
       } catch (IOException e) {
-        throw TryCatchUtils.throwing(e, IllegalStateException.class);
+        throw CatchUtils.throwing(e, IllegalStateException.class);
       }
     }
   }

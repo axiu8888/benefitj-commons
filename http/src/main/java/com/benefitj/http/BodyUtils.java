@@ -1,4 +1,4 @@
-package com.benefitj.network;
+package com.benefitj.http;
 
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.file.IWriter;
@@ -9,6 +9,8 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 
 import java.io.*;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Body工具
@@ -24,22 +26,37 @@ public class BodyUtils {
    * @return 返回请求体
    */
   public static RequestBody progressRequestBody(File file, String name, ProgressListener listener) {
-    return progressRequestBody(new File[]{file}, name, listener);
+    return progressRequestBody(Collections.emptyMap(), file, name, listener);
   }
 
   /**
    * 具有进度的请求体
    *
-   * @param files    文件
-   * @param name     请求参数名称
-   * @param listener 监听
+   * @param parameters 参数
+   * @param file       文件
+   * @param name       请求参数名称
+   * @param listener   监听
    * @return 返回请求体
    */
-  public static RequestBody progressRequestBody(File[] files, String name, ProgressListener listener) {
+  public static RequestBody progressRequestBody(Map<String, String> parameters, File file, String name, ProgressListener listener) {
+    return progressRequestBody(parameters, new File[]{file}, name, listener);
+  }
+
+  /**
+   * 具有进度的请求体
+   *
+   * @param parameters 参数
+   * @param files      文件
+   * @param name       请求参数名称
+   * @param listener   监听
+   * @return 返回请求体
+   */
+  public static RequestBody progressRequestBody(Map<String, String> parameters, File[] files, String name, ProgressListener listener) {
     MultipartBody.Builder builder = new MultipartBody.Builder();
     builder.setType(MultipartBody.FORM);
+    parameters.forEach(builder::addFormDataPart);
+    MediaType mediaType = MediaType.parse("application/octet-stream");
     for (File file : files) {
-      MediaType mediaType = MediaType.parse("application/octet-stream");
       builder.addFormDataPart(name, file.getName(), RequestBody.create(mediaType, file));
     }
     return new ProgressRequestBody(builder.build(), listener);

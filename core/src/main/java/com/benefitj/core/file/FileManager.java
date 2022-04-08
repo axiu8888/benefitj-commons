@@ -1,7 +1,7 @@
 package com.benefitj.core.file;
 
 import com.benefitj.core.IOUtils;
-import com.benefitj.core.TryCatchUtils;
+import com.benefitj.core.CatchUtils;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -89,7 +89,7 @@ public class FileManager implements IFileManager {
         try {
           return file.getParentFile().mkdirs() && file.createNewFile();
         } catch (IOException e) {
-          throw TryCatchUtils.throwing(e, IllegalStateException.class);
+          throw CatchUtils.throwing(e, IllegalStateException.class);
         }
       }
     }
@@ -287,7 +287,7 @@ public class FileManager implements IFileManager {
     try (final FileOutputStream fos = new FileOutputStream(out)) {
       transferTo(in, fos, true);
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -303,7 +303,7 @@ public class FileManager implements IFileManager {
     try (final FileOutputStream fos = new FileOutputStream(out);) {
       consumer.accept(fos);
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

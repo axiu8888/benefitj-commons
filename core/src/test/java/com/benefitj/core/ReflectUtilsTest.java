@@ -6,8 +6,6 @@ import com.benefitj.core.lambda.LambdaUtils;
 import com.benefitj.core.reflection.FieldDescriptor;
 import org.junit.Test;
 
-import java.io.Serializable;
-import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.Date;
@@ -113,7 +111,7 @@ public class ReflectUtilsTest extends BaseTest {
   @Test
   public void testSerializable() {
 
-    TryCatchUtils.tryThrow(() -> {
+    CatchUtils.tryThrow(() -> {
       IFunction<SysUser, String> func = SysUser::getName;
       LambdaMeta lambda = LambdaUtils.getLambda(func);
       System.err.println(lambda.getImplMethodName());

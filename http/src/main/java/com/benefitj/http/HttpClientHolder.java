@@ -1,4 +1,4 @@
-package com.benefitj.network;
+package com.benefitj.http;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

@@ -1,6 +1,6 @@
 package com.benefitj.core.executable;
 
-import com.benefitj.core.TryCatchUtils;
+import com.benefitj.core.CatchUtils;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
@@ -67,7 +67,7 @@ public class ConstructorInvoker<T> {
       constructor.setAccessible(true);
       return constructor.newInstance();
     } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

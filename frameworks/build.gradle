@@ -28,6 +28,9 @@ dependencies {
     // email
     compile 'org.apache.commons:commons-email:1.5'
 
+    // jcifs: windows 文件分享
+    compile 'org.codelibs:jcifs:2.1.28'
+
 }
 
 //apply from: "${getRootDir()}/buildSystem/upload.gradle"

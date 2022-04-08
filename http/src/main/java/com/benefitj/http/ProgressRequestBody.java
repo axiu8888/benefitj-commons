@@ -1,4 +1,4 @@
-package com.benefitj.network;
+package com.benefitj.http;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;

@@ -52,14 +52,14 @@ public class ClasspathUtils {
       try {
         return callable.call();
       } catch (Exception e) {
-        throw TryCatchUtils.throwing(e, IllegalStateException.class);
+        throw CatchUtils.throwing(e, IllegalStateException.class);
       }
     } else {
       return AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> {
         try {
           return callable.call();
         } catch (Exception e) {
-          throw TryCatchUtils.throwing(e, IllegalStateException.class);
+          throw CatchUtils.throwing(e, IllegalStateException.class);
         }
       });
     }
@@ -142,7 +142,7 @@ public class ClasspathUtils {
         return loader.getResource(filename);
       }
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -214,7 +214,7 @@ public class ClasspathUtils {
         }
       }
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -254,7 +254,7 @@ public class ClasspathUtils {
         }
       }
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -295,7 +295,7 @@ public class ClasspathUtils {
         }
       }
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -405,7 +405,7 @@ public class ClasspathUtils {
       }
       return classes;
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

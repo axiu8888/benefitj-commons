@@ -164,7 +164,7 @@ public interface BufCopy {
       }
       return os.toByteArray();
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

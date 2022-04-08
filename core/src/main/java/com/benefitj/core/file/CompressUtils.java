@@ -1,7 +1,7 @@
 package com.benefitj.core.file;
 
 import com.benefitj.core.IOUtils;
-import com.benefitj.core.TryCatchUtils;
+import com.benefitj.core.CatchUtils;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -40,7 +40,7 @@ public class CompressUtils {
       compress(out, bos, src, src.getName());
       return dest;
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -112,7 +112,7 @@ public class CompressUtils {
           }
         }
       } catch (IOException e) {
-        throw TryCatchUtils.throwing(e, IllegalStateException.class);
+        throw CatchUtils.throwing(e, IllegalStateException.class);
       }
     });
     return dest != null ? dest : zip.getParentFile();
@@ -143,7 +143,7 @@ public class CompressUtils {
         consumer.accept(input, entry);
       }
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -170,7 +170,7 @@ public class CompressUtils {
       IOUtils.write(in, out, 1024 << 4);
       return dest;
     } catch (IOException e) {
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -188,7 +188,7 @@ public class CompressUtils {
       return dest;
     } catch (IOException e) {
       dest.delete();
-      throw TryCatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

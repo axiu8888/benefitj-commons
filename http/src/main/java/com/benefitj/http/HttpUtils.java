@@ -1,4 +1,4 @@
-package com.benefitj.network;
+package com.benefitj.http;
 
 import okhttp3.*;
 
@@ -12,8 +12,8 @@ public class HttpUtils {
 
   private OkHttpClient client = new OkHttpClient.Builder()
       .connectTimeout(Duration.ofSeconds(3))
-      .readTimeout(Duration.ofSeconds(60))
-      .writeTimeout(Duration.ofSeconds(60))
+      .readTimeout(Duration.ofSeconds(300))
+      .writeTimeout(Duration.ofSeconds(300))
       .build();
 
   public HttpUtils() {

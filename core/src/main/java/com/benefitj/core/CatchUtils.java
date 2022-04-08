@@ -7,11 +7,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * 异常处理
  */
-public class TryCatchUtils {
+public class CatchUtils {
   /**
    * 实例化器
    */
@@ -107,6 +108,35 @@ public class TryCatchUtils {
    */
   public static void ignore(IRunnable r) {
     tryThrow(r, e -> {/* ~ */});
+  }
+
+  /**
+   * 忽略异常
+   */
+  public static <T> T ignore(Callable<T> call) {
+    return ignore(call, (T) null);
+  }
+
+  /**
+   * 忽略异常
+   */
+  public static <T> T ignore(Callable<T> call, T defaultValue) {
+    try {
+      return call.call();
+    } catch (Exception e) {
+      return defaultValue;
+    }
+  }
+
+  /**
+   * 忽略异常
+   */
+  public static <T> T ignore(Callable<T> call, Function<Exception, T> mappedFunc) {
+    try {
+      return call.call();
+    } catch (Exception e) {
+      return mappedFunc.apply(e);
+    }
   }
 
 }
