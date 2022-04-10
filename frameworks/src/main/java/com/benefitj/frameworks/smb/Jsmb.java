@@ -67,11 +67,15 @@ public class Jsmb {
     this.path = path;
   }
 
+  public JsmbFile create(String filename) {
+    return CatchUtils.tryThrow(() -> JsmbFile.createSub(this, new SmbFile(getURL(filename))));
+  }
+
   public JsmbFile connect(String filename) {
     return CatchUtils.tryThrow(() -> {
       SmbFile smbFile = new SmbFile(getURL(filename));
       smbFile.connect();
-      return JsmbFile.create(this, smbFile);
+      return JsmbFile.createSub(this, smbFile);
     });
   }
 

@@ -32,6 +32,7 @@ dependencies {
     testCompile 'junit:junit:4.13.2'
 
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     def deps = [
             "org.projectlombok:lombok:${lombokVersion}",
@@ -47,7 +48,7 @@ dependencies {
 
     deps.forEach({
         implementation(it)
-        testImplementation(it)
+        testCompile(it)
     })
 
 }

@@ -87,10 +87,9 @@ public class JsmbUtils {
     if (src.isDirectory()) {
       dest.mkdirs();
       if (multiLevel) {
-        JsmbFile[] subFiles = src.listFiles(filter);
-        for (JsmbFile subFile : subFiles) {
+        for (JsmbFile subFile : src.listFiles(filter)) {
           try {
-            transfer(subFile, dest.connectSub(subFile.getName()), filter, multiLevel);
+            transfer(subFile, dest.createSub(subFile.getName()), filter, multiLevel);
           } finally {
             IOUtils.closeQuietly(subFile);
           }
@@ -145,7 +144,7 @@ public class JsmbUtils {
     if (src.isDirectory()) {
       if (multiLevel) {
         for (File file : src.listFiles(filter)) {
-          try (JsmbFile jf = dest.connectSub(file.getName());) {
+          try (JsmbFile jf = dest.createSub(file.getName());) {
             jf.transferFrom(file, filter, true);
           }
         }
@@ -208,11 +207,12 @@ public class JsmbUtils {
       dest.mkdirs();
       if (multiLevel) {
         for (JsmbFile subFile : src.listFiles(filter)) {
-          transferTo(subFile, new File(dest, subFile.getName()), filter, multiLevel);
+          transferTo(subFile.connect(), new File(dest, subFile.getName()), filter, multiLevel);
         }
       }
     } else {
       IOUtils.createFile(dest.getAbsolutePath());
+      System.err.println(dest.getAbsolutePath() + " ==========>: " + src.getPath() + ", " + src.length());
       IOUtils.write(src.openInputStream(), dest, true);
       CatchUtils.ignore(() -> {
         // 修改属性

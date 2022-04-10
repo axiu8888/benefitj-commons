@@ -19,13 +19,15 @@ ext {
 }
 
 
-subprojects {
+allprojects {
 
     apply plugin: 'java'
     apply plugin: 'maven'
 
     group = 'com.benefitj'
     version = "1.6.2-SNAPSHOT"
+
+    apply from: "${getRootDir()}/buildSystem/base.gradle"
 
     ext {
         groupId = "${group}"
@@ -36,4 +38,8 @@ subprojects {
 
     //sourceCompatibility = JavaVersion.VERSION_11
     //targetCompatibility = JavaVersion.VERSION_11
+
+    dependencies {
+        compile 'org.projectlombok:lombok:1.18.22'
+    }
 }

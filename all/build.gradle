@@ -1,5 +1,4 @@
 
-apply from: "${getRootDir()}/buildSystem/base.gradle"
 apply from: "${getRootDir()}/buildSystem/package-allinone.gradle"
 
 jar {

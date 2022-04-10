@@ -1,4 +1,3 @@
-apply from: "${getRootDir()}/buildSystem/base.gradle"
 
 description = "EventBus"
 

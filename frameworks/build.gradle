@@ -1,10 +1,8 @@
-apply from: "${getRootDir()}/buildSystem/base.gradle"
+
 
 description = "框架的工具类"
 
 dependencies {
-
-    testCompile 'junit:junit:4.12'
 
     compile project(":core")
 

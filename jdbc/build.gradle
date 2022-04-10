@@ -1,5 +1,4 @@
 
-apply from: "${getRootDir()}/buildSystem/base.gradle"
 
 jar {
     archiveName("jdbc.jar")

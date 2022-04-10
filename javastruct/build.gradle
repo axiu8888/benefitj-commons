@@ -1,4 +1,3 @@
-apply from: "${getRootDir()}/buildSystem/base.gradle"
 
 description = "结构体"
 

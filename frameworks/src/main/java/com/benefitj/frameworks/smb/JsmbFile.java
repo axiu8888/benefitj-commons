@@ -11,6 +11,9 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public interface JsmbFile extends SmbResource, SmbConstants {
@@ -18,7 +21,7 @@ public interface JsmbFile extends SmbResource, SmbConstants {
   /**
    * 创建文件
    */
-  static JsmbFile create(Jsmb jsmb, SmbFile smbFile) {
+  static JsmbFile createSub(Jsmb jsmb, SmbFile smbFile) {
     return new JsmbFileImpl(jsmb, smbFile);
   }
 
@@ -26,8 +29,12 @@ public interface JsmbFile extends SmbResource, SmbConstants {
 
   SmbFile getSource();
 
-  default JsmbFile newConnection() {
-    return getJsmb().connect(getRelativePath());
+  /**
+   * 连接
+   */
+  default JsmbFile connect() {
+    CatchUtils.tryThrow(() -> getSource().connect());
+    return this;
   }
 
   /**
@@ -36,11 +43,11 @@ public interface JsmbFile extends SmbResource, SmbConstants {
    * @param filename 文件名
    * @return 返回子文件连接
    */
-  default JsmbFile connectSub(String filename) {
+  default JsmbFile createSub(String filename) {
     if (isFile()) {
       throw new IllegalStateException("仅支持目录");
     }
-    return getJsmb().connect(JsmbUtils.joint(getRelativePath(), filename));
+    return getJsmb().create(JsmbUtils.joint(getRelativePath(), filename));
   }
 
   /**
@@ -48,6 +55,20 @@ public interface JsmbFile extends SmbResource, SmbConstants {
    */
   default String getPath() {
     return getSource().getPath();
+  }
+
+  /**
+   * 获取 parent
+   */
+  default String getParent() {
+    return getSource().getParent();
+  }
+
+  /**
+   * 获取 share
+   */
+  default String getShare() {
+    return getSource().getShare();
   }
 
   /**
@@ -143,7 +164,7 @@ public interface JsmbFile extends SmbResource, SmbConstants {
    * @param multiLevel 是否拷贝多个层级的文件和目录
    */
   default void transferFrom(File src, @Nullable FileFilter filter, boolean multiLevel) {
-    JsmbUtils.transferFrom(src, newConnection(), filter, multiLevel);
+    JsmbUtils.transferFrom(src, connect(), filter, multiLevel);
   }
 
   /**
@@ -173,7 +194,16 @@ public interface JsmbFile extends SmbResource, SmbConstants {
    * @param multiLevel 是否拷贝多个层级的文件和目录
    */
   default void transferTo(File src, SmbFileFilter filter, boolean multiLevel) {
-    JsmbUtils.transferTo(newConnection(), src, filter, multiLevel);
+    JsmbUtils.transferTo(connect(), src, filter, multiLevel);
+  }
+
+  /**
+   * 列出文件
+   *
+   * @return 返回匹配的文件
+   */
+  default List<String> list() {
+    return CatchUtils.tryThrow(() -> Arrays.asList(getSource().list()));
   }
 
   /**
@@ -182,12 +212,34 @@ public interface JsmbFile extends SmbResource, SmbConstants {
    * @param filter 过滤
    * @return 返回匹配的文件
    */
-  default JsmbFile[] listFiles(SmbFilenameFilter filter) {
+  default List<String> list(SmbFilenameFilter filter) {
+    return CatchUtils.tryThrow(() -> Arrays.asList(getSource().list(filter)));
+  }
+
+  /**
+   * 列出文件
+   *
+   * @param filter 过滤
+   * @return 返回匹配的文件
+   */
+  default List<JsmbFile> listFiles(SmbFilenameFilter filter) {
+    return listFiles(filter, false);
+  }
+
+  /**
+   * 列出文件
+   *
+   * @param filter     过滤
+   * @param multiLevel 是否拷贝多个层级的文件和目录
+   * @return 返回匹配的文件
+   */
+  default List<JsmbFile> listFiles(SmbFilenameFilter filter, boolean multiLevel) {
     return CatchUtils.tryThrow(() ->
-        Stream.of(getSource()
-            .listFiles(filter))
-            .map(smbFile -> create(getJsmb(), smbFile))
-            .toArray(JsmbFile[]::new));
+        Stream.of(getSource().listFiles(filter))
+            .map(f -> createSub(getJsmb(), f))
+            .flatMap(jf -> multiLevel && jf.isDirectory()
+                ? Stream.concat(Stream.of(jf), listFiles(filter, multiLevel).stream()) : Stream.of(jf))
+            .collect(Collectors.toList()));
   }
 
   /**
@@ -195,18 +247,8 @@ public interface JsmbFile extends SmbResource, SmbConstants {
    *
    * @return 返回匹配的文件
    */
-  default String[] list() {
-    return CatchUtils.tryThrow(() -> getSource().list());
-  }
-
-  /**
-   * 列出文件
-   *
-   * @param filter 过滤
-   * @return 返回匹配的文件
-   */
-  default String[] list(SmbFilenameFilter filter) {
-    return CatchUtils.tryThrow(() -> getSource().list(filter));
+  default List<JsmbFile> listFiles() {
+    return listFiles(f -> true);
   }
 
   /**
@@ -215,12 +257,24 @@ public interface JsmbFile extends SmbResource, SmbConstants {
    * @param filter 过滤
    * @return 返回匹配的文件
    */
-  default JsmbFile[] listFiles(SmbFileFilter filter) {
+  default List<JsmbFile> listFiles(SmbFileFilter filter) {
+    return listFiles(filter, false);
+  }
+
+  /**
+   * 列出文件
+   *
+   * @param filter     过滤
+   * @param multiLevel 是否拷贝多个层级的文件和目录
+   * @return 返回匹配的文件
+   */
+  default List<JsmbFile> listFiles(SmbFileFilter filter, boolean multiLevel) {
     return CatchUtils.tryThrow(() ->
-        Stream.of(getSource()
-            .listFiles(filter))
-            .map(smbFile -> create(getJsmb(), smbFile))
-            .toArray(JsmbFile[]::new));
+        Stream.of(getSource().listFiles(filter))
+            .map(f -> createSub(getJsmb(), f))
+            .flatMap(jf -> multiLevel && jf.isDirectory()
+                ? Stream.concat(Stream.of(jf), listFiles(filter, multiLevel).stream()) : Stream.of(jf))
+            .collect(Collectors.toList()));
   }
 
   @Override
