@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
-import java.util.Arrays;
 
 public class JsmbUtils {
 
@@ -85,28 +84,19 @@ public class JsmbUtils {
     dest.deleteOnExist();
     dest.createIfNotExist(src.isDirectory());
     if (src.isDirectory()) {
-      dest.mkdirs();
       if (multiLevel) {
         for (JsmbFile subFile : src.listFiles(filter)) {
           try {
-            transfer(subFile, dest.createSub(subFile.getName()), filter, multiLevel);
+            transfer(subFile, dest.createSub(subFile), filter, multiLevel);
           } finally {
             IOUtils.closeQuietly(subFile);
           }
         }
       }
     } else {
-      CatchUtils.tryThrow(() -> {
-        IOUtils.write(src.openInputStream(), dest.openOutputStream());
-        src.setAttributes(dest.getAttributes());
-        src.setFileTimes(dest.createTime(), dest.lastModified(), dest.lastAccess());
-      }, e -> {
-        System.err.println("exists: " + src.exists());
-        System.err.println("getPath: " + src.getPath());
-        System.err.println("getRelativePath: " + src.getRelativePath());
-        System.err.println("getSecurity: " + CatchUtils.ignore(() -> Arrays.toString(src.getSecurity())));
-        throw new IllegalStateException(e);
-      });
+      IOUtils.write(src.openInputStream(), dest.openOutputStream());
+      src.setAttributes(dest.getAttributes());
+      src.setFileTimes(dest.createTime(), dest.lastModified(), dest.lastAccess());
     }
   }
 
@@ -144,7 +134,7 @@ public class JsmbUtils {
     if (src.isDirectory()) {
       if (multiLevel) {
         for (File file : src.listFiles(filter)) {
-          try (JsmbFile jf = dest.createSub(file.getName());) {
+          try (JsmbFile jf = dest.createSub(file);) {
             jf.transferFrom(file, filter, true);
           }
         }
@@ -212,7 +202,6 @@ public class JsmbUtils {
       }
     } else {
       IOUtils.createFile(dest.getAbsolutePath());
-      System.err.println(dest.getAbsolutePath() + " ==========>: " + src.getPath() + ", " + src.length());
       IOUtils.write(src.openInputStream(), dest, true);
       CatchUtils.ignore(() -> {
         // 修改属性

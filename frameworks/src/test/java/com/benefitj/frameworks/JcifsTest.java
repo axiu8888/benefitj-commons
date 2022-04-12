@@ -1,10 +1,6 @@
 package com.benefitj.frameworks;
 
-import com.alibaba.fastjson.JSON;
-import com.benefitj.core.CatchUtils;
 import com.benefitj.core.DUtils;
-import com.benefitj.core.IOUtils;
-import com.benefitj.core.SystemProperty;
 import com.benefitj.frameworks.smb.Jsmb;
 import com.benefitj.frameworks.smb.JsmbFile;
 import lombok.AllArgsConstructor;
@@ -13,74 +9,41 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class JcifsTest extends BaseTest {
 
+  long start;
+
   @Override
   public void setUp() {
+    start = DUtils.now();
   }
 
   @Override
   public void tearDown() {
-  }
-
-  @Test
-  public void testProperty() {
-    System.err.println("userHome: " + SystemProperty.getUserHome());
-    System.err.println("getUserDir: " + SystemProperty.getUserDir());
-    System.err.println("getUserScript: " + SystemProperty.getUserScript());
-    System.err.println("getJavaIOTmpDir: " + SystemProperty.getJavaIOTmpDir());
-  }
-
-  @Test
-  public void testCopyTo() throws IOException {
-    long start = DUtils.now();
-
-//    Jsmb jsmb = new Jsmb("hsrg", "hsrg8888", "192.168.0.180", "/");
-    Jsmb jsmb = new Jsmb("dingxiuan", "123456", "192.168.124.13", "/");
-    JsmbFile jf = jsmb.connect("");
-    System.err.println(jf.list());
-
-    List<JsmbFile> jsmbFiles = jf.listFiles(f -> CatchUtils.ignore(f::exists, false) && !"IPC$/".equalsIgnoreCase(f.getName()));
-    System.err.println(jsmbFiles.stream()
-        .map(JsmbFile::getRelativePath)
-        .collect(Collectors.joining(", ")));
-
-//    // 传输到远程
-//    jsmbFiles[0].createSub("紫衫龙王/超短交易悟道心路").transferFrom(new File("E:\\全部数据\\炒股\\紫衫龙王\\超短交易悟道心路"));
-
-    // 从远程拷贝
-    JsmbFile sub = jsmbFiles.get(0).createSub("紫衫龙王/超短交易悟道心路");
-    System.err.println(JSON.toJSONString(
-        sub.listFiles(file -> true, true)
-            .stream()
-            .map(JsmbFileInfo::of)
-            .collect(Collectors.toList())));
-//    sub.transferTo(new File("E:\\D$\\紫衫龙王\\超短交易悟道心路"));
-
-    JsmbFile first = sub.listFiles(file -> true, true)
-        .stream()
-        .findFirst()
-        .orElseGet(null);
-
-    System.err.println(first.getPath() + ", " + first.length() + ", " + first.exists());
-    first.connect();
-    IOUtils.write(first.openInputStream(), new File("E:\\D$\\紫衫龙王\\超短交易悟道心路"), true);
-    first.close();
-
-//    // 从一个远程传到另一个远程
-////    JsmbUtils.transfer(jsmbFiles[0], jsmbFiles[1].connectSub(jsmbFiles[0].getName()));
-//
-//    //jf.copyTo(new File("D:\\company\\肺康复系统"));
-//    //jf.copyTo(new File("D:\\company\\月报"));
-
-    jf.close();
-
     System.err.println("耗时: " + DUtils.diffNow(start));
+  }
+
+  @Test
+  public void testTransfer() {
+    Jsmb jsmb = new Jsmb("hsrg", "hsrg8888", "192.168.0.180", "/");
+//    Jsmb jsmb = new Jsmb("dingxiuan", "123456", "192.168.124.13", "/");
+    System.err.println(String.join(", ", jsmb.list()));
+
+    System.err.println(jsmb.listFiles(true)
+        .stream()
+        .map(JsmbFile::getRelativePath)
+        .collect(Collectors.joining("\n")));
+
+//    List<JsmbFile> files = jsmb.listFiles();
+////    File src = new File("D:\\尘肺康复管理系统");
+////    // 传输到远程
+////    files.get(0).createSub(src).transferFrom(src);
+////    // 从远程拷贝
+////    files.get(0).createSub(src).transferTo(new File("D:\\尘肺康复管理系统\\tmp"));
+//    // 从一个远程传到另一个远程
+//    files.get(0).transferTo(files.get(1));
 
   }
 

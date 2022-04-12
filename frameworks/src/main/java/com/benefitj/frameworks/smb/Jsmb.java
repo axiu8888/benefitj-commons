@@ -1,9 +1,13 @@
 package com.benefitj.frameworks.smb;
 
 import com.benefitj.core.CatchUtils;
+import com.benefitj.core.IOUtils;
 import jcifs.smb.SmbFile;
 
 import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Jsmb {
 
@@ -23,6 +27,8 @@ public class Jsmb {
    * 路径
    */
   private String path;
+
+  private JsmbFile root;
 
   public Jsmb(String username, String password, String remote) {
     this(username, password, remote, "");
@@ -67,16 +73,15 @@ public class Jsmb {
     this.path = path;
   }
 
-  public JsmbFile create(String filename) {
-    return CatchUtils.tryThrow(() -> JsmbFile.createSub(this, new SmbFile(getURL(filename))));
-  }
-
-  public JsmbFile connect(String filename) {
-    return CatchUtils.tryThrow(() -> {
-      SmbFile smbFile = new SmbFile(getURL(filename));
-      smbFile.connect();
-      return JsmbFile.createSub(this, smbFile);
-    });
+  public JsmbFile getRoot() {
+    JsmbFile root = this.root;
+    synchronized (this) {
+      if (root == null || !root.getPath().equals(getPath())) {
+        IOUtils.closeQuietly(root);
+        this.root = root = create("/");
+      }
+    }
+    return root;
   }
 
   public String getURL() {
@@ -91,6 +96,10 @@ public class Jsmb {
 
   public String getURL(String path) {
     return JsmbUtils.joint(getURL(), path);
+  }
+
+  public JsmbFile create(String filename) {
+    return CatchUtils.tryThrow(() -> JsmbFile.createSub(this, new SmbFile(getURL(filename))));
   }
 
   /**
@@ -109,9 +118,31 @@ public class Jsmb {
    * @param filename 文件名：/tmp/abc/xyz.txt
    */
   public void transferTo(File src, String filename) {
-    try (JsmbFile jf = connect(filename);) {
+    try (JsmbFile jf = create(filename);) {
       jf.transferFrom(src, true);
     }
+  }
+
+  public List<String> list() {
+    return listFiles().stream()
+        .filter(f -> filter(f.getSource()))
+        .map(JsmbFile::getName)
+        .collect(Collectors.toList());
+  }
+
+  public List<JsmbFile> listFiles() {
+    return listFiles(false);
+  }
+
+  public List<JsmbFile> listFiles(boolean multiLevel) {
+    return getRoot().listFiles(this::filter)
+        .stream()
+        .flatMap(jf -> multiLevel ? Stream.concat(Stream.of(jf), jf.listFiles(true).stream()) : Stream.of(jf))
+        .collect(Collectors.toList());
+  }
+
+  public boolean filter(SmbFile f) {
+    return CatchUtils.ignore(f::exists, false) && !"IPC$/".equalsIgnoreCase(f.getName());
   }
 
 }

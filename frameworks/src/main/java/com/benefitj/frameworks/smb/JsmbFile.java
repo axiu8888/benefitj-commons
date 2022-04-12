@@ -38,16 +38,47 @@ public interface JsmbFile extends SmbResource, SmbConstants {
   }
 
   /**
+   * 连接子文件(文件)
+   *
+   * @param file 文件名
+   * @return 返回子文件连接
+   */
+  default JsmbFile createSub(File file) {
+    return createSub(file.getName(), file.isDirectory());
+  }
+
+  /**
+   * 连接子文件(文件)
+   *
+   * @param file 文件名
+   * @return 返回子文件连接
+   */
+  default JsmbFile createSub(SmbFile file) {
+    return createSub(file.getName(), CatchUtils.ignore(file::isDirectory, false));
+  }
+
+  /**
+   * 连接子文件(文件)
+   *
+   * @param file 文件名
+   * @return 返回子文件连接
+   */
+  default JsmbFile createSub(JsmbFile file) {
+    return createSub(file.getName(), file.isDirectory());
+  }
+
+  /**
    * 连接子文件
    *
    * @param filename 文件名
+   * @param dir      是否为目录
    * @return 返回子文件连接
    */
-  default JsmbFile createSub(String filename) {
+  default JsmbFile createSub(String filename, boolean dir) {
     if (isFile()) {
       throw new IllegalStateException("仅支持目录");
     }
-    return getJsmb().create(JsmbUtils.joint(getRelativePath(), filename));
+    return getJsmb().create(JsmbUtils.joint(getRelativePath(), filename) + (dir ? "/" : ""));
   }
 
   /**
@@ -75,14 +106,14 @@ public interface JsmbFile extends SmbResource, SmbConstants {
    * 获取父目录
    */
   default JsmbFile getParentFile() {
-    return getJsmb().connect(JsmbUtils.refine(getParentRelativePath()));
+    return getJsmb().create(JsmbUtils.refine(getParentRelativePath(), true, false));
   }
 
   /**
    * 获取相对路径
    */
   default String getRelativePath() {
-    return JsmbUtils.refine(getPath().substring(JsmbUtils.refine(getJsmb().getURL()).length()), false, true);
+    return JsmbUtils.refine(getPath().substring(JsmbUtils.refine(getJsmb().getURL()).length()), true, false);
   }
 
   /**
@@ -138,7 +169,14 @@ public interface JsmbFile extends SmbResource, SmbConstants {
   }
 
   /**
-   * 拷贝文件
+   * 传输到远程
+   */
+  default void transferFrom(JsmbFile src) {
+    JsmbUtils.transfer(src, this);
+  }
+
+  /**
+   * 从本地拷贝文件到远程
    *
    * @param src 本地源文件
    */
@@ -147,7 +185,7 @@ public interface JsmbFile extends SmbResource, SmbConstants {
   }
 
   /**
-   * 拷贝文件到远程
+   * 从本地拷贝文件到远程
    *
    * @param src        本地源文件
    * @param multiLevel 是否拷贝多个层级的文件和目录
@@ -157,7 +195,7 @@ public interface JsmbFile extends SmbResource, SmbConstants {
   }
 
   /**
-   * 拷贝文件到远程
+   * 从本地拷贝文件到远程
    *
    * @param src        本地源文件
    * @param filter     文件过滤
@@ -168,18 +206,25 @@ public interface JsmbFile extends SmbResource, SmbConstants {
   }
 
   /**
-   * 从远程拷贝
+   * 传输到远程
+   */
+  default void transferTo(JsmbFile dest) {
+    JsmbUtils.transfer(this, dest);
+  }
+
+  /**
+   * 从远程拷贝文件到本地
    *
-   * @param dest 本地目标文件
+   * @param dest 本地文件
    */
   default void transferTo(File dest) {
     transferTo(dest, true);
   }
 
   /**
-   * 从远程拷贝
+   * 从远程拷贝文件到本地
    *
-   * @param dest       本地目标文件
+   * @param dest       本地文件
    * @param multiLevel 是否拷贝多个层级的文件和目录
    */
   default void transferTo(File dest, boolean multiLevel) {
@@ -187,9 +232,9 @@ public interface JsmbFile extends SmbResource, SmbConstants {
   }
 
   /**
-   * 从远程拷贝
+   * 从远程拷贝文件到本地
    *
-   * @param src        本地目标文件
+   * @param src        本地文件
    * @param filter     过滤
    * @param multiLevel 是否拷贝多个层级的文件和目录
    */
@@ -264,6 +309,16 @@ public interface JsmbFile extends SmbResource, SmbConstants {
   /**
    * 列出文件
    *
+   * @param multiLevel 是否拷贝多个层级的文件和目录
+   * @return 返回匹配的文件
+   */
+  default List<JsmbFile> listFiles(boolean multiLevel) {
+    return listFiles(f -> true, multiLevel);
+  }
+
+  /**
+   * 列出文件
+   *
    * @param filter     过滤
    * @param multiLevel 是否拷贝多个层级的文件和目录
    * @return 返回匹配的文件
@@ -271,10 +326,14 @@ public interface JsmbFile extends SmbResource, SmbConstants {
   default List<JsmbFile> listFiles(SmbFileFilter filter, boolean multiLevel) {
     return CatchUtils.tryThrow(() ->
         Stream.of(getSource().listFiles(filter))
-            .map(f -> createSub(getJsmb(), f))
-            .flatMap(jf -> multiLevel && jf.isDirectory()
-                ? Stream.concat(Stream.of(jf), listFiles(filter, multiLevel).stream()) : Stream.of(jf))
-            .collect(Collectors.toList()));
+        .map(f -> createSub(getJsmb(), f))
+        .flatMap(jf ->
+            multiLevel && jf.isDirectory()
+                ? Stream.concat(Stream.of(jf), jf.listFiles(filter, multiLevel).stream())
+                : Stream.of(jf)
+        )
+        .collect(Collectors.toList())
+    );
   }
 
   @Override
