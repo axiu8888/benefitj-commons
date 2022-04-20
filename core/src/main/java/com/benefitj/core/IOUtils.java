@@ -2,7 +2,6 @@ package com.benefitj.core;
 
 import com.benefitj.core.functions.IBiConsumer;
 import com.benefitj.core.functions.IConsumer;
-import com.benefitj.core.functions.IRunnable;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -19,52 +18,6 @@ import java.util.stream.Stream;
  * IO工具
  */
 public class IOUtils {
-
-  public static final byte[] EMPTY = new byte[0];
-  public static final long KB = 1024L;
-  public static final long MB = 1024L * KB;
-  public static final long GB = 1024L * MB;
-  public static final long TB = 1024L * GB;
-
-  /**
-   * 计算KB大小
-   *
-   * @param len 长度
-   * @return 返回对应的KB
-   */
-  public static double ofKB(long len) {
-    return (len * 1.0) / KB;
-  }
-
-  /**
-   * 计算MB大小
-   *
-   * @param len 长度
-   * @return 返回对应的MB
-   */
-  public static double ofMB(long len) {
-    return (len * 1.0) / MB;
-  }
-
-  /**
-   * 计算GB大小
-   *
-   * @param len 长度
-   * @return 返回对应的GB
-   */
-  public static double ofGB(long len) {
-    return (len * 1.0) / GB;
-  }
-
-  /**
-   * 计算TB大小
-   *
-   * @param len 长度
-   * @return 返回对应的TB
-   */
-  public static double ofTB(long len) {
-    return (len * 1.0) / TB;
-  }
 
   /**
    * 文件数组是否不为空
@@ -130,20 +83,22 @@ public class IOUtils {
    * @return 返回计算的文件大小
    */
   public static long length(File file, @Nullable FileFilter filter, boolean multiLevel) {
-    if (file == null) return 0L;
-    if (file.isDirectory()) {
-      long size = 0L;
-      if (multiLevel) {
-        File[] files = filter != null ? file.listFiles(filter) : file.listFiles();
-        if (isNotEmpty(files)) {
-          for (File f : files) {
-            size += length(f, filter, true);
+    if (file != null) {
+      if (file.isDirectory()) {
+        long size = 0L;
+        if (multiLevel) {
+          File[] files = filter != null ? file.listFiles(filter) : file.listFiles();
+          if (isNotEmpty(files)) {
+            for (File f : files) {
+              size += length(f, filter, true);
+            }
           }
         }
+        return size;
       }
-      return size;
+      return file.length();
     }
-    return file.length();
+    return 0L;
   }
 
   /**
@@ -296,32 +251,11 @@ public class IOUtils {
         try {
           newFile.createNewFile();
         } catch (IOException e) {
-          throw CatchUtils.throwing(e, IllegalStateException.class);
+          throw throwing(e, IllegalStateException.class);
         }
       }
     }
     return newFile;
-  }
-
-
-  /**
-   * 获取文件大小
-   *
-   * @param f 文件
-   * @return 返回文件长度
-   */
-  public static long ofFileSize(File f) {
-    return f != null ? f.length() : 0L;
-  }
-
-  /**
-   * 获取缓存数组
-   *
-   * @param buff 缓存数据的数组
-   * @return 返回不为Null的字节数组
-   */
-  private static byte[] defaultBuffer(byte[] buff) {
-    return buff != null ? buff : new byte[1024 << 4];
   }
 
   /**
@@ -460,7 +394,7 @@ public class IOUtils {
         consumer.accept(buff, len);
       }
     } catch (Exception e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(is);
@@ -497,7 +431,7 @@ public class IOUtils {
     try (final RandomAccessFile raf = new RandomAccessFile(file, "r");) {
       read(raf, size, filter, consumer, interceptor);
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw throwing(e, IllegalStateException.class);
     }
   }
 
@@ -527,7 +461,7 @@ public class IOUtils {
         }
       }
     } catch (Exception e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw throwing(e, IllegalStateException.class);
     }
   }
 
@@ -541,7 +475,7 @@ public class IOUtils {
     try (final FileReader reader = new FileReader(file);) {
       readLines(reader, false, consumer);
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw throwing(e, IllegalStateException.class);
     }
   }
 
@@ -570,7 +504,7 @@ public class IOUtils {
         consumer.accept(line);
       }
     } catch (Exception e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(br);
@@ -616,22 +550,9 @@ public class IOUtils {
    *
    * @param file 要读取的文件
    * @return 返回读取的字节数组
-   * @throws IllegalStateException
    */
-  public static byte[] readFileBytes(File file) {
-    return readFileBytes(file, 10 * MB);
-  }
-
-  /**
-   * 读取文件, 如果文件超过一定大小就抛出异常
-   *
-   * @param file 要读取的文件
-   * @return 返回读取的字节数组
-   * @throws IllegalArgumentException
-   */
-  public static byte[] readFileBytes(File file, long maxSize) {
+  public static byte[] readFileAsBytes(File file) {
     if (exists(file)) {
-      requireNotOutOfSize(file.length(), maxSize);
       final FileInputStream fis = newFIS(file);
       try {
         return readFully(fis).toByteArray();
@@ -639,7 +560,36 @@ public class IOUtils {
         closeQuietly(fis);
       }
     }
-    return EMPTY;
+    return new byte[0];
+  }
+
+  /**
+   * 读取文件
+   *
+   * @param file 要读取的文件
+   * @return 返回读取的字符串
+   */
+  public static String readFileAsString(File file) {
+    return readFileAsString(file, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * 读取文件
+   *
+   * @param file    要读取的文件
+   * @param charset 字符集
+   * @return 返回读取的字符串
+   */
+  public static String readFileAsString(File file, Charset charset) {
+    if (exists(file)) {
+      final FileInputStream fis = newFIS(file);
+      try {
+        return readFully(fis).toString(charset);
+      } finally {
+        closeQuietly(fis);
+      }
+    }
+    return "";
   }
 
   /**
@@ -660,17 +610,7 @@ public class IOUtils {
    * @return 返回数据行的集合
    */
   public static List<String> readFileLines(File file, String charset) {
-    return readFileLines(file, s -> true, charset);
-  }
-
-  /**
-   * 读取文件中数据的每一行
-   *
-   * @param file 文件
-   * @return 返回数据行的集合
-   */
-  public static List<String> readFileLines(File file, Predicate<String> predicate, String charset) {
-    return readFileLines(file, predicate, charset, 1024 << 4);
+    return readFileLines(file, str -> true, charset);
   }
 
   /**
@@ -681,9 +621,8 @@ public class IOUtils {
    * @param charset   字符编码
    * @return 返回数据行的集合
    */
-  public static List<String> readFileLines(File file, Predicate<String> predicate, String charset, long maxSize) {
+  public static List<String> readFileLines(File file, Predicate<String> predicate, String charset) {
     if (isFile(file)) {
-      requireNotOutOfSize(file.length(), maxSize);
       BufferedReader reader = newBufferedReader(file, charset);
       try {
         return reader.lines()
@@ -730,7 +669,7 @@ public class IOUtils {
     try (final FileInputStream fis = new FileInputStream(in)) {
       return write(fis, out, 1024 << 4, close);
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw throwing(e, IllegalStateException.class);
     }
   }
 
@@ -798,7 +737,7 @@ public class IOUtils {
       }
       return totalLength;
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(is, os);
@@ -854,7 +793,7 @@ public class IOUtils {
       os.write(buff, start, len);
       os.flush();
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw throwing(e, IllegalStateException.class);
     }
   }
 
@@ -884,7 +823,7 @@ public class IOUtils {
         writer.flush();
       }
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(reader, writer);
@@ -933,7 +872,7 @@ public class IOUtils {
         try {
           c.close();
         } catch (Exception e) {
-          throw CatchUtils.throwing(e, IllegalStateException.class);
+          throw throwing(e, IllegalStateException.class);
         }
       }
     }
@@ -1084,7 +1023,7 @@ public class IOUtils {
         }
       }
     } catch (Exception e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw throwing(e, IllegalStateException.class);
     }
   }
 
@@ -1098,38 +1037,8 @@ public class IOUtils {
   /**
    * try{} catch(e){}
    */
-  public static void tryThrow(IRunnable r) {
-    CatchUtils.tryThrow(r);
-  }
-
-
-  /**
-   * 要求不超过一定大小
-   *
-   * @param length  数据的长度
-   * @param maxSize 最大的长度
-   */
-  public static void requireNotOutOfSize(long length, long maxSize) {
-    if (length > maxSize) {
-      double max;
-      double size;
-      String unit;
-      if (length >= GB) {
-        size = ofGB(length);
-        max = ofGB(maxSize);
-        unit = "GB";
-      } else if (length >= MB) {
-        size = ofMB(length);
-        max = ofMB(maxSize);
-        unit = "MB";
-      } else {
-        size = ofKB(length);
-        max = ofKB(maxSize);
-        unit = "KB";
-      }
-      String errMsg = String.format("数据不能超过%.2f%s, 当前数据长度为%.2f%s", max, unit, size, unit);
-      throw new IllegalArgumentException(errMsg);
-    }
+  public static RuntimeException throwing(Throwable e, Class<?> type) {
+    return CatchUtils.throwing(e, type);
   }
 
   /**

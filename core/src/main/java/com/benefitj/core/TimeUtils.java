@@ -1,5 +1,7 @@
 package com.benefitj.core;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -80,6 +82,62 @@ public class TimeUtils {
    */
   public static boolean isTimeout(long start, long timeout) {
     return now() - start > timeout;
+  }
+
+  /**
+   * 获取某几天前的具体时间
+   *
+   * @param delta 时间
+   * @param suffix 后缀
+   * @return 返回具体时间
+   */
+  public static long getBeforeSpecialDay(long delta, String suffix) {
+    return getSpecialDay(Math.abs(delta), suffix);
+  }
+
+  /**
+   * 获取某几天后的具体时间
+   *
+   * @param delta 时间
+   * @param suffix 后缀
+   * @return 返回具体时间
+   */
+  public static long getAfterSpecialDay(long delta, String suffix) {
+    return getSpecialDay(-Math.abs(delta), suffix);
+  }
+
+  /**
+   * 获取某天的具体时间
+   *
+   * @param delta 时间
+   * @param suffix 后缀
+   * @return 返回具体时间
+   */
+  public static long getSpecialDay(long delta, String suffix) {
+    String day = DateFmtter.fmtDate(now() + delta);
+    return DateFmtter.parseToLong(day + (StringUtils.isNotBlank(suffix) ? (" " + suffix) : ""));
+  }
+
+  /**
+   * 获取之前的时间
+   *
+   * @param delta 时间
+   * @param unit 时间单位
+   * @return 返回
+   */
+  public static long getBefore(long delta, TimeUnit unit) {
+    return now() - unit.toMillis(delta);
+  }
+
+  /**
+   * 获取之后的时间
+   *
+   * @param delta 时间
+   * @param unit 时间单位
+   * @return 返回
+   */
+  public static long getAfter(long delta, TimeUnit unit) {
+    return now() + unit.toMillis(delta);
   }
 
   /**

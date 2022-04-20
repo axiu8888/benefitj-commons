@@ -89,7 +89,7 @@ public class JavaStructManagerTest {
   @Test
   public void testCollector() {
     File file = ClasspathUtils.getFile("collector.hex");
-    byte[] data = IOUtils.readFileBytes(file);
+    byte[] data = IOUtils.readFileAsBytes(file);
     JavaStructManager manager = JavaStructManager.INSTANCE;
     CollectorPacket packet = manager.parseObject(CollectorPacket.class, HexUtils.hexToBytes(new String(data)));
     System.err.println(JSON.toJSONString(packet));

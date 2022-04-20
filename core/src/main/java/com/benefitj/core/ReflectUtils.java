@@ -1,5 +1,7 @@
 package com.benefitj.core;
 
+import com.benefitj.core.executable.Instantiator;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
@@ -547,6 +549,17 @@ public class ReflectUtils {
   /**
    * 获取 method
    *
+   * @param type           类
+   * @param annotationType 注解类型
+   * @return 返回 methods
+   */
+  public static List<Method> getMethods(Class<?> type, Class<? extends Annotation> annotationType) {
+    return getMethods(type, m -> m.isAnnotationPresent(annotationType));
+  }
+
+  /**
+   * 获取 method
+   *
    * @param type    类
    * @param matcher 匹配器
    * @return 返回 methods
@@ -663,20 +676,7 @@ public class ReflectUtils {
    * @return 返回对象实例
    */
   public static <T> T newInstance(Class<T> klass, Object... args) {
-    try {
-      for (Constructor<?> c : klass.getDeclaredConstructors()) {
-        if (isParameterTypesMatch(c.getParameterTypes(), args)) {
-          setAccessible(c, true);
-          return (T) c.newInstance(args);
-        }
-      }
-      if (args != null && args.length != 0) {
-        throw new IllegalStateException("无法实例化\"" + klass + "\"的对象，没有对应参数的构造函数!");
-      }
-      return klass.newInstance();
-    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
-    }
+    return Instantiator.INSTANCE.create(klass, args);
   }
 
   /**
