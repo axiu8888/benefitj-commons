@@ -1,0 +1,11 @@
+
+
+description = "扩展功能"
+
+dependencies {
+
+    compile project(":core")
+
+}
+
+//apply from: "${getRootDir()}/buildSystem/upload.gradle"
