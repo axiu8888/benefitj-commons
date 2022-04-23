@@ -15,7 +15,7 @@ public class Comment {
   /**
    * 注释类型
    */
-  CommentType type;
+  Type type;
   /**
    * 注释的内容
    */
@@ -24,7 +24,7 @@ public class Comment {
   public Comment() {
   }
 
-  public Comment(int start, int end, CommentType type, String content) {
+  public Comment(int start, int end, Type type, String content) {
     this.start = start;
     this.end = end;
     this.type = type;
@@ -47,11 +47,11 @@ public class Comment {
     this.end = end;
   }
 
-  public CommentType getType() {
+  public Type getType() {
     return type;
   }
 
-  public void setType(CommentType type) {
+  public void setType(Type type) {
     this.type = type;
   }
 

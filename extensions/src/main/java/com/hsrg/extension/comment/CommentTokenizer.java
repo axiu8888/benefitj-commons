@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
  */
 public class CommentTokenizer {
 
+  public static final CommentTokenizer INSTANCE = new CommentTokenizer();
+
   /**
    * 获取Java代码
    *
@@ -95,7 +97,7 @@ public class CommentTokenizer {
             // 【/*】 或 【/**】开头
             Comment comment = new Comment();
             comment.start = index;
-            comment.type = matchChar(chars, '*', index + 2) ? CommentType.SLASH_STAR2 : CommentType.SLASH_STAR;
+            comment.type = matchChar(chars, '*', index + 2) ? Type.SLASH_STAR2 : Type.SLASH_STAR;
             comment.end = findStarEndMark(chars, index + 1); // 查找最近的一个注释结束符
             comment.content = splitComment(comment, chars);
             comments.add(comment);
@@ -105,7 +107,7 @@ public class CommentTokenizer {
             // 以【//】开头，一整行都是注释范围
             Comment comment = new Comment();
             comment.start = index;
-            comment.type = CommentType.DOUBLE_SLASH;
+            comment.type = Type.DOUBLE_SLASH;
             comment.end = findNewLineIndex(chars, index + 2); // 查找换行符
             comment.content = splitComment(comment, chars);
             comments.add(comment);
