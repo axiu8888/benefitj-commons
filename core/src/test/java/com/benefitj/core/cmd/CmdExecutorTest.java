@@ -12,15 +12,14 @@ public class CmdExecutorTest extends TestCase {
 
   @Test
   public void testJavaVersion() {
-    CmdExecutor executor = CmdExecutorHolder.getInstance();
-    CmdCall call = executor.call("java --version");
+    CmdCall call = CmdExecutor.get().call("java --version");
     call.print("java version");
   }
 
   @Test
   public void testGitPull() {
 //    new GitPull(new File("D:\\code\\github"), 5).pull();
-    new GitPull(new File("D:\\code\\github\\java"), 5).pull();
+    new GitPull(new File("D:/code/github/go"), 5).pull();
   }
 
 }

@@ -1,21 +1,12 @@
 package com.benefitj.core;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-public class HexUtilsTest {
+public class HexUtilsTest extends BaseTest {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
-
-  @Before
-  public void setUp() throws Exception {
-  }
 
   @Test
   public void testBytesTo() {
@@ -34,8 +25,4 @@ public class HexUtilsTest {
     logger.info("字节数组转换为二进制字符串: {}", HexUtils.bytesToBinary(leBytes));
   }
 
-
-  @After
-  public void tearDown() throws Exception {
-  }
 }

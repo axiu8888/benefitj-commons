@@ -1,13 +1,9 @@
 package com.benefitj.core.executable;
 
-import junit.framework.TestCase;
+import com.benefitj.core.BaseTest;
 import org.junit.Test;
 
-public class InstantiatorTest extends TestCase {
-
-  public void setUp() throws Exception {
-    super.setUp();
-  }
+public class InstantiatorTest extends BaseTest {
 
   @Test
   public void testCreate() {
@@ -29,10 +25,6 @@ public class InstantiatorTest extends TestCase {
 
     TestAbc abc3 = invoker.newInstance("你好", 13);
     System.err.println(abc3.name);
-  }
-
-
-  public void tearDown() throws Exception {
   }
 
   public static class TestAbc {

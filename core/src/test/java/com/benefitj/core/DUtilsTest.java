@@ -1,13 +1,13 @@
 package com.benefitj.core;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 
-public class DUtilsTest extends TestCase {
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.stream.Collectors;
 
-  public void setUp() throws Exception {
-    super.setUp();
-  }
+public class DUtilsTest extends BaseTest {
 
   @Test
   public void testMB() {
@@ -15,7 +15,20 @@ public class DUtilsTest extends TestCase {
     System.err.println("MB: " + DUtils.fmtMB(8 * 1024 + 10.5 * DUtils.MB, "0.00"));
   }
 
+  @Test
+  public void testIp() {
+    List<InetAddress> ipAddress = NetworkUtils.getInetAddresses(NetworkUtils::isValidInterface);
+    System.err.println(ipAddress.stream()
+        .filter(NetworkUtils::isValidAddress)
+        // 仅获取IPv4的地址
+        .filter(inetAddress -> inetAddress instanceof Inet4Address)
+        .map(InetAddress::getHostAddress)
+        .collect(Collectors.joining("\n")));
+    System.err.println("\n");
+    System.err.println("本机IP: " + NetworkUtils.getLocalHostAddress());
+    System.err.println("\n");
 
-  public void tearDown() throws Exception {
   }
+
+
 }

@@ -13,14 +13,6 @@ import java.util.List;
 
 public class ReflectUtilsTest extends BaseTest {
 
-  @Override
-  public void setUp() {
-  }
-
-  @Override
-  public void tearDown() {
-  }
-
   @Test
   public void testNewInstance() {
 

@@ -1,17 +1,13 @@
 package com.benefitj.core.executable;
 
+import com.benefitj.core.BaseTest;
 import com.benefitj.core.HexUtils;
 import com.benefitj.core.ReflectUtils;
-import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
 
-public class MethodInvokerTest extends TestCase {
-
-  public void setUp() throws Exception {
-    super.setUp();
-  }
+public class MethodInvokerTest extends BaseTest {
 
   @Test
   public void testInvoke() {
@@ -23,11 +19,7 @@ public class MethodInvokerTest extends TestCase {
     invoker.invoke(args);
   }
 
-  public void tearDown() throws Exception {
-  }
-
   public static class TestAbc {
-
 
     public void onMessage(String topic, byte[] payload, String msg) {
       System.err.println(

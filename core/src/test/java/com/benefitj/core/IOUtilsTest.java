@@ -1,16 +1,11 @@
 package com.benefitj.core;
 
-import junit.framework.TestCase;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class IOUtilsTest extends TestCase {
-
-  private Logger log = LoggerFactory.getLogger(getClass());
+public class IOUtilsTest extends BaseTest {
 
   @Test
   public void testReadFile() {
@@ -30,7 +25,7 @@ public class IOUtilsTest extends TestCase {
         , (totalLength, totalProgress, source, progress) -> {
           if (index.incrementAndGet() % 20 == 0 || totalLength == totalProgress) {
             double currentProgress = totalProgress * 100.0 / totalLength;
-            log.info("{}, {}, {} ==>: {}%"
+            logger.info("{}, {}, {} ==>: {}%"
                 , totalLength
                 , totalProgress
                 , source.getName()

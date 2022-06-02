@@ -4,21 +4,11 @@ import com.benefitj.core.BaseTest;
 import com.benefitj.core.ClasspathUtils;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.SystemProperty;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.function.BiConsumer;
-
-import static org.junit.Assert.*;
 
 public class DefaultPropertiesConverterTest extends BaseTest {
-
-  @Override
-  public void setUp() {
-  }
 
   @Test
   public void testConvert() {
@@ -36,10 +26,6 @@ public class DefaultPropertiesConverterTest extends BaseTest {
     } finally {
       IOUtils.deleteFile(dest);
     }
-  }
-
-  @Override
-  public void tearDown() {
   }
 
 }

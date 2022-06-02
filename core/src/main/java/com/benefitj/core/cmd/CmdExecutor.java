@@ -1,9 +1,6 @@
 package com.benefitj.core.cmd;
 
-import com.benefitj.core.EventLoop;
-import com.benefitj.core.IOUtils;
-import com.benefitj.core.IdUtils;
-import com.benefitj.core.CatchUtils;
+import com.benefitj.core.*;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -20,6 +17,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * CMD执行(bat/shell)
  */
 public class CmdExecutor {
+
+  static final SingletonSupplier<CmdExecutor> single = SingletonSupplier.of(CmdExecutor::new);
+
+  public static CmdExecutor get() {
+    return single.get();
+  }
 
   /**
    * 是否为windows

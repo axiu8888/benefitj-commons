@@ -50,7 +50,7 @@ public class GitPull {
   public boolean pullNow(File dir, int tryCount) {
     tryCount = 1 + Math.max(0, tryCount);
     for (int i = 0; i < tryCount; i++) {
-      CmdCall call = CmdExecutorHolder.getInstance().call("git pull", null, dir);
+      CmdCall call = CmdExecutor.get().call("git pull", null, dir);
       call.print((i > 0 ? String.format("retry-%d ", i) : "") + "git pull (" + dir.getName() + ")");
       if (call.isSuccessful()) {
         return true;

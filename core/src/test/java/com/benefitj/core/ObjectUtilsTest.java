@@ -1,17 +1,12 @@
 package com.benefitj.core;
 
-import junit.framework.TestCase;
 import org.junit.Test;
-import org.slf4j.Logger;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ObjectUtilsTest extends TestCase {
-
-
-  private final Logger logger = StackLogger.getLogger();
+public class ObjectUtilsTest extends BaseTest {
 
   @Test
   public void testObject_ToString() {
@@ -33,12 +28,12 @@ public class ObjectUtilsTest extends TestCase {
     logger.info(ObjectUtils.toString(map));
 
     logger.info(ObjectUtils.toString(new Object[]{
-        new LinkedHashMap(){{
+        new LinkedHashMap() {{
           put("1.key1", "value1");
           put("2.key2", "value2");
           put("3.key3", "value3");
         }},
-        new LinkedHashMap(){{
+        new LinkedHashMap() {{
           put("1.key1", "value1");
           put("2.key2", "value2");
           put("3.key3", "value3");
