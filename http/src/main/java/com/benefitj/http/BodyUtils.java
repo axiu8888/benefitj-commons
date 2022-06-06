@@ -3,14 +3,13 @@ package com.benefitj.http;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.file.IWriter;
 import com.benefitj.core.functions.IBiConsumer;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
+import okhttp3.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Body工具
@@ -125,6 +124,62 @@ public class BodyUtils {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  /**
+   * 获取 header 的值
+   *
+   * @param response 响应
+   * @param name     header名称
+   * @return 返回获取到的值或默认值
+   */
+  public static String getHeader(Response response, String name) {
+    return getHeader(response, name, null);
+  }
+
+  /**
+   * 获取 header 的值
+   *
+   * @param response     响应
+   * @param name         header名称
+   * @param defaultValue 默认值
+   * @return 返回获取到的值或默认值
+   */
+  public static String getHeader(Response response, String name, String defaultValue) {
+    return response != null ? response.header(name) : defaultValue;
+  }
+
+  /**
+   * 获取 header 中子项的值，比如：Content-Disposition =>: attachment;filename=xxx.pdf
+   *
+   * @param response 响应
+   * @param name     header名称
+   * @param subName  子项的名称
+   * @return 返回获取到的值或默认值
+   */
+  public static String getHeaderSub(Response response, String name, String subName) {
+    return getHeaderSub(response, name, subName, null);
+  }
+
+  /**
+   * 获取 header 中子项的值，比如：Content-Disposition =>: attachment;filename=xxx.pdf
+   *
+   * @param response     响应
+   * @param name         header名称
+   * @param subName      子项的名称
+   * @param defaultValue 默认值
+   * @return 返回获取到的值或默认值
+   */
+  public static String getHeaderSub(Response response, String name, String subName, String defaultValue) {
+    String header = getHeader(response, name);
+    if (StringUtils.isNotBlank(header)) {
+      return Stream.of(header.split(";"))
+          .filter(v -> v.startsWith(subName))
+          .map(v -> v.replaceFirst((v.startsWith(subName + "=") ? subName : "") + "=", ""))
+          .findFirst()
+          .orElse(defaultValue);
+    }
+    return defaultValue;
   }
 
 }

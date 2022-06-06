@@ -1,9 +1,9 @@
 package com.benefitj.network;
 
+import com.benefitj.core.DUtils;
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.HexUtils;
 import com.benefitj.core.IOUtils;
-import com.benefitj.core.DUtils;
 import com.benefitj.core.file.IWriter;
 import com.benefitj.http.*;
 import io.reactivex.Observable;
@@ -26,7 +26,6 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -76,15 +75,15 @@ public class ApiBuilderTest extends TestCase {
     File file = new File("D:/develop/tools/simulator.zip");
     final AtomicInteger index = new AtomicInteger();
     api.upload(BodyUtils.progressRequestBody(file, "files", (totalLength, progress, done) -> {
-          if (index.incrementAndGet() % 50 == 0 || done) {
-            log.info("总长度: {}, 已上传: {}, 进度: {}%， done[{}]"
-                , totalLength
-                , progress
-                , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
-                , done
-            );
-          }
-        }))
+      if (index.incrementAndGet() % 50 == 0 || done) {
+        log.info("总长度: {}, 已上传: {}, 进度: {}%， done[{}]"
+            , totalLength
+            , progress
+            , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
+            , done
+        );
+      }
+    }))
         .subscribe(SimpleObserver.create(result -> log.info("上传结果: {}", result)));
     log.info("耗时: {}", DUtils.diffNow(start));
   }
@@ -120,7 +119,7 @@ public class ApiBuilderTest extends TestCase {
   @Test
   public void testDownloadFile() {
     long start = DUtils.now();
-    HttpUtils http = new HttpUtils();
+    HttpHelper http = new HttpHelper();
     okhttp3.Response response = http.get("https://downloads.gradle-dn.com/distributions/gradle-7.3.2-all.zip");
     final AtomicInteger index = new AtomicInteger();
     BodyUtils.progressResponseBody(response.body()
@@ -184,6 +183,25 @@ public class ApiBuilderTest extends TestCase {
       EventLoop.sleepSecond(1);
     }
     socket.close(1000, "done");
+
+  }
+
+  @Test
+  public void testDownloadPdf() {
+    String url = "http://192.168.1.198/api/report/download?reportZid=0fd2a02669bb4a0d842df1ff92d56581&login=admin";
+    okhttp3.Response response = HttpHelper.get().get(url);
+    if (response.isSuccessful()) {
+      log.info("headers ==>: \n{}", response.headers());
+      String filename = BodyUtils.getHeaderSub(response, "Content-Disposition", "filename");
+      log.info("filename: {}", filename);
+      filename = filename.endsWith(".pdf") ? filename : filename + ".pdf";
+      BodyUtils.progressResponseBody(response.body()
+          , new File("D:/" + filename)
+          , (totalLength, progress, done) -> log.info("totalLength: {}, progress: {}, done: {}", totalLength, progress, done)
+      );
+    } else {
+      log.info("error: " + response.message());
+    }
 
   }
 

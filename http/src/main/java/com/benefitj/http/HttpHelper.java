@@ -1,5 +1,6 @@
 package com.benefitj.http;
 
+import com.benefitj.core.SingletonSupplier;
 import okhttp3.*;
 
 import java.io.File;
@@ -8,7 +9,13 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 
-public class HttpUtils {
+public class HttpHelper {
+
+  static SingletonSupplier<HttpHelper> singleton = SingletonSupplier.of(HttpHelper::new);
+
+  public static HttpHelper get() {
+    return singleton.get();
+  }
 
   private OkHttpClient client = new OkHttpClient.Builder()
       .connectTimeout(Duration.ofSeconds(3))
@@ -16,14 +23,14 @@ public class HttpUtils {
       .writeTimeout(Duration.ofSeconds(300))
       .build();
 
-  public HttpUtils() {
+  public HttpHelper() {
   }
 
   public OkHttpClient getClient() {
     return client;
   }
 
-  public HttpUtils setClient(OkHttpClient client) {
+  public HttpHelper setClient(OkHttpClient client) {
     this.client = client;
     return this;
   }
@@ -56,7 +63,7 @@ public class HttpUtils {
   /**
    * 发送POST请求
    *
-   * @param url  请求地址
+   * @param url 请求地址
    * @return 返回响应
    */
   public Response post(String url, File file) {
