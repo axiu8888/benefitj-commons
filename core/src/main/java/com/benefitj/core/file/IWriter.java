@@ -21,6 +21,20 @@ public interface IWriter extends AutoCloseable {
   IWriter write(String... strings);
 
   /**
+   * 写入并刷新
+   *
+   * @param str 字符串
+   */
+  IWriter writeAndFlush(String str);
+
+  /**
+   * 写入并刷新
+   *
+   * @param strings 字符串
+   */
+  IWriter writeAndFlush(String... strings);
+
+  /**
    * 写入数据
    *
    * @param buf 字节缓冲
@@ -46,16 +60,9 @@ public interface IWriter extends AutoCloseable {
   /**
    * 写入并刷新
    *
-   * @param str 字符串
+   * @param buf 字节缓冲
    */
-  IWriter writeAndFlush(String str);
-
-  /**
-   * 写入并刷新
-   *
-   * @param strings 字符串
-   */
-  IWriter writeAndFlush(String... strings);
+  IWriter writeAndFlush(byte[] buf);
 
   /**
    * 写入并刷新
@@ -63,13 +70,6 @@ public interface IWriter extends AutoCloseable {
    * @param array 字节缓冲
    */
   IWriter writeAndFlush(byte[]... array);
-
-  /**
-   * 写入并刷新
-   *
-   * @param buf 字节缓冲
-   */
-  IWriter writeAndFlush(byte[] buf);
 
   /**
    * 写入并刷新
