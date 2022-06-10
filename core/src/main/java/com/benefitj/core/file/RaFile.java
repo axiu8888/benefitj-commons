@@ -3,12 +3,18 @@ package com.benefitj.core.file;
 import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IOUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RaFile implements OutputWriter<RaFile> {
 
-  public static final String[] MODES = {"r","rw","rws","rwd"};
+  public static final String[] MODES = {"r", "rw", "rws", "rwd"};
+  public static final byte NL_N = '\n';
+  public static final byte NL_R = '\r';
 
   private final File source;
   private final RandomAccessFile raf;
@@ -53,13 +59,13 @@ public class RaFile implements OutputWriter<RaFile> {
   }
 
   public RaFile skipBytes(long n) {
-    synchronized (this) {
-      CatchUtils.tryThrow(() -> {
+    CatchUtils.tryThrow(() -> {
+      synchronized (this) {
         for (long i = n; i > 0; i -= 4096) {
           getRaf().skipBytes((int) (i >= 4096 ? 4096 : i));
         }
-      });
-    }
+      }
+    });
     return this;
   }
 
@@ -104,6 +110,68 @@ public class RaFile implements OutputWriter<RaFile> {
   }
 
   /**
+   * 读取行数
+   *
+   * @param count 长度
+   * @return 返回读取的行数据
+   */
+  public List<String> readLines(int count) {
+    return readLines(0, count);
+  }
+
+  /**
+   * 读取行数
+   *
+   * @param start 开始的行数
+   * @param count 长度
+   * @return 返回读取的行数据
+   */
+  public List<String> readLines(int start, int count) {
+    List<String> lines = new ArrayList<>(count);
+    synchronized (this) {
+      try {
+        RandomAccessFile raf = getRaf();
+        long position = raf.getChannel().position();
+        raf.seek(0);
+        ByteArrayOutputStream tmp = new ByteArrayOutputStream();
+        byte[] buf = new byte[1024 << 4];
+        int len, lineNumber = 0;
+        boolean flagN = false;
+        while ((len = raf.read(buf)) > 0) {
+          int index = 0;
+          for (int i = 0; i < len; i++) {
+            if (buf[i] == NL_N || buf[i] == NL_R) {
+              if (buf[i] == NL_R && (buf.length > i + 1 && buf[i + 1] == NL_N)) {
+                continue;
+              }
+              tmp.write(buf, index, i - index);
+              if (lineNumber >= start && (i != 0 && !flagN)) {
+                lines.add(tmp.toString());
+              }
+              tmp.reset();
+              index = i + 1;
+              lineNumber++;
+              flagN = buf[i] == NL_R;
+
+              if (lines.size() >= count) {
+                // 重置回原来的位置
+                raf.seek(position);
+                return lines;
+              }
+            }
+          }
+          if (index < len) {
+            tmp.write(buf, index, len - index);
+          }
+        }
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+    return lines;
+  }
+
+  /**
    * 重置文件的大小
    *
    * @param start 开始的位置
@@ -144,7 +212,9 @@ public class RaFile implements OutputWriter<RaFile> {
 
   @Override
   public RaFile write(byte[] buf, int offset, int len, boolean flush) {
-    CatchUtils.tryThrow(() -> getRaf().write(buf, offset, len));
+    synchronized (this) {
+      CatchUtils.tryThrow(() -> getRaf().write(buf, offset, len));
+    }
     return this;
   }
 

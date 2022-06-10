@@ -13,7 +13,7 @@ public abstract class BaseTest {
 
 	@Before
 	public void setUp() {
-		logger.info("------------- setUp ----------------" + DateFmtter.fmtNowS());
+		logger.info("-------------  setUp   ----------------" + DateFmtter.fmtNowS());
 	}
 
 	@After
