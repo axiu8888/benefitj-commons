@@ -75,16 +75,12 @@ public interface ApiBuilder<T> {
   ApiBuilder<T> addNetworkInterceptors(Interceptor... interceptor);
 
   /**
-   * 添加Http日志打印
+   * 设置Http日志打印层级
    *
    * @param level 打印的层级
    * @return 返回 RetrofitApi
    */
-  default ApiBuilder<T> addHttpLogging(HttpLoggingInterceptor.Level level) {
-    HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-    loggingInterceptor.setLevel(level);
-    return addNetworkInterceptors(loggingInterceptor);
-  }
+  ApiBuilder<T> setLogLevel(HttpLoggingInterceptor.Level level);
 
   /**
    * 获取转换器工厂 <br/>

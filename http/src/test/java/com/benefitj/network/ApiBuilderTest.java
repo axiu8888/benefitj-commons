@@ -1,9 +1,7 @@
 package com.benefitj.network;
 
-import com.benefitj.core.DUtils;
-import com.benefitj.core.EventLoop;
-import com.benefitj.core.HexUtils;
-import com.benefitj.core.IOUtils;
+import com.alibaba.fastjson.JSON;
+import com.benefitj.core.*;
 import com.benefitj.core.file.IWriter;
 import com.benefitj.http.*;
 import io.reactivex.Observable;
@@ -26,6 +24,9 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,7 +39,7 @@ public class ApiBuilderTest extends TestCase {
   public void setUp() throws Exception {
     this.api = ApiBuilder.newBuilder(ServiceApi.class)
         .setBaseUrl(ServiceApi.BASE_URL)
-        .addHttpLogging(HttpLoggingInterceptor.Level.NONE)
+        .setLogLevel(HttpLoggingInterceptor.Level.NONE)
         .setUseDefault(true) // 启用默认的转换器和适配器
         .build();
   }
@@ -189,10 +190,12 @@ public class ApiBuilderTest extends TestCase {
   @Test
   public void testDownloadPdf() {
     String url = "http://192.168.1.198/api/report/download?reportZid=0fd2a02669bb4a0d842df1ff92d56581&login=admin";
-    okhttp3.Response response = HttpHelper.get().get(url);
+    okhttp3.Response response = HttpHelper.get()
+        .setLogLevel(HttpLoggingInterceptor.Level.BODY)
+        .get(url);
     if (response.isSuccessful()) {
       log.info("headers ==>: \n{}", response.headers());
-      String filename = BodyUtils.getHeaderSub(response, "Content-Disposition", "filename");
+      String filename = BodyUtils.getFilename(response.headers());
       log.info("filename: {}", filename);
       filename = filename.endsWith(".pdf") ? filename : filename + ".pdf";
       BodyUtils.progressResponseBody(response.body()
@@ -203,6 +206,70 @@ public class ApiBuilderTest extends TestCase {
       log.info("error: " + response.message());
     }
 
+  }
+
+  @Test
+  public void testLogin() throws IOException {
+    okhttp3.Response response = HttpHelper.get()
+        .post("http://192.168.1.198/api/login/user",
+            BodyUtils.jsonBody(JSON.toJSONBytes(new HashMap<String, String>() {{
+              put("loginName", "admin");
+              put("loginPassword", HexUtils.bytesToHex("hsrg8888".getBytes(StandardCharsets.UTF_8)));
+            }}))
+        );
+
+    if (response.isSuccessful()) {
+      log.info("headers ==>: \n{}", response.headers());
+      String body = response.body().string();
+      log.info("body ==>: " + body);
+    } else {
+      log.info("error: " + response.message());
+    }
+  }
+
+  @Test
+  public void testAppUpgrade() throws IOException {
+//    okhttp3.Response response = HttpHelper.get().get("http://192.168.1.47/api/app/version?appType=5");
+    okhttp3.Response response = HttpHelper.get().get("http://192.168.1.47/api/app/version?appType=2");
+    if (response.isSuccessful()) {
+      log.info("headers ==>: \n{}", response.headers());
+      log.info(" ==>: {}", response.body().string());
+//      String filename = BodyUtils.getFilename(response);
+//      log.info("filename: {}", filename);
+//      filename = filename.endsWith(".apk") ? filename : filename + ".apk";
+//      BodyUtils.progressResponseBody(response.body()
+//          , new File("D:/" + filename)
+//          , (totalLength, progress, done) -> log.info("totalLength: {}, progress: {}, done: {}", totalLength, progress, done)
+//      );
+    } else {
+      log.info("error: " + response.message());
+    }
+  }
+
+  @Test
+  public void testDownloadApk() {
+    long start = DUtils.now();
+//    String url = "http://192.168.1.47/api/app/download?id=969f7a19751d4c0e91519e9eebfeb067";
+    String url = "http://192.168.1.47/api/app/download?id=fad84b9e98814482b86398ee22ba8632";
+    okhttp3.Response response = HttpHelper.get()
+        .setLogLevel(HttpLoggingInterceptor.Level.BODY)
+        .get(url);
+    if (response.isSuccessful()) {
+      log.info("headers ==>: \n{}", response.headers());
+      String filename = BodyUtils.getFilename(response.headers(), IdUtils.uuid() + ".apk");
+      log.info("filename: {}", filename);
+      BodyUtils.progressResponseBody(response.body()
+          , new File("D:/" + filename)
+          , (totalLength, progress, done) -> {
+            log.info("totalLength: {}, progress: {}, {}, done: {}"
+                , totalLength, progress, DUtils.fmt(progress * 1.0 / totalLength, ".0%"), done);
+            if (done) {
+              log.info("耗时: {}", DUtils.diffNow(start));
+            }
+          });
+    } else {
+      log.info("error: " + response.message());
+    }
   }
 
   public void tearDown() throws Exception {

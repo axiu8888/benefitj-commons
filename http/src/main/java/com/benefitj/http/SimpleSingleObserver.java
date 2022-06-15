@@ -25,7 +25,8 @@ public abstract class SimpleSingleObserver<T> implements SingleObserver<T> {
     return create(consumer, Throwable::printStackTrace);
   }
 
-  public static <T> SimpleSingleObserver<T> create(Consumer<T> consumer, Consumer<Throwable> errorConsumer) {
+  public static <T> SimpleSingleObserver<T> create(Consumer<T> consumer,
+                                                   Consumer<Throwable> errorConsumer) {
     return new SimpleSingleObserver<>() {
 
       @Override

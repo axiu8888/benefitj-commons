@@ -24,7 +24,8 @@ public abstract class SimpleObserver<T> extends DefaultObserver<T> {
     return create(consumer, Throwable::printStackTrace);
   }
 
-  public static <T> SimpleObserver<T> create(Consumer<T> consumer, Consumer<Throwable> errorConsumer) {
+  public static <T> SimpleObserver<T> create(Consumer<T> consumer,
+                                             Consumer<Throwable> errorConsumer) {
     return new SimpleObserver<T>() {
       @Override
       public void onNext(@NotNull T t) {

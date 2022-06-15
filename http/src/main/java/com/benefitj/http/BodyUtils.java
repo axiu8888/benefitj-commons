@@ -7,6 +7,7 @@ import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -15,6 +16,87 @@ import java.util.stream.Stream;
  * Body工具
  */
 public class BodyUtils {
+
+  public static final MediaType MEDIA_OCTET_STREAM = MediaType.parse("application/octet-stream;charset=UTF-8");
+  public static final MediaType MEDIA_JSON = MediaType.parse("application/json;charset=UTF-8");
+  public static final MediaType MEDIA_FORM_DATA = MediaType.parse("multipart/form-data;charset=UTF-8");
+  public static final MediaType MEDIA_FORM_URLENCODED = MediaType.parse("application/x-www-form-urlencoded;charset=UTF-8");
+
+
+  /**
+   * 判断是否为相同的媒体类型
+   *
+   * @param require     要求的媒体类型
+   * @param contentType 检查的媒体类型
+   * @return 返回判断结果
+   */
+  public static boolean isMediaType(MediaType require, String contentType) {
+    return isMediaType(require, MediaType.get(contentType));
+  }
+
+  /**
+   * 判断是否为相同的媒体类型
+   *
+   * @param require     要求的媒体类型
+   * @param contentType 检查的媒体类型
+   * @return 返回判断结果
+   */
+  public static boolean isMediaType(MediaType require, MediaType contentType) {
+    return contentType.type().equalsIgnoreCase(require.type())
+        && contentType.subtype().equalsIgnoreCase(require.subtype());
+  }
+
+  /**
+   * 创建JSON的请求体
+   *
+   * @param json JSON数据
+   * @return 返回请求体
+   */
+  public static RequestBody jsonBody(String json) {
+    return jsonBody(json.getBytes(StandardCharsets.UTF_8));
+  }
+
+  /**
+   * 创建JSON的请求体
+   *
+   * @param json JSON数据
+   * @return 返回请求体
+   */
+  public static RequestBody jsonBody(byte[] json) {
+    return RequestBody.create(json, MEDIA_JSON);
+  }
+
+  /**
+   * 表单请求体
+   *
+   * @param parameters 参数
+   * @param file       文件
+   * @param name       文件对应的参数名
+   * @return 返回请求体
+   */
+  public static MultipartBody formBody(Map<String, String> parameters, File file, String name) {
+    return formBody(parameters, new File[]{file}, name);
+  }
+
+  /**
+   * 表单请求体
+   *
+   * @param parameters 参数
+   * @param files      文件
+   * @param name       文件对应的参数名
+   * @return 返回请求体
+   */
+  public static MultipartBody formBody(Map<String, String> parameters, File[] files, String name) {
+    MultipartBody.Builder builder = new MultipartBody.Builder();
+    builder.setType(MultipartBody.FORM);
+    parameters.forEach(builder::addFormDataPart);
+    MediaType mediaType = MediaType.parse("application/octet-stream");
+    for (File file : files) {
+      builder.addFormDataPart(name, file.getName(), RequestBody.create(file, mediaType));
+    }
+    return builder.build();
+  }
+
 
   /**
    * 具有进度的请求体
@@ -51,14 +133,7 @@ public class BodyUtils {
    * @return 返回请求体
    */
   public static RequestBody progressRequestBody(Map<String, String> parameters, File[] files, String name, ProgressListener listener) {
-    MultipartBody.Builder builder = new MultipartBody.Builder();
-    builder.setType(MultipartBody.FORM);
-    parameters.forEach(builder::addFormDataPart);
-    MediaType mediaType = MediaType.parse("application/octet-stream");
-    for (File file : files) {
-      builder.addFormDataPart(name, file.getName(), RequestBody.create(mediaType, file));
-    }
-    return new ProgressRequestBody(builder.build(), listener);
+    return new ProgressRequestBody(formBody(parameters, files, name), listener);
   }
 
   /**
@@ -89,7 +164,7 @@ public class BodyUtils {
    * @param listener 进度监听
    */
   public static void progressResponseBody(ResponseBody body, File dest, ProgressListener listener) {
-    try (final IWriter writer = IWriter.newFileWriter(IOUtils.createFile(dest.getAbsolutePath()))) {
+    try (final IWriter writer = IWriter.newFileWriter(IOUtils.createFile(dest))) {
       progressResponseBody(body, (buf, len) -> writer.write(buf, 0, len), listener);
     }
   }
@@ -129,49 +204,49 @@ public class BodyUtils {
   /**
    * 获取 header 的值
    *
-   * @param response 响应
-   * @param name     header名称
+   * @param headers 响应
+   * @param name    header名称
    * @return 返回获取到的值或默认值
    */
-  public static String getHeader(Response response, String name) {
-    return getHeader(response, name, null);
+  public static String getHeader(Headers headers, String name) {
+    return getHeader(headers, name, null);
   }
 
   /**
    * 获取 header 的值
    *
-   * @param response     响应
+   * @param headers      HTTP请求或响应头
    * @param name         header名称
    * @param defaultValue 默认值
    * @return 返回获取到的值或默认值
    */
-  public static String getHeader(Response response, String name, String defaultValue) {
-    return response != null ? response.header(name) : defaultValue;
+  public static String getHeader(Headers headers, String name, String defaultValue) {
+    return headers != null ? headers.get(name) : defaultValue;
   }
 
   /**
    * 获取 header 中子项的值，比如：Content-Disposition =>: attachment;filename=xxx.pdf
    *
-   * @param response 响应
-   * @param name     header名称
-   * @param subName  子项的名称
+   * @param headers HTTP请求或响应头
+   * @param name    header名称
+   * @param subName 子项的名称
    * @return 返回获取到的值或默认值
    */
-  public static String getHeaderSub(Response response, String name, String subName) {
-    return getHeaderSub(response, name, subName, null);
+  public static String getHeaderSub(Headers headers, String name, String subName) {
+    return getHeaderSub(headers, name, subName, null);
   }
 
   /**
    * 获取 header 中子项的值，比如：Content-Disposition =>: attachment;filename=xxx.pdf
    *
-   * @param response     响应
+   * @param headers      HTTP请求或响应头
    * @param name         header名称
    * @param subName      子项的名称
    * @param defaultValue 默认值
    * @return 返回获取到的值或默认值
    */
-  public static String getHeaderSub(Response response, String name, String subName, String defaultValue) {
-    String header = getHeader(response, name);
+  public static String getHeaderSub(Headers headers, String name, String subName, String defaultValue) {
+    String header = getHeader(headers, name);
     if (StringUtils.isNotBlank(header)) {
       return Stream.of(header.split(";"))
           .filter(v -> v.startsWith(subName))
@@ -180,6 +255,48 @@ public class BodyUtils {
           .orElse(defaultValue);
     }
     return defaultValue;
+  }
+
+  /**
+   * 获取Content-Type值
+   *
+   * @param headers HTTP请求或响应头
+   * @return 返回Content-Type
+   */
+  public static String getContentType(Headers headers) {
+    return getHeader(headers, "Content-Type");
+  }
+
+  /**
+   * 获取Content-Length值
+   *
+   * @param headers HTTP请求或响应头
+   * @return 返回Content-Length
+   */
+  public static long getContentLength(Headers headers) {
+    String length = getHeader(headers, "Content-Length");
+    return StringUtils.isNotBlank(length) ? Long.parseLong(length) : 0L;
+  }
+
+  /**
+   * 获取文件名
+   *
+   * @param headers HTTP请求或响应头
+   * @return 返回文件名
+   */
+  public static String getFilename(Headers headers) {
+    return getFilename(headers, null);
+  }
+
+  /**
+   * 获取文件名
+   *
+   * @param headers      HTTP请求或响应头
+   * @param defaultValue 默认文件名
+   * @return 返回文件名
+   */
+  public static String getFilename(Headers headers, String defaultValue) {
+    return getHeaderSub(headers, "Content-Disposition", "filename", defaultValue);
   }
 
 }

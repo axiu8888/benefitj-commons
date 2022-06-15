@@ -2,6 +2,7 @@ package com.benefitj.http;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.CallAdapter;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
@@ -41,6 +42,10 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
    * 调用适配器工厂
    */
   private final LinkedHashMap<Class<? extends CallAdapter.Factory>, CallAdapter.Factory> callAdapterFactories = new LinkedHashMap<>();
+  /**
+   * HTTP日志
+   */
+  private final HttpLogging httpLogging = new HttpLogging().setLevel(HttpLoggingInterceptor.Level.NONE);
 
   private boolean useDefault = true;
 
@@ -55,6 +60,10 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
     this.apiClass = apiClass;
     this.baseUrl = baseUrl;
     this.okHttpClient = okHttpClient;
+  }
+
+  public HttpLogging getHttpLogging() {
+    return httpLogging;
   }
 
   @Override
@@ -98,6 +107,12 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
   @Override
   public ApiBuilderImpl<T> addNetworkInterceptors(Interceptor... interceptor) {
     this.networkInterceptors.addAll(Arrays.asList(interceptor));
+    return this;
+  }
+
+  @Override
+  public ApiBuilder<T> setLogLevel(HttpLoggingInterceptor.Level level) {
+    this.httpLogging.setLevel(level);
     return this;
   }
 
@@ -176,6 +191,7 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
     for (Interceptor interceptor : getNetworkInterceptors()) {
       clientBuilder.addNetworkInterceptor(interceptor);
     }
+    clientBuilder.addNetworkInterceptor(httpLogging);
     builder.client(clientBuilder.build());
 
     if (isUseDefault()) {
