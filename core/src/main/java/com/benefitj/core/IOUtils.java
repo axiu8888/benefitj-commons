@@ -265,7 +265,7 @@ public class IOUtils {
    * @return 返回创建的文件输入流或Null(当文件不存在时)
    */
   public static FileInputStream newFIS(File file) {
-    return tryThrow(() -> new FileInputStream(file));
+    return CatchUtils.tryThrow(() -> new FileInputStream(file));
   }
 
   /**
@@ -540,8 +540,19 @@ public class IOUtils {
    * @return 返回读取的内存数据流
    */
   public static ByteArrayOutputStream readFully(InputStream is) {
+    return readFully(is, true);
+  }
+
+  /**
+   * 读取数据
+   *
+   * @param is    输入流
+   * @param close 是否关闭输入流
+   * @return 返回读取的内存数据流
+   */
+  public static ByteArrayOutputStream readFully(InputStream is, boolean close) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    read(is, 1024 << 4, (buff, len) -> baos.write(buff, 0, len));
+    read(is, 1024 << 4, close, (buff, len) -> baos.write(buff, 0, len));
     return baos;
   }
 
@@ -1030,6 +1041,7 @@ public class IOUtils {
   /**
    * try{} catch(e){}
    */
+  @Deprecated
   public static <T> T tryThrow(Callable<T> call) {
     return CatchUtils.tryThrow(call);
   }
@@ -1037,6 +1049,7 @@ public class IOUtils {
   /**
    * try{} catch(e){}
    */
+  @Deprecated
   public static RuntimeException throwing(Throwable e, Class<?> type) {
     return CatchUtils.throwing(e, type);
   }
