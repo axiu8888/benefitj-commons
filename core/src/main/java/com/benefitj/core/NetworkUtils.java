@@ -1,9 +1,7 @@
 package com.benefitj.core;
 
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
+import javax.annotation.Nullable;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,6 +9,28 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class NetworkUtils {
+
+  /**
+   * 获取主机地址
+   *
+   * @param address InetSocketAddress
+   * @return 返回主机地址或空
+   */
+  @Nullable
+  public static String getHost(SocketAddress address) {
+    return address instanceof InetSocketAddress ? ((InetSocketAddress) address).getHostString() : null;
+  }
+
+  /**
+   * 获取端口
+   *
+   * @param address InetSocketAddress
+   * @return 返回端口或空
+   */
+  @Nullable
+  public static Integer getPort(SocketAddress address) {
+    return address instanceof InetSocketAddress ? ((InetSocketAddress) address).getPort() : null;
+  }
 
   /**
    * 获取网络接口
@@ -53,6 +73,15 @@ public class NetworkUtils {
   /**
    * 获取网络地址
    *
+   * @return 返回网络地址
+   */
+  public static List<InetAddress> getInetAddressAll() {
+    return getInetAddresses(ni -> true);
+  }
+
+  /**
+   * 获取网络地址
+   *
    * @param filter 过滤网络地址
    * @return 返回网络地址
    */
@@ -61,6 +90,10 @@ public class NetworkUtils {
         .stream()
         .flatMap(ni -> getInetAddresses(ni).stream())
         .collect(Collectors.toList());
+  }
+
+  public static InetAddress getLocalHost() {
+    return CatchUtils.ignore(InetAddress::getLocalHost);
   }
 
   /**

@@ -4,8 +4,8 @@ dependencies {
   compileOnly(project(":core"))
   compile(project(":device"))
 
-  compileOnly 'io.netty:netty-all:4.1.59.Final'
-  testCompile 'io.netty:netty-all:4.1.59.Final'
+  compileOnly 'io.netty:netty-all:4.1.78.Final'
+  testCompile 'io.netty:netty-all:4.1.78.Final'
   testCompile(project(":core"))
 
 }

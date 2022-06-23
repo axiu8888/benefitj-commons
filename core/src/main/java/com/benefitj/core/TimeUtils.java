@@ -17,43 +17,83 @@ public class TimeUtils {
   public static final long DAY = 24 * HOUR;
 
   /**
-   * 秒(毫秒)
+   * 获取秒(毫秒)
    *
    * @param delta 秒数
    * @return 返回时间
    */
-  public static long ofSeconds(int delta) {
+  public static long fromSeconds(int delta) {
     return TimeUnit.SECONDS.toMillis(delta);
   }
 
   /**
-   * 分钟(毫秒)
+   * 转换成秒
+   *
+   * @param delta 秒数
+   * @return 返回时间
+   */
+  public static long toSeconds(long delta) {
+    return delta / SECOND;
+  }
+
+  /**
+   * 获取分钟(毫秒)
    *
    * @param delta 分钟数
    * @return 返回时间
    */
-  public static long ofMinutes(int delta) {
+  public static long fromMinutes(int delta) {
     return TimeUnit.MINUTES.toMillis(delta);
   }
 
   /**
-   * 小时(毫秒)
+   * 转换成分钟
+   *
+   * @param delta 分钟数
+   * @return 返回时间
+   */
+  public static long toMinutes(long delta) {
+    return delta / MINUTE;
+  }
+
+  /**
+   * 获取小时(毫秒)
    *
    * @param delta 小时数
    * @return 返回时间
    */
-  public static long ofHours(int delta) {
+  public static long fromHours(int delta) {
     return TimeUnit.HOURS.toMillis(delta);
   }
 
   /**
-   * 天(毫秒)
+   * 转换成小时
+   *
+   * @param delta 小时数
+   * @return 返回时间
+   */
+  public static long toHours(long delta) {
+    return delta / HOUR;
+  }
+
+  /**
+   * 获取天(毫秒)
    *
    * @param delta 天数
    * @return 返回时间
    */
-  public static long ofDays(int delta) {
+  public static long fromDays(int delta) {
     return TimeUnit.DAYS.toMillis(delta);
+  }
+
+  /**
+   * 转换成天
+   *
+   * @param delta 天数
+   * @return 返回时间
+   */
+  public static long toDays(long delta) {
+    return delta / DAY;
   }
 
   /**
@@ -87,7 +127,7 @@ public class TimeUtils {
   /**
    * 获取某几天前的具体时间
    *
-   * @param delta 时间
+   * @param delta  时间
    * @param suffix 后缀
    * @return 返回具体时间
    */
@@ -98,7 +138,7 @@ public class TimeUtils {
   /**
    * 获取某几天后的具体时间
    *
-   * @param delta 时间
+   * @param delta  时间
    * @param suffix 后缀
    * @return 返回具体时间
    */
@@ -109,7 +149,7 @@ public class TimeUtils {
   /**
    * 获取某天的具体时间
    *
-   * @param delta 时间
+   * @param delta  时间
    * @param suffix 后缀
    * @return 返回具体时间
    */
@@ -122,7 +162,7 @@ public class TimeUtils {
    * 获取之前的时间
    *
    * @param delta 时间
-   * @param unit 时间单位
+   * @param unit  时间单位
    * @return 返回
    */
   public static long getBefore(long delta, TimeUnit unit) {
@@ -133,7 +173,7 @@ public class TimeUtils {
    * 获取之后的时间
    *
    * @param delta 时间
-   * @param unit 时间单位
+   * @param unit  时间单位
    * @return 返回
    */
   public static long getAfter(long delta, TimeUnit unit) {
