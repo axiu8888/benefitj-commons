@@ -2,6 +2,7 @@ package com.benefitj.mqtt.vertx.server;
 
 import com.benefitj.mqtt.MqttTopic;
 import io.netty.handler.codec.mqtt.MqttQoS;
+import io.netty.handler.codec.mqtt.MqttSubscriptionOption;
 import io.vertx.mqtt.MqttTopicSubscription;
 
 import java.util.Objects;
@@ -42,6 +43,11 @@ public class Subscription implements MqttTopicSubscription {
   @Override
   public MqttQoS qualityOfService() {
     return getOriginal().qualityOfService();
+  }
+
+  @Override
+  public MqttSubscriptionOption subscriptionOption() {
+    return getOriginal().subscriptionOption();
   }
 
   public boolean match(MqttTopic topic) {

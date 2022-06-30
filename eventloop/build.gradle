@@ -1,12 +1,10 @@
-apply from: "${getRootDir()}/buildSystem/base.gradle"
-
-group = "eventloop"
 
 description = "事件循环"
 
 dependencies {
 
-  compile project(":core")
+  api(project(":core"))
 
 }
 
+//apply from: "${getRootDir()}/buildSystem/upload.gradle"

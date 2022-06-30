@@ -1,16 +1,10 @@
 
-
-jar {
-    archiveName("jdbc.jar")
-}
+// 上传到nexus/maven仓库
+ext.upload = false
 
 dependencies {
-
-    compile(project(":core"))
-    compile(project(":frameworks"))
-
-    compile 'mysql:mysql-connector-java:8.0.27'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
-
+    api(project(":core"))
+    api(project(":frameworks"))
+    api "mysql:mysql-connector-java:$mysqlVersion"
 }
 

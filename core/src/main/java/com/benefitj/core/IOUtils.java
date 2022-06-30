@@ -688,13 +688,13 @@ public class IOUtils {
    * 写入数据
    *
    * @param is     输入流
-   * @param file   文件
+   * @param dest   目标文件
    * @param append 是否为追加
    * @param close  是否关闭流
    * @return 返回写入的长度
    */
-  public static long write(InputStream is, File file, boolean append, boolean close) {
-    final FileOutputStream fos = newFOS(file, append);
+  public static long write(InputStream is, File dest, boolean append, boolean close) {
+    final FileOutputStream fos = newFOS(dest, append);
     try {
       return write(is, fos, 1024 << 4, close);
     } finally {
@@ -702,6 +702,34 @@ public class IOUtils {
       if (close) {
         closeQuietly(is);
       }
+    }
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param src    文件
+   * @param buf    数据
+   * @param append 是否为追加
+   */
+  public static void write(File src, byte[] buf, boolean append) {
+    write(src, buf, 0, buf.length, append);
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param src   文件
+   * @param buf   数据
+   * @param start 开始的位置
+   * @param len   长度
+   * @param append 是否追加
+   */
+  public static void write(File src, byte[] buf, int start, int len, boolean append) {
+    try (final FileOutputStream fos = newFOS(src, append)) {
+      write(fos, buf, start, len);
+    } catch (Exception e) {
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

@@ -1,45 +1,41 @@
-
 ext {
-    jacksonVersion = "2.13.0"
-    lombokVersion = "1.18.22"
+  jacksonVersion = "2.13.3"
+  lombokVersion = "1.18.24"
 
-    rxJavaVersion = '2.2.21'
-    okHttpVersion = '4.9.2'
-    retrofitVersion = '2.9.0'
-
-    // 先定义变量
-    artifactPrefix = ""
-
-
-    repositoryAddress = '192.168.159.133:9001'
-//    repositoryAddress = '192.168.19.129:9001'
-    repositoryUserName = 'admin'
-    repositoryPassword = 'admin123'
-    useRepository = false
+  rxJavaVersion = '2.2.21'
+  okHttpVersion = '4.9.2'
+  retrofitVersion = '2.9.0'
+  nettyAllVersion = '4.1.78.Final'
+  vertxVersion = '4.3.1'
+  mysqlVersion = '8.0.29'
 }
-
 
 allprojects {
 
-    apply plugin: 'java'
-    apply plugin: 'maven'
+  apply plugin: 'java'
 
-    group = 'com.benefitj'
-    version = "1.6.3-SNAPSHOT"
+  group = 'com.benefitj'
+  version = "2.0.0-SNAPSHOT"
+  //version = "2.0.0-RELEASE"
 
-    apply from: "${getRootDir()}/buildSystem/base.gradle"
+  ext {
+    groupId = "$group"
+    artifactPrefix = ""
+    artifactId = "${getProject().name}"
+    versionId = "${version}"
 
-    ext {
-        groupId = "${group}"
-        artifactPrefix = "commons-"
-        artifactId = "${getProject().name}"
-        versionId = "${version}"
-    }
+    manifestAttributes = [
+        "version"   : "$version",
+        "build-date": "${new Date().format('yyyy-MM-dd')}",
+        "author"    : "axiu8888",
+        "home"      : "https://github/com/axiu8888",
+    ]
+  }
 
-    //sourceCompatibility = JavaVersion.VERSION_11
-    //targetCompatibility = JavaVersion.VERSION_11
+  // 通用依赖
+  apply from: "${getRootDir()}/buildSystem/base.gradle"
 
-    dependencies {
-        compile 'org.projectlombok:lombok:1.18.22'
-    }
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
+
 }

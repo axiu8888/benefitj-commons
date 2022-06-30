@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Consumer;
 
 public abstract class SimpleSingleObserver<T> implements SingleObserver<T> {
+
   @Override
   public void onSubscribe(@NotNull Disposable d) {
     d.dispose();
@@ -27,7 +28,7 @@ public abstract class SimpleSingleObserver<T> implements SingleObserver<T> {
 
   public static <T> SimpleSingleObserver<T> create(Consumer<T> consumer,
                                                    Consumer<Throwable> errorConsumer) {
-    return new SimpleSingleObserver<>() {
+    return new SimpleSingleObserver<T>() {
 
       @Override
       public void onSuccess(@NotNull T t) {

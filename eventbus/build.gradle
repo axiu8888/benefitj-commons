@@ -1,10 +1,8 @@
-
 description = "EventBus"
 
+// 上传到nexus/maven仓库
+ext.upload = true
+
 dependencies {
-
-    compileOnly 'com.google.guava:guava:29.0-jre'
-
+  api "com.google.guava:guava:${guavaVersion}"
 }
-
-//apply from: "${getRootDir()}/buildSystem/upload.gradle"

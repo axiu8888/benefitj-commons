@@ -2,6 +2,7 @@ package com.benefitj.core;
 
 import com.benefitj.core.concurrent.ConcurrentHashSet;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
@@ -157,6 +158,18 @@ public class ProxyUtils {
       }
     }
     return value;
+  }
+
+  /**
+   * 创建代理
+   *
+   * @param interfaceType 接口
+   * @param handler       处理器
+   * @param <T>           接口类型
+   * @return 返回对象代理
+   */
+  public static <T> T newProxy(Class<T> interfaceType, InvocationHandler handler) {
+    return (T) Proxy.newProxyInstance(interfaceType.getClassLoader(), new Class[]{interfaceType}, handler);
   }
 
 }

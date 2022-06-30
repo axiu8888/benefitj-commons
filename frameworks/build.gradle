@@ -1,34 +1,19 @@
-
-
 description = "框架的工具类"
 
+// 上传到nexus/maven仓库
+ext.upload = true
+
 dependencies {
+  api project(":core")
 
-    compile project(":core")
-
-    compile 'cglib:cglib:3.3.0'
-
-    // 压缩
-    compile 'org.apache.commons:commons-compress:1.21'
-
-    // 二维码
-    compile 'com.google.zxing:core:3.4.1'
-    compile 'com.google.zxing:javase:3.4.1'
-
-    // 验证码
-    compileOnly("com.octo.captcha:jcaptcha:1.0") {
-        exclude(module: "servlet-api")
-        exclude(module: "imaging")
-    }
-    // Servlet
-    compileOnly("javax.servlet:javax.servlet-api:4.0.1")
-
-    // email
-    compile 'org.apache.commons:commons-email:1.5'
-
-    // jcifs: windows 文件分享
-    compile 'org.codelibs:jcifs:2.1.28'
-
+  api 'cglib:cglib:3.3.0'
+  // 压缩
+  api 'org.apache.commons:commons-compress:1.21'
+  // 二维码
+  api 'com.google.zxing:core:3.5.0'
+  api 'com.google.zxing:javase:3.5.0'
+  // email
+  api 'org.apache.commons:commons-email:1.5'
+  // jcifs: windows 文件分享
+  api 'org.codelibs:jcifs:2.1.31'
 }
-
-//apply from: "${getRootDir()}/buildSystem/upload.gradle"

@@ -1,13 +1,9 @@
 
+// 上传到nexus/maven仓库
+ext.upload = true
+
 dependencies {
-
-  compileOnly(project(":core"))
-  compile(project(":device"))
-
-  compileOnly 'io.netty:netty-all:4.1.78.Final'
-  testCompile 'io.netty:netty-all:4.1.78.Final'
-  testCompile(project(":core"))
-
+  api(project(":core"))
+  api(project(":device"))
+  api "io.netty:netty-all:$nettyAllVersion"
 }
-
-//apply from: "${getRootDir()}/buildSystem/upload.gradle"

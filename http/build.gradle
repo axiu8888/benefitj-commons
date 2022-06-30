@@ -1,29 +1,26 @@
 
+// 上传到nexus/maven仓库
+ext.upload = true
+
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+  // OkHttp + RxJava + Retrofit
+  def deps = [
+      "io.reactivex.rxjava2:rxjava:${rxJavaVersion}",
+      "com.squareup.okhttp3:okhttp:${okHttpVersion}",
+      "com.squareup.okhttp3:logging-interceptor:${okHttpVersion}",
+      "com.squareup.retrofit2:retrofit:${retrofitVersion}",
+      "com.squareup.retrofit2:adapter-rxjava2:${retrofitVersion}",
+      "com.squareup.retrofit2:converter-scalars:${retrofitVersion}",
+      "com.squareup.retrofit2:converter-gson:${retrofitVersion}",
+      "com.squareup.retrofit2:converter-jackson:${retrofitVersion}",
+      "com.squareup.retrofit2:converter-moshi:${retrofitVersion}",
+  ]
+  deps.forEach({
+    api(it)
+    testImplementation(it)
+  })
+  api(project(":core"))
 
-    // OkHttp + RxJava + Retrofit
-    def deps = [
-            "io.reactivex.rxjava2:rxjava:${rxJavaVersion}",
-            "com.squareup.okhttp3:okhttp:${okHttpVersion}",
-            "com.squareup.okhttp3:logging-interceptor:${okHttpVersion}",
-            "com.squareup.retrofit2:retrofit:${retrofitVersion}",
-            "com.squareup.retrofit2:adapter-rxjava2:${retrofitVersion}",
-            "com.squareup.retrofit2:converter-scalars:${retrofitVersion}",
-            "com.squareup.retrofit2:converter-gson:${retrofitVersion}",
-            "com.squareup.retrofit2:converter-jackson:${retrofitVersion}",
-            "com.squareup.retrofit2:converter-moshi:${retrofitVersion}",
-    ]
-
-    deps.forEach({
-        compileOnly(it)
-        testCompile(it)
-    })
-
-    compileOnly(project(":core"))
-    testCompile(project(":core"))
+  testImplementation(project(":core"))
 
 }
-
-
-//apply from: "${getRootDir()}/buildSystem/upload.gradle"

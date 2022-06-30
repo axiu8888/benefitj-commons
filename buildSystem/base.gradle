@@ -1,54 +1,203 @@
+//plugins {
+//    id 'org.springframework.boot' version "$springbootVersion"
+//    id 'io.spring.dependency-management' version "$springDependencyManagementVersion"
+//    id 'java'
+//    id 'org.springframework.experimental.aot' version "$springExperimentalAot"
+//}
 
 apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'java-library'
 
-apply from: "${getRootDir()}/buildSystem/repository.gradle"
+ext {
+  springEnv = tryIgnore({Boolean.parseBoolean("$springEnv")}, false)
+  springPluginEnv = false
+}
+tryIgnore({
+  ext.springPluginEnv = plugins.stream().anyMatch { it.class.simpleName.contains("SpringBootPlugin") }
+})
+//// 依赖
+//if (!springPluginEnv) {
+//  apply plugin: 'java-library'
+//}
+//println "${project}, springPluginEnv ===>: ${springPluginEnv}"
 
-ext.artifactId = "${getProject().name}"
+beforeEvaluate {
+  jar {
+    tryIgnore({ manifest.attributes(manifestAttributes) })
+  }
+}
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+// build后加载
+afterEvaluate {
+  // 打包成一个整体
+  tryIgnore({
+    if (allInOne) {
+      apply from: "${getRootDir()}/buildSystem/package-allinone.gradle"
+    }
+  })
+
+  // 上传到nexus/maven
+  tryIgnore({
+    if (upload) {
+      apply from: "${getRootDir()}/buildSystem/upload.gradle"
+    }
+  })
+}
+
+//println("[ ${project.name} ], springPluginEnv: ${springPluginEnv}, plugins ===>: $plugins")
+
+archivesBaseName = "${getProject().name}"
+
+//beforeEvaluate {
+//  sourceCompatibility = JavaVersion.VERSION_1_8
+//  targetCompatibility = JavaVersion.VERSION_1_8
+//}
 
 tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
+  options.encoding = "UTF-8"
 }
 
 tasks.withType(Javadoc) {
-    options.encoding = "UTF-8"
+  options.encoding = "UTF-8"
+  options.addStringOption('Xdoclint:none', '-quiet')
+  options.addStringOption('encoding', 'UTF-8')
+  options.addStringOption('charSet', 'UTF-8')
 }
 
-task sourceJar(type: Jar) {
+tryIgnore({
+  task sourcesJar(type: Jar, dependsOn: classes) {
+    tryIgnore({ manifest.attributes(manifestAttributes) })
     classifier = 'sources'
     from sourceSets.main.allSource
+  }
+
+  task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+  }
+
+  task copyJars(type: Copy) {
+    from configurations.runtimeClasspath
+    into "${buildDir}/libs/lib" // 目标位置
+  }
+})
+
+artifacts {
+  archives sourcesJar
+//  archives javadocJar
 }
 
-artifacts.archives sourceJar
+configurations {
+  developmentOnly
+  runtimeClasspath {
+    extendsFrom developmentOnly
+  }
+  compileOnly {
+    extendsFrom annotationProcessor
+  }
+}
+
+repositories {
+  maven { url("https://maven.aliyun.com/repository/google") }
+  maven { url("https://maven.aliyun.com/repository/central") }
+  maven { url("https://maven.aliyun.com/repository/gradle-plugin") }
+  maven { url("https://maven.aliyun.com/repository/public") }
+  maven { url("https://maven.aliyun.com/repository/jcenter") }
+  maven { url 'https://repo.spring.io/milestone' }
+  maven { url 'https://repo.spring.io/release' }
+
+  tryIgnore({
+    maven {
+      url = "${repoUrl}"
+      credentials {
+        username "${repoUsername}"
+        password "${repoPassword}"
+      }
+    }
+  })
+}
+
+ext {
+  lombokVersion = "1.18.24"
+  jacksonVersion = "2.13.3"
+  guavaVersion = '31.1-jre'
+  fastjsonVersion = '2.0.7'
+  commonsIOVersion = "2.11.0"
+  commonsLang3Version = "3.12.0"
+  slf4jVersion = '1.7.36'
+
+  if (springPluginEnv) {
+    set('springCloudVersion', "2021.0.0")
+  }
+}
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    compile fileTree(dir: 'libs/jar', include: ['*.jar'])
-    compileOnly fileTree(dir: 'libs/source', include: ['*.jar'])
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
+  implementation fileTree(dir: 'libs/jar', include: ['*.jar'])
+  compileOnly fileTree(dir: 'libs/source', include: ['*.jar'])
 
-    testCompile 'junit:junit:4.13.2'
+  def deps = [
+      //"javax.inject:javax.inject:1",
+      //"com.google.code.findbugs:jsr305:3.0.2",
+      "org.projectlombok:lombok:${lombokVersion}",
+      "commons-io:commons-io:${commonsIOVersion}",
+      "org.apache.commons:commons-lang3:${commonsLang3Version}",
+      "com.google.guava:guava:${guavaVersion}",
+      "com.alibaba:fastjson:${fastjsonVersion}",
 
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+      "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
+      "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}",
+  ]
 
-    def deps = [
-            "org.projectlombok:lombok:${lombokVersion}",
-            'javax.inject:javax.inject:1',
-            'com.google.code.findbugs:jsr305:3.0.2',
-            'commons-io:commons-io:2.11.0',
-            'com.google.guava:guava:31.0.1-jre',
-            //'org.slf4j:slf4j-log4j12:1.7.32',
-            'org.slf4j:slf4j-simple:1.7.32',
-            'org.apache.commons:commons-lang3:3.12.0',
-            'com.alibaba:fastjson:1.2.78',
-    ]
+  if (!(springEnv || springPluginEnv)) {
+    compileOnly "org.slf4j:slf4j-log4j12:${slf4jVersion}"
+    testImplementation "org.slf4j:slf4j-log4j12:${slf4jVersion}"
+  }
 
-    deps.forEach({
-        implementation(it)
-        testCompile(it)
-    })
+  deps.forEach {
+    if (springEnv || springPluginEnv) {
+      implementation it
+    } else {
+      compileOnly it
+    }
+    testImplementation it
+  }
+  annotationProcessor 'org.projectlombok:lombok:1.18.22'
+  //compileOnly "org.slf4j:slf4j-log4j12:${slf4jVersion}"
+
+  if (springEnv || springPluginEnv) {
+    implementation "org.springframework.boot:spring-boot-starter:$springbootVersion"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:$springbootVersion"
+    //implementation 'ch.qos.logback:logback-classic:1.2.11'
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test:$springbootVersion")
+
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:5.6.2"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.6.2"
+  }
+
+  testImplementation 'junit:junit:4.13.2'
 
 }
+
+if (springPluginEnv) {
+  tasks.named('test') {
+    useJUnitPlatform()
+  }
+  tryIgnore({
+    tasks.named('bootBuildImage') {
+      builder = 'paketobuildpacks/builder:tiny'
+      environment = ['BP_NATIVE_IMAGE': 'true']
+    }
+  })
+}
+
+
+static def tryIgnore(java.util.concurrent.Callable<?> r, Object ...args) {
+  try {
+    return r.call()
+  } catch (ignore) { /* ~ */ }
+  return args != null && args.length > 0 ? args[0] : null
+}
+

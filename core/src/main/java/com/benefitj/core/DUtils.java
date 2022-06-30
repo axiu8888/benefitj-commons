@@ -3,7 +3,6 @@ package com.benefitj.core;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 单位
@@ -135,58 +134,20 @@ public class DUtils {
   }
 
   /**
-   * 秒(毫秒)
-   *
-   * @param delta 秒数
-   * @return 返回时间
+   * 获取当前时间，已过时，请使用 {@link TimeUtils#now()}
    */
-  public static long ofSeconds(int delta) {
-    return TimeUnit.SECONDS.toMillis(delta);
-  }
-
-  /**
-   * 分钟(毫秒)
-   *
-   * @param delta 分钟数
-   * @return 返回时间
-   */
-  public static long ofMinutes(int delta) {
-    return TimeUnit.MINUTES.toMillis(delta);
-  }
-
-  /**
-   * 小时(毫秒)
-   *
-   * @param delta 小时数
-   * @return 返回时间
-   */
-  public static long ofHours(int delta) {
-    return TimeUnit.HOURS.toMillis(delta);
-  }
-
-  /**
-   * 天(毫秒)
-   *
-   * @param delta 天数
-   * @return 返回时间
-   */
-  public static long ofDays(int delta) {
-    return TimeUnit.DAYS.toMillis(delta);
-  }
-
-  /**
-   * 获取当前时间
-   */
+  @Deprecated
   public static long now() {
     return System.currentTimeMillis();
   }
 
   /**
-   * 和当前时间的差值
+   * 和当前时间的差值，已过时，请使用 {@link TimeUtils#diffNow(long)}
    *
    * @param delta 时间
    * @return 返回与当前时间的差
    */
+  @Deprecated
   public static long diffNow(long delta) {
     return now() - delta;
   }

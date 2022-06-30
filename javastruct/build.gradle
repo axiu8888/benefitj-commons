@@ -1,11 +1,9 @@
 
 description = "结构体"
 
+// 上传到nexus/maven仓库
+ext.upload = true
+
 dependencies {
-
-	compile project(":core")
-
+	api project(":core")
 }
-
-
-//apply from: "${getRootDir()}/buildSystem/upload.gradle"

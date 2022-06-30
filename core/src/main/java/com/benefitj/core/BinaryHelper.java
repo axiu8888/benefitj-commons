@@ -402,7 +402,6 @@ public class BinaryHelper {
    *
    * @param bytes  字节数组
    * @param order  字节序
-   * @param order  字节序
    * @param signed 是否为有符号整数
    * @return 返回整数值
    */
@@ -428,7 +427,6 @@ public class BinaryHelper {
    * @param bytes  字节数组
    * @param offset 偏移量
    * @param len    长度
-   * @param order  字节序
    * @param order  字节序
    * @param signed 是否为有符号整数
    * @return 返回整数值

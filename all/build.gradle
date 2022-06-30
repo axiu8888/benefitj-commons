@@ -1,66 +1,33 @@
-
-apply from: "${getRootDir()}/buildSystem/package-allinone.gradle"
-
 jar {
-    archivesBaseName = "benefitj-commons"
+  archivesBaseName = "benefitj-commons"
 }
+
+// 打包到一个项目
+ext.allInOne = true
+// 上传到nexus/maven仓库
+ext.upload = true
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+  // compileOnly、implementation、api
 
-    compile project(":core")
-    compile project(":consistent-hash")
-    compile project(":pipeline")
-    compile project(":netty")
-    compile project(":interpolator")
-    compile project(":device")
-    compile project(":mqtt")
-    compile project(":javastruct")
-
-    // network start *****************************************************/
-    compile project(":http")
-    // OkHttp + RxJava + Retrofit
-    compile "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
-    compile "com.squareup.okhttp3:okhttp:${okHttpVersion}"
-    compile "com.squareup.okhttp3:logging-interceptor:${okHttpVersion}"
-    compile "com.squareup.retrofit2:retrofit:${retrofitVersion}"
-    compile "com.squareup.retrofit2:adapter-rxjava2:${retrofitVersion}"
-    compile "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
-    compile "com.squareup.retrofit2:converter-gson:${retrofitVersion}"
-    compile "com.squareup.retrofit2:converter-scalars:${retrofitVersion}"
-    compile "com.squareup.retrofit2:converter-moshi:${retrofitVersion}"
-    // network end *****************************************************/
-
-
-    // eventbus start *****************************************************/
-    compile project(":eventbus")
-    compile 'com.google.guava:guava:29.0-jre'
-    // eventbus end *****************************************************/
-
-
-    // frameworks start *****************************************************/
-    compile project(":frameworks")
-    compile 'cglib:cglib:3.3.0'
-    // 二维码
-    compile 'com.google.zxing:javase:3.4.0'
-    // 验证码
-    compile("com.octo.captcha:jcaptcha:1.0") {
-        exclude(module: "servlet-api")
-        exclude(module: "imaging")
-    }
-    // Servlet
-    compileOnly("javax.servlet:javax.servlet-api:4.0.0")
-    // frameworks end *****************************************************/
-
-    def vertxVersion = "4.1.5"
-    compile "io.vertx:vertx-core:${vertxVersion}"
-//	compile "io.vertx:vertx-codegen:${vertxVersion}"
-    compile 'io.vertx:vertx-codegen:4.1.5'
-//	compile "io.vertx:vertx-codetrans:${vertxVersion}"
-    compile 'io.vertx:vertx-codetrans:4.0.3'
-    compile "io.vertx:vertx-unit:${vertxVersion}"
-    compile "io.vertx:vertx-mqtt:${vertxVersion}"
-
+  def deps = [
+      ":core",
+      ":eventbus",
+      ":frameworks",
+      ":device",
+      ":netty",
+      ":mqtt",
+      ":javastruct",
+      ":interpolator",
+      ":pipeline",
+      ":consistent-hash",
+  ]
+  if (allInOne) {
+    deps.forEach{compileOnly(project(it)) }
+  } else {
+    deps.forEach{api(project(it)) }
+  }
 }
 
-apply from: "${getRootDir()}/buildSystem/package-allinone.gradle"
+
+
