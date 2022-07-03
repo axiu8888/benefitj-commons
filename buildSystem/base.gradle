@@ -8,6 +8,8 @@
 apply plugin: 'java'
 apply plugin: 'java-library'
 
+// gradle build -x test
+
 ext {
   springEnv = tryIgnore({Boolean.parseBoolean("$springEnv")}, false)
   springPluginEnv = false

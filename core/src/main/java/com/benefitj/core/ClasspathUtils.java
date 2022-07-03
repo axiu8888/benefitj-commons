@@ -9,8 +9,6 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -48,7 +46,7 @@ public class ClasspathUtils {
   }
 
   private static ClassLoader getClassLoader(Callable<ClassLoader> callable) {
-    if (System.getSecurityManager() == null) {
+    /*if (System.getSecurityManager() == null) {
       try {
         return callable.call();
       } catch (Exception e) {
@@ -62,6 +60,11 @@ public class ClasspathUtils {
           throw CatchUtils.throwing(e, IllegalStateException.class);
         }
       });
+    }*/
+    try {
+      return callable.call();
+    } catch (Exception e) {
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

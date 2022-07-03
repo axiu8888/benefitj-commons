@@ -102,14 +102,10 @@ public class ReflectUtilsTest extends BaseTest {
 
   @Test
   public void testSerializable() {
-
     CatchUtils.tryThrow(() -> {
-      IFunction<SysUser, String> func = SysUser::getName;
-      LambdaMeta lambda = LambdaUtils.getLambda(func);
+      LambdaMeta lambda = LambdaUtils.getLambda(SysUser::getName);
       System.err.println(lambda.getImplMethodName());
-
     });
-
   }
 
 

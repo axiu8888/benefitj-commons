@@ -1,3 +1,4 @@
+import java.util.concurrent.Callable
 
 ext {
   pkgAllInOne = false
@@ -7,15 +8,15 @@ def rootDirPath = getRootDir().getAbsolutePath()
 
 // 配置是否将代码打包到一个jar中
 tryIgnore({ pkgAllInOne = Boolean.parseBoolean("$allInOne") })
-//// 配置是否将代码打包到一个jar中
-//tryIgnore({ println("allInOne ==>: $allInOne") })
+// 配置是否将代码打包到一个jar中
+tryIgnore({ println("allInOne ==>: $allInOne") })
 
 jar {
   from {
     // compileClasspath、runtimeClasspath、testCompileClasspath、testRuntimeClasspath
     configurations.compileClasspath.collect {
       if (it.getAbsolutePath().startsWith(rootDirPath)) {
-        //println("jar ===>: ${it.getAbsolutePath().substring(rootDirPath.length())}, ${it.exists()}")
+        println("jar ===>: ${it.getAbsolutePath().substring(rootDirPath.length())}, ${it.exists()}")
         if (it.exists()) {
           it.isDirectory() ? it : zipTree(it)
         }
@@ -31,7 +32,7 @@ sourcesJar {
       def path = it.getAbsolutePath()
       def project = findProject(getRootProject(), path)
       if (project != null) {
-        //println("jar ===>: ${it.getAbsolutePath().substring(rootDirPath.length())}, ${it.exists()}")
+        println("jar ===>: ${it.getAbsolutePath().substring(rootDirPath.length())}, ${it.exists()}")
         from project.sourceSets.main.allSource
       }
     }
@@ -66,8 +67,9 @@ static Project findProject(Project root, String path) {
 }
 
 
-static def tryIgnore(java.util.concurrent.Callable<?> r) {
+static def tryIgnore(Callable<?> r) {
   try {
     return r.call()
-  } catch (ignore) { /* ~ */ }
+  } catch (ignore) { /* ~ */
+  }
 }

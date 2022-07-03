@@ -1,6 +1,7 @@
 package com.benefitj.core.lambda;
 
 import com.benefitj.core.ReflectUtils;
+import com.benefitj.core.functions.IFunction;
 
 import java.io.*;
 import java.lang.invoke.SerializedLambda;
@@ -9,6 +10,10 @@ import java.lang.reflect.Proxy;
 
 public class LambdaUtils {
 
+
+  public static <T, R> LambdaMeta getLambda(IFunction<T, R> func) {
+    return getLambda((Serializable) func);
+  }
 
   public static LambdaMeta getLambda(Serializable serializable) {
     try {

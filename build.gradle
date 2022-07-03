@@ -14,7 +14,7 @@ allprojects {
 
   apply plugin: 'java'
 
-  group = 'com.benefitj'
+  group = 'com.benefitj.commons'
   version = "2.0.0-SNAPSHOT"
   //version = "2.0.0-RELEASE"
 
@@ -28,14 +28,14 @@ allprojects {
         "version"   : "$version",
         "build-date": "${new Date().format('yyyy-MM-dd')}",
         "author"    : "axiu8888",
-        "home"      : "https://github/com/axiu8888",
+        "home"      : "https://github/com/axiu8888/${rootProject.name}",
     ]
   }
 
   // 通用依赖
   apply from: "${getRootDir()}/buildSystem/base.gradle"
 
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
+  sourceCompatibility = JavaVersion.VERSION_15
+  targetCompatibility = JavaVersion.VERSION_15
 
 }
