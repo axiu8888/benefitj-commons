@@ -136,7 +136,7 @@ public class TimeUtils {
   }
 
   /**
-   * 获取某几天后的具体时间
+   * 获取某几天后的具体时间, example: 获取明天8点23分的数据，参数为，(1, "08:23:00")
    *
    * @param delta  时间
    * @param suffix 后缀

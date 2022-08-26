@@ -13,6 +13,12 @@ import java.util.function.Function;
  */
 public interface BufCopy {
 
+  SingletonSupplier<BufCopy> single = SingletonSupplier.of(BufCopy::newBufCopy);
+
+  static BufCopy get() {
+    return single.get();
+  }
+
   /**
    * 获取缓存字节数组
    *

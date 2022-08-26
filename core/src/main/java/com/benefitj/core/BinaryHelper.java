@@ -11,6 +11,16 @@ public class BinaryHelper {
   public static final BinaryHelper LITTLE_ENDIAN = new BinaryHelper(false, ByteOrder.LITTLE_ENDIAN);
 
   /**
+   * 获取二进制工具类对象
+   *
+   * @param order 字节顺序
+   * @return 返回对象
+   */
+  public static BinaryHelper getHelper(ByteOrder order) {
+    return order == ByteOrder.LITTLE_ENDIAN ? BinaryHelper.LITTLE_ENDIAN : BinaryHelper.BIG_ENDIAN;
+  }
+
+  /**
    * 16进制和2进制转换
    */
   public static final String HEX_UPPER_CASE = "0123456789ABCDEF";
@@ -86,6 +96,17 @@ public class BinaryHelper {
   }
 
   /**
+   * 反转数组
+   */
+  public byte[] reverse(byte[] data) {
+    byte[] copy = bufCopy.copy(data);
+    for (int i = 0; i < copy.length; i++) {
+      data[copy.length - 1 - i] = copy[i];
+    }
+    return data;
+  }
+
+  /**
    * 取值
    *
    * @param bits     标志位
@@ -155,6 +176,16 @@ public class BinaryHelper {
   }
 
   /**
+   * 将数字转换为16进制字符串
+   *
+   * @param value 值
+   * @return 返回16进制的字符串
+   */
+  public String shortToHex(short value) {
+    return bytesToHex(shortToBytes(value));
+  }
+
+  /**
    * 转换成整数
    *
    * @param num 数值
@@ -204,6 +235,16 @@ public class BinaryHelper {
       bytes[i] = (byte) (bigEndian ? (num >> ((bit - 8) - i * 8)) : (num >> (i * 8)));
     }
     return bytes;
+  }
+
+  /**
+   * 将数字转换为16进制字符串
+   *
+   * @param value 值
+   * @return 返回16进制的字符串
+   */
+  public String intToHex(int value) {
+    return bytesToHex(intToBytes(value));
   }
 
   /**
@@ -572,14 +613,15 @@ public class BinaryHelper {
   }
 
   /**
-   * 整形转换成16进制
+   * 将数字转换为16进制字符串
    *
-   * @param num 数值
-   * @return 返回16进制字符串
+   * @param value 值
+   * @return 返回16进制的字符串
    */
-  public byte[] intToBytes2(int num) {
-    return hexToBytes(intToHex(num));
+  public String longToHex(long value) {
+    return bytesToHex(longToBytes(value));
   }
+
 
   /**
    * 整形转换成16进制
@@ -587,7 +629,7 @@ public class BinaryHelper {
    * @param num 数值
    * @return 返回16进制字符串
    */
-  public String intToHex(int num) {
+  public String intToHex2B(int num) {
     String hex = Integer.toHexString(num);
     return (hex.length() & 0x01) != 0 ? "0" + hex : hex;
   }
@@ -982,6 +1024,60 @@ public class BinaryHelper {
       }
     }
     return -1;
+  }
+
+  /**
+   * 解析整数数组
+   *
+   * @param data   数据
+   * @param start  开始的位置
+   * @param len    数据占字节的长度
+   * @param size   字节长度
+   * @param signed 是否为有符号数
+   * @return 返回解析的数组
+   */
+  public short[] parseShortArray(byte[] data, int start, int len, int size, boolean signed) {
+    short[] array = new short[len / size];
+    for (int i = 0; i < array.length; i ++) {
+      array[i] = bytesToShort(bufCopy.copy(data, start + i * size, size, true), signed);
+    }
+    return array;
+  }
+
+  /**
+   * 解析整数数组
+   *
+   * @param data   数据
+   * @param start  开始的位置
+   * @param len    数据占字节的长度
+   * @param size   字节长度
+   * @param signed 是否为有符号数
+   * @return 返回解析的数组
+   */
+  public int[] parseIntArray(byte[] data, int start, int len, int size, boolean signed) {
+    int[] array = new int[len / size];
+    for (int i = 0; i < array.length; i ++) {
+      array[i] = bytesToInt(bufCopy.copy(data, start + i * size, size, true), signed);
+    }
+    return array;
+  }
+
+  /**
+   * 解析整数数组
+   *
+   * @param data   数据
+   * @param start  开始的位置
+   * @param len    数据占字节的长度
+   * @param size   字节长度
+   * @param signed 是否为有符号数
+   * @return 返回解析的数组
+   */
+  public long[] parseLongArray(byte[] data, int start, int len, int size, boolean signed) {
+    long[] array = new long[len / size];
+    for (int i = 0; i < array.length; i ++) {
+      array[i] = bytesToLong(bufCopy.copy(data, start + i * size, size, true), signed);
+    }
+    return array;
   }
 
   private boolean isNotEmpty(String s) {

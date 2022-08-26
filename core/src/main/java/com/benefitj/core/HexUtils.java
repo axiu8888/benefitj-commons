@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
  */
 public class HexUtils {
 
-  static BinaryHelper getInstance() {
+  static BinaryHelper getHelper() {
     return Holder.INSTANCE;
   }
 
@@ -20,6 +20,13 @@ public class HexUtils {
   }
 
   /**
+   * 反转数组
+   */
+  public static byte[] reverse(byte[] data) {
+    return getHelper().reverse(data);
+  }
+
+  /**
    * 取值
    *
    * @param bits     标志位
@@ -28,7 +35,7 @@ public class HexUtils {
    * @return 返回取值
    */
   public static int mask(byte bits, int size, int position) {
-    return getInstance().mask(bits, size, position);
+    return getHelper().mask(bits, size, position);
   }
 
   /**
@@ -38,7 +45,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static byte[] shortToBytes(short num) {
-    return getInstance().shortToBytes(num);
+    return getHelper().shortToBytes(num);
   }
 
   /**
@@ -49,7 +56,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static byte[] shortToBytes(short num, ByteOrder order) {
-    return getInstance().shortToBytes(num, 16, order);
+    return getHelper().shortToBytes(num, 16, order);
   }
 
   /**
@@ -60,7 +67,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static byte[] shortToBytes(short num, int bit) {
-    return getInstance().shortToBytes(num, bit);
+    return getHelper().shortToBytes(num, bit);
   }
 
   /**
@@ -72,7 +79,7 @@ public class HexUtils {
    * @return 返回转换后的字节数组
    */
   public static byte[] shortToBytes(short num, int bit, ByteOrder order) {
-    return getInstance().shortToBytes(num, bit, order);
+    return getHelper().shortToBytes(num, bit, order);
   }
 
   /**
@@ -82,7 +89,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static byte[] intToBytes(int num) {
-    return getInstance().intToBytes(num);
+    return getHelper().intToBytes(num);
   }
 
   /**
@@ -93,7 +100,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static byte[] intToBytes(int num, ByteOrder order) {
-    return getInstance().intToBytes(num, 32, order);
+    return getHelper().intToBytes(num, 32, order);
   }
 
   /**
@@ -104,7 +111,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static byte[] intToBytes(int num, int bit) {
-    return getInstance().intToBytes(num, bit);
+    return getHelper().intToBytes(num, bit);
   }
 
   /**
@@ -116,7 +123,7 @@ public class HexUtils {
    * @return 返回转换后的字节数组
    */
   public static byte[] intToBytes(int num, int bit, ByteOrder order) {
-    return getInstance().intToBytes(num, bit, order);
+    return getHelper().intToBytes(num, bit, order);
   }
 
   /**
@@ -126,7 +133,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static byte[] longToBytes(long num) {
-    return getInstance().longToBytes(num);
+    return getHelper().longToBytes(num);
   }
 
   /**
@@ -137,7 +144,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static byte[] longToBytes(long num, ByteOrder order) {
-    return getInstance().longToBytes(num, 64, order);
+    return getHelper().longToBytes(num, 64, order);
   }
 
   /**
@@ -148,7 +155,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static byte[] longToBytes(long num, int bit) {
-    return getInstance().longToBytes(num, bit);
+    return getHelper().longToBytes(num, bit);
   }
 
   /**
@@ -160,7 +167,7 @@ public class HexUtils {
    * @return 返回转换后的字节数组
    */
   public static byte[] longToBytes(long num, int bit, ByteOrder order) {
-    return getInstance().longToBytes(num, bit, order);
+    return getHelper().longToBytes(num, bit, order);
   }
 
   /**
@@ -170,7 +177,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static short bytesToShort(byte... bytes) {
-    return getInstance().bytesToShort(bytes);
+    return getHelper().bytesToShort(bytes);
   }
 
   /**
@@ -181,7 +188,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static short bytesToShort(byte[] bytes, boolean signed) {
-    return getInstance().bytesToShort(bytes, signed);
+    return getHelper().bytesToShort(bytes, signed);
   }
 
   /**
@@ -192,7 +199,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static short bytesToShort(byte[] bytes, ByteOrder order) {
-    return getInstance().bytesToShort(bytes, order, false);
+    return getHelper().bytesToShort(bytes, order, false);
   }
 
   /**
@@ -204,7 +211,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static short bytesToShort(byte[] bytes, int offset, int len) {
-    return getInstance().bytesToShort(bytes, offset, len);
+    return getHelper().bytesToShort(bytes, offset, len);
   }
 
   /**
@@ -216,7 +223,7 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static short bytesToShort(byte[] bytes, ByteOrder order, boolean signed) {
-    return getInstance().bytesToShort(bytes, order, signed);
+    return getHelper().bytesToShort(bytes, order, signed);
   }
 
   /**
@@ -226,7 +233,7 @@ public class HexUtils {
    * @return 返回整数值
    */
   public static int bytesToInt(byte... bytes) {
-    return getInstance().bytesToInt(bytes, false);
+    return getHelper().bytesToInt(bytes, false);
   }
 
   /**
@@ -237,7 +244,7 @@ public class HexUtils {
    * @return 返回整数值
    */
   public static int bytesToInt(byte[] bytes, boolean signed) {
-    return getInstance().bytesToInt(bytes, signed);
+    return getHelper().bytesToInt(bytes, signed);
   }
 
   /**
@@ -248,7 +255,7 @@ public class HexUtils {
    * @return 返回整数值
    */
   public static int bytesToInt(byte[] bytes, ByteOrder order) {
-    return getInstance().bytesToInt(bytes, order, false);
+    return getHelper().bytesToInt(bytes, order, false);
   }
 
   /**
@@ -260,7 +267,7 @@ public class HexUtils {
    * @return 返回整数值
    */
   public int bytesToInt(byte[] bytes, int offset, int len) {
-    return getInstance().bytesToInt(bytes, offset, len);
+    return getHelper().bytesToInt(bytes, offset, len);
   }
 
   /**
@@ -272,7 +279,7 @@ public class HexUtils {
    * @return 返回整数值
    */
   public static int bytesToInt(byte[] bytes, ByteOrder order, boolean signed) {
-    return getInstance().bytesToInt(bytes, order, signed);
+    return getHelper().bytesToInt(bytes, order, signed);
   }
 
   /**
@@ -282,7 +289,7 @@ public class HexUtils {
    * @return 返回长整数值
    */
   public static long bytesToLong(byte... bytes) {
-    return getInstance().bytesToLong(bytes);
+    return getHelper().bytesToLong(bytes);
   }
 
   /**
@@ -293,7 +300,7 @@ public class HexUtils {
    * @return 返回长整数值
    */
   public static long bytesToLong(byte[] bytes, boolean signed) {
-    return getInstance().bytesToLong(bytes, signed);
+    return getHelper().bytesToLong(bytes, signed);
   }
 
   /**
@@ -304,7 +311,7 @@ public class HexUtils {
    * @return 返回长整数值
    */
   public static long bytesToLong(byte[] bytes, ByteOrder order) {
-    return getInstance().bytesToLong(bytes, order, false);
+    return getHelper().bytesToLong(bytes, order, false);
   }
 
   /**
@@ -316,7 +323,7 @@ public class HexUtils {
    * @return 返回长整数值
    */
   public long bytesToLong(byte[] bytes, int offset, int len) {
-    return getInstance().bytesToLong(bytes, offset, len);
+    return getHelper().bytesToLong(bytes, offset, len);
   }
 
   /**
@@ -328,7 +335,7 @@ public class HexUtils {
    * @return 返回长整数值
    */
   public static long bytesToLong(byte[] bytes, ByteOrder order, boolean signed) {
-    return getInstance().bytesToLong(bytes, order, signed);
+    return getHelper().bytesToLong(bytes, order, signed);
   }
 
   /**
@@ -338,7 +345,7 @@ public class HexUtils {
    * @return 返回16进制字符串
    */
   public static byte[] intToBytes2(int num) {
-    return getInstance().hexToBytes(intToHex(num));
+    return getHelper().hexToBytes(intToHex(num));
   }
 
   /**
@@ -348,7 +355,7 @@ public class HexUtils {
    * @return 返回16进制字符串
    */
   public static String intToHex(int num) {
-    return getInstance().intToHex(num);
+    return getHelper().intToHex(num);
   }
 
   /**
@@ -358,21 +365,21 @@ public class HexUtils {
    * @return 返回一个整数
    */
   public static short byteToShort(byte b) {
-    return getInstance().byteToShort(b);
+    return getHelper().byteToShort(b);
   }
 
   /**
    * 取低字节
    */
   public static int byteToIntLow(byte b) {
-    return getInstance().byteToIntLow(b);
+    return getHelper().byteToIntLow(b);
   }
 
   /**
    * 取高字节
    */
   public static int byteToIntHigh(byte b) {
-    return getInstance().byteToIntHigh(b);
+    return getHelper().byteToIntHigh(b);
   }
 
   /**
@@ -382,7 +389,7 @@ public class HexUtils {
    * @return 返回二进制字符串
    */
   public static String bytesToBinary(byte... bytes) {
-    return getInstance().bytesToBinary(bytes, " ", 1);
+    return getHelper().bytesToBinary(bytes, " ", 1);
   }
 
   /**
@@ -394,7 +401,7 @@ public class HexUtils {
    * @return 返回二进制字符串
    */
   public static String bytesToBinary(byte[] bytes, String split, int len) {
-    return getInstance().bytesToBinary(bytes, split, len);
+    return getHelper().bytesToBinary(bytes, split, len);
   }
 
   /**
@@ -404,7 +411,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String byteToHex(byte bin) {
-    return getInstance().byteToHex(bin, false);
+    return getHelper().byteToHex(bin, false);
   }
 
   /**
@@ -415,7 +422,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String byteToHex(byte bin, boolean lowerCase) {
-    return getInstance().byteToHex(bin, lowerCase);
+    return getHelper().byteToHex(bin, lowerCase);
   }
 
   /**
@@ -425,7 +432,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin) {
-    return getInstance().bytesToHex(bin, false, null, 1);
+    return getHelper().bytesToHex(bin, false, null, 1);
   }
 
   /**
@@ -436,7 +443,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin, String fill) {
-    return getInstance().bytesToHex(bin, false, fill, 1);
+    return getHelper().bytesToHex(bin, false, fill, 1);
   }
 
   /**
@@ -448,7 +455,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin, String fill, int length) {
-    return getInstance().bytesToHex(bin, false, fill, length);
+    return getHelper().bytesToHex(bin, false, fill, length);
   }
 
   /**
@@ -459,7 +466,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin, boolean lowerCase) {
-    return getInstance().bytesToHex(bin, lowerCase, null, 1);
+    return getHelper().bytesToHex(bin, lowerCase, null, 1);
   }
 
   /**
@@ -472,7 +479,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin, boolean lowerCase, final String fill, int length) {
-    return getInstance().bytesToHex(bin, lowerCase, fill, length);
+    return getHelper().bytesToHex(bin, lowerCase, fill, length);
   }
 
   /**
@@ -485,7 +492,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin, final String prefix, String suffix, int length) {
-    return getInstance().bytesToHex(bin, false, prefix, suffix, length);
+    return getHelper().bytesToHex(bin, false, prefix, suffix, length);
   }
 
   /**
@@ -499,7 +506,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin, boolean lowerCase, final String prefix, String suffix, int length) {
-    return getInstance().bytesToHex(bin, lowerCase, prefix, suffix, length);
+    return getHelper().bytesToHex(bin, lowerCase, prefix, suffix, length);
   }
 
   /**
@@ -510,7 +517,7 @@ public class HexUtils {
    * @return 返回16进制字符串或空
    */
   public static String bytesToHex(byte[] bin, BinaryHelper.HexConsumer consumer) {
-    return getInstance().bytesToHex(bin, consumer);
+    return getHelper().bytesToHex(bin, consumer);
   }
 
   /**
@@ -520,7 +527,7 @@ public class HexUtils {
    * @return 转换的字节数组
    */
   public static byte[] hexToBytes(String hex) {
-    return getInstance().hexToBytes(hex, null);
+    return getHelper().hexToBytes(hex, null);
   }
 
   /**
@@ -531,7 +538,7 @@ public class HexUtils {
    * @return 转换的字节数组
    */
   public static byte[] hexToBytes(String hex, byte[] defaultValue) {
-    return getInstance().hexToBytes(hex, defaultValue);
+    return getHelper().hexToBytes(hex, defaultValue);
   }
 
   /**
@@ -543,7 +550,7 @@ public class HexUtils {
    * @return 返回是否相等
    */
   public static boolean isEquals(byte[] src, int start, byte flag) {
-    return getInstance().isEquals(src, start, flag);
+    return getHelper().isEquals(src, start, flag);
   }
 
   /**
@@ -554,7 +561,7 @@ public class HexUtils {
    * @return 返回是否相等
    */
   public static boolean isEquals(byte[] standard, byte[] dest) {
-    return getInstance().isEquals(standard, dest, 0);
+    return getHelper().isEquals(standard, dest, 0);
   }
 
   /**
@@ -566,7 +573,7 @@ public class HexUtils {
    * @return 返回是否相等
    */
   public static boolean isEquals(byte[] standard, byte[] dest, int destPos) {
-    return getInstance().isEquals(standard, dest, destPos, standard.length);
+    return getHelper().isEquals(standard, dest, destPos, standard.length);
   }
 
   /**
@@ -579,7 +586,7 @@ public class HexUtils {
    * @return 返回是否相等
    */
   public static boolean isEquals(byte[] standard, byte[] dest, int destPos, int len) {
-    return getInstance().isEquals(standard, 0, dest, destPos, len);
+    return getHelper().isEquals(standard, 0, dest, destPos, len);
   }
 
   /**
@@ -593,7 +600,7 @@ public class HexUtils {
    * @return 返回是否相等
    */
   public static boolean isEquals(byte[] src, int srcPos, byte[] dest, int destPos, int len) {
-    return getInstance().isEquals(src, srcPos, dest, destPos, len);
+    return getHelper().isEquals(src, srcPos, dest, destPos, len);
   }
   /**
    * 查找匹配的字节数组的开始位置
@@ -603,7 +610,7 @@ public class HexUtils {
    * @return 返回找到的位置，如果未找到返回-1
    */
   public static int indexOf(byte[] src, byte[] find) {
-    return getInstance().indexOf(src, 0, src.length, find);
+    return getHelper().indexOf(src, 0, src.length, find);
   }
 
   /**
@@ -616,7 +623,52 @@ public class HexUtils {
    * @return 返回找到的位置，如果未找到返回-1
    */
   public static int indexOf(byte[] src, int start, int len, byte[] find) {
-    return getInstance().indexOf(src, start, len, find);
+    return getHelper().indexOf(src, start, len, find);
+  }
+
+  /**
+   * 解析整数数组
+   *
+   * @param data    数据
+   * @param start   开始的位置
+   * @param len     数据占字节的长度
+   * @param size   字节长度
+   * @param order   字节顺序
+   * @param signed  是否为有符号数
+   * @return 返回解析的数组
+   */
+  public static short[] parseShortArray(byte[] data, int start, int len, int size, ByteOrder order, boolean signed) {
+    return BinaryHelper.getHelper(order).parseShortArray(data, start, len, size, signed);
+  }
+
+  /**
+   * 解析整数数组
+   *
+   * @param data    数据
+   * @param start   开始的位置
+   * @param len     数据占字节的长度
+   * @param size   字节长度
+   * @param order   字节顺序
+   * @param signed  是否为有符号数
+   * @return 返回解析的数组
+   */
+  public static int[] parseIntArray(byte[] data, int start, int len, int size, ByteOrder order, boolean signed) {
+    return BinaryHelper.getHelper(order).parseIntArray(data, start, len, size, signed);
+  }
+
+  /**
+   * 解析整数数组
+   *
+   * @param data    数据
+   * @param start   开始的位置
+   * @param len     数据占字节的长度
+   * @param size   字节长度
+   * @param order   字节顺序
+   * @param signed  是否为有符号数
+   * @return 返回解析的数组
+   */
+  public static long[] parseLongArray(byte[] data, int start, int len, int size, ByteOrder order, boolean signed) {
+    return BinaryHelper.getHelper(order).parseLongArray(data, start, len, size, signed);
   }
 
 }

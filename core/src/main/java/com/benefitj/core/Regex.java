@@ -51,9 +51,27 @@ public class Regex {
    */
   public static final String DATE = "^\\d{4}-\\d{1,2}-\\d{1,2}";
   /**
+   * 日期格式：yyyy-MM-dd HH:mm:ss
+   */
+  public static final String DATE_yMdHms = "^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}";
+  /**
+   * 日期格式：yyyy-MM-ddTHH:mm:ssZ
+   */
+  public static final String DATE_UTC = "^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{1,2}:\\d{1,2}Z";
+  /**
    * IPv4
    */
   public static final String IPV4 = "((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}";
+
+  /**
+   * 密码，必须包含大小写字母和数字的组合
+   *
+   * @param strong 是否可以使用特殊字符
+   * @return 返回正则表达式
+   */
+  public static String password(boolean strong) {
+    return password(16, 32, strong);
+  }
 
   /**
    * 密码，必须包含大小写字母和数字的组合

@@ -36,7 +36,11 @@ public class TarUtils {
    */
   public static File tarGzip(File src, File dest) {
     final File tar = tar(src, CompressUtils.getFilename(src, ".tar"));
-    return CompressUtils.gzip(tar, dest);
+    try {
+      return CompressUtils.gzip(tar, dest);
+    } finally {
+      tar.delete();
+    }
   }
 
 

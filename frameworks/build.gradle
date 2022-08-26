@@ -16,4 +16,8 @@ dependencies {
   api 'org.apache.commons:commons-email:1.5'
   // jcifs: windows 文件分享
   api 'org.codelibs:jcifs:2.1.31'
+
+  annotationProcessor 'org.projectlombok:lombok:1.18.22'
+  implementation 'org.projectlombok:lombok:1.18.22'
+  //testImplementation 'org.projectlombok:lombok:1.18.22'
 }

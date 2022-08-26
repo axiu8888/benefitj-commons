@@ -1,6 +1,8 @@
 package com.benefitj.network;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.benefitj.core.*;
 import com.benefitj.core.file.IWriter;
 import com.benefitj.http.*;
@@ -270,6 +272,16 @@ public class ApiBuilderTest extends TestCase {
     } else {
       log.info("error: " + response.message());
     }
+  }
+
+
+  @Test
+  public void test() {
+    JSONArray array = JSON.parseArray("[{\"name\":\"湖南省\",\"code\":\"430000\"},{\"name\":\"长沙市\",\"code\":430100,\"lon\":\"112.94547319535288\",\"lat\":\"28.23488939994364\"}]");
+    JSONObject province = array.getJSONObject(0);
+    System.err.println("==>: " + province.containsValue("湖南省"));
+    System.err.println(province.keySet());
+    System.err.println(province.values());
   }
 
   public void tearDown() throws Exception {

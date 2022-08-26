@@ -17,17 +17,6 @@ public interface DeviceManager<Id, T extends Device<Id>> {
   Map<Id, T> getDevices();
 
   /**
-   * 保存设备
-   *
-   * @param id     设备ID
-   * @param device 设备
-   */
-  default void put(Id id, T device) {
-    T oldDevice = getDevices().put(id, device);
-    getDeviceListener().onAddition(id, device, oldDevice);
-  }
-
-  /**
    * 获取设备
    *
    * @param id 设备ID
@@ -72,12 +61,11 @@ public interface DeviceManager<Id, T extends Device<Id>> {
   default T computeIfAbsent(Id id, Map<String, Object> attrs) {
     T device = get(id);
     if (device == null) {
-      synchronized (this) {
-        if ((device = get(id)) == null) {
-          device = create(id, attrs);
-          put(id, device);
-        }
-      }
+      device = getDevices().computeIfAbsent(id, key -> {
+        T newDevice = create(key, attrs);
+        getDeviceListener().onAddition(id, newDevice);
+        return newDevice;
+      });
     }
     return device;
   }

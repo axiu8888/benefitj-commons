@@ -1,6 +1,6 @@
 package com.benefitj.device;
 
-import javax.annotation.Nullable;
+import com.benefitj.core.ProxyUtils;
 
 /**
  * 设备监听
@@ -12,11 +12,10 @@ public interface DeviceListener<Id, T> {
   /**
    * 被添加
    *
-   * @param id        设备ID
-   * @param newDevice 新的设备
-   * @param oldDevice 旧的设备
+   * @param id     设备ID
+   * @param device 新的设备
    */
-  default void onAddition(Id id, T newDevice, @Nullable T oldDevice) {
+  default void onAddition(Id id, T device) {
     // ~
   }
 
@@ -28,6 +27,14 @@ public interface DeviceListener<Id, T> {
    */
   default void onRemoval(Id id, T device) {
     // ~
+  }
+
+
+  /**
+   * 创建代理监听
+   */
+  static <Id, T> DeviceListener<Id, T> newProxyListener() {
+    return ProxyUtils.newMapProxy(DeviceListener.class);
   }
 
 }
