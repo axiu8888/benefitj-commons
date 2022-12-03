@@ -65,17 +65,4 @@ public class JcifsTest extends BaseTest {
 
   }
 
-  static JsmbFileInfo of(JsmbFile f) {
-    return JsmbFileInfo.builder()
-        .name(f.getName())
-        .path(f.getPath())
-        .parent(f.getParent())
-        .share(f.getShare())
-        .relativePath(f.getRelativePath())
-        .length(f.length())
-        .createTime(f.createTime())
-        .isFile(f.isFile())
-        .build();
-  }
-
 }

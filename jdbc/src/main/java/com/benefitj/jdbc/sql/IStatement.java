@@ -1,6 +1,6 @@
 package com.benefitj.jdbc.sql;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.core.functions.IFunction;
 import com.benefitj.core.functions.IRunnable;
 import org.apache.commons.lang3.StringUtils;

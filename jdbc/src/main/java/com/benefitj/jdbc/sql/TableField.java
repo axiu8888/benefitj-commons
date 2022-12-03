@@ -1,6 +1,6 @@
 package com.benefitj.jdbc.sql;
 
-import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.fastjson2.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

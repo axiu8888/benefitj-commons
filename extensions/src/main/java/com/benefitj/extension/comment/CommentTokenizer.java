@@ -1,4 +1,4 @@
-package com.hsrg.extension.comment;
+package com.benefitj.extension.comment;
 
 import com.benefitj.core.IOUtils;
 import org.apache.commons.lang3.StringUtils;

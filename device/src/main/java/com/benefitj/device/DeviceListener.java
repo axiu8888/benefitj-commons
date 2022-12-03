@@ -33,8 +33,15 @@ public interface DeviceListener<Id, T> {
   /**
    * 创建代理监听
    */
-  static <Id, T> DeviceListener<Id, T> newProxyListener() {
+  static <Id, T> DeviceListener<Id, T> newMapListener() {
     return ProxyUtils.newMapProxy(DeviceListener.class);
+  }
+
+  /**
+   * 创建代理监听
+   */
+  static <Id, T> DeviceListener<Id, T> newListListener() {
+    return ProxyUtils.newCopyListProxy(DeviceListener.class);
   }
 
 }

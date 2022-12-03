@@ -1,3 +1,6 @@
+
+apply from: "${getRootDir()}/buildSystem/base.gradle"
+
 description = "扩展功能"
 
 // 上传到nexus/maven仓库

@@ -1,4 +1,4 @@
-package com.hsrg.extension.comment;
+package com.benefitj.extension.comment;
 
 public enum Quote {
 

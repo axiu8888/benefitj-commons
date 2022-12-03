@@ -8,10 +8,7 @@ import com.benefitj.core.file.IWriter;
 import com.benefitj.http.*;
 import io.reactivex.Observable;
 import junit.framework.TestCase;
-import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
-import okhttp3.WebSocket;
-import okhttp3.WebSocketListener;
+import okhttp3.*;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.ByteString;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ApiBuilderTest extends TestCase {
 
@@ -122,8 +120,7 @@ public class ApiBuilderTest extends TestCase {
   @Test
   public void testDownloadFile() {
     long start = DUtils.now();
-    HttpHelper http = new HttpHelper();
-    okhttp3.Response response = http.get("https://downloads.gradle-dn.com/distributions/gradle-7.3.2-all.zip");
+    okhttp3.Response response = HttpHelper.get().get("https://downloads.gradle-dn.com/distributions/gradle-7.3.2-all.zip");
     final AtomicInteger index = new AtomicInteger();
     BodyUtils.progressResponseBody(response.body()
         , IOUtils.createFile("D:/opt/tmp/gradle-7.3.2-all.zip")
@@ -138,6 +135,46 @@ public class ApiBuilderTest extends TestCase {
           }
         });
     log.info("耗时: {}", DUtils.diffNow(start));
+  }
+
+  @Test
+  public void testDownloadFile2() {
+    long start = DUtils.now();
+    String url = "https://dl-tc.coolapkmarket.com/down/apk_file/2022/1104/Coolapk-12.5.2-2211031-coolapk-app-sign.apk?t=1677423508&sign=135b70037c588e76c96bb633a2bffffd";
+//    String url = "http://192.168.19.129/api/athenapdf/create?filename=&force&encodeType=&url=https://www.cnblogs.com/felixzh/p/5869212.html";
+//    String url = "http://192.168.19.129/api/athenapdf/create?filename=&force&encodeType=&url=https://xilidou.com/2022/05/09/sre6/";
+    HttpHelper.get().download(url, new File("D:/tmp/"), null, false, new FileProgressListener() {
+      @Override
+      public void onStart(Call call) {
+        log.info("开始下载...");
+      }
+
+      @Override
+      public void onProgressChange(long totalLength, long progress, boolean done) {
+        log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
+            , totalLength
+            , progress
+            , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
+            , done
+        );
+      }
+
+      @Override
+      public void onSuccess(Call call, @NotNull okhttp3.Response response, @Nullable File file) {
+        log.error("下载成功：{}, {}", file.getName(), DUtils.fmtMB(file.length(), "0.00MB"));
+        log.error("headers: {}", response.headers().toMultimap());
+      }
+
+      @Override
+      public void onFailure(Call call, @NotNull Exception e, @Nullable File file) {
+        log.error("下载失败", e);
+      }
+
+      @Override
+      public void onFinish(Call call) {
+        log.info("耗时: {}", TimeUtils.diffNow(start));
+      }
+    });
   }
 
   @Test
@@ -232,10 +269,58 @@ public class ApiBuilderTest extends TestCase {
   @Test
   public void testAppUpgrade() throws IOException {
 //    okhttp3.Response response = HttpHelper.get().get("http://192.168.1.47/api/app/version?appType=5");
-    okhttp3.Response response = HttpHelper.get().get("http://192.168.1.47/api/app/version?appType=2");
+    okhttp3.Response response = HttpHelper.get().get("http://free.sensecho.com/api/app/version?appType=8");
+//    okhttp3.Response response = HttpHelper.get().get("http://192.168.1.47/api/app/download?id=");
     if (response.isSuccessful()) {
       log.info("headers ==>: \n{}", response.headers());
-      log.info(" ==>: {}", response.body().string());
+      String body = response.body().string();
+      log.info(" ==>: {}", body);
+      JSONObject json = JSON.parseObject(body);
+      JSONObject data = json.getJSONObject("data");
+      String zid = data.getString("zid");
+      String apkName = data.getString("downloadAppame");
+      /*String version = data.getString("version");
+      String updateDesc = data.getString("updateDesc");
+      Integer versionCode = data.getInteger("versionCode");*/
+      HttpHelper.get().download("http://free.sensecho.com/api/app/download?id=" + zid
+          , new File("D:/home/tmp/")
+          , apkName
+          , false
+          , new FileProgressListener() {
+
+            final AtomicInteger index = new AtomicInteger();
+            final AtomicLong start = new AtomicLong();
+
+            @Override
+            public void onStart(Call call) {
+              log.info("开始下载：{}", apkName);
+              start.set(System.currentTimeMillis());
+            }
+
+            @Override
+            public void onProgressChange(long totalLength, long progress, boolean done) {
+              if (index.incrementAndGet() % 150 == 0 || done) {
+                log.info("下载中：{}, {}, {}%, {} ...", apkName, totalLength, DUtils.fmt((progress * 100.0) / totalLength, "0.00"), done);
+              }
+            }
+
+            @Override
+            public void onSuccess(Call call, @NotNull okhttp3.Response response, @Nullable File file) {
+              log.info("下载成功：{}, {}", apkName, DUtils.fmt(DUtils.ofMB(file.length()), "0.00MB"));
+            }
+
+            @Override
+            public void onFailure(Call call, @NotNull Exception e, @Nullable File file) {
+              log.info("下载失败：{}, {}", apkName, e.getMessage());
+            }
+
+            @Override
+            public void onFinish(Call call) {
+              log.info("结束，耗时：{}", TimeUtils.diffNow(start.get()));
+            }
+          });
+
+
 //      String filename = BodyUtils.getFilename(response);
 //      log.info("filename: {}", filename);
 //      filename = filename.endsWith(".apk") ? filename : filename + ".apk";

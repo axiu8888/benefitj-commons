@@ -1,4 +1,4 @@
-package com.hsrg.extension.comment;
+package com.benefitj.extension.comment;
 
 /**
  * 注释类型

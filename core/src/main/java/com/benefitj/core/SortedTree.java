@@ -1,6 +1,6 @@
 package com.benefitj.core;
 
-import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.fastjson2.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.*;

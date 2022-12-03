@@ -25,4 +25,11 @@ public class HexUtilsTest extends BaseTest {
     logger.info("字节数组转换为二进制字符串: {}", HexUtils.bytesToBinary(leBytes));
   }
 
+  @Test
+  public void testReverse() {
+    byte[] bytes = HexUtils.longToBytes(102422230010242223L);
+    System.err.println("bytes: " + HexUtils.bytesToHex(bytes));
+    System.err.println("bytes.reverse: " + HexUtils.bytesToHex(HexUtils.reverse(bytes)));
+  }
+
 }

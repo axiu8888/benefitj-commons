@@ -10,6 +10,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -647,6 +649,79 @@ public class IOUtils {
   }
 
   /**
+   * 读取文件
+   *
+   * @param input    输入
+   * @param consumer 处理
+   */
+  public static void readFileBytes(File input,
+                                   int size,
+                                   BiConsumer<byte[], Integer> consumer) {
+    readFileBytes(input, size, (buf, len) -> true, consumer, (buf, len) -> false);
+  }
+
+  /**
+   * 读取文件
+   *
+   * @param input     输入
+   * @param filter    过滤规则
+   * @param consumer  处理
+   * @param intercept 拦截
+   */
+  public static void readFileBytes(File input,
+                                   int size,
+                                   BiPredicate<byte[], Integer> filter,
+                                   BiConsumer<byte[], Integer> consumer,
+                                   BiPredicate<byte[], Integer> intercept) {
+    try (final FileInputStream fis = newFIS(input)) {
+      readBytes(fis, size, filter, consumer, intercept);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 读取数据
+   *
+   * @param input    输入
+   * @param consumer 处理
+   */
+  public static void readBytes(InputStream input,
+                               int size,
+                               BiConsumer<byte[], Integer> consumer) {
+    readBytes(input, size, (buf, len) -> true, consumer, (buf, len) -> false);
+  }
+
+  /**
+   * 读取数据
+   *
+   * @param input     输入
+   * @param filter    过滤规则
+   * @param consumer  处理
+   * @param intercept 拦截
+   */
+  public static void readBytes(InputStream input,
+                               int size,
+                               BiPredicate<byte[], Integer> filter,
+                               BiConsumer<byte[], Integer> consumer,
+                               BiPredicate<byte[], Integer> intercept) {
+    try {
+      byte[] buf = new byte[size];
+      int len;
+      while ((len = input.read(buf)) > 0) {
+        if (filter.test(buf, len)) {
+          consumer.accept(buf, len);
+        }
+        if (intercept.test(buf, len)) {
+          return;
+        }
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
    * 写入数据
    *
    * @param is   输入流
@@ -719,10 +794,10 @@ public class IOUtils {
   /**
    * 写入数据
    *
-   * @param src   文件
-   * @param buf   数据
-   * @param start 开始的位置
-   * @param len   长度
+   * @param src    文件
+   * @param buf    数据
+   * @param start  开始的位置
+   * @param len    长度
    * @param append 是否追加
    */
   public static void write(File src, byte[] buf, int start, int len, boolean append) {
@@ -1035,6 +1110,17 @@ public class IOUtils {
   /**
    * 处理文件
    *
+   * @param file    文件数据
+   * @param consumer 处理者
+   * @param listener 进度监听
+   */
+  public static void process(File file, ProgressConsumer consumer, ProgressListener listener) {
+    process(new File[]{file}, consumer, listener);
+  }
+
+  /**
+   * 处理文件
+   *
    * @param files    文件数据
    * @param consumer 处理者
    * @param listener 进度监听
@@ -1045,19 +1131,19 @@ public class IOUtils {
       long totalLength = length(files);
       // 进度
       long totalProgress = 0;
-      for (File file : files) {
-        try (final FileInputStream fis = new FileInputStream(file);) {
+      for (File f : files) {
+        try (final FileInputStream fis = new FileInputStream(f);) {
           // 新文件
-          listener.onProgressRefresh(totalLength, totalProgress, file, 0);
+          listener.onProgressRefresh(f, totalLength, totalProgress, 0);
           int len;
-          byte[] buf = new byte[1024 << 8];
+          byte[] buf = new byte[1024 << 4];
           long progress = 0;
           while ((len = fis.read(buf)) > 0) {
             progress += len;
             totalProgress += len;
-            consumer.accept(file, buf, len);
+            consumer.accept(f, buf, len);
             // 每次写入后刷新
-            listener.onProgressRefresh(totalLength, totalProgress, file, progress);
+            listener.onProgressRefresh(f, totalLength, totalProgress, progress);
           }
         }
       }
@@ -1090,12 +1176,12 @@ public class IOUtils {
     /**
      * 刷新
      *
+     * @param source        文件
      * @param totalLength   总长度
      * @param totalProgress 总进度
-     * @param source        文件
      * @param progress      进度
      */
-    void onProgressRefresh(long totalLength, long totalProgress, File source, long progress);
+    void onProgressRefresh(File source, long totalLength, long totalProgress, long progress);
 
   }
 

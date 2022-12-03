@@ -1,9 +1,10 @@
-jar {
-  archivesBaseName = "benefitj-commons"
-}
+
+apply from: "${getRootDir()}/buildSystem/base.gradle"
+
+archivesBaseName = "benefitj-commons"
 
 // 打包到一个项目
-ext.allInOne = false
+ext.allInOne = true
 // 上传到nexus/maven仓库
 ext.upload = true
 
@@ -11,16 +12,18 @@ dependencies {
   // compileOnly、implementation、api
 
   def deps = [
-      ":core",
-      ":eventbus",
-      ":frameworks",
-      ":device",
-      ":netty",
-      ":mqtt",
-      ":javastruct",
-      ":interpolator",
-      ":pipeline",
       ":consistent-hash",
+      ":core",
+      ":device",
+      ":eventbus",
+      ":extensions",
+      ":frameworks",
+      ":http",
+      ":interpolator",
+      ":javastruct",
+      ":mqtt",
+      ":netty",
+      ":pipeline",
   ]
   if (allInOne) {
     deps.forEach{compileOnly(project(it)) }
@@ -28,6 +31,3 @@ dependencies {
     deps.forEach{api(project(it)) }
   }
 }
-
-
-

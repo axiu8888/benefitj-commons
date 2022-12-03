@@ -513,7 +513,9 @@ public class PahoMqttClient implements IPahoMqttClient {
       if (callback != null) {
         callback.connectionLost(cause);
       } else {
-        cause.printStackTrace();
+        if (cause != null) {
+          cause.printStackTrace();
+        }
       }
     }
 

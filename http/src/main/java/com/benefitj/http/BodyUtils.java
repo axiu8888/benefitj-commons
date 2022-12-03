@@ -249,6 +249,7 @@ public class BodyUtils {
     String header = getHeader(headers, name);
     if (StringUtils.isNotBlank(header)) {
       return Stream.of(header.split(";"))
+          .map(String::trim)
           .filter(v -> v.startsWith(subName))
           .map(v -> v.replaceFirst((v.startsWith(subName + "=") ? subName : "") + "=", ""))
           .findFirst()

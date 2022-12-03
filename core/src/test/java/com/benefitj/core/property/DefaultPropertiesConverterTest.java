@@ -12,7 +12,7 @@ public class DefaultPropertiesConverterTest extends BaseTest {
 
   @Test
   public void testConvert() {
-    String filename = "abb_application-dev.properties";
+    String filename = "application-dev.properties";
     File dest = new File(SystemProperty.getJavaIOTmpDir(), filename);
     try {
       ClasspathUtils.copy(filename, dest.getAbsolutePath());
@@ -20,8 +20,8 @@ public class DefaultPropertiesConverterTest extends BaseTest {
 //      converter.getAll().forEach((key, value)
 //          -> System.err.println(key + " ==>: " + value));
 
-      System.err.println("bv ==>: " + converter.getBoolean("com.hsrg.influxdb.gzip"));
-      System.err.println("bv ==>: " + converter.getValue("com.hsrg.influxdb.gzip").getClass());
+      System.err.println("bv ==>: " + converter.getBoolean("spring.influxdb.gzip"));
+      System.err.println("bv ==>: " + converter.getValue("spring.influxdb.gzip").getClass());
 
     } finally {
       IOUtils.deleteFile(dest);

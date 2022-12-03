@@ -266,7 +266,7 @@ public class HexUtils {
    * @param len    长度
    * @return 返回整数值
    */
-  public int bytesToInt(byte[] bytes, int offset, int len) {
+  public static int bytesToInt(byte[] bytes, int offset, int len) {
     return getHelper().bytesToInt(bytes, offset, len);
   }
 
@@ -539,6 +539,27 @@ public class HexUtils {
    */
   public static byte[] hexToBytes(String hex, byte[] defaultValue) {
     return getHelper().hexToBytes(hex, defaultValue);
+  }
+
+  /**
+   * 16进制字符串转换成整数值
+   *
+   * @param hex 16进制
+   * @return 返回转换后的数据
+   */
+  public int hexToInt(String hex) {
+    return getHelper().hexToInt(hex);
+  }
+
+  /**
+   * 16进制字符串转换成整数值
+   *
+   * @param hex       16进制
+   * @param bigEndian 是否为大端字节顺序
+   * @return 返回转换后的数据
+   */
+  public int hexToInt(String hex, boolean bigEndian) {
+    return getHelper().hexToInt(hex, bigEndian);
   }
 
   /**

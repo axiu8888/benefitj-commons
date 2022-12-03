@@ -1,9 +1,11 @@
-package com.hsrg.extension.comment;
+package com.benefitj.extension.comment;
 
 
 import com.alibaba.fastjson.JSON;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.SystemProperty;
+import com.benefitj.extension.comment.Comment;
+import com.benefitj.extension.comment.CommentTokenizer;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -16,7 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Predicate;
 
 public class CommentTokenizerTest {
 
@@ -30,7 +31,7 @@ public class CommentTokenizerTest {
 
   @Test
   public void testGetJavaCode() {
-    File src = new File("D:\\code\\mine\\java\\benefitj-commons\\extensions\\src\\main\\java\\com\\hsrg\\extension\\comment\\CommentTokenizer.java");
+    File src = new File("D:\\code\\mine\\java\\benefitj-commons\\extensions\\src\\main\\java\\com\\benefitj\\extension\\comment\\CommentTokenizer.java");
     CommentTokenizer tokenizer = new CommentTokenizer();
     char[] chars = IOUtils.readFileAsString(src).toCharArray();
     List<Comment> comments = tokenizer.parseJavaComments(chars);
@@ -59,7 +60,7 @@ public class CommentTokenizerTest {
 
   @Test
   public void testCountCodeLine() {
-    File src = new File("D:\\code\\company\\Android\\syzy\\app\\src\\main\\java");
+    File src = new File("D:\\code\\mine\\java\\benefitj-commons\\http\\src\\main\\java");
     Set<String> set = new HashSet<>(Arrays.asList(
         "D:\\code\\company\\Android\\syzy\\app\\src\\main\\java\\com\\hsrg\\transfer\\ui",
         "D:\\code\\company\\Android\\syzy\\app\\src\\main\\java\\com\\hsrg\\transfer\\model"

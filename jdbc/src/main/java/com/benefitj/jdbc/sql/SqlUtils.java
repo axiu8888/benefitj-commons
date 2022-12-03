@@ -1,6 +1,6 @@
 package com.benefitj.jdbc.sql;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.Slicer;

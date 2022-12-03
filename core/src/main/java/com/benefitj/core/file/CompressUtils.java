@@ -69,7 +69,7 @@ public class CompressUtils {
       try (final FileInputStream fos = new FileInputStream(zipFile);
            final BufferedInputStream bis = new BufferedInputStream(fos);) {
         int len;
-        byte[] buf = new byte[1024 << 8];
+        byte[] buf = new byte[1024 << 4];
         while ((len = bis.read(buf)) > 0) {
           bos.write(buf, 0, len);
           bos.flush();
@@ -102,7 +102,7 @@ public class CompressUtils {
           File file = new File(dest != null ? dest : zip.getParentFile(), entry.getName());
           file.getParentFile().mkdirs();
           file.createNewFile();
-          byte[] buf = new byte[1024 << 8];
+          byte[] buf = new byte[1024 << 4];
           int len;
           try (final FileOutputStream fos = new FileOutputStream(file);) {
             while ((len = input.read(buf)) > 0) {

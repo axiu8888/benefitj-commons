@@ -4,7 +4,11 @@ import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IOUtils;
 import com.sun.nio.file.SensitivityWatchEventModifier;
 
+import java.io.IOException;
 import java.nio.file.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PathWatcher implements Cloneable {
@@ -19,7 +23,7 @@ public class PathWatcher implements Cloneable {
   /**
    * 监听的路径
    */
-  private final Path path;
+  private final List<Path> paths;
   /**
    * 敏感度
    */
@@ -38,12 +42,12 @@ public class PathWatcher implements Cloneable {
    */
   private OnWatchEventListener watchEventListener;
 
-  public PathWatcher(Path path) {
-    this(path, SensitivityWatchEventModifier.MEDIUM);
+  public PathWatcher(Path... paths) {
+    this(Arrays.asList(paths), SensitivityWatchEventModifier.MEDIUM);
   }
 
-  public PathWatcher(Path path, SensitivityWatchEventModifier sensitivity) {
-    this.path = path;
+  public PathWatcher(List<Path> paths, SensitivityWatchEventModifier sensitivity) {
+    this.paths = Collections.unmodifiableList(paths);
     this.sensitivity = sensitivity;
     this.watchService = CatchUtils.tryThrow(() -> FileSystems.getDefault().newWatchService());
   }
@@ -59,20 +63,28 @@ public class PathWatcher implements Cloneable {
     CatchUtils.tryThrow(() -> {
       try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
         // 注册文件 创建、修改 事件的监听
-        getPath().register(watchService, getKinds(), getSensitivity());
-        watching:
-        while (running.get()) {
+        List<Path> paths = getPaths();
+        paths.forEach(path -> {
+          try {
+            path.register(watchService, getKinds(), getSensitivity());
+          } catch (IOException e) {
+            getWatchEventListener().onError(path, e);
+          }
+        });
+        watching: while (running.get()) {
           //返回排队的 key。如果没有排队的密钥可用，则此方法等待。
           WatchKey key = watchService.take();
           try {
             for (WatchEvent<?> watchEvent : key.pollEvents()) {
-              WatchEvent.Kind<?> kind = watchEvent.kind();
-              WatchEvent<Path> watchEventPath = (WatchEvent<Path>) watchEvent;
-              //检索与事件关联的文件名。文件名被存储为事件的上下文
-              getWatchEventListener().onEvent(key, watchEventPath.context(), kind);
+              try {
+                WatchEvent.Kind<?> kind = watchEvent.kind();
+                WatchEvent<Path> watchEventPath = (WatchEvent<Path>) watchEvent;
+                //检索与事件关联的文件名。文件名被存储为事件的上下文
+                getWatchEventListener().onEvent(key, watchEventPath.context(), kind);
+              } catch (Exception e) {
+                getWatchEventListener().onError(((WatchEvent<Path>) watchEvent).context(), e);
+              }
             }
-          } catch (Exception e) {
-            e.printStackTrace();
           } finally {
             // 在处理完事件后，需要通过 reset() 将事件重置 ready 状态。
             // 如果此方法返回false，则该 key 不再有效，循环可以退出。
@@ -96,8 +108,8 @@ public class PathWatcher implements Cloneable {
     return watchService;
   }
 
-  public Path getPath() {
-    return path;
+  public List<Path> getPaths() {
+    return paths;
   }
 
   public SensitivityWatchEventModifier getSensitivity() {
@@ -137,6 +149,17 @@ public class PathWatcher implements Cloneable {
      * @param kind     事件类型
      */
     void onEvent(WatchKey key, Path filename, WatchEvent.Kind<?> kind);
+
+    /**
+     * 出现异常
+     *
+     * @param context 路径
+     * @param e       异常
+     */
+    default void onError(Path context, Exception e) {
+      e.printStackTrace();
+    }
+
   }
 
   /**

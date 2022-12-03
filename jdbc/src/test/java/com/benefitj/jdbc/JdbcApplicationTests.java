@@ -1,23 +1,17 @@
 package com.benefitj.jdbc;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.benefitj.core.IOUtils;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.core.TimeUtils;
 import com.benefitj.jdbc.sql.DatabaseConnector;
 import com.benefitj.jdbc.sql.EnhanceStatement;
-import com.benefitj.jdbc.sql.SqlUtils;
 import com.benefitj.jdbc.sql.TableDDL;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 public class JdbcApplicationTests {
 
@@ -29,14 +23,10 @@ public class JdbcApplicationTests {
       synchronized (this) {
         if ((c = this.connector) == null) {
           this.connector = new DatabaseConnector()
-              .setUrl("jdbc:mysql://192.168.1.203:53306")
+              .setUrl("jdbc:mysql://192.168.19.129:3306")
               .setUser("root")
-              .setPassword("hsrg8888")
-//              .setUrl("jdbc:mysql://192.168.19.129:3306")
-//              .setUser("root")
-//              .setPassword("admin")
+              .setPassword("admin")
               .setDriver("com.mysql.cj.jdbc.Driver")
-              //.setCatalog("hsrg")
               .setAutoCommit(true)
               .setReadOnly(false)
               .setClientProperties(prop -> {
@@ -102,7 +92,7 @@ public class JdbcApplicationTests {
   @Test
   public void testShowColumns() {
     EnhanceStatement stmt = getConnector().createStmt();
-    stmt.use("hsrg");
+    stmt.use("test");
     List<JSONObject> records = stmt.queryList("show columns from `HS_PERSON`");
     System.err.println(records);
     stmt.close();

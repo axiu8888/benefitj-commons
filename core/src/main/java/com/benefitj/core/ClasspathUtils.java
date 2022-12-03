@@ -311,7 +311,7 @@ public class ClasspathUtils {
    * @return 返回读取的长度
    */
   public static long transferTo(InputStream in, OutputStream out, boolean close) {
-    return IOUtils.write(in, out, 1024 << 8, close);
+    return IOUtils.write(in, out, 1024 << 4, close);
   }
 
 

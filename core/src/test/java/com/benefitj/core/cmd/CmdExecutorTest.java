@@ -1,15 +1,20 @@
 package com.benefitj.core.cmd;
 
-import com.benefitj.core.BaseTest;
-import com.benefitj.core.CatchUtils;
-import com.benefitj.core.EventLoop;
-import com.benefitj.core.IOUtils;
+import com.benefitj.core.*;
+import com.benefitj.core.file.PathWatcher;
+import com.benefitj.core.file.slicer.FileListener;
+import com.benefitj.core.functions.IRunnable;
 import org.junit.Test;
 
-import java.io.File;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.StringTokenizer;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * 测试CMD命令调用
@@ -23,41 +28,73 @@ public class CmdExecutorTest extends BaseTest {
   }
 
   @Test
+  public void testProperties() {
+    SystemProperty.getSystemProperties().forEach((key, value) -> System.err.println(key + " ==>: " + value));
+  }
+
+  @Test
+  public void testMonoVersion() {
+    CmdCall call = CmdExecutor.get().call("mono --version");
+    call.print("mono version");
+  }
+
+  @Test
+  public void testMmhgReport() {
+    File dir = new File("D:\\tmp\\jdk-app\\hingmed");
+    CmdCall call = CmdExecutor.get().call("cmd /c commandPrintPdf.exe report.xml report.pdf 127", null, dir);
+    call.print("mmhg report");
+  }
+
+  @Test
   public void testGitPull() {
-//    new GitPull(new File("D:\\code\\github"), 5).pull();
-    new GitPull(new File("D:/code/github/go"), 5).pull();
+//    new GitPull(new File("D:/code/github"), 5).pull();
+//    new GitPull(new File("D:/code/github/java"), 5).pull();
+
+    CountDownLatch latch = new CountDownLatch(2);
+    pull("D:\\code\\github\\frontend", latch);
+    pull("D:\\code\\github\\java\\vertx", latch);
+    CatchUtils.ignore((IRunnable) latch::await);
+  }
+
+  private void pull(String dir, CountDownLatch latch) {
+    EventLoop.io().execute(() -> {
+      new GitPull(new File(dir), 5).pull();
+      latch.countDown();
+    });
   }
 
   @Test
   public void testKeystoreFile() {
-    String keyStorePath = "D:/home/test.jks";
+    String keyStorePath = "D:/tmp/test.jks";
 
-    String strPublicKey = KeystoreUtils.getStrPublicKey(keyStorePath, "test", "123456");
+    String strPublicKey = KeystoreUtils.getStrPublicKey(keyStorePath, "axiu8888", "123456");
     System.out.println("公钥：" + strPublicKey);
 
-    String strPrivateKey = KeystoreUtils.getStrPrivateKey(keyStorePath, "test", "123456", "123456");
+    String strPrivateKey = KeystoreUtils.getStrPrivateKey(keyStorePath, "axiu8888", "123456", "123456");
     System.out.println("私钥：" + strPrivateKey);
   }
 
   @Test
   public void testGenerateKeystore() throws Exception {
+    String name = "axiu8888";
     String cmd = "keytool -genkeypair "
-        + " -alias test"
+        + " -alias " + name
         + " -keypass 123456"
         + " -keyalg RSA"
         + " -keysize 2048"
         + " -validity 365"
         + " -storepass 123456"
-        + " -keystore test.jks";
+        + " -keystore " + name + ".jks";
 
     System.err.println(cmd);
 
+    String dir = "D:/home/https";
     ProcessBuilder builder = new ProcessBuilder()
         .command(cmdarray(cmd))
-        .directory(new File("D:/home/"))
-        .redirectError(ProcessBuilder.Redirect.to(IOUtils.createFile("D:/home/error.txt")))
-        .redirectInput(ProcessBuilder.Redirect.from(IOUtils.createFile("D:/home/in.txt")))
-        .redirectOutput(ProcessBuilder.Redirect.to(IOUtils.createFile("D:/home/out.txt")));
+        .directory(new File(dir))
+        .redirectError(ProcessBuilder.Redirect.to(IOUtils.createFile(dir + "/error.txt")))
+        .redirectInput(ProcessBuilder.Redirect.from(IOUtils.createFile(dir + "/in.txt")))
+        .redirectOutput(ProcessBuilder.Redirect.to(IOUtils.createFile(dir + "/out.txt")));
     Process process = builder.start();
     process.waitFor();
   }
@@ -65,72 +102,127 @@ public class CmdExecutorTest extends BaseTest {
 
   @Test
   public void testGenerateKeystore2() throws Exception {
+    String name = "axiu8888";
     String cmd = "keytool -genkeypair "
-        + " -alias test"
+        + " -alias " + name
         + " -keypass 123456"
         + " -keyalg RSA"
         + " -keysize 2048"
         + " -validity 365"
         + " -storepass 123456"
-        + " -keystore test.jks";
+        + " -keystore " + name + ".jks";
 
     System.err.println(cmd);
 
-    String envdir = "D:/home/";
+    String envdir = "D:/home/https/";
+    File in = IOUtils.createFile(envdir, "out.txt");
+    File out = IOUtils.createFile(envdir, "out.txt");
+    File error = IOUtils.createFile(envdir, "error.txt");
     ProcessBuilder builder = new ProcessBuilder()
         .command(cmdarray(cmd))
         .directory(new File(envdir))
-        //.redirectError(ProcessBuilder.Redirect.to(IOUtils.createFile(envdir, "error.txt")))
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
-        .redirectOutput(ProcessBuilder.Redirect.to(IOUtils.createFile(envdir, "out.txt")))
-        .redirectInput(ProcessBuilder.Redirect.PIPE)
+//        .redirectInput(ProcessBuilder.Redirect.from(in))
+//        .redirectOutput(ProcessBuilder.Redirect.to(out))
+//        .redirectError(ProcessBuilder.Redirect.to(error))
         ;
+
+    String charsetName = SystemProperty.getFileEncoding();
+    // 监听文件
+    PathWatcher watcher = new PathWatcher(Paths.get(envdir))
+        .setWatchEventListener((key, context, kind) -> {
+          File src = context.toFile();
+          String type = src.getName();
+          logger.info("{}  ==>: {}, {}", type, kind.name(), IOUtils.readFileAsString(src, Charset.forName(charsetName)));
+//          switch (context.toFile().getName()) {
+//            case "in.txt":
+//              break;
+//            case "out.txt":
+//              break;
+//            case "error.txt":
+//              break;
+//          }
+        });
+    EventLoop.io().execute(watcher::start);
 
     Process process = builder.start();
 
-    int index = 0;
-    while (process.isAlive() && index < 7) {
-      String message = IOUtils.readFully(process.getErrorStream(), false).toString(StandardCharsets.UTF_8);
-      logger.info("error  ==>:  {}", message);
-      message = IOUtils.readFully(process.getInputStream(), false).toString(StandardCharsets.UTF_8);
-      logger.info("input  ==>:  {}", message);
-
-      int i = index;
-      CatchUtils.ignore(() -> {
-        logger.info("i ==>: {}", i);
+    try(final BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+      int i = 0;
+      for (String str; (str = br.readLine()) != null; i++) {
+        logger.info("i ==>: {}, {}", i, str);
         switch (i) {
           case 0:
-            process.getOutputStream().write("hsrg".getBytes(StandardCharsets.UTF_8));
+            process.getOutputStream().write(name.getBytes(charsetName));
             break;
           case 1:
           case 2:
-            process.getOutputStream().write("Sensecho".getBytes(StandardCharsets.UTF_8));
+            process.getOutputStream().write(name.getBytes(charsetName));
             break;
           case 3:
           case 4:
-            process.getOutputStream().write("BeiJing".getBytes(StandardCharsets.UTF_8));
+            process.getOutputStream().write("BeiJing".getBytes(charsetName));
             break;
           case 5:
-            process.getOutputStream().write("86".getBytes(StandardCharsets.UTF_8));
+            process.getOutputStream().write("86".getBytes(charsetName));
             break;
           case 6:
-            process.getOutputStream().write("Y".getBytes(StandardCharsets.UTF_8));
+            process.getOutputStream().write("Y".getBytes(charsetName));
             break;
           default:
             break;
         }
         process.getOutputStream().flush();
-      });
-      index++;
+      }
     }
-    process.waitFor(1, TimeUnit.SECONDS);
-    process.getOutputStream().write("yes".getBytes("GBK"));
-    process.getOutputStream().flush();
 
-    EventLoop.sleepSecond(1);
-    process.destroyForcibly();
+    //process.waitFor();
 
-    System.exit(0);
+    logger.info("系统编码格式 ==>: {}", SystemProperty.getFileEncoding());
+//
+//
+//    int index = 0;
+//    while (process.isAlive() && index < 7) {
+//      String message = IOUtils.readFully(process.getErrorStream(), false).toString(charsetName);
+//      logger.info("error  ==>:  {}", message);
+//      message = IOUtils.readFully(process.getInputStream(), false).toString(charsetName);
+//      logger.info("input  ==>:  {}", message);
+//
+//      int i = index;
+//      CatchUtils.ignore(() -> {
+//        logger.info("i ==>: {}", i);
+//        switch (i) {
+//          case 0:
+//            process.getOutputStream().write(name.getBytes(charsetName));
+//            break;
+//          case 1:
+//          case 2:
+//            process.getOutputStream().write(name.getBytes(charsetName));
+//            break;
+//          case 3:
+//          case 4:
+//            process.getOutputStream().write("BeiJing".getBytes(charsetName));
+//            break;
+//          case 5:
+//            process.getOutputStream().write("86".getBytes(charsetName));
+//            break;
+//          case 6:
+//            process.getOutputStream().write("Y".getBytes(charsetName));
+//            break;
+//          default:
+//            break;
+//        }
+//        process.getOutputStream().flush();
+//      });
+//      index++;
+//    }
+//    process.waitFor(1, TimeUnit.SECONDS);
+//    process.getOutputStream().write("yes".getBytes("GBK"));
+//    process.getOutputStream().flush();
+//
+//    EventLoop.sleepSecond(1);
+//    process.destroyForcibly();
+//
+//    System.exit(0);
 
   }
 

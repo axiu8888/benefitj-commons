@@ -16,6 +16,38 @@ public class TimeUtils {
   public static final long HOUR = 60 * MINUTE;
   public static final long DAY = 24 * HOUR;
 
+  public enum Week {
+    Sunday(0, "星期天", 1),
+    Monday(1, "星期一", 2),
+    Tuesday(2, "星期二", 3),
+    Wednesday(3, "星期三", 4),
+    Thursday(4, "星期四", 5),
+    Friday(5, "星期五", 6),
+    Saturday(6, "星期六", 7) ;
+
+    private final int index;
+    private final String name;
+    private final int value;
+
+    Week(int index, String name, int value) {
+      this.index = index;
+      this.name = name;
+      this.value = value;
+    }
+
+    public int getIndex() {
+      return index;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public int getValue() {
+      return value;
+    }
+  }
+
   /**
    * 获取秒(毫秒)
    *
@@ -178,6 +210,53 @@ public class TimeUtils {
    */
   public static long getAfter(long delta, TimeUnit unit) {
     return now() + unit.toMillis(delta);
+  }
+
+  /**
+   * 获得该月第一天
+   *
+   * @param year 年
+   * @param month 月
+   * @return 返回第一天的时间
+   */
+  public static Date getFirstDayOfMonth(int year, int month) {
+    Calendar c = Calendar.getInstance();
+    c.set(Calendar.YEAR, year);
+    c.set(Calendar.MONTH, month - 1);
+    c.set(Calendar.DAY_OF_MONTH, c.getActualMinimum(Calendar.DAY_OF_MONTH));
+    return c.getTime();
+  }
+
+  /**
+   * 获得该月最后一天
+   *
+   * @param year 年
+   * @param month 月
+   * @return 返回最后一天的时间
+   */
+  public static Date getLastDayOfMonth(int year, int month) {
+    Calendar c = Calendar.getInstance();
+    c.set(Calendar.YEAR,year);
+    c.set(Calendar.MONTH, month-1);
+    c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+    return c.getTime();
+  }
+
+  /**
+   * 获取周类型
+   *
+   * @param time 时间戳
+   * @return 返回周类型
+   */
+  public static Week getWeek(long time) {
+    Calendar c = newCalendar(time);
+    int value = c.get(Calendar.DAY_OF_WEEK);
+    for (Week v : Week.values()) {
+      if (v.getValue() == value) {
+        return v;
+      }
+    }
+    return null;
   }
 
   /**
@@ -358,6 +437,7 @@ public class TimeUtils {
    * @return 返回年龄
    */
   public static int getAge(Date birthday) {
+    if (birthday == null) return 0;
     Calendar cal = Calendar.getInstance();
     if (cal.before(birthday)) {
       // 出生日期晚于当前时间，无法计算

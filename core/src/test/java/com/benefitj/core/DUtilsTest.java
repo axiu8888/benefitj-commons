@@ -30,5 +30,24 @@ public class DUtilsTest extends BaseTest {
 
   }
 
+  @Test
+  public void test() {
+    new A();
+  }
+
+  public static class A {
+
+    A() {
+      System.err.println("A");
+    }
+
+    {
+      init();
+    }
+
+    public void init() {
+      System.err.println("init");
+    }
+  }
 
 }

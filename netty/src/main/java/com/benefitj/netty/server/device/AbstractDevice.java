@@ -113,7 +113,6 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    * 设置设备的远程地址
    *
    * @param remoteAddr 远程地址
-   * @return 返回设备对象
    */
   @Override
   public void setRemoteAddress(InetSocketAddress remoteAddr) {

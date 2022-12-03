@@ -25,7 +25,6 @@ public interface NettyDevice extends Device<String> {
    * 设置设备的本地地址
    *
    * @param localAddr 本地地址
-   * @return 返回设备对象
    */
   void setLocalAddress(InetSocketAddress localAddr);
 
@@ -43,8 +42,6 @@ public interface NettyDevice extends Device<String> {
 
   /**
    * 设置当前时间为最新的接收数据包的时间
-   *
-   * @return 返回设备对象
    */
   void setActiveTimeNow();
 

@@ -1,3 +1,6 @@
+
+apply from: "${getRootDir()}/buildSystem/base.gradle"
+
 description = "EventBus"
 
 // 上传到nexus/maven仓库

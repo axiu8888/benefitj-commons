@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * An NIO datagram {@link Channel} that sends and receives an
- * {@link AddressedEnvelope AddressedEnvelope<ByteBuf, SocketAddress>}.
+ * {@link AddressedEnvelope }.
  *
  * @see AddressedEnvelope
  * @see DatagramPacket
