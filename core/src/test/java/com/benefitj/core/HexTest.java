@@ -1,10 +1,24 @@
 package com.benefitj.core;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import lombok.Data;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 public class HexTest extends BaseTest {
+
+
+  @Test
+  public void test1() {
+    int[] array = new int[1000];
+    for (int i = 0; i < array.length; i++) {
+      array[i] = i;
+    }
+    System.arraycopy(array, 200, array, 0, array.length - 200);
+    Arrays.fill(array, array.length - 200, array.length, 0);
+    System.err.println(Arrays.toString(array));
+  }
 
   @Test
   public void testParse() {

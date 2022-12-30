@@ -1,5 +1,6 @@
 package com.benefitj.core.cmd;
 
+import javax.annotation.Nullable;
 import java.io.File;
 
 /**
@@ -120,8 +121,8 @@ public class CmdCall {
    *
    * @param tag 标记
    */
-  public void print(String tag) {
-    print(this, tag);
+  public void print(String tag, @Nullable File dir) {
+    print(this, tag, dir);
   }
 
   /**
@@ -130,7 +131,7 @@ public class CmdCall {
    * @param call 调用对象
    * @param tag  标记
    */
-  public static void print(CmdCall call, String tag) {
+  public static void print(CmdCall call, String tag, File dir) {
     System.err.println("\n----------------- cmd[" + tag + "] -----------------");
     System.err.println("successful: " + call.isSuccessful());
     if (call.getMessage().endsWith("\n")) {
@@ -143,6 +144,9 @@ public class CmdCall {
     System.err.println("error: " + call.getError());
     System.err.println("cmd: " + call.getCmd());
     System.err.println("exitCode: " + call.getCode());
+    if (dir != null) {
+      System.err.println("dir: " + dir.getAbsolutePath());
+    }
     System.err.println("----------------- cmd[" + tag + "] -----------------\n");
   }
 }

@@ -2,19 +2,16 @@ package com.benefitj.core.cmd;
 
 import com.benefitj.core.*;
 import com.benefitj.core.file.PathWatcher;
-import com.benefitj.core.file.slicer.FileListener;
 import com.benefitj.core.functions.IRunnable;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * 测试CMD命令调用
@@ -24,7 +21,7 @@ public class CmdExecutorTest extends BaseTest {
   @Test
   public void testJavaVersion() {
     CmdCall call = CmdExecutor.get().call("java --version");
-    call.print("java version");
+    call.print("java version", null);
   }
 
   @Test
@@ -35,14 +32,14 @@ public class CmdExecutorTest extends BaseTest {
   @Test
   public void testMonoVersion() {
     CmdCall call = CmdExecutor.get().call("mono --version");
-    call.print("mono version");
+    call.print("mono version", null);
   }
 
   @Test
   public void testMmhgReport() {
     File dir = new File("D:\\tmp\\jdk-app\\hingmed");
     CmdCall call = CmdExecutor.get().call("cmd /c commandPrintPdf.exe report.xml report.pdf 127", null, dir);
-    call.print("mmhg report");
+    call.print("mmhg report", null);
   }
 
   @Test
@@ -51,7 +48,7 @@ public class CmdExecutorTest extends BaseTest {
 //    new GitPull(new File("D:/code/github/java"), 5).pull();
 
     CountDownLatch latch = new CountDownLatch(2);
-    pull("D:\\code\\github\\frontend", latch);
+    //pull("D:\\code\\github\\frontend", latch);
     pull("D:\\code\\github\\java\\vertx", latch);
     CatchUtils.ignore((IRunnable) latch::await);
   }
