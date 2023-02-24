@@ -1,6 +1,6 @@
 package com.benefitj.javastruct;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.benefitj.core.BinaryHelper;
 import com.benefitj.core.ClasspathUtils;
 import com.benefitj.core.HexUtils;

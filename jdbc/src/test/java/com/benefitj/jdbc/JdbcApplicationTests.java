@@ -23,7 +23,7 @@ public class JdbcApplicationTests {
       synchronized (this) {
         if ((c = this.connector) == null) {
           this.connector = new DatabaseConnector()
-              .setUrl("jdbc:mysql://192.168.19.129:3306")
+              .setUrl("jdbc:mysql://192.168.67.130:3306")
               .setUser("root")
               .setPassword("admin")
               .setDriver("com.mysql.cj.jdbc.Driver")

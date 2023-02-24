@@ -1,8 +1,8 @@
 package com.benefitj.network;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.core.*;
 import com.benefitj.core.file.IWriter;
 import com.benefitj.http.*;
@@ -141,8 +141,8 @@ public class ApiBuilderTest extends TestCase {
   public void testDownloadFile2() {
     long start = DUtils.now();
     String url = "https://dl-tc.coolapkmarket.com/down/apk_file/2022/1104/Coolapk-12.5.2-2211031-coolapk-app-sign.apk?t=1677423508&sign=135b70037c588e76c96bb633a2bffffd";
-//    String url = "http://192.168.19.129/api/athenapdf/create?filename=&force&encodeType=&url=https://www.cnblogs.com/felixzh/p/5869212.html";
-//    String url = "http://192.168.19.129/api/athenapdf/create?filename=&force&encodeType=&url=https://xilidou.com/2022/05/09/sre6/";
+//    String url = "http://192.168.67.130/api/athenapdf/create?filename=&force&encodeType=&url=https://www.cnblogs.com/felixzh/p/5869212.html";
+//    String url = "http://192.168.67.130/api/athenapdf/create?filename=&force&encodeType=&url=https://xilidou.com/2022/05/09/sre6/";
     HttpHelper.get().download(url, new File("D:/tmp/"), null, false, new FileProgressListener() {
       @Override
       public void onStart(Call call) {

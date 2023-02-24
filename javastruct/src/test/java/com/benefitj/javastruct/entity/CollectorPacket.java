@@ -1,6 +1,6 @@
 package com.benefitj.javastruct.entity;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.benefitj.core.HexUtils;
 import com.benefitj.javastruct.JavaStructClass;
 import com.benefitj.javastruct.JavaStructField;
