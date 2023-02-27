@@ -29,11 +29,14 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
    * OkHttp客户端
    */
   private OkHttpClient okHttpClient;
-
   /**
    * 网络请求拦截器
    */
   private final List<Interceptor> networkInterceptors = new LinkedList<>();
+  /**
+   * 请求拦截器
+   */
+  private final List<Interceptor> interceptors = new LinkedList<>();
   /**
    * 转换器工厂
    */
@@ -43,9 +46,17 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
    */
   private final LinkedHashMap<Class<? extends CallAdapter.Factory>, CallAdapter.Factory> callAdapterFactories = new LinkedHashMap<>();
   /**
+   * Gzip请求
+   */
+  private Interceptor gzipInterceptor = new GzipRequestInterceptor();
+  /**
    * HTTP日志
    */
   private final HttpLogging httpLogging = new HttpLogging().setLevel(HttpLoggingInterceptor.Level.NONE);
+  /**
+   * 是否支持GZIP
+   */
+  private boolean gzipEnable = false;
 
   private boolean useDefault = true;
 
@@ -111,7 +122,39 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
   }
 
   @Override
-  public ApiBuilder<T> setLogLevel(HttpLoggingInterceptor.Level level) {
+  public List<Interceptor> getInterceptors() {
+    return interceptors;
+  }
+
+  @Override
+  public ApiBuilderImpl<T> addInterceptors(Interceptor... interceptor) {
+    this.interceptors.addAll(Arrays.asList(interceptor));
+    return this;
+  }
+
+  @Override
+  public Interceptor getGzipInterceptor() {
+    return gzipInterceptor;
+  }
+
+  @Override
+  public ApiBuilderImpl<T> setGzipInterceptor(Interceptor gzipInterceptor) {
+    this.gzipInterceptor = gzipInterceptor;
+    return this;
+  }
+  @Override
+  public boolean isGzipEnable() {
+    return this.gzipEnable;
+  }
+
+  @Override
+  public ApiBuilderImpl<T> setGzipEnable(boolean gzipEnable) {
+    this.gzipEnable = gzipEnable;
+    return this;
+  }
+
+  @Override
+  public ApiBuilderImpl<T> setLogLevel(HttpLoggingInterceptor.Level level) {
     this.httpLogging.setLevel(level);
     return this;
   }
@@ -149,7 +192,7 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
   }
 
   @Override
-  public ApiBuilder<T> addCallAdapterFactoryIfAbsent(CallAdapter.Factory factory) {
+  public ApiBuilderImpl<T> addCallAdapterFactoryIfAbsent(CallAdapter.Factory factory) {
     this.callAdapterFactories.putIfAbsent(factory.getClass(), factory);
     return this;
   }
@@ -187,11 +230,19 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
     } else {
       clientBuilder = client.newBuilder();
     }
+    clientBuilder.addNetworkInterceptor(httpLogging);
+    // 拦截器
+    for (Interceptor interceptor : getInterceptors()) {
+      clientBuilder.addInterceptor(interceptor);
+    }
     // 添加网络拦截器
     for (Interceptor interceptor : getNetworkInterceptors()) {
       clientBuilder.addNetworkInterceptor(interceptor);
     }
-    clientBuilder.addNetworkInterceptor(httpLogging);
+    Interceptor gzipInterceptor = getGzipInterceptor();
+    if (isGzipEnable() && gzipInterceptor != null) {
+      clientBuilder.addInterceptor(gzipInterceptor);
+    }
     builder.client(clientBuilder.build());
 
     if (isUseDefault()) {

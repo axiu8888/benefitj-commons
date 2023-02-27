@@ -75,6 +75,43 @@ public interface ApiBuilder<T> {
   ApiBuilder<T> addNetworkInterceptors(Interceptor... interceptor);
 
   /**
+   * 获取网络请求拦截器
+   */
+  List<Interceptor> getInterceptors();
+
+  /**
+   * 添加网络请求拦截器
+   *
+   * @param interceptor 拦截器
+   * @return 返回 RetrofitApi
+   */
+  ApiBuilder<T> addInterceptors(Interceptor... interceptor);
+
+  /**
+   * 获取GZIP拦截器
+   */
+  Interceptor getGzipInterceptor();
+
+  /**
+   * 设置GZIP拦截器
+   *
+   * @param gzipInterceptor 拦截器
+   */
+  ApiBuilder<T> setGzipInterceptor(Interceptor gzipInterceptor);
+
+  /**
+   * 是否支持GZIP
+   */
+  boolean isGzipEnable();
+
+  /**
+   * 设置是否支持GZIP
+   *
+   * @param gzip 是否支持
+   */
+  ApiBuilder<T> setGzipEnable(boolean gzip);
+
+  /**
    * 设置Http日志打印层级
    *
    * @param level 打印的层级
