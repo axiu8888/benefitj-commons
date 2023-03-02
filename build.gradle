@@ -35,7 +35,7 @@ ext {
     repoUrl = props["repoUrl"]
     repoUsername = props["repoUsername"]
     repoPassword = props["repoPassword"]
-  } catch(e) {
+  } catch (e) {
     e.printStackTrace()
   }
 
@@ -48,13 +48,11 @@ allprojects {
 //  apply from: "${getRootDir()}/buildSystem/base.gradle"
 
   group = 'com.benefitj'
-  version = "2.2.0-SNAPSHOT"
+  version = "2.2.1-SNAPSHOT"
 
   ext {
-    println("${getProject().name}.groupId ==>: ${group}")
     groupId = "$group"
     artifactPrefix = ""
-    println("${getProject().name}.artifactId ==>: ${archivesBaseName}")
     artifactId = "${archivesBaseName}"
     versionId = "${version}"
 

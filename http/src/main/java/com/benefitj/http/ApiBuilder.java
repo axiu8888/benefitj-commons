@@ -1,5 +1,6 @@
 package com.benefitj.http;
 
+import com.benefitj.core.ProxyUtils;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -274,6 +275,75 @@ public interface ApiBuilder<T> {
     } catch (ClassNotFoundException ignore) {
       return false;
     }
+  }
+
+  /**
+   * 创建HTTP客户端
+   *
+   * @param apiType      API类型
+   * @param baseUrl      基地址
+   * @param interceptors 拦截器
+   * @return 返回API对象
+   */
+  static <T> T createApiProxy(Class<T> apiType,
+                              String baseUrl,
+                              Interceptor... interceptors) {
+    return createApiProxy(apiType, baseUrl, HttpLoggingInterceptor.Level.NONE, interceptors);
+  }
+
+  /**
+   * 创建HTTP客户端
+   *
+   * @param apiType      API类型
+   * @param baseUrl      基地址
+   * @param level        日志等级
+   * @param interceptors 拦截器
+   * @return 返回API对象
+   */
+  static <T> T createApiProxy(Class<T> apiType,
+                              String baseUrl,
+                              HttpLoggingInterceptor.Level level,
+                              Interceptor... interceptors) {
+    return createApiProxy(apiType
+        , baseUrl
+        , builder -> builder.setLogLevel(level).addNetworkInterceptors(interceptors)
+
+    );
+  }
+
+  /**
+   * 创建HTTP客户端
+   *
+   * @param apiType  API类型
+   * @param baseUrl  基地址
+   * @param consumer 自定义ApiBuilder
+   * @return 返回API对象
+   */
+  static <T> T createApiProxy(Class<T> apiType,
+                              String baseUrl,
+                              Consumer<ApiBuilder<T>> consumer) {
+    return createApiProxy(apiType, baseUrl, consumer, ApiInvocationHandler.createScheduler());
+  }
+
+  /**
+   * 创建HTTP客户端
+   *
+   * @param apiType  API类型
+   * @param baseUrl  基地址
+   * @param consumer 自定义ApiBuilder
+   * @param handler  处理器
+   * @return 返回API对象
+   */
+  static <T> T createApiProxy(Class<T> apiType,
+                              String baseUrl,
+                              Consumer<ApiBuilder<T>> consumer,
+                              ApiInvocationHandler<T> handler) {
+    ApiBuilder<T> builder = ApiBuilder.newBuilder(apiType)
+        .setUseDefault(true)
+        .setBaseUrl(baseUrl);
+    consumer.accept(builder);
+    final T api = builder.build();
+    return ProxyUtils.newProxy(apiType, (proxy, method, args) -> handler.invoke(api, method, args));
   }
 
 }

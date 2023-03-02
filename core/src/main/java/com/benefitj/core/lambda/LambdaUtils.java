@@ -8,13 +8,29 @@ import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+/**
+ * Lambda 工具
+ */
 public class LambdaUtils {
 
-
+  /**
+   * 获取Lambda信息
+   *
+   * @param func 函数
+   * @param <T>  参数类型
+   * @param <R>  返回值类型
+   * @return 返回信息
+   */
   public static <T, R> LambdaMeta getLambda(IFunction<T, R> func) {
     return getLambda((Serializable) func);
   }
 
+  /**
+   * 获取Lambda信息
+   *
+   * @param serializable 序列化对象
+   * @return 返回信息
+   */
   public static LambdaMeta getLambda(Serializable serializable) {
     try {
       // 1. IDEA 调试模式下 lambda 表达式是一个代理

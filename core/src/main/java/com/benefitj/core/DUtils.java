@@ -1,14 +1,41 @@
 package com.benefitj.core;
 
+import com.benefitj.core.functions.Pair;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 单位
  */
 public class DUtils {
 
+  /**
+   * 转换成Map
+   *
+   * @param pairs 数据对
+   * @return 返回Map
+   */
+  public static Map<String, String> mapOf(Pair<String, String>... pairs) {
+    return mapOf(new LinkedHashMap<>(), pairs);
+  }
+
+  /**
+   * 转换成Map
+   *
+   * @param map   Map
+   * @param pairs 数据对
+   * @return 返回Map
+   */
+  public static Map<String, String> mapOf(Map<String, String> map, Pair<String, String>... pairs) {
+    for (Pair<String, String> pair : pairs) {
+      map.put(pair.getKey(), pair.getValue());
+    }
+    return map;
+  }
 
   /**
    * 是否以检查的前缀开头

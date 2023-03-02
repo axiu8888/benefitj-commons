@@ -19,7 +19,6 @@ afterEvaluate {
 
 ext { springEnv = false }
 tryCatch({ ext.springEnv = plugins.stream().anyMatch(p -> p.class.simpleName.contains("SpringBootPlugin")) })
-//println("[ ${project.name} ], springEnv: ${springEnv}, plugins ===>: $plugins")
 
 //archivesBaseName = "${getProject().name}"
 
@@ -184,7 +183,6 @@ afterEvaluate {
         configurations.compileClasspath.collect {
           def path = it.getAbsolutePath()
           if (path.startsWith(rootDirPath) && !(it.isFile() && path.endsWith(".jar"))) {
-            println("${current}  jar ===>: ${path.substring(rootDirPath.length())}, ${it.exists()}")
             if (it.exists()) {
               //zipTree(project.sourceSets.main.resources)
               from it.isDirectory() ? it : zipTree(it)
@@ -205,7 +203,6 @@ afterEvaluate {
             def path = it.getAbsolutePath()
             def project = findProject(getRootProject(), path)
             if (project != null) {
-              println("source ===>: ${it.getAbsolutePath().substring(rootDirPath.length())}, ${it.exists()}")
               from project.sourceSets.main.allSource
               from project.sourceSets.main.resources
             }
@@ -234,7 +231,6 @@ afterEvaluate {
         publishing {
           publications {
             maven(MavenPublication) {
-              //println("prop ===>: $prop")
               //def artifactPrefix = ""
               try {
                 artifactPrefix = artifactPrefix.isBlank() || artifactPrefix.endsWith("-") ? artifactPrefix : artifactPrefix + "-";

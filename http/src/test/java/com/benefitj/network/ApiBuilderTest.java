@@ -37,11 +37,10 @@ public class ApiBuilderTest extends TestCase {
   private ServiceApi api;
 
   public void setUp() throws Exception {
-    this.api = ApiBuilder.newBuilder(ServiceApi.class)
-        .setBaseUrl(ServiceApi.BASE_URL)
-        .setLogLevel(HttpLoggingInterceptor.Level.NONE)
-        .setUseDefault(true) // 启用默认的转换器和适配器
-        .build();
+    this.api = ApiBuilder.createApiProxy(ServiceApi.class
+        , ServiceApi.BASE_URL
+        , builder -> builder.setLogLevel(HttpLoggingInterceptor.Level.NONE)
+    );
   }
 
   @Test
@@ -55,8 +54,11 @@ public class ApiBuilderTest extends TestCase {
     // 写入文件
 //    api.getImg()
 //        .subscribe(body -> BodyUtils.transferTo(body, new File("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png")));
+
+    CountDownLatch latch = new CountDownLatch(1);
     api.getImg()
         .subscribe(body -> {
+          log.info("线程: {}", EventLoop.threadName());
           final IWriter img = IWriter.newFileWriter("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png");
           BodyUtils.progressResponseBody(body
               , (buf, len) -> img.write(buf, 0, len)
@@ -67,7 +69,9 @@ public class ApiBuilderTest extends TestCase {
                       , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
                       , done
                   ));
+          latch.countDown();
         });
+    CatchUtils.ignore(() -> latch.await());
   }
 
   @Test
@@ -76,15 +80,15 @@ public class ApiBuilderTest extends TestCase {
     File file = new File("D:/develop/tools/simulator.zip");
     final AtomicInteger index = new AtomicInteger();
     api.upload(BodyUtils.progressRequestBody(file, "files", (totalLength, progress, done) -> {
-      if (index.incrementAndGet() % 50 == 0 || done) {
-        log.info("总长度: {}, 已上传: {}, 进度: {}%， done[{}]"
-            , totalLength
-            , progress
-            , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
-            , done
-        );
-      }
-    }))
+          if (index.incrementAndGet() % 50 == 0 || done) {
+            log.info("总长度: {}, 已上传: {}, 进度: {}%， done[{}]"
+                , totalLength
+                , progress
+                , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
+                , done
+            );
+          }
+        }))
         .subscribe(SimpleObserver.create(result -> log.info("上传结果: {}", result)));
     log.info("耗时: {}", DUtils.diffNow(start));
   }
@@ -385,6 +389,7 @@ public class ApiBuilderTest extends TestCase {
     @GET("5aV1bjqh_Q23odCf/static/superman/js/super_load-eb15f1e5a8.js")
     Observable<ResponseBody> getBody();
 
+    @SchedulerOn(subscribeOn = SchedulerOn.Type.IO, observeOn = SchedulerOn.Type.IO)
     @GET("img/2021/12/14/ew4nf5737jvn.jpg_760w.png")
     Observable<ResponseBody> getImg();
 
