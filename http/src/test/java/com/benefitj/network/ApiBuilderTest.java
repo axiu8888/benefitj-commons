@@ -66,7 +66,7 @@ public class ApiBuilderTest extends TestCase {
                   log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
                       , totalLength
                       , progress
-                      , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
+                      , Utils.fmt((progress * 100.f) / totalLength, "0.00")
                       , done
                   ));
           latch.countDown();
@@ -76,7 +76,7 @@ public class ApiBuilderTest extends TestCase {
 
   @Test
   public void testUploadFile() {
-    long start = DUtils.now();
+    long start = Utils.now();
     File file = new File("D:/develop/tools/simulator.zip");
     final AtomicInteger index = new AtomicInteger();
     api.upload(BodyUtils.progressRequestBody(file, "files", (totalLength, progress, done) -> {
@@ -84,19 +84,19 @@ public class ApiBuilderTest extends TestCase {
             log.info("总长度: {}, 已上传: {}, 进度: {}%， done[{}]"
                 , totalLength
                 , progress
-                , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
+                , Utils.fmt((progress * 100.f) / totalLength, "0.00")
                 , done
             );
           }
         }))
         .subscribe(SimpleObserver.create(result -> log.info("上传结果: {}", result)));
-    log.info("耗时: {}", DUtils.diffNow(start));
+    log.info("耗时: {}", Utils.diffNow(start));
   }
 
   @Test
   public void testDownload() {
     // 下载
-    long start = DUtils.now();
+    long start = Utils.now();
     api.download("simulator.zip")
         .subscribe(SimpleObserver.create(response -> {
           if (!response.isSuccessful()) {
@@ -112,18 +112,18 @@ public class ApiBuilderTest extends TestCase {
                   log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
                       , totalLength
                       , progress
-                      , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
+                      , Utils.fmt((progress * 100.f) / totalLength, "0.00")
                       , done
                   );
                 }
               });
         }));
-    log.info("耗时: {}", DUtils.diffNow(start));
+    log.info("耗时: {}", Utils.diffNow(start));
   }
 
   @Test
   public void testDownloadFile() {
-    long start = DUtils.now();
+    long start = Utils.now();
     okhttp3.Response response = HttpHelper.get().get("https://downloads.gradle-dn.com/distributions/gradle-7.3.2-all.zip");
     final AtomicInteger index = new AtomicInteger();
     BodyUtils.progressResponseBody(response.body()
@@ -133,17 +133,17 @@ public class ApiBuilderTest extends TestCase {
             log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
                 , totalLength
                 , progress
-                , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
+                , Utils.fmt((progress * 100.f) / totalLength, "0.00")
                 , done
             );
           }
         });
-    log.info("耗时: {}", DUtils.diffNow(start));
+    log.info("耗时: {}", Utils.diffNow(start));
   }
 
   @Test
   public void testDownloadFile2() {
-    long start = DUtils.now();
+    long start = Utils.now();
     String url = "https://dl-tc.coolapkmarket.com/down/apk_file/2022/1104/Coolapk-12.5.2-2211031-coolapk-app-sign.apk?t=1677423508&sign=135b70037c588e76c96bb633a2bffffd";
 //    String url = "http://192.168.67.130/api/athenapdf/create?filename=&force&encodeType=&url=https://www.cnblogs.com/felixzh/p/5869212.html";
 //    String url = "http://192.168.67.130/api/athenapdf/create?filename=&force&encodeType=&url=https://xilidou.com/2022/05/09/sre6/";
@@ -158,14 +158,14 @@ public class ApiBuilderTest extends TestCase {
         log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
             , totalLength
             , progress
-            , DUtils.fmt((progress * 100.f) / totalLength, "0.00")
+            , Utils.fmt((progress * 100.f) / totalLength, "0.00")
             , done
         );
       }
 
       @Override
       public void onSuccess(Call call, @NotNull okhttp3.Response response, @Nullable File file) {
-        log.error("下载成功：{}, {}", file.getName(), DUtils.fmtMB(file.length(), "0.00MB"));
+        log.error("下载成功：{}, {}", file.getName(), Utils.fmtMB(file.length(), "0.00MB"));
         log.error("headers: {}", response.headers().toMultimap());
       }
 
@@ -304,13 +304,13 @@ public class ApiBuilderTest extends TestCase {
             @Override
             public void onProgressChange(long totalLength, long progress, boolean done) {
               if (index.incrementAndGet() % 150 == 0 || done) {
-                log.info("下载中：{}, {}, {}%, {} ...", apkName, totalLength, DUtils.fmt((progress * 100.0) / totalLength, "0.00"), done);
+                log.info("下载中：{}, {}, {}%, {} ...", apkName, totalLength, Utils.fmt((progress * 100.0) / totalLength, "0.00"), done);
               }
             }
 
             @Override
             public void onSuccess(Call call, @NotNull okhttp3.Response response, @Nullable File file) {
-              log.info("下载成功：{}, {}", apkName, DUtils.fmt(DUtils.ofMB(file.length()), "0.00MB"));
+              log.info("下载成功：{}, {}", apkName, Utils.fmt(Utils.ofMB(file.length()), "0.00MB"));
             }
 
             @Override
@@ -339,7 +339,7 @@ public class ApiBuilderTest extends TestCase {
 
   @Test
   public void testDownloadApk() {
-    long start = DUtils.now();
+    long start = Utils.now();
 //    String url = "http://192.168.1.47/api/app/download?id=969f7a19751d4c0e91519e9eebfeb067";
     String url = "http://192.168.1.47/api/app/download?id=fad84b9e98814482b86398ee22ba8632";
     okhttp3.Response response = HttpHelper.get()
@@ -353,9 +353,9 @@ public class ApiBuilderTest extends TestCase {
           , new File("D:/" + filename)
           , (totalLength, progress, done) -> {
             log.info("totalLength: {}, progress: {}, {}, done: {}"
-                , totalLength, progress, DUtils.fmt(progress * 1.0 / totalLength, ".0%"), done);
+                , totalLength, progress, Utils.fmt(progress * 1.0 / totalLength, ".0%"), done);
             if (done) {
-              log.info("耗时: {}", DUtils.diffNow(start));
+              log.info("耗时: {}", Utils.diffNow(start));
             }
           });
     } else {

@@ -1,7 +1,7 @@
 package com.benefitj.core.file;
 
 import com.benefitj.core.BaseTest;
-import com.benefitj.core.DUtils;
+import com.benefitj.core.Utils;
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.IdUtils;
 import org.junit.Test;
@@ -19,7 +19,7 @@ public class RaFileTest extends BaseTest {
       }
       // 重置最大长度
 //      raFile.resizeEnd(2 * DUtils.MB);
-      raFile.resizeStart(1024 * DUtils.KB);
+      raFile.resizeStart(1024 * Utils.KB);
 //      System.err.println(String.join("\n", raFile.readLines(size - 10, 10)));
     }
   }

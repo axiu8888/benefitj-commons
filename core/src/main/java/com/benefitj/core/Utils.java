@@ -2,6 +2,8 @@ package com.benefitj.core;
 
 import com.benefitj.core.functions.Pair;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -11,7 +13,7 @@ import java.util.Map;
 /**
  * 单位
  */
-public class DUtils {
+public class Utils {
 
   /**
    * 转换成Map
@@ -314,6 +316,29 @@ public class DUtils {
    */
   public static String fmt(double v, String pattern) {
     return new DecimalFormat(pattern).format(v);
+  }
+
+  /**
+   * 保留小数点后几位
+   *
+   * @param v       值
+   * @param bitSize 位数
+   * @return 返回保留的数
+   */
+  public static double decimal(double v, int bitSize) {
+    return decimal(v, bitSize, RoundingMode.UP);
+  }
+
+  /**
+   * 保留小数点后几位
+   *
+   * @param v            值
+   * @param bitSize      位数
+   * @param roundingMode 取整模式
+   * @return 返回保留的数
+   */
+  public static double decimal(double v, int bitSize, RoundingMode roundingMode) {
+    return BigDecimal.valueOf(v).setScale(bitSize, roundingMode).doubleValue();
   }
 
 }

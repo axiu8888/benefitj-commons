@@ -302,11 +302,11 @@ public class ReflectUtils {
   /**
    * 迭代 field
    *
-   * @param type        类
-   * @param filter      过滤器
-   * @param consumer    消费者
-   * @param interceptor 拦截器
-   * @param superclass  是否继续迭代父类
+   * @param type            类
+   * @param filter          过滤器
+   * @param consumer        消费者
+   * @param interceptor     拦截器
+   * @param superclass      是否继续迭代父类
    * @param fromTopToBottom 是否从上往下查找
    */
   public static void findFields(Class<?> type,
@@ -451,13 +451,26 @@ public class ReflectUtils {
   }
 
   /**
+   * 设置字段的值
+   *
+   * @param obj     对象
+   * @param value   值
+   * @param matcher 匹配
+   * @return 返回是否设置成功
+   */
+  public static boolean setFieldValue(Object obj, Object value, Predicate<Field> matcher) {
+    Field filed = getField(obj.getClass(), matcher);
+    return setFieldValue(filed, obj, value);
+  }
+
+  /**
    * 迭代 method
    *
-   * @param type        类
-   * @param filter      过滤器
-   * @param consumer    处理器
-   * @param interceptor 拦截器
-   * @param superclass  是否继续迭代父类
+   * @param type            类
+   * @param filter          过滤器
+   * @param consumer        处理器
+   * @param interceptor     拦截器
+   * @param superclass      是否继续迭代父类
    * @param fromTopToBottom 是否从上往下查找
    */
   public static void findMethods(Class<?> type,
@@ -629,6 +642,20 @@ public class ReflectUtils {
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw CatchUtils.throwing(e, IllegalStateException.class);
     }
+  }
+
+  /**
+   * 调用方法
+   *
+   * @param obj     对象
+   * @param matcher 匹配
+   * @param args    参数
+   * @param <T>     返回值类型
+   * @return 返回返回值
+   */
+  public static <T> T invoke(Object obj, Predicate<Method> matcher, Object... args) {
+    Method method = getMethod(obj.getClass(), matcher);
+    return method != null ? invoke(obj, method, args) : null;
   }
 
   /**

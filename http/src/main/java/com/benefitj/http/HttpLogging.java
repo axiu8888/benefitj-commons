@@ -1,12 +1,12 @@
 package com.benefitj.http;
 
 
-import java.io.IOException;
-
 import lombok.NonNull;
 import okhttp3.Interceptor;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
+
+import java.io.IOException;
 
 /**
  * HTTP日志打印

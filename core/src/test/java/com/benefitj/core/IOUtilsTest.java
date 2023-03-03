@@ -31,7 +31,7 @@ public class IOUtilsTest extends BaseTest {
                 , totalLength
                 , totalProgress
                 , source.getName()
-                , DUtils.fmt(currentProgress, "0.00")
+                , Utils.fmt(currentProgress, "0.00")
             );
           }
         });

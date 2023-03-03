@@ -7,12 +7,12 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DUtilsTest extends BaseTest {
+public class UtilsTest extends BaseTest {
 
   @Test
   public void testMB() {
-    System.err.println("MB: " + DUtils.fmtKB(122, "0.00"));
-    System.err.println("MB: " + DUtils.fmtMB(8 * 1024 + 10.5 * DUtils.MB, "0.00"));
+    System.err.println("MB: " + Utils.fmtKB(122, "0.00"));
+    System.err.println("MB: " + Utils.fmtMB(8 * 1024 + 10.5 * Utils.MB, "0.00"));
   }
 
   @Test

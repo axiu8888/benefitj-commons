@@ -1,7 +1,7 @@
 package com.benefitj.mqtt.paho;
 
 import com.benefitj.core.IdUtils;
-import com.benefitj.core.DUtils;
+import com.benefitj.core.Utils;
 import com.benefitj.core.functions.IConsumer;
 import com.benefitj.core.functions.IFunction;
 import org.eclipse.paho.client.mqttv3.*;
@@ -179,7 +179,7 @@ public class PahoMqttClient implements IPahoMqttClient {
   protected IMqttClient getClient(boolean autoConnect) {
     IMqttClient c = this.raw;
     if (autoConnect && !isDisconnected() && !c.isConnected()) {
-      if (DUtils.diffNow(getLastReconnectTime()) > this.delay) {
+      if (Utils.diffNow(getLastReconnectTime()) > this.delay) {
         try {
           tryConnect(c, options);
           c = this.raw;

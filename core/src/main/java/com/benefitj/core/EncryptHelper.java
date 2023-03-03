@@ -1,11 +1,88 @@
 package com.benefitj.core;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Base64;
 
 /**
  * 加密
  */
 public class EncryptHelper {
+
+  /**
+   * base64转码，UTF-8
+   */
+  public static String encodeBase64(String src) {
+    return encodeBase64(src, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * base64转码
+   */
+  public static String encodeBase64(String src, Charset charset) {
+    return Base64.getEncoder().encodeToString(src.getBytes(charset));
+  }
+
+  /**
+   * base64解码，UTF-8
+   */
+  public static String decodeBase64(String src) {
+    return decodeBase64(src, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * base64解码
+   */
+  public static String decodeBase64(String src, Charset charset) {
+    return new String(Base64.getDecoder().decode(src.getBytes(charset)));
+  }
+
+  /**
+   * URL转码，UTF-8
+   */
+  public static String encodeURL(String src) {
+    return encodeURL(src, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * URL转码
+   */
+  public static String encodeURL(String src, Charset charset) {
+    return CatchUtils.tryThrow(() -> URLEncoder.encode(src, charset.name()));
+  }
+
+  /**
+   * URL解码，UTF-8
+   */
+  public static String decodeURL(String src) {
+    return decodeURL(src, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * URL解码
+   */
+  public static String decodeURL(String src, Charset charset) {
+    return CatchUtils.tryThrow(() -> URLDecoder.decode(src, charset.name()));
+  }
+
+  /**
+   * 获取一个文件的md5值
+   */
+  public static String md5(File src) {
+    try (final FileInputStream fis = new FileInputStream(src)) {
+      MessageDigest md5 = MessageDigest.getInstance("MD5");
+      IOUtils.read(fis, 1024 << 4, true, (buf, len) -> md5.update(buf, 0, len));
+      return HexUtils.bytesToHex(md5.digest(), true);
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
+  }
 
 
   /**
