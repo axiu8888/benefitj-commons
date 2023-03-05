@@ -1,5 +1,7 @@
 package com.benefitj.core.functions.promise;
 
+import java.util.function.Consumer;
+
 public interface Promise<T> {
 
   /**
@@ -17,19 +19,39 @@ public interface Promise<T> {
   void onError(Throwable error);
 
 
-  class PromiseImpl<T> implements Promise<T> {
+  static <T> Promise<T> newPromise(Consumer<T> next,
+                                   Consumer<Throwable> error) {
+    return new DelegatePromise<>(next, error);
+  }
 
+
+  abstract class SimplePromise<T> implements Promise<T> {
 
     @Override
-    public void onNext(T t) {
-
-    }
-
-    @Override
-    public void onError(Throwable error) {
-
+    public void onError(Throwable e) {
+      e.printStackTrace();
     }
   }
 
+  class DelegatePromise<T> extends SimplePromise<T> {
+
+    private Consumer<T> next;
+    private Consumer<Throwable> error;
+
+    public DelegatePromise(Consumer<T> next, Consumer<Throwable> error) {
+      this.next = next;
+      this.error = error;
+    }
+
+    @Override
+    public void onNext(T t) {
+      next.accept(t);
+    }
+
+    @Override
+    public void onError(Throwable e) {
+      error.accept(e);
+    }
+  }
 
 }

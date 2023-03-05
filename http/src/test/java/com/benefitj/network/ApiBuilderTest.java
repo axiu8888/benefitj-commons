@@ -59,7 +59,7 @@ public class ApiBuilderTest extends TestCase {
     api.getImg()
         .subscribe(body -> {
           log.info("线程: {}", EventLoop.threadName());
-          final IWriter img = IWriter.newFileWriter("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png");
+          final IWriter img = IWriter.newFileWriter("D:/home/tmp/ew4nf5737jvn.jpg_760w.png");
           BodyUtils.progressResponseBody(body
               , (buf, len) -> img.write(buf, 0, len)
               , (totalLength, progress, done) ->
@@ -76,7 +76,7 @@ public class ApiBuilderTest extends TestCase {
 
   @Test
   public void testUploadFile() {
-    long start = Utils.now();
+    long start = TimeUtils.now();
     File file = new File("D:/develop/tools/simulator.zip");
     final AtomicInteger index = new AtomicInteger();
     api.upload(BodyUtils.progressRequestBody(file, "files", (totalLength, progress, done) -> {
@@ -90,13 +90,13 @@ public class ApiBuilderTest extends TestCase {
           }
         }))
         .subscribe(SimpleObserver.create(result -> log.info("上传结果: {}", result)));
-    log.info("耗时: {}", Utils.diffNow(start));
+    log.info("耗时: {}", TimeUtils.diffNow(start));
   }
 
   @Test
   public void testDownload() {
     // 下载
-    long start = Utils.now();
+    long start = TimeUtils.now();
     api.download("simulator.zip")
         .subscribe(SimpleObserver.create(response -> {
           if (!response.isSuccessful()) {
@@ -118,12 +118,12 @@ public class ApiBuilderTest extends TestCase {
                 }
               });
         }));
-    log.info("耗时: {}", Utils.diffNow(start));
+    log.info("耗时: {}", TimeUtils.diffNow(start));
   }
 
   @Test
   public void testDownloadFile() {
-    long start = Utils.now();
+    long start = TimeUtils.now();
     okhttp3.Response response = HttpHelper.get().get("https://downloads.gradle-dn.com/distributions/gradle-7.3.2-all.zip");
     final AtomicInteger index = new AtomicInteger();
     BodyUtils.progressResponseBody(response.body()
@@ -138,12 +138,12 @@ public class ApiBuilderTest extends TestCase {
             );
           }
         });
-    log.info("耗时: {}", Utils.diffNow(start));
+    log.info("耗时: {}", TimeUtils.diffNow(start));
   }
 
   @Test
   public void testDownloadFile2() {
-    long start = Utils.now();
+    long start = TimeUtils.now();
     String url = "https://dl-tc.coolapkmarket.com/down/apk_file/2022/1104/Coolapk-12.5.2-2211031-coolapk-app-sign.apk?t=1677423508&sign=135b70037c588e76c96bb633a2bffffd";
 //    String url = "http://192.168.67.130/api/athenapdf/create?filename=&force&encodeType=&url=https://www.cnblogs.com/felixzh/p/5869212.html";
 //    String url = "http://192.168.67.130/api/athenapdf/create?filename=&force&encodeType=&url=https://xilidou.com/2022/05/09/sre6/";
@@ -339,7 +339,7 @@ public class ApiBuilderTest extends TestCase {
 
   @Test
   public void testDownloadApk() {
-    long start = Utils.now();
+    long start = TimeUtils.now();
 //    String url = "http://192.168.1.47/api/app/download?id=969f7a19751d4c0e91519e9eebfeb067";
     String url = "http://192.168.1.47/api/app/download?id=fad84b9e98814482b86398ee22ba8632";
     okhttp3.Response response = HttpHelper.get()
@@ -355,7 +355,7 @@ public class ApiBuilderTest extends TestCase {
             log.info("totalLength: {}, progress: {}, {}, done: {}"
                 , totalLength, progress, Utils.fmt(progress * 1.0 / totalLength, ".0%"), done);
             if (done) {
-              log.info("耗时: {}", Utils.diffNow(start));
+              log.info("耗时: {}", TimeUtils.diffNow(start));
             }
           });
     } else {

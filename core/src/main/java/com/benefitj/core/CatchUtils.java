@@ -66,6 +66,17 @@ public class CatchUtils {
   /**
    * try{} catch(e){}
    */
+  public static <T> T tryThrow(Callable<T> call, Function<Exception, T> mappedFunc) {
+    try {
+      return call.call();
+    } catch (Exception e) {
+      return mappedFunc.apply(e);
+    }
+  }
+
+  /**
+   * try{} catch(e){}
+   */
   public static <T> T tryThrow(Callable<T> call, Class<? extends RuntimeException> exception) {
     try {
       return call.call();

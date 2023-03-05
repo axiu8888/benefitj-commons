@@ -1,6 +1,6 @@
 package com.benefitj.frameworks;
 
-import com.benefitj.core.Utils;
+import com.benefitj.core.TimeUtils;
 import com.benefitj.frameworks.smb.Jsmb;
 import com.benefitj.frameworks.smb.JsmbFile;
 import lombok.AllArgsConstructor;
@@ -17,12 +17,12 @@ public class JcifsTest extends BaseTest {
 
   @Override
   public void setUp() {
-    start = Utils.now();
+    start = TimeUtils.now();
   }
 
   @Override
   public void tearDown() {
-    System.err.println("耗时: " + Utils.diffNow(start));
+    System.err.println("耗时: " + TimeUtils.diffNow(start));
   }
 
   @Test

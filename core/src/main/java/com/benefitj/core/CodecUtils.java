@@ -13,7 +13,7 @@ import java.util.Base64;
 /**
  * 加密
  */
-public class EncryptHelper {
+public class CodecUtils {
 
   /**
    * base64转码，UTF-8

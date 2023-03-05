@@ -1,19 +1,44 @@
 package com.benefitj.core;
 
+import com.benefitj.core.functions.MultiFilter;
 import com.benefitj.core.functions.Pair;
+import com.google.common.collect.Multimap;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * 单位
  */
 public class Utils {
+
+  /**
+   * 转换成List
+   *
+   * @param itr 可迭代的对象
+   * @param <T> 类型
+   * @return 返回List
+   */
+  public static <T> List<T> itrToList(Iterable<T> itr) {
+    return itrToList(itr, new ArrayList<>());
+  }
+
+  /**
+   * 转换成List
+   *
+   * @param itr  可迭代的对象
+   * @param list List
+   * @param <T>  类型
+   * @return 返回List
+   */
+  public static <T> List<T> itrToList(Iterable<T> itr, List<T> list) {
+    itr.forEach(list::add);
+    return list;
+  }
 
   /**
    * 转换成Map
@@ -37,6 +62,122 @@ public class Utils {
       map.put(pair.getKey(), pair.getValue());
     }
     return map;
+  }
+
+  /**
+   * 将Enumeration转换为Map
+   *
+   * @param e    Enumeration
+   * @param func 处理函数
+   * @param <K>  键
+   * @param <V>  值
+   * @return 返回 Map
+   */
+  public static <K, V> Map<K, V> toMap(Enumeration<K> e, Function<K, V> func) {
+    return toMap(new LinkedHashMap<>(), e, func);
+  }
+
+  /**
+   * 将Enumeration转换为Map
+   *
+   * @param map  Map
+   * @param e    Enumeration
+   * @param func 处理函数
+   * @param <K>  键
+   * @param <V>  值
+   * @return 返回 Map
+   */
+  public static <K, V> Map<K, V> toMap(Map<K, V> map, Enumeration<K> e, Function<K, V> func) {
+    K k;
+    V v;
+    while (e.hasMoreElements()) {
+      k = e.nextElement();
+      v = func.apply(k);
+      map.put(k, v);
+    }
+    return map;
+  }
+
+  /**
+   * 转换成Map
+   *
+   * @param multimap Multimap
+   * @param <K>      键
+   * @param <V>值
+   * @return 返回转换后的Map
+   */
+  public static <K, V> Map<K, V> toMap(Multimap<K, V> multimap) {
+    return toMap(multimap, new LinkedHashMap<>());
+  }
+
+  /**
+   * 转换成Map
+   *
+   * @param multimap Multimap
+   * @param map      Map
+   * @param <K>      键
+   * @param <V>值
+   * @return 返回转换后的Map
+   */
+  public static <K, V> Map<K, V> toMap(Multimap<K, V> multimap, Map<K, V> map) {
+    return toMap(multimap, map, (k, v) -> v, (mp, k, v) -> true);
+  }
+
+  /**
+   * 转换成Map
+   *
+   * @param multimap   Multimap
+   * @param mappedFunc 转换器
+   * @param <K>        键
+   * @param <V>值
+   * @return 返回转换后的Map
+   */
+  public static <K, V> Map<K, V> toMap(Multimap<K, V> multimap, BiFunction<K, V, V> mappedFunc) {
+    return toMap(multimap, new LinkedHashMap<>(), mappedFunc, (map, k, v) -> true);
+  }
+
+  /**
+   * 转换成Map
+   *
+   * @param multimap   Multimap
+   * @param map        Map
+   * @param mappedFunc 转换器
+   * @param filter     过滤器
+   * @param <K>        键
+   * @param <V>值
+   * @return 返回转换后的Map
+   */
+  public static <K, V> Map<K, V> toMap(Multimap<K, V> multimap,
+                                       Map<K, V> map,
+                                       BiFunction<K, V, V> mappedFunc,
+                                       MultiFilter<Map<K, V>, K, V> filter) {
+    multimap.forEach((k, v) -> {
+      if (filter.test(map, k, v)) {
+        map.put(k, mappedFunc.apply(k, v));
+      }
+    });
+    return map;
+  }
+
+  /**
+   * 获取后缀
+   *
+   * @param filename 文件名
+   * @return 返回后缀
+   */
+  public static String getFileSuffix(String filename) {
+    return getSuffix(filename, ".");
+  }
+
+  /**
+   * 获取后缀
+   *
+   * @param str 字符串
+   * @return 返回后缀
+   */
+  public static String getSuffix(String str, String symbol) {
+    int index = str.lastIndexOf(symbol);
+    return index > 0 ? str.substring(index) : "";
   }
 
   /**
@@ -162,24 +303,6 @@ public class Utils {
     return Math.round(v * dividend) * 1.0 / dividend;
   }
 
-  /**
-   * 获取当前时间，已过时，请使用 {@link TimeUtils#now()}
-   */
-  @Deprecated
-  public static long now() {
-    return System.currentTimeMillis();
-  }
-
-  /**
-   * 和当前时间的差值，已过时，请使用 {@link TimeUtils#diffNow(long)}
-   *
-   * @param delta 时间
-   * @return 返回与当前时间的差
-   */
-  @Deprecated
-  public static long diffNow(long delta) {
-    return now() - delta;
-  }
 
   public static final long KB = 1024L;
   public static final long MB = 1024L * KB;
