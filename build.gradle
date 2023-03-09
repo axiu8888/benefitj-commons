@@ -41,7 +41,7 @@ ext {
 
 }
 
-allprojects {
+subprojects {
 
   apply plugin: 'java'
   // 通用依赖

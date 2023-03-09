@@ -23,8 +23,8 @@ public class Utils {
    * @param <T> 类型
    * @return 返回List
    */
-  public static <T> List<T> itrToList(Iterable<T> itr) {
-    return itrToList(itr, new ArrayList<>());
+  public static <T> List<T> toList(Iterable<T> itr) {
+    return toList(itr, new ArrayList<>());
   }
 
   /**
@@ -35,8 +35,22 @@ public class Utils {
    * @param <T>  类型
    * @return 返回List
    */
-  public static <T> List<T> itrToList(Iterable<T> itr, List<T> list) {
-    itr.forEach(list::add);
+  public static <T> List<T> toList(Iterable<T> itr, List<T> list) {
+    return toList(itr.iterator(), list);
+  }
+
+  /**
+   * 转换成List
+   *
+   * @param itr  可迭代的对象
+   * @param list List
+   * @param <T>  类型
+   * @return 返回List
+   */
+  public static <T> List<T> toList(Iterator<T> itr, List<T> list) {
+    while (itr.hasNext()) {
+      list.add(itr.next());
+    }
     return list;
   }
 
@@ -46,7 +60,7 @@ public class Utils {
    * @param pairs 数据对
    * @return 返回Map
    */
-  public static Map<String, String> mapOf(Pair<String, String>... pairs) {
+  public static <K, V> Map<K, V> mapOf(Pair<K, V>... pairs) {
     return mapOf(new LinkedHashMap<>(), pairs);
   }
 
@@ -57,8 +71,8 @@ public class Utils {
    * @param pairs 数据对
    * @return 返回Map
    */
-  public static Map<String, String> mapOf(Map<String, String> map, Pair<String, String>... pairs) {
-    for (Pair<String, String> pair : pairs) {
+  public static <K, V> Map<K, V> mapOf(Map<K, V> map, Pair<K, V>... pairs) {
+    for (Pair<K, V> pair : pairs) {
       map.put(pair.getKey(), pair.getValue());
     }
     return map;
