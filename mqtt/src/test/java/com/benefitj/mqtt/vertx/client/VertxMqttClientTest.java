@@ -33,7 +33,7 @@ public class VertxMqttClientTest {
         })
         .setAutoConnectTimer(new AutoConnectTimer(true).setPeriod(10))
 //        .setRemoteAddress("127.0.0.1", 1883))
-        .setRemoteAddress("192.168.67.130", 1883))
+        .setRemoteAddress("192.168.85.128", 1883))
         .onComplete(event -> {
           latch.countDown();
           log.info("deploy: {}", event.result());
