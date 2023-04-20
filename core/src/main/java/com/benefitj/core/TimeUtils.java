@@ -403,7 +403,7 @@ public class TimeUtils {
   public static long getToday(int hour, int minute, int second) {
     Calendar c = Calendar.getInstance();
     c.setTime(new Date());
-    return toTime(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), hour, minute, second);
+    return toTime(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH), hour, minute, second);
   }
 
   /**
