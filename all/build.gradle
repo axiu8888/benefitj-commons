@@ -1,12 +1,13 @@
 
-apply from: "${getRootDir()}/buildSystem/base.gradle"
-
-archivesBaseName = "benefitj-commons"
-
 // 打包到一个项目
 ext.allInOne = true
 // 上传到nexus/maven仓库
 ext.upload = true
+
+apply from: "${scriptFile}"
+
+archivesBaseName = "benefitj-commons"
+
 
 dependencies {
   // compileOnly、implementation、api
@@ -26,7 +27,7 @@ dependencies {
       ":pipeline",
   ]
   if (allInOne) {
-    deps.forEach{compileOnly(project(it)) }
+    deps.forEach{implementation(project(it)) }
   } else {
     deps.forEach{api(project(it)) }
   }

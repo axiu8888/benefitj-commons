@@ -124,10 +124,12 @@ public class ApiBuilderTest extends TestCase {
   @Test
   public void testDownloadFile() {
     long start = TimeUtils.now();
-    okhttp3.Response response = HttpHelper.get().get("https://downloads.gradle-dn.com/distributions/gradle-7.3.2-all.zip");
+    //okhttp3.Response response = HttpHelper.get().get("https://downloads.gradle-dn.com/distributions/gradle-7.3.2-all.zip");
+    //okhttp3.Response response = HttpHelper.get().get("https://raw.github.com/axiu8888/GradleBuild/main/Java/base.gradle");
+    okhttp3.Response response = HttpHelper.get().get("https://gitee.com/axiu8888/GradleBuild/raw/main/Java/base.gradle");
     final AtomicInteger index = new AtomicInteger();
     BodyUtils.progressResponseBody(response.body()
-        , IOUtils.createFile("D:/opt/tmp/gradle-7.3.2-all.zip")
+        , IOUtils.createFile("D:/tmp/base.gradle")
         , (totalLength, progress, done) -> {
           if (index.incrementAndGet() % 100 == 0 || done) {
             log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"

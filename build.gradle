@@ -45,12 +45,14 @@ subprojects {
 
   apply plugin: 'java'
   // 通用依赖
-//  apply from: "${getRootDir()}/buildSystem/base.gradle"
+//  apply from: "${scriptFile}"
 
   group = 'com.benefitj'
   version = "2.2.1-SNAPSHOT"
 
   ext {
+    scriptFile = "https://gitee.com/axiu8888/GradleBuild/raw/main/Java/base.gradle"
+
     groupId = "$group"
     artifactPrefix = ""
     artifactId = "${archivesBaseName}"
