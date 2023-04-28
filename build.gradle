@@ -13,18 +13,18 @@ ext {
 
   swagger2Version = "3.0.0"
   jjwtVersion = "0.11.5"
-  nettyAllVersion = '4.1.85.Final'
-  vertxVersion = '4.3.4'
+  nettyAllVersion = '4.1.92.Final'
+  vertxVersion = "4.4.1"
 
   rxJavaVersion = '2.2.21'
   okHttpVersion = '4.10.0'
   retrofitVersion = '2.9.0'
 
-  mysqlVersion = "8.0.31"
-  druidVersion = "1.2.11"
+  mysqlVersion = "8.0.33"
+  druidVersion = "1.2.17"
   mybatisVersion = "2.2.2"
   mapperVersion = "4.2.1"
-  pagehelperVersion = "1.4.3"
+  pagehelperVersion = "1.4.6"
 
   useRepository = false
 
