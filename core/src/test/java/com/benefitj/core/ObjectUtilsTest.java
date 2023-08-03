@@ -25,9 +25,9 @@ public class ObjectUtilsTest extends BaseTest {
     map.put("abc3", "hhh3");
     System.err.println(ObjectUtils.toString(map));
 
-    logger.info(ObjectUtils.toString(map));
+    log.info(ObjectUtils.toString(map));
 
-    logger.info(ObjectUtils.toString(new Object[]{
+    log.info(ObjectUtils.toString(new Object[]{
         new LinkedHashMap() {{
           put("1.key1", "value1");
           put("2.key2", "value2");

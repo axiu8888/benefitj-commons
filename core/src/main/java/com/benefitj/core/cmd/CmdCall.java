@@ -121,8 +121,8 @@ public class CmdCall {
    *
    * @param tag 标记
    */
-  public void print(String tag, @Nullable File dir) {
-    print(this, tag, dir);
+  public String toPrintInfo(String tag, @Nullable File dir) {
+    return toPrintInfo(this, tag, dir);
   }
 
   /**
@@ -131,22 +131,29 @@ public class CmdCall {
    * @param call 调用对象
    * @param tag  标记
    */
-  public static void print(CmdCall call, String tag, File dir) {
-    System.err.println("\n----------------- cmd[" + tag + "] -----------------");
-    System.err.println("successful: " + call.isSuccessful());
+  public static String toPrintInfo(CmdCall call, String tag, File dir) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("\n\n----------------- cmd[" + tag + "] -----------------");
+    sb.append("\ncmd: " + call.getCmd());
+    if (dir != null) {
+      sb.append("\ndir: " + dir.getAbsolutePath());
+    }
+    if (call.getEnvp() != null) {
+      sb.append("\nenvp: " + String.join(", ", call.getEnvp()));
+    }
+    sb.append("\nexitCode: " + call.getCode());
+    sb.append("\nsuccessful: " + call.isSuccessful());
     if (call.getMessage().endsWith("\n")) {
       call.setMessage(call.getMessage().substring(0, call.getMessage().length() - 1));
     }
     if (call.getError().endsWith("\n")) {
       call.setError(call.getError().substring(0, call.getError().length() - 1));
     }
-    System.err.println("message: " + call.getMessage());
-    System.err.println("error: " + call.getError());
-    System.err.println("cmd: " + call.getCmd());
-    System.err.println("exitCode: " + call.getCode());
-    if (dir != null) {
-      System.err.println("dir: " + dir.getAbsolutePath());
-    }
-    System.err.println("----------------- cmd[" + tag + "] -----------------\n");
+    sb.append("\nmessage: " + call.getMessage());
+    sb.append("\nerror: " + call.getError());
+    sb.append("\n----------------- cmd[" + tag + "] -----------------\n\n");
+    return sb.toString();
   }
+
+
 }

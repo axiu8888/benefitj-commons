@@ -7,16 +7,16 @@ import org.slf4j.LoggerFactory;
 
 public abstract class BaseTest {
 
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	protected final Logger log = LoggerFactory.getLogger(getClass());
 
 	@Before
 	public void setUp() throws Exception {
-		logger.info("-------------  setUp   ----------------" + DateFmtter.fmtNowS());
+		log.info("-------------  setUp   ----------------" + DateFmtter.fmtNowS());
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		logger.info("------------- tearDown ----------------" + DateFmtter.fmtNowS());
+		log.info("------------- tearDown ----------------" + DateFmtter.fmtNowS());
 	}
 
 }

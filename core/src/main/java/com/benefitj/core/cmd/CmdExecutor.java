@@ -1,12 +1,16 @@
 package com.benefitj.core.cmd;
 
-import com.benefitj.core.*;
+import com.benefitj.core.EventLoop;
+import com.benefitj.core.IOUtils;
+import com.benefitj.core.IdUtils;
+import com.benefitj.core.SingletonSupplier;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -176,6 +180,18 @@ public class CmdExecutor {
    * 调用命令
    *
    * @param cmd      命令
+   * @param timeout  超时时长
+   * @param callback 回调
+   * @return 执行命令后的响应
+   */
+  public CmdCall call(String cmd, long timeout, @Nullable Callback callback) {
+    return call(cmd, null, null, timeout, callback);
+  }
+
+  /**
+   * 调用命令
+   *
+   * @param cmd      命令
    * @param envp     环境变量
    * @param dir      上下文目录
    * @param timeout  超时时长
@@ -185,7 +201,7 @@ public class CmdExecutor {
   public CmdCall call(String cmd, @Nullable List<String> envp, @Nullable File dir, long timeout, @Nullable Callback callback) {
     final Callback cb = callback != null ? callback : Callback.EMPTY_CALLBACK;
     final long start = now();
-    final String[] envparams = envp != null && !envp.isEmpty() ? envp.toArray(new String[0]) : null;
+    final String[] envparams = envp != null ? envp.toArray(new String[0]) : new String[0];
     final CmdCall call = createCmdCall(IdUtils.uuid());
     call.setCmd(cmd);
     call.setCtxDir(dir);
@@ -194,6 +210,15 @@ public class CmdExecutor {
     try {
       return safeCall(timeout, start, () -> {
         cb.onCallBefore(call, cmd, envparams, dir);
+        /*List<String> command = Stream.concat(Stream.of(cmd), Stream.of(envparams))
+            .map(String::trim)
+            .map(str -> str.replace("/", File.separator).replace("\\", File.separator))
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.toList());
+        final Process process = new ProcessBuilder()
+            .command(command)
+            .redirectErrorStream(true)
+            .start();*/
         final Process process = Runtime.getRuntime().exec(cmd, envparams, dir);
         call.setProcess(process);
         cb.onCallAfter(process, call);
@@ -201,9 +226,44 @@ public class CmdExecutor {
         scheduleTimeout(call, timeout - (now() - start));
         cb.onWaitForBefore(process, call);
         try {
+          try {
+            // 读取消息
+            Charset charset = Charset.forName(System.getProperty("sun.jnu.encoding"));
+            try (BufferedReader pipeReader = IOUtils.wrapReader(process.getInputStream(), charset);
+                 BufferedReader errorReader = IOUtils.wrapReader(process.getErrorStream(), charset);) {
+              List<String> msgLines = new LinkedList<>();
+              List<String> errLines = new LinkedList<>();
+              CountDownLatch latch = new CountDownLatch(2);
+              getExecutor().execute(() -> {
+                try {
+                  IOUtils.readLines(pipeReader, line -> {
+                    msgLines.add(line);
+                    cb.onMessage(call, msgLines, line, false);
+                  });
+                } finally {
+                  latch.countDown();
+                }
+              });
+              getExecutor().execute(() -> {
+                try {
+                  IOUtils.readLines(errorReader, line -> {
+                    errLines.add(line);
+                    cb.onMessage(call, errLines, line, true);
+                  });
+                } finally {
+                  latch.countDown();
+                }
+              });
+              latch.await();
+              call.setMessage(String.join(CRLF, msgLines));
+              call.setError(String.join(CRLF, errLines));
+            }
+          } catch (IOException e) {
+            call.setError(e.getMessage());
+          }
           // 等待
-          int exitValue = process.waitFor();
-          call.setCode(exitValue);
+          //int exitValue = process.waitFor();
+          call.setCode(process.exitValue());
         } catch (InterruptedException e) {
           call.setCode(-1);
         }
@@ -211,30 +271,15 @@ public class CmdExecutor {
         cancelTimeoutSchedule(call.getId());
         // 调用结束
         cb.onWaitForAfter(process, call);
-        // 读取消息
-        readMessage(process, call);
-
         return call;
       });
     } catch (Exception e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw new IllegalStateException(e);
     } finally {
       cb.onFinish(call);
     }
   }
 
-  private void readMessage(Process process, CmdCall call) {
-    try {
-      Charset charset = Charset.forName(System.getProperty("sun.jnu.encoding"));
-      try (BufferedReader reader = IOUtils.wrapReader(process.getInputStream(), charset);
-           BufferedReader errorReader = IOUtils.wrapReader(process.getErrorStream(), charset);) {
-        call.setMessage(String.join(CRLF, IOUtils.readLines(reader)));
-        call.setError(String.join(CRLF, IOUtils.readLines(errorReader)));
-      }
-    } catch (IOException e) {
-      call.setError(e.getMessage());
-    }
-  }
 
   /**
    * 取消超时时长的调度
@@ -282,10 +327,13 @@ public class CmdExecutor {
    * @return 返回是否加锁
    */
   private <V> V safeCall(long timeout, long start, Callable<V> call) throws Exception {
+    if (timeout <= 0) {
+      return call.call();
+    }
     final AtomicReference<Thread> sign = this.sign;
     int maxProcess = getMaxCallNum();
     final Thread current = Thread.currentThread();
-    for (;;) {
+    for (; ; ) {
       if (sign.compareAndSet(null, current)) {
         // 执行的命令未达到最大值
         if (aliveProcess.get() < maxProcess) {

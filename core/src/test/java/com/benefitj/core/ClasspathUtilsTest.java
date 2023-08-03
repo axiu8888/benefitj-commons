@@ -11,10 +11,10 @@ public class ClasspathUtilsTest extends BaseTest {
   @Test
   public void testClasspath() {
     String classpathDir = ClasspathUtils.getDefaultClasspathDir();
-    logger.info("currentClasspathDir: {}", classpathDir);
+    log.info("currentClasspathDir: {}", classpathDir);
 
     URL url = ClasspathUtils.getURL("abb_application-dev.properties", null);
-    logger.info("{} , isJar: {}", url.getPath(), ClasspathUtils.isJar(url.getPath()));
+    log.info("{} , isJar: {}", url.getPath(), ClasspathUtils.isJar(url.getPath()));
 
     ClasspathUtils.copy("abb_application-dev.properties", classpathDir);
   }

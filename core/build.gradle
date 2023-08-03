@@ -7,4 +7,5 @@ ext.upload = true
 dependencies {
   // spring
   compileOnly 'org.springframework:spring-core:5.3.5'
+
 }

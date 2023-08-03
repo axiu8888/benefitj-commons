@@ -3,6 +3,7 @@ package com.benefitj.core.cmd;
 import com.benefitj.core.*;
 import com.benefitj.core.file.PathWatcher;
 import com.benefitj.core.functions.IRunnable;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -10,18 +11,75 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 测试CMD命令调用
  */
 public class CmdExecutorTest extends BaseTest {
 
+  public static final Pattern WS_ENDPOINT_PATTERN = Pattern.compile("^DevTools listening on (ws://.*)$");
+
+  @Test
+  public void testChromium() {
+    // D:\tmp\.local-browser\win64-1132420\chrome-win\chrome.exe--user-data-dir=D:\home\tmp\.local-browser\win64-1132420/userDataDir about:blank --start-maximized --auto-open-devtools-for-tabs --disable-background-timer-throttling --disable-breakpad --disable-browser-side-navigation --disable-client-side-phishing-detection --disable-default-apps --disable-dev-shm-usage --disable-features=site-per-process --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-translate --metrics-recording-only --no-first-run --safebrowsing-disable-auto-update --enable-automation --password-store=basic --use-mock-keychain --remote-debugging-port=61370
+    String dir = "D:/tmp/.local-browser/win64-1132420";
+    String cmd = dir + "/chrome-win/chrome.exe";
+    String envparams = ""
+        + " --user-data-dir=" + dir + "/userDataDir about:blank"
+        + " --start-maximized"
+        //+ " --auto-open-devtools-for-tabs"
+        + " --disable-background-timer-throttling"
+        + " --disable-breakpad"
+        + " --disable-browser-side-navigation"
+        + " --disable-client-side-phishing-detection"
+        + " --disable-default-apps"
+        + " --disable-dev-shm-usage"
+        + " --disable-features=site-per-process"
+        + " --disable-hang-monitor"
+        + " --disable-popup-blocking"
+        + " --disable-prompt-on-repost"
+        + " --disable-translate"
+        + " --metrics-recording-only"
+        + " --no-first-run"
+        + " --safebrowsing-disable-auto-update"
+        + " --enable-automation"
+        + " --password-store=basic"
+        + " --use-mock-keychain"
+        + " --remote-debugging-port=61370";
+
+    List<String> envp = Stream.of(envparams.split(" --")).filter(StringUtils::isNotBlank).map(str -> "--" + str).collect(Collectors.toList());
+    CmdCall call = CmdExecutor.get().call(cmd, envp, null, -1, new Callback() {
+      @Override
+      public void onMessage(CmdCall call, List<String> lines, String line, boolean error) {
+        log.info("onMessage: {}, \nlines: {}, \nline: {}, \nerror: {}", call.getId(), String.join("; ", lines), line, error);
+        Matcher matcher = WS_ENDPOINT_PATTERN.matcher(line);
+        if (matcher.find()) {
+          log.info("we endpoint: {}", matcher.group(1));
+        }
+      }
+    });
+    Process process = call.getProcess();
+    System.err.println(call.toPrintInfo("HtmlToPdf", null));
+    log.info("process: {}", process.isAlive());
+
+    EventLoop.sleepSecond(10);
+
+    // 关闭
+    process.destroyForcibly();
+
+  }
+
   @Test
   public void testJavaVersion() {
     CmdCall call = CmdExecutor.get().call("java --version");
-    call.print("java version", null);
+    System.err.println(call.toPrintInfo("java version", null));
   }
 
   @Test
@@ -32,14 +90,14 @@ public class CmdExecutorTest extends BaseTest {
   @Test
   public void testMonoVersion() {
     CmdCall call = CmdExecutor.get().call("mono --version");
-    call.print("mono version", null);
+    System.err.println(call.toPrintInfo("mono version", null));
   }
 
   @Test
   public void testMmhgReport() {
     File dir = new File("D:\\tmp\\jdk-app\\hingmed");
     CmdCall call = CmdExecutor.get().call("cmd /c commandPrintPdf.exe report.xml report.pdf 127", null, dir);
-    call.print("mmhg report", null);
+    System.err.println(call.toPrintInfo("mmhg report", null));
   }
 
   @Test
@@ -129,7 +187,7 @@ public class CmdExecutorTest extends BaseTest {
         .setWatchEventListener((key, context, kind) -> {
           File src = context.toFile();
           String type = src.getName();
-          logger.info("{}  ==>: {}, {}", type, kind.name(), IOUtils.readFileAsString(src, Charset.forName(charsetName)));
+          log.info("{}  ==>: {}, {}", type, kind.name(), IOUtils.readFileAsString(src, Charset.forName(charsetName)));
 //          switch (context.toFile().getName()) {
 //            case "in.txt":
 //              break;
@@ -143,10 +201,10 @@ public class CmdExecutorTest extends BaseTest {
 
     Process process = builder.start();
 
-    try(final BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+    try (final BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
       int i = 0;
       for (String str; (str = br.readLine()) != null; i++) {
-        logger.info("i ==>: {}, {}", i, str);
+        log.info("i ==>: {}, {}", i, str);
         switch (i) {
           case 0:
             process.getOutputStream().write(name.getBytes(charsetName));
@@ -174,7 +232,7 @@ public class CmdExecutorTest extends BaseTest {
 
     //process.waitFor();
 
-    logger.info("系统编码格式 ==>: {}", SystemProperty.getFileEncoding());
+    log.info("系统编码格式 ==>: {}", SystemProperty.getFileEncoding());
 //
 //
 //    int index = 0;

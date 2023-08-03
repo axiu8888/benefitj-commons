@@ -28,12 +28,12 @@ public class FileSlicerTest extends BaseTest {
     slicer.setFileFactory(dir -> {
       String filename = IdUtils.nextLowerLetterId(DateFmtter.fmtNow("yyyyMMdd_HHmmss") + "__", ".txt", 10);
       File file = FileFactory.createFile(dir, filename);
-      logger.info("创建文件: {}", file.getAbsolutePath());
+      log.info("创建文件: {}", file.getAbsolutePath());
       return new SliceFileWriter(file);
     });
     // 文件监听
     slicer.setFileListener((writer, file) -> {
-      logger.info("处理文件: {}, {}MB", file.getAbsolutePath(), Utils.ofMB(file.length(), 2));
+      log.info("处理文件: {}, {}MB", file.getAbsolutePath(), Utils.ofMB(file.length(), 2));
       stopFlag.incrementAndGet();
     });
 

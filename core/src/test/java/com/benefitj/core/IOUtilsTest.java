@@ -27,7 +27,7 @@ public class IOUtilsTest extends BaseTest {
         , (source, totalLength, totalProgress, progress) -> {
           if (index.incrementAndGet() % 20 == 0 || totalLength == totalProgress) {
             double currentProgress = totalProgress * 100.0 / totalLength;
-            logger.info("{}, {}, {} ==>: {}%"
+            log.info("{}, {}, {} ==>: {}%"
                 , totalLength
                 , totalProgress
                 , source.getName()

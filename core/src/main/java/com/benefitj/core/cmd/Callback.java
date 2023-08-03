@@ -1,6 +1,7 @@
 package com.benefitj.core.cmd;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,6 +26,18 @@ public interface Callback {
    * @param dir     目录
    */
   default void onCallBefore(CmdCall call, String command, String[] envp, File dir) {
+    // do nothing
+  }
+
+  /**
+   * 调用 {@link Runtime#exec(String, String[], File)} 之前
+   *
+   * @param call  调用
+   * @param lines 全局数据
+   * @param line  接收的一行数据
+   * @param error 是否为
+   */
+  default void onMessage(CmdCall call, List<String> lines, String line, boolean error) {
     // do nothing
   }
 

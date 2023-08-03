@@ -1,4 +1,3 @@
-
 // 打包到一个项目
 ext.allInOne = true
 // 上传到nexus/maven仓库
@@ -12,7 +11,7 @@ archivesBaseName = "benefitj-commons"
 dependencies {
   // compileOnly、implementation、api
 
-  def deps = [
+  [
       ":consistent-hash",
       ":core",
       ":device",
@@ -25,10 +24,8 @@ dependencies {
       ":mqtt",
       ":netty",
       ":pipeline",
-  ]
-  if (allInOne) {
-    deps.forEach{implementation(project(it)) }
-  } else {
-    deps.forEach{api(project(it)) }
+  ].forEach {
+    if (allInOne) implementation(project(it))
+    else api(project(it))
   }
 }
