@@ -15,10 +15,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -112,7 +109,7 @@ public class SqlUtils {
       final List<SqlMetaData> data = SqlUtils.getMataDatas(metaData);
       final List<JSONObject> values = new ArrayList<>();
       while (set.next()) {
-        JSONObject record = new JSONObject();
+        JSONObject record = new JSONObject(new LinkedHashMap());
         for (SqlMetaData smd : data) {
           String columnLabel = smd.getColumnLabel();
           switch (smd.getColumnType()) {

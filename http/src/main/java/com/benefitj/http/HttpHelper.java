@@ -38,6 +38,10 @@ public class HttpHelper {
    * 请求头
    */
   private Interceptor headersInterceptor;
+  /**
+   * GZIP
+   */
+  private final GzipRequestInterceptor gzip = new GzipRequestInterceptor(false);
 
   /**
    * HTTP客户端
@@ -46,6 +50,7 @@ public class HttpHelper {
       .connectTimeout(5, TimeUnit.SECONDS)
       .readTimeout(5, TimeUnit.MINUTES)
       .writeTimeout(5, TimeUnit.MINUTES)
+      .addInterceptor(gzip)
       .addNetworkInterceptor(chain -> callInterceptor(getHeadersInterceptor(), chain))
       .addNetworkInterceptor(chain -> callInterceptor(getNetworkInterceptor(), chain))
       .addNetworkInterceptor(httpLogging.setLevel(HttpLoggingInterceptor.Level.NONE))
@@ -60,6 +65,11 @@ public class HttpHelper {
 
   public HttpHelper setClient(OkHttpClient client) {
     this.client = client;
+    return this;
+  }
+
+  public HttpHelper setGzipEnable(boolean enable) {
+    this.gzip.setEnable(enable);
     return this;
   }
 
@@ -81,8 +91,9 @@ public class HttpHelper {
     return headersInterceptor;
   }
 
-  public void setHeadersInterceptor(Interceptor headersInterceptor) {
+  public HttpHelper setHeadersInterceptor(Interceptor headersInterceptor) {
     this.headersInterceptor = headersInterceptor;
+    return this;
   }
 
   /**

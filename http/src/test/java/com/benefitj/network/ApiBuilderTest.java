@@ -11,6 +11,7 @@ import junit.framework.TestCase;
 import okhttp3.*;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.ByteString;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Test;
@@ -24,8 +25,10 @@ import retrofit2.http.Query;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -141,6 +144,7 @@ public class ApiBuilderTest extends TestCase {
           }
         });
     log.info("耗时: {}", TimeUtils.diffNow(start));
+
   }
 
   @Test
@@ -186,13 +190,17 @@ public class ApiBuilderTest extends TestCase {
   @Test
   public void testWebSocket() throws InterruptedException {
     final CountDownLatch latch = new CountDownLatch(1);
-
-    String url = "ws://127.0.0.1:80/api/sockets/simple";
+//    String url = "ws://127.0.0.1:80/api/sockets/simple";
+    String url = "ws://127.0.0.1:2100/devtools/browser/447380f9-fbe2-462c-a75c-2c388ea34ed6";
     WebSocket socket = HttpClientHolder.newWebSocket(url, new WebSocketListener() {
       @Override
       public void onOpen(@NotNull WebSocket webSocket, @NotNull okhttp3.Response response) {
         latch.countDown();
         log.info("onOpen, code: {}", response.code());
+
+        EventLoop.io().execute(() -> {
+
+        });
       }
 
       @Override
@@ -224,10 +232,11 @@ public class ApiBuilderTest extends TestCase {
     });
 
     latch.await();
-    for (int i = 0; i < 20; i++) {
-      socket.send("from okhttp websocket: " + i);
-      EventLoop.sleepSecond(1);
-    }
+//    for (int i = 0; i < 20; i++) {
+//      socket.send("about:blank");
+//      EventLoop.sleepSecond(1);
+//    }
+    EventLoop.sleepSecond(10);
     socket.close(1000, "done");
 
   }
@@ -270,6 +279,91 @@ public class ApiBuilderTest extends TestCase {
     } else {
       log.info("error: " + response.message());
     }
+  }
+
+  @Test
+  public void testDownload2() throws Exception {
+    String url = "https://npm.taobao.org/mirrors/chromium-browser-snapshots/Win_x64/1132420/chrome-win.zip";
+    okhttp3.Response response = HttpHelper.get().get(url);
+    log.info("headers: {}", response.headers());
+    File dest = IOUtils.createFile("D:/home/tmp/chrome-win222.zip");
+    BodyUtils.transferTo(response.body(), dest, (total, progress) -> {
+      log.info("{}, {}, {}， {}"
+          , dest.getName()
+          , total
+          , progress,
+          Utils.fmt((progress * 100.0) / total, "0.00")
+      );
+    });
+
+  }
+
+  @Test
+  public void testDownload3() throws Exception {
+//    String url = "https://mirrors.tuna.tsinghua.edu.cn/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso";
+    String url = "https://npm.taobao.org/mirrors/chromium-browser-snapshots/Win_x64/1132420/chrome-win.zip";
+//    String url = "http://127.0.0.1/api/files/download?bucketName=test&filename=/测试/chrome-win.zip";
+    System.err.println("size ==>: " + (4.0 * (1024 << 10)) / Utils.MB);
+    okhttp3.Response response = HttpHelper.get()
+        .setGzipEnable(false)
+        .get(url);
+    if (response.isSuccessful()) {
+      log.info("headers ==>: \n{}", response.headers());
+
+      HttpUrl httpUrl = response.request().url();
+
+//      Map<String, String> headers = new LinkedHashMap<>();
+//      Map<String, String> parameters = new LinkedHashMap<>();
+//      HttpHelper.get().download(url, headers, parameters);
+
+      String filename = httpUrl.queryParameter("filename");
+      filename = StringUtils.isNotBlank(filename) ? filename : httpUrl.pathSegments().get(httpUrl.pathSize() - 1);
+      filename = filename.substring(filename.lastIndexOf("/") + 1);
+
+      long MAX_SIZE = 200 * Utils.MB;
+      long contentLength = BodyUtils.getContentLength(response.headers());
+      CountDownLatch latch = new CountDownLatch((int) (contentLength / MAX_SIZE) + 1);
+      File dest = IOUtils.createFile("D:/home/tmp/" + filename);
+      new RandomAccessFile(dest, "rw").setLength(contentLength);
+      for (int i = 0, j = 0; i < contentLength; i += MAX_SIZE, j++) {
+        long startPosition = i, endPosition = Math.min(i + MAX_SIZE, contentLength) - 1;
+        int index = j;
+        EventLoop.single().execute(() -> {
+          try {
+            download(IOUtils.createFile(dest.getParentFile(), index + "__" + dest.getName()), url, startPosition, endPosition, index);
+          } finally {
+            latch.countDown();
+            log.info("{} end: [{} - {}]", index, startPosition, endPosition);
+          }
+        });
+      }
+      latch.await();
+      System.err.println("---------------------------------");
+    } else {
+      log.info("error: {}, code: {}", response.message(), response.code());
+    }
+  }
+
+  public void download(File dest, String url, long startPosition, long endPosition, int index) {
+    Map<String, String> headers = new HashMap<>();
+    headers.put("Range", "bytes=" + startPosition + "-" + endPosition);
+    headers.put("accept-encoding", "gzip, deflate, br");
+    HttpHelper httpHelper = HttpHelper.get().setGzipEnable(false);
+    okhttp3.Response response = httpHelper.get(url, headers);
+    log.warn("{}, start~end: {} ~ {}. headers: {}", dest.getName(), startPosition, endPosition, response.headers());
+    long totalLength = BodyUtils.getContentLength(response.headers());
+    BodyUtils.transferTo(response.body(), dest, startPosition, endPosition, (total, progress) -> {
+      log.info("{} [{} - {}]下载中：{}, totalLength: {}, total: {}, progress: {}, {}%, ..."
+          , index
+          , startPosition
+          , endPosition
+          , dest.getName()
+          , totalLength
+          , total
+          , progress
+          , Utils.fmt((progress * 100.0) / totalLength, "0.00")
+      );
+    });
   }
 
   @Test
@@ -364,7 +458,6 @@ public class ApiBuilderTest extends TestCase {
       log.info("error: " + response.message());
     }
   }
-
 
   @Test
   public void test() {

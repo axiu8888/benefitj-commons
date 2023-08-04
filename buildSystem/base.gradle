@@ -24,8 +24,8 @@ trying({ project.ext.springEnv = plugins.stream().anyMatch(p -> p.class.simpleNa
 
 //archivesBaseName = "${getProject().name}"
 
-sourceCompatibility = trying({project.ext.compatibilityVersion}, JavaVersion.VERSION_1_8)
-targetCompatibility = trying({project.ext.compatibilityVersion}, JavaVersion.VERSION_1_8)
+sourceCompatibility = trying({ project.ext.compatibilityVersion }, JavaVersion.VERSION_1_8)
+targetCompatibility = trying({ project.ext.compatibilityVersion }, JavaVersion.VERSION_1_8)
 
 tasks.withType(JavaCompile) {
   options.encoding = "UTF-8"
@@ -107,7 +107,7 @@ ext {
   fastjson2Version = '2.0.22'
   commonsIOVersion = "2.11.0"
   commonsLang3Version = "3.12.0"
-  slf4jVersion = '2.0.6'
+  slf4jVersion = '2.0.7'
 
   if (trying({ project.ext.springEnv }, false)) {
     set('springCloudVersion', "2021.0.0")
@@ -121,9 +121,11 @@ dependencies {
 
   annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
   compileOnly("org.projectlombok:lombok:${lombokVersion}")
-  testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
   testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+  testImplementation "org.projectlombok:lombok:${lombokVersion}"
 
+  compileOnly "org.slf4j:slf4j-simple:${slf4jVersion}"
+  testImplementation "org.slf4j:slf4j-simple:${slf4jVersion}"
 
   def deps = [
       //"javax.inject:javax.inject:1",
@@ -133,11 +135,11 @@ dependencies {
       "org.apache.commons:commons-lang3:${commonsLang3Version}",
       "com.google.guava:guava:${guavaVersion}",
       "com.alibaba.fastjson2:fastjson2:${fastjson2Version}",
-      "org.slf4j:slf4j-simple:${slf4jVersion}",
 
-      "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}",
+      //"com.fasterxml.jackson.core:jackson-core:${jacksonVersion}",
       "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
-      "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}",]
+      "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}",
+  ]
 
   deps.forEach {
     implementation(it)

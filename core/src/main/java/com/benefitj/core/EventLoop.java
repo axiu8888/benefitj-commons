@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * 事件循环
  */
-public class EventLoop implements ScheduledExecutorService {
+public class EventLoop implements ExecutorService, ScheduledExecutorService {
 
   private static final int PROCESSOR_SIZE = Runtime.getRuntime().availableProcessors();
   /**
@@ -281,6 +281,22 @@ public class EventLoop implements ScheduledExecutorService {
 
   public static String threadName() {
     return Thread.currentThread().getName();
+  }
+
+  public static ScheduledFuture<?> asyncIO(Runnable task) {
+    return asyncIO(task, 0);
+  }
+
+  public static ScheduledFuture<?> asyncIO(Runnable task, long delay) {
+    return io().schedule(task, delay, TimeUnit.MILLISECONDS);
+  }
+
+  public static ScheduledFuture<?> asyncIOFixedRate(Runnable task, long period) {
+    return asyncIOFixedRate(task, period, period);
+  }
+
+  public static ScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period) {
+    return io().scheduleAtFixedRate(task, initialDelay, period, TimeUnit.MILLISECONDS);
   }
 
 }

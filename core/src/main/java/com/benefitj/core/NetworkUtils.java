@@ -1,6 +1,7 @@
 package com.benefitj.core;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -9,6 +10,21 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class NetworkUtils {
+
+  /**
+   * 获取一个可用的端口
+   *
+   * @return 返回可用的端口
+   */
+  public static int availablePort() {
+    try (DatagramSocket socket = new DatagramSocket(0);) {
+      int port = socket.getPort();
+      socket.close();
+      return port;
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
 
   /**
    * 获取主机地址

@@ -48,7 +48,7 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
   /**
    * Gzip请求
    */
-  private Interceptor gzipInterceptor = new GzipRequestInterceptor();
+  private Interceptor gzipInterceptor = new GzipRequestInterceptor(true);
   /**
    * HTTP日志
    */

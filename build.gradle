@@ -4,7 +4,7 @@ ext {
   springExperimentalAotVersion = "0.12.1"
 
   springIntegrationVersion = "5.5.13"
-  slf4jVersion = '2.0.3'
+  slf4jVersion = '2.0.7'
   lombokVersion = "1.18.28"
   jacksonVersion = "2.14.1"
   aspectjVersion = "1.9.9.1"

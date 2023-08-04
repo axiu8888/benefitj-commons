@@ -3,7 +3,6 @@ package com.benefitj.core.cmd;
 import com.benefitj.core.*;
 import com.benefitj.core.file.PathWatcher;
 import com.benefitj.core.functions.IRunnable;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -16,8 +15,6 @@ import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 测试CMD命令调用
@@ -29,39 +26,42 @@ public class CmdExecutorTest extends BaseTest {
   @Test
   public void testChromium() {
     // D:\tmp\.local-browser\win64-1132420\chrome-win\chrome.exe--user-data-dir=D:\home\tmp\.local-browser\win64-1132420/userDataDir about:blank --start-maximized --auto-open-devtools-for-tabs --disable-background-timer-throttling --disable-breakpad --disable-browser-side-navigation --disable-client-side-phishing-detection --disable-default-apps --disable-dev-shm-usage --disable-features=site-per-process --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-translate --metrics-recording-only --no-first-run --safebrowsing-disable-auto-update --enable-automation --password-store=basic --use-mock-keychain --remote-debugging-port=61370
-    String dir = "D:/tmp/.local-browser/win64-1132420";
-    String cmd = dir + "/chrome-win/chrome.exe";
-    String envparams = ""
-        + " --user-data-dir=" + dir + "/userDataDir about:blank"
-        + " --start-maximized"
-        //+ " --auto-open-devtools-for-tabs"
-        + " --disable-background-timer-throttling"
-        + " --disable-breakpad"
-        + " --disable-browser-side-navigation"
-        + " --disable-client-side-phishing-detection"
-        + " --disable-default-apps"
-        + " --disable-dev-shm-usage"
-        + " --disable-features=site-per-process"
-        + " --disable-hang-monitor"
-        + " --disable-popup-blocking"
-        + " --disable-prompt-on-repost"
-        + " --disable-translate"
-        + " --metrics-recording-only"
-        + " --no-first-run"
-        + " --safebrowsing-disable-auto-update"
-        + " --enable-automation"
-        + " --password-store=basic"
-        + " --use-mock-keychain"
-        + " --remote-debugging-port=61370";
-
-    List<String> envp = Stream.of(envparams.split(" --")).filter(StringUtils::isNotBlank).map(str -> "--" + str).collect(Collectors.toList());
-    CmdCall call = CmdExecutor.get().call(cmd, envp, null, -1, new Callback() {
+//    String dir = "D:/home/tmp/.local-browser/win64-1132420";
+    String dir = "D:\\home\\tmp\\.local-browser\\win64-1132420";
+    String[] args = (
+        dir + "\\chrome-win\\chrome.exe\n" +
+//        dir + "/chrome-win/chrome.exe\n" +
+            "--user-data-dir="+ dir +"/userDataDir\n" +
+            "--disable-background-networking\n" +
+            "--disable-background-timer-throttling\n" +
+            "--disable-breakpad\n" +
+            "--disable-browser-side-navigation\n" +
+            "--disable-client-side-phishing-detection\n" +
+            "--disable-default-apps\n" +
+            "--disable-dev-shm-usage\n" +
+            "--disable-extensions\n" +
+            "--disable-features=site-per-process\n" +
+            "--disable-hang-monitor\n" +
+            "--disable-popup-blocking\n" +
+            "--disable-prompt-on-repost\n" +
+            "--disable-sync\n" +
+            "--disable-translate\n" +
+            "--metrics-recording-only\n" +
+            "--no-first-run\n" +
+            "--safebrowsing-disable-auto-update\n" +
+            "--enable-automation\n" +
+            "--password-store=basic\n" +
+            "--use-mock-keychain\n" +
+            "--remote-debugging-port=0"
+        ).split("\n");
+    String cmd = String.join(" ", args);
+    CmdCall call = CmdExecutor.get().call(cmd, null, null, -1, new Callback() {
       @Override
       public void onMessage(CmdCall call, List<String> lines, String line, boolean error) {
         log.info("onMessage: {}, \nlines: {}, \nline: {}, \nerror: {}", call.getId(), String.join("; ", lines), line, error);
         Matcher matcher = WS_ENDPOINT_PATTERN.matcher(line);
         if (matcher.find()) {
-          log.info("we endpoint: {}", matcher.group(1));
+          log.info("ws endpoint: {}", matcher.group(1));
         }
       }
     });

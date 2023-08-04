@@ -6,10 +6,15 @@ import com.benefitj.core.functions.IBiConsumer;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 /**
@@ -169,7 +174,6 @@ public class BodyUtils {
     }
   }
 
-
   /**
    * 将响应体写入到文件中
    *
@@ -177,25 +181,46 @@ public class BodyUtils {
    * @param dest 目标文件
    */
   public static void transferTo(ResponseBody body, File dest) {
+    transferTo(body, dest, (total, progress) -> {/* ignore */});
+  }
+
+  /**
+   * 将响应体写入到文件中
+   *
+   * @param body 响应体
+   * @param dest 目标文件
+   */
+  public static void transferTo(ResponseBody body, File dest, BiConsumer<Long, Long> progressConsumer) {
+    transferTo(body, dest, 0, -1, progressConsumer);
+  }
+
+  /**
+   * 将响应体写入到文件中
+   *
+   * @param body 响应体
+   * @param dest 目标文件
+   */
+  public static void transferTo(ResponseBody body, File dest, long startPos, long endPos, BiConsumer<Long, Long> progressConsumer) {
     if (!dest.exists()) {
-      try {
-        dest.getParentFile().mkdirs();
-        dest.createNewFile();
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
-      }
+      throw new IllegalStateException("文件不存在: " + dest.getAbsolutePath());
     }
     if (dest.isDirectory()) {
       throw new IllegalArgumentException("传入的File对象是文件夹，无法写入数据!");
     }
-    try (final InputStream is = body.byteStream();
-         final OutputStream fos = new FileOutputStream(dest);) {
-      byte[] buf = new byte[1024 << 8];
+    try (final InputStream in = body.byteStream();
+         final RandomAccessFile rw = new RandomAccessFile(dest, "rw");) {
+      long contentLength = body.contentLength();
+      long total = contentLength > 0 ? contentLength : (Math.max(endPos, startPos) - startPos);
+      AtomicLong progress = new AtomicLong();
+      rw.seek(startPos);
+      byte[] buf = new byte[ 1024 << 10];
       int len;
-      while ((len = is.read(buf)) > 0) {
-        fos.write(buf, 0, len);
+      while ((len = in.read(buf)) > 0) {
+        progress.addAndGet(len);
+        rw.write(buf, 0, len);
+        progressConsumer.accept(total, progress.get());
       }
-      fos.flush();
+      progressConsumer.accept(total, progress.get());
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
