@@ -2,13 +2,11 @@ package com.benefitj.http;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.WebSocket;
-import okhttp3.WebSocketListener;
 
 /**
  * OkHttpClient
  */
-public enum HttpClientHolder {
+public enum HttpClient {
 
   INSTANCE;
 
@@ -17,7 +15,7 @@ public enum HttpClientHolder {
   /**
    * 获取OkHttp客户端
    */
-  public static OkHttpClient getOkHttpClient() {
+  public static OkHttpClient get() {
     return INSTANCE.client;
   }
 
@@ -39,12 +37,38 @@ public enum HttpClientHolder {
   /**
    * 创建 WebSocket
    *
+   * @param url URL地址
+   * @return 返回创建的WebSocket对象
+   */
+  public static WebSocket newWebSocket(WebSocketImpl socket, String url) {
+    Request request = new Request.Builder()
+        .url(url)
+        .get()
+        .build();
+    return newWebSocket(socket, request);
+  }
+
+  /**
+   * 创建 WebSocket
+   *
    * @param request  URL地址
    * @param listener 监听
    * @return 返回创建的WebSocket对象
    */
   public static WebSocket newWebSocket(Request request, WebSocketListener listener) {
-    return getOkHttpClient().newWebSocket(request, listener);
+    return newWebSocket(new WebSocketImpl(listener), request);
+  }
+
+  /**
+   * 创建 WebSocket
+   *
+   * @param socket  WebSocket客户端
+   * @param request URL地址
+   * @return 返回创建的WebSocket对象
+   */
+  public static WebSocket newWebSocket(WebSocketImpl socket, Request request) {
+    socket.setRaw(get().newWebSocket(request, socket));
+    return socket;
   }
 
 }

@@ -101,13 +101,15 @@ repositories {
 
 
 ext {
-  lombokVersion = "1.18.28"
-  jacksonVersion = "2.14.1"
-  guavaVersion = '31.1-jre'
-  fastjson2Version = '2.0.22'
-  commonsIOVersion = "2.11.0"
-  commonsLang3Version = "3.12.0"
-  slf4jVersion = '2.0.7'
+  lombokVersion = trying({ rootProject.lombokVersion }, "1.18.28")
+  jacksonVersion = trying({ rootProject.jacksonVersion }, "2.14.1")
+  guavaVersion = trying({ rootProject.guavaVersion }, '31.1-jre')
+  fastjson2Version = trying({ rootProject.fastjson2Version }, '2.0.38')
+  commonsIOVersion = trying({ rootProject.commonsIOVersion }, "2.11.0")
+  commonsLang3Version = trying({ rootProject.commonsLang3Version }, "3.12.0")
+  slf4jVersion = trying({ rootProject.slf4jVersion }, '2.0.7')
+  logbackVersion = trying({ rootProject.logbackVersion }, '1.4.8')
+  hutoolVersion = trying({ rootProject.hutoolVersion }, '5.8.18')
 
   if (trying({ project.ext.springEnv }, false)) {
     set('springCloudVersion', "2021.0.0")
@@ -126,6 +128,8 @@ dependencies {
 
   compileOnly "org.slf4j:slf4j-api:${slf4jVersion}"
   testImplementation "org.slf4j:slf4j-api:${slf4jVersion}"
+  compileOnly "ch.qos.logback:logback-classic:${logbackVersion}"
+  testImplementation "ch.qos.logback:logback-classic:${logbackVersion}"
 
   def deps = [
       //"javax.inject:javax.inject:1",
@@ -134,12 +138,14 @@ dependencies {
       "commons-io:commons-io:${commonsIOVersion}",
       "org.apache.commons:commons-lang3:${commonsLang3Version}",
       "com.google.guava:guava:${guavaVersion}",
+      "cn.hutool:hutool-all:${hutoolVersion}",
       "com.alibaba.fastjson2:fastjson2:${fastjson2Version}",
 
       //"com.fasterxml.jackson.core:jackson-core:${jacksonVersion}",
       "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
       "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}",
   ]
+
 
   deps.forEach {
     implementation(it)

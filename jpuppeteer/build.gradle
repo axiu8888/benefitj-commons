@@ -1,0 +1,12 @@
+
+apply from: "${scriptFile}"
+
+// 上传到nexus/maven仓库
+ext.upload = false
+
+dependencies {
+    api(project(":core"))
+    api(project(":http"))
+    implementation("com.alibaba.fastjson2:fastjson2:${fastjson2Version}")
+}
+

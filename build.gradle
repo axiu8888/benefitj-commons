@@ -9,7 +9,7 @@ ext {
   jacksonVersion = "2.14.1"
   aspectjVersion = "1.9.9.1"
   guavaVersion = "31.1-jre"
-  fastjson2Version = "2.0.21"
+  fastjson2Version = "2.0.38"
 
   swagger2Version = "3.0.0"
   jjwtVersion = "0.11.5"

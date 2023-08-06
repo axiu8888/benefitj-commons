@@ -10,9 +10,11 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,9 +29,9 @@ public class CmdExecutorTest extends BaseTest {
   public void testChromium() {
     // D:\tmp\.local-browser\win64-1132420\chrome-win\chrome.exe--user-data-dir=D:\home\tmp\.local-browser\win64-1132420/userDataDir about:blank --start-maximized --auto-open-devtools-for-tabs --disable-background-timer-throttling --disable-breakpad --disable-browser-side-navigation --disable-client-side-phishing-detection --disable-default-apps --disable-dev-shm-usage --disable-features=site-per-process --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-translate --metrics-recording-only --no-first-run --safebrowsing-disable-auto-update --enable-automation --password-store=basic --use-mock-keychain --remote-debugging-port=61370
 //    String dir = "D:/home/tmp/.local-browser/win64-1132420";
-    String dir = "D:\\home\\tmp\\.local-browser\\win64-1132420";
+    String dir = "D:/home/tmp/.local-browser/win64-1132420";
     String[] args = (
-        dir + "\\chrome-win\\chrome.exe\n" +
+        dir + "/chrome-win/chrome.exe\n" +
 //        dir + "/chrome-win/chrome.exe\n" +
             "--user-data-dir="+ dir +"/userDataDir\n" +
             "--disable-background-networking\n" +
@@ -95,7 +97,7 @@ public class CmdExecutorTest extends BaseTest {
 
   @Test
   public void testMmhgReport() {
-    File dir = new File("D:\\tmp\\jdk-app\\hingmed");
+    File dir = new File("D:/tmp/jdk-app/hingmed");
     CmdCall call = CmdExecutor.get().call("cmd /c commandPrintPdf.exe report.xml report.pdf 127", null, dir);
     System.err.println(call.toPrintInfo("mmhg report", null));
   }
@@ -105,9 +107,9 @@ public class CmdExecutorTest extends BaseTest {
 //    new GitPull(new File("D:/code/github"), 5).pull();
 //    new GitPull(new File("D:/code/github/java"), 5).pull();
 
-    CountDownLatch latch = new CountDownLatch(2);
-    //pull("D:\\code\\github\\frontend", latch);
-    pull("D:\\code\\github\\java\\vertx", latch);
+    CountDownLatch latch = new CountDownLatch(1);
+    pull("D:/code/github/frontend", latch);
+    pull("D:/code/github/java/vertx", latch);
     CatchUtils.ignore((IRunnable) latch::await);
   }
 
@@ -143,12 +145,27 @@ public class CmdExecutorTest extends BaseTest {
 
     System.err.println(cmd);
 
-    String dir = "D:/home/https";
+    String dir = "D:/tmp/https";
+
+    PathWatcher pathWatcher = new PathWatcher(Paths.get(dir))
+        .setWatchEventListener((watcher, key, filename, kind) -> {
+          log.info("文件：" + (filename + " " + PathWatcher.ofDesc(kind)) + ", 发生事件：" + kind.name() +", " + DateFmtter.fmtNowS());
+          if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
+//            if (filename.getFileName().startsWith("error.txt")) {
+//              File file = filename.getFileName().toFile();
+//              log.info("{}, {}", filename.getFileName(), IOUtils.readFileLines(filename.getFileName().toFile()));
+//            }
+            EventLoop.io().schedule(() -> {
+              log.info("{}, {}", filename.getFileName(), IOUtils.readFileLines(filename.getFileName().toFile()));
+            }, 1, TimeUnit.SECONDS);
+          }
+        });
+    EventLoop.io().execute(pathWatcher::start);
     ProcessBuilder builder = new ProcessBuilder()
         .command(cmdarray(cmd))
         .directory(new File(dir))
         .redirectError(ProcessBuilder.Redirect.to(IOUtils.createFile(dir + "/error.txt")))
-        .redirectInput(ProcessBuilder.Redirect.from(IOUtils.createFile(dir + "/in.txt")))
+        //.redirectInput(ProcessBuilder.Redirect.from(IOUtils.createFile(dir + "/in.txt")))
         .redirectOutput(ProcessBuilder.Redirect.to(IOUtils.createFile(dir + "/out.txt")));
     Process process = builder.start();
     process.waitFor();
@@ -183,8 +200,8 @@ public class CmdExecutorTest extends BaseTest {
 
     String charsetName = SystemProperty.getFileEncoding();
     // 监听文件
-    PathWatcher watcher = new PathWatcher(Paths.get(envdir))
-        .setWatchEventListener((key, context, kind) -> {
+    PathWatcher pw = new PathWatcher(Paths.get(envdir))
+        .setWatchEventListener((watcher, key, context, kind) -> {
           File src = context.toFile();
           String type = src.getName();
           log.info("{}  ==>: {}, {}", type, kind.name(), IOUtils.readFileAsString(src, Charset.forName(charsetName)));
@@ -197,7 +214,7 @@ public class CmdExecutorTest extends BaseTest {
 //              break;
 //          }
         });
-    EventLoop.io().execute(watcher::start);
+    EventLoop.io().execute(pw::start);
 
     Process process = builder.start();
 

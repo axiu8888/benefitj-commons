@@ -1,14 +1,19 @@
 package com.benefitj.network;
 
+import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.core.*;
 import com.benefitj.core.file.IWriter;
+import com.benefitj.core.file.PathWatcher;
 import com.benefitj.http.*;
 import io.reactivex.Observable;
 import junit.framework.TestCase;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.HttpUrl;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.ByteString;
 import org.apache.commons.lang3.StringUtils;
@@ -27,11 +32,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ApiBuilderTest extends TestCase {
 
@@ -188,19 +196,52 @@ public class ApiBuilderTest extends TestCase {
   }
 
   @Test
+  public void testWebSocket2() {
+    AtomicReference<WebSocket> socketRef = new AtomicReference<>();
+    new PathWatcher(Paths.get("D:/tmp/.local-browser/win64-1132420/userDataDir/"))
+        .setKinds(StandardWatchEventKinds.ENTRY_MODIFY)
+        .setWatchEventListener((watcher, key, path, filename, kind) -> {
+          if (filename.equalsIgnoreCase("ws-info.txt")) {
+            log.info("文件：" + ((new File(path.toFile(), filename)) + " " + PathWatcher.ofDesc(kind)) + ", 发生事件：" + kind.name() + ", " + DateFmtter.fmtNowS());
+            String wsEndpoint = FileUtil.readString(new File(path.toFile(), filename), StandardCharsets.UTF_8);
+            log.info("wsEndpoint: {}", wsEndpoint);
+            if (socketRef.get() == null) {
+              EventLoop.io().execute(() -> {
+                CountDownLatch latch = new CountDownLatch(1);
+                WebSocket socket = createWebSocket(wsEndpoint, latch, socketRef);
+                socketRef.set(socket);
+                CatchUtils.ignore(() -> latch.await());
+                socket.send("{\"id\":1,\"method\":\"Target.setDiscoverTargets\",\"params\":{\"discover\":true}}");
+              });
+            }
+          }
+        })
+        .start();
+  }
+
+  @Test
   public void testWebSocket() throws InterruptedException {
     final CountDownLatch latch = new CountDownLatch(1);
-//    String url = "ws://127.0.0.1:80/api/sockets/simple";
-    String url = "ws://127.0.0.1:2100/devtools/browser/447380f9-fbe2-462c-a75c-2c388ea34ed6";
-    WebSocket socket = HttpClientHolder.newWebSocket(url, new WebSocketListener() {
+    String url = "ws://127.0.0.1:80/api/sockets/simple";
+    WebSocket socket = createWebSocket(url, latch, new AtomicReference<>());
+    latch.await();
+    for (int i = 0; i < 20; i++) {
+      socket.send("about:blank");
+      EventLoop.sleepSecond(1);
+    }
+    EventLoop.sleepSecond(10);
+    socket.close(1000, "done");
+  }
+
+  public WebSocket createWebSocket(String url, CountDownLatch latch, AtomicReference<WebSocket> socketRef) {
+    return HttpClient.newWebSocket(url, new WebSocketListener() {
       @Override
       public void onOpen(@NotNull WebSocket webSocket, @NotNull okhttp3.Response response) {
-        latch.countDown();
-        log.info("onOpen, code: {}", response.code());
-
-        EventLoop.io().execute(() -> {
-
-        });
+        log.info("onOpen, code: {}, {}, {}", response.code(), response.message(), CatchUtils.ignore(() -> response.body().string()));
+        socketRef.set(webSocket);
+        if (latch != null) {
+          latch.countDown();
+        }
       }
 
       @Override
@@ -215,8 +256,11 @@ public class ApiBuilderTest extends TestCase {
 
       @Override
       public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable e, @Nullable okhttp3.Response response) {
-        log.info("onFailure, error: {}", e.getMessage());
-        latch.countDown();
+        log.info("onFailure, error: {}, {}, {}", e.getMessage(), response != null ? response.message() : null, CatchUtils.ignore(() -> response.body().string()));
+        if (latch != null) {
+          latch.countDown();
+        }
+        e.printStackTrace();
       }
 
       @Override
@@ -227,18 +271,12 @@ public class ApiBuilderTest extends TestCase {
       @Override
       public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
         log.info("onClosed, code: {}, reason: {}", code, reason);
-        latch.countDown();
+        socketRef.set(null);
+        if (latch != null) {
+          latch.countDown();
+        }
       }
     });
-
-    latch.await();
-//    for (int i = 0; i < 20; i++) {
-//      socket.send("about:blank");
-//      EventLoop.sleepSecond(1);
-//    }
-    EventLoop.sleepSecond(10);
-    socket.close(1000, "done");
-
   }
 
   @Test

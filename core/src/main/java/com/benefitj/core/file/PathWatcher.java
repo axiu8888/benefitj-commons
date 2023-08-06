@@ -4,11 +4,14 @@ import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IOUtils;
 import com.sun.nio.file.SensitivityWatchEventModifier;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PathWatcher implements Cloneable {
@@ -64,25 +67,28 @@ public class PathWatcher implements Cloneable {
       try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
         // 注册文件 创建、修改 事件的监听
         List<Path> paths = getPaths();
+        Map<WatchKey, Path> keyPaths = new ConcurrentHashMap<>(paths.size());
         paths.forEach(path -> {
           try {
-            path.register(watchService, getKinds(), getSensitivity());
+            WatchKey key = path.register(watchService, getKinds(), getSensitivity());
+            keyPaths.put(key, path);
           } catch (IOException e) {
-            getWatchEventListener().onError(path, e);
+            getWatchEventListener().onError(this, path, null, e);
           }
         });
-        watching: while (running.get()) {
+        watching:
+        while (running.get()) {
           //返回排队的 key。如果没有排队的密钥可用，则此方法等待。
           WatchKey key = watchService.take();
           try {
             for (WatchEvent<?> watchEvent : key.pollEvents()) {
+              String filename = ((WatchEvent<Path>) watchEvent).context().toString();
+              Path dir = keyPaths.get(key);
               try {
-                WatchEvent.Kind<?> kind = watchEvent.kind();
-                WatchEvent<Path> watchEventPath = (WatchEvent<Path>) watchEvent;
                 //检索与事件关联的文件名。文件名被存储为事件的上下文
-                getWatchEventListener().onEvent(key, watchEventPath.context(), kind);
+                getWatchEventListener().onEvent(this, key, dir, filename, watchEvent.kind());
               } catch (Exception e) {
-                getWatchEventListener().onError(((WatchEvent<Path>) watchEvent).context(), e);
+                getWatchEventListener().onError(this, dir, filename, e);
               }
             }
           } finally {
@@ -125,7 +131,7 @@ public class PathWatcher implements Cloneable {
     return kinds;
   }
 
-  public PathWatcher setKinds(WatchEvent.Kind[] kinds) {
+  public PathWatcher setKinds(WatchEvent.Kind... kinds) {
     this.kinds = kinds;
     return this;
   }
@@ -144,19 +150,23 @@ public class PathWatcher implements Cloneable {
     /**
      * 事件
      *
+     * @param watcher  监听器
      * @param key      键
-     * @param filename 文件路径
+     * @param path     目录
+     * @param filename 文件名
      * @param kind     事件类型
      */
-    void onEvent(WatchKey key, Path filename, WatchEvent.Kind<?> kind);
+    void onEvent(PathWatcher watcher, WatchKey key, Path path, String filename, WatchEvent.Kind<?> kind);
 
     /**
      * 出现异常
      *
-     * @param context 路径
-     * @param e       异常
+     * @param watcher  监听器
+     * @param dir      目录
+     * @param filename 文件名
+     * @param e        异常
      */
-    default void onError(Path context, Exception e) {
+    default void onError(PathWatcher watcher, Path dir, @Nullable String filename, Exception e) {
       e.printStackTrace();
     }
 

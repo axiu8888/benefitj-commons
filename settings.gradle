@@ -30,5 +30,6 @@ include ":device"           // 设备
 include ":mqtt"             // mqtt
 include ":jdbc"             // jdbc
 include ":extensions"       // 扩展功能
+include ":jpuppeteer"       // chromium puppeteer
 
 

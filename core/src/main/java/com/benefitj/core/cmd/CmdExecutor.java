@@ -1,9 +1,6 @@
 package com.benefitj.core.cmd;
 
-import com.benefitj.core.EventLoop;
-import com.benefitj.core.IOUtils;
-import com.benefitj.core.IdUtils;
-import com.benefitj.core.SingletonSupplier;
+import com.benefitj.core.*;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -210,63 +207,17 @@ public class CmdExecutor {
     try {
       return safeCall(timeout, start, () -> {
         cb.onCallBefore(call, cmd, envparams, dir);
-        /*List<String> command = Stream.concat(Stream.of(cmd), Stream.of(envparams))
-            .map(String::trim)
-            .map(str -> str.replace("/", File.separator).replace("\\", File.separator))
-            .filter(StringUtils::isNotBlank)
-            .collect(Collectors.toList());
-        final Process process = new ProcessBuilder()
-            .command(command)
-            .redirectErrorStream(true)
-            .start();*/
         final Process process = Runtime.getRuntime().exec(cmd, envparams, dir);
         call.setProcess(process);
         cb.onCallAfter(process, call);
         // 强制结束
         scheduleTimeout(call, timeout - (now() - start));
         cb.onWaitForBefore(process, call);
-        try {
-          try {
-            // 读取消息
-            Charset charset = Charset.forName(System.getProperty("sun.jnu.encoding"));
-            try (BufferedReader pipeReader = IOUtils.wrapReader(process.getInputStream(), charset);
-                 BufferedReader errorReader = IOUtils.wrapReader(process.getErrorStream(), charset);) {
-              List<String> msgLines = new LinkedList<>();
-              List<String> errLines = new LinkedList<>();
-              CountDownLatch latch = new CountDownLatch(2);
-              getExecutor().execute(() -> {
-                try {
-                  IOUtils.readLines(pipeReader, line -> {
-                    msgLines.add(line);
-                    cb.onMessage(call, msgLines, line, false);
-                  });
-                } finally {
-                  latch.countDown();
-                }
-              });
-              getExecutor().execute(() -> {
-                try {
-                  IOUtils.readLines(errorReader, line -> {
-                    errLines.add(line);
-                    cb.onMessage(call, errLines, line, true);
-                  });
-                } finally {
-                  latch.countDown();
-                }
-              });
-              latch.await();
-              call.setMessage(String.join(CRLF, msgLines));
-              call.setError(String.join(CRLF, errLines));
-            }
-          } catch (IOException e) {
-            call.setError(e.getMessage());
-          }
-          // 等待
-          //int exitValue = process.waitFor();
-          call.setCode(process.exitValue());
-        } catch (InterruptedException e) {
-          call.setCode(-1);
-        }
+        // 处理消息
+        handle(getExecutor(), process, call, cb);
+        // 等待
+        //int exitValue = process.waitFor();
+        call.setCode(process.exitValue());
         // 移除等待的缓存
         cancelTimeoutSchedule(call.getId());
         // 调用结束
@@ -333,7 +284,7 @@ public class CmdExecutor {
     final AtomicReference<Thread> sign = this.sign;
     int maxProcess = getMaxCallNum();
     final Thread current = Thread.currentThread();
-    for (; ; ) {
+    for (;;) {
       if (sign.compareAndSet(null, current)) {
         // 执行的命令未达到最大值
         if (aliveProcess.get() < maxProcess) {
@@ -420,4 +371,61 @@ public class CmdExecutor {
     void accept(Object lock) throws InterruptedException;
   }
 
+  /**
+   * 处理进程
+   *
+   * @param process 进程
+   * @param cb      回调
+   */
+  public static void handle(Process process, Callback cb) {
+    handle(EventLoop.io(), process, new CmdCall(IdUtils.uuid()), cb);
+  }
+
+  /**
+   * 处理进程
+   *
+   * @param executor 线程池
+   * @param process  进程
+   * @param call     调用
+   * @param cb       回调
+   */
+  public static void handle(Executor executor, Process process, CmdCall call, Callback cb) {
+    try {
+      // 读取消息
+      Charset charset = Charset.forName(System.getProperty("sun.jnu.encoding"));
+      try (BufferedReader pipeReader = IOUtils.wrapReader(process.getInputStream(), charset);
+           BufferedReader errorReader = IOUtils.wrapReader(process.getErrorStream(), charset);) {
+        List<String> msgLines = new LinkedList<>();
+        List<String> errLines = new LinkedList<>();
+        CountDownLatch latch = new CountDownLatch(2);
+        executor.execute(() -> {
+          try {
+            IOUtils.readLines(pipeReader, line -> {
+              msgLines.add(line);
+              cb.onMessage(call, msgLines, line, false);
+            });
+          } finally {
+            latch.countDown();
+          }
+        });
+        executor.execute(() -> {
+          try {
+            IOUtils.readLines(errorReader, line -> {
+              errLines.add(line);
+              cb.onMessage(call, errLines, line, true);
+            });
+          } finally {
+            latch.countDown();
+          }
+        });
+        latch.await();
+        call.setMessage(String.join(CRLF, msgLines));
+        call.setError(String.join(CRLF, errLines));
+      }
+    } catch (InterruptedException e) {
+      call.setCode(-1);
+    } catch (IOException e) {
+      call.setError(e.getMessage());
+    }
+  }
 }

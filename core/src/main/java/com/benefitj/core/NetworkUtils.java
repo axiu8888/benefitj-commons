@@ -18,7 +18,7 @@ public class NetworkUtils {
    */
   public static int availablePort() {
     try (DatagramSocket socket = new DatagramSocket(0);) {
-      int port = socket.getPort();
+      int port = socket.getLocalPort();
       socket.close();
       return port;
     } catch (IOException e) {
