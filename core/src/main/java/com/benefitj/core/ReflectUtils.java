@@ -262,7 +262,7 @@ public class ReflectUtils {
       } else {
         cls = Object.class;
       }
-    } while (cls != Object.class);
+    } while (cls != null && cls != Object.class);
     if (fromTopToBottom) {
       Collections.reverse(classes);
     }
@@ -782,6 +782,21 @@ public class ReflectUtils {
       }
     }
     return null;
+  }
+
+  /**
+   * 获取方法名和参数值
+   *
+   * @param parameters 参数
+   * @param values 值
+   * @return 返回转换的Map
+   */
+  public static Map<String, Object> getParameterValues(Parameter[] parameters, Object[] values) {
+    Map<String, Object> map = new LinkedHashMap<>();
+    for (int i = 0; i < parameters.length; i++) {
+      map.put(parameters[i].getName(), values[i]);
+    }
+    return map;
   }
 
   public interface FindMatcher {

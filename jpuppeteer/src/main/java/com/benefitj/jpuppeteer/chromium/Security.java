@@ -1,5 +1,6 @@
 package com.benefitj.jpuppeteer.chromium;
 
+import com.benefitj.jpuppeteer.Event;
 import lombok.Data;
 
 import java.util.Arrays;
@@ -71,13 +72,6 @@ public interface Security {
    */
   @Event("visibleSecurityStateChanged")
   void visibleSecurityStateChanged(VisibleSecurityState visibleSecurityState);
-
-
-  public class CertificateId extends Base.IntegerBase {
-    public CertificateId(int value) {
-      super(value);
-    }
-  }
 
   /**
    * The action to take when a certificate error occurs. continue will continue processing the request and cancel will cancel the request.

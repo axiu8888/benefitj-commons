@@ -6,9 +6,8 @@ import com.alibaba.fastjson2.JSONWriter;
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.NetworkUtils;
-import com.benefitj.core.cmd.CmdCall;
-import com.benefitj.core.cmd.CmdExecutor;
-import com.benefitj.jpuppeteer.ChromiumLauncher;
+import com.benefitj.core.ReflectUtils;
+import com.benefitj.jpuppeteer.Chromium;
 import com.benefitj.jpuppeteer.LauncherOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
@@ -17,6 +16,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -24,10 +24,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Slf4j
-public class ChromiumLauncherTest {
+public class ChromiumTest {
+  public static void main(String[] args) {
+    new ChromiumTest().testProxyMethods();
+  }
 
   @Before
   public void setUp() throws Exception {
@@ -55,52 +59,27 @@ public class ChromiumLauncherTest {
   }
 
   @Test
-  public void test() {
-    String dir = "D:/tmp/.local-browser/win64-1132420";
-    String cmd = dir + "/chrome-win/chrome.exe"
-        + " --user-data-dir=" + dir + "/userDataDir"
-        + " about:blank"
-        + " --start-maximized"
-        + " --auto-open-devtools-for-tabs"
-        + " --disable-background-timer-throttling"
-        + " --disable-breakpad"
-        + " --disable-browser-side-navigation"
-        + " --disable-client-side-phishing-detection"
-        + " --disable-default-apps"
-        + " --disable-dev-shm-usage"
-        + " --disable-features=site-per-process"
-        + " --disable-hang-monitor"
-        + " --disable-popup-blocking"
-        + " --disable-prompt-on-repost"
-        + " --disable-translate"
-        + " --metrics-recording-only"
-        + " --no-first-run"
-        + " --safebrowsing-disable-auto-update"
-        + " --enable-automation"
-        + " --password-store=basic"
-        + " --use-mock-keychain"
-        + " --remote-debugging-port=61370";
-    CmdExecutor executor = CmdExecutor.get();
-    executor.setTimeout(10_000);
-    CmdCall call = executor.call(cmd, 5_000);
-    Process process = call.getProcess();
-    log.info("call: {}, \ncmd: {}, \nmsg: {}, \nerror: {}"
-        , call.getId()
-        , call.getCmd()
-        , call.getMessage()
-        , call.getError()
+  public void testProxyMethods() {
+    ReflectUtils.findMethods(ReflectUtils.class
+        , m -> true
+        , m -> {
+          log.info("{}.{}({})"
+              , m.getDeclaringClass().getSimpleName()
+              , m.getName()
+              , Stream.of(m.getParameters()).map(Parameter::getName).collect(Collectors.toList())
+          );
+        }
+        , m -> false
     );
-    log.info("process: {}", process.isAlive());
-
   }
 
   @Test
   public void testLauncher() {
     String dir = "D:/tmp/.local-browser/win64-1132420";
-    ChromiumLauncher launcher = new ChromiumLauncher();
+    Chromium launcher = new Chromium();
     launcher.setOptions(new LauncherOptions()
         .setExecutablePath(new File(dir + "/chrome-win/chrome.exe"))
-        .setUserDataDir(new File(dir))
+        .setUserDataDir(new File(dir, "userDataDir"))
         .useDefaultArgs()
         .add(
             "--start-maximized", // 最大化
@@ -126,7 +105,7 @@ public class ChromiumLauncherTest {
         // 需要创建新页面
       }
       Target.TargetInfo targetInfo = targetInfos.get(0);
-      JSONObject targetId = target.createTarget(null, null, null, targetInfo.getBrowserContextId(), true, false, false, true);
+      JSONObject targetId = target.createTarget(targetInfo.getTargetId(), null, null, targetInfo.getBrowserContextId(), true, false, false, true);
       log.info("targetId: {}", targetId);
       EventLoop.sleepSecond(2);
     } finally {

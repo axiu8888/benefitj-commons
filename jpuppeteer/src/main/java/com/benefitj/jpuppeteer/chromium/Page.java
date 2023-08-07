@@ -2,6 +2,7 @@ package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
+import com.benefitj.jpuppeteer.Event;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 

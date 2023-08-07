@@ -1,35 +1,33 @@
 pluginManagement {
-	repositories {
-		maven {url("https://maven.aliyun.com/repository/google")}
-		maven {url("https://maven.aliyun.com/repository/central")}
-		maven {url("https://maven.aliyun.com/repository/gradle-plugin")}
-		maven {url("https://maven.aliyun.com/repository/public")}
-		maven {url("https://maven.aliyun.com/repository/jcenter")}
-		maven { url 'https://repo.spring.io/milestone' }
-		maven { url 'https://repo.spring.io/release' }
-		mavenCentral()
-		gradlePluginPortal()
-	}
+  repositories {
+    maven { url("https://maven.aliyun.com/repository/google") }
+    maven { url("https://maven.aliyun.com/repository/central") }
+    maven { url("https://maven.aliyun.com/repository/gradle-plugin") }
+    maven { url("https://maven.aliyun.com/repository/public") }
+    maven { url("https://maven.aliyun.com/repository/jcenter") }
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/release' }
+    mavenCentral()
+    gradlePluginPortal()
+  }
 }
 rootProject.name = 'benefitj-commons'
 
 /**
  * 常用工具的依赖
  */
-include ":all"              // 全部的依赖
 include ":core"             // 常用工具
-include ":pipeline"         // pipeline
 include ":http"             // HTTP请求，OkHttp + Retrofit + RxJava
-include ":consistent-hash"  // 一致性Hash
-include ":frameworks"       // 一些库的工具
-include ":interpolator"     // 插值器
 include ":netty"            // netty
+include ":device"           // 设备
+include ":extensions"       // 扩展功能
+include ":pipeline"         // pipeline
+include ":frameworks"       // 一些库的工具
+include ":mqtt"             // mqtt
+include ":consistent-hash"  // 一致性Hash
+include ":interpolator"     // 插值器
 include ":eventbus"         // EventBus
 include ":javastruct"       // java结构体转换
-include ":device"           // 设备
-include ":mqtt"             // mqtt
 include ":jdbc"             // jdbc
-include ":extensions"       // 扩展功能
 include ":jpuppeteer"       // chromium puppeteer
-
-
+include ":all"              // 全部的依赖

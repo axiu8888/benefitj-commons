@@ -21,12 +21,13 @@ public class Message {
   @JSONField(serialize = false, deserialize = false)
   private CountDownLatch latch;
 
+  @JsonIgnore
+  @JSONField(serialize = false, deserialize = false)
+  private JSONObject rawResponse;
+
   private long id = last_id.getAndIncrement();
-
-  private Map<String, Object> params = new LinkedHashMap<>();
-
   private String method;
-
+  private Map<String, Object> params = new LinkedHashMap<>();
   private String sessionId;
   /**
    * 本次发送消息返回的结果
@@ -46,6 +47,14 @@ public class Message {
 
   public void setLatch(CountDownLatch latch) {
     this.latch = latch;
+  }
+
+  public JSONObject getRawResponse() {
+    return rawResponse;
+  }
+
+  public void setRawResponse(JSONObject rawResponse) {
+    this.rawResponse = rawResponse;
   }
 
   public long getId() {

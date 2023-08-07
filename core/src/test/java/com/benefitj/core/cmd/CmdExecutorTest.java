@@ -11,72 +11,13 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
-import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 测试CMD命令调用
  */
 public class CmdExecutorTest extends BaseTest {
-
-  public static final Pattern WS_ENDPOINT_PATTERN = Pattern.compile("^DevTools listening on (ws://.*)$");
-
-  @Test
-  public void testChromium() {
-    // D:\tmp\.local-browser\win64-1132420\chrome-win\chrome.exe--user-data-dir=D:\home\tmp\.local-browser\win64-1132420/userDataDir about:blank --start-maximized --auto-open-devtools-for-tabs --disable-background-timer-throttling --disable-breakpad --disable-browser-side-navigation --disable-client-side-phishing-detection --disable-default-apps --disable-dev-shm-usage --disable-features=site-per-process --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-translate --metrics-recording-only --no-first-run --safebrowsing-disable-auto-update --enable-automation --password-store=basic --use-mock-keychain --remote-debugging-port=61370
-//    String dir = "D:/home/tmp/.local-browser/win64-1132420";
-    String dir = "D:/home/tmp/.local-browser/win64-1132420";
-    String[] args = (
-        dir + "/chrome-win/chrome.exe\n" +
-//        dir + "/chrome-win/chrome.exe\n" +
-            "--user-data-dir="+ dir +"/userDataDir\n" +
-            "--disable-background-networking\n" +
-            "--disable-background-timer-throttling\n" +
-            "--disable-breakpad\n" +
-            "--disable-browser-side-navigation\n" +
-            "--disable-client-side-phishing-detection\n" +
-            "--disable-default-apps\n" +
-            "--disable-dev-shm-usage\n" +
-            "--disable-extensions\n" +
-            "--disable-features=site-per-process\n" +
-            "--disable-hang-monitor\n" +
-            "--disable-popup-blocking\n" +
-            "--disable-prompt-on-repost\n" +
-            "--disable-sync\n" +
-            "--disable-translate\n" +
-            "--metrics-recording-only\n" +
-            "--no-first-run\n" +
-            "--safebrowsing-disable-auto-update\n" +
-            "--enable-automation\n" +
-            "--password-store=basic\n" +
-            "--use-mock-keychain\n" +
-            "--remote-debugging-port=0"
-        ).split("\n");
-    String cmd = String.join(" ", args);
-    CmdCall call = CmdExecutor.get().call(cmd, null, null, -1, new Callback() {
-      @Override
-      public void onMessage(CmdCall call, List<String> lines, String line, boolean error) {
-        log.info("onMessage: {}, \nlines: {}, \nline: {}, \nerror: {}", call.getId(), String.join("; ", lines), line, error);
-        Matcher matcher = WS_ENDPOINT_PATTERN.matcher(line);
-        if (matcher.find()) {
-          log.info("ws endpoint: {}", matcher.group(1));
-        }
-      }
-    });
-    Process process = call.getProcess();
-    System.err.println(call.toPrintInfo("HtmlToPdf", null));
-    log.info("process: {}", process.isAlive());
-
-    EventLoop.sleepSecond(10);
-
-    // 关闭
-    process.destroyForcibly();
-
-  }
 
   @Test
   public void testJavaVersion() {
@@ -114,7 +55,7 @@ public class CmdExecutorTest extends BaseTest {
   }
 
   private void pull(String dir, CountDownLatch latch) {
-    EventLoop.io().execute(() -> {
+    EventLoop.asyncIO(() -> {
       new GitPull(new File(dir), 5).pull();
       latch.countDown();
     });
@@ -148,19 +89,17 @@ public class CmdExecutorTest extends BaseTest {
     String dir = "D:/tmp/https";
 
     PathWatcher pathWatcher = new PathWatcher(Paths.get(dir))
-        .setWatchEventListener((watcher, key, filename, kind) -> {
+        .setWatchEventListener((watcher, key, path, filename, kind) -> {
           log.info("文件：" + (filename + " " + PathWatcher.ofDesc(kind)) + ", 发生事件：" + kind.name() +", " + DateFmtter.fmtNowS());
           if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
 //            if (filename.getFileName().startsWith("error.txt")) {
 //              File file = filename.getFileName().toFile();
 //              log.info("{}, {}", filename.getFileName(), IOUtils.readFileLines(filename.getFileName().toFile()));
 //            }
-            EventLoop.io().schedule(() -> {
-              log.info("{}, {}", filename.getFileName(), IOUtils.readFileLines(filename.getFileName().toFile()));
-            }, 1, TimeUnit.SECONDS);
+            log.info("{}, {}", filename, IOUtils.readFileLines(new File(path.toFile(), filename)));
           }
         });
-    EventLoop.io().execute(pathWatcher::start);
+    EventLoop.asyncIO(pathWatcher::start);
     ProcessBuilder builder = new ProcessBuilder()
         .command(cmdarray(cmd))
         .directory(new File(dir))
@@ -201,11 +140,11 @@ public class CmdExecutorTest extends BaseTest {
     String charsetName = SystemProperty.getFileEncoding();
     // 监听文件
     PathWatcher pw = new PathWatcher(Paths.get(envdir))
-        .setWatchEventListener((watcher, key, context, kind) -> {
-          File src = context.toFile();
+        .setWatchEventListener((watcher, key, path, filename, kind) -> {
+          File src = new File(path.toFile(), filename);
           String type = src.getName();
           log.info("{}  ==>: {}, {}", type, kind.name(), IOUtils.readFileAsString(src, Charset.forName(charsetName)));
-//          switch (context.toFile().getName()) {
+//          switch (filename.toFile().getName()) {
 //            case "in.txt":
 //              break;
 //            case "out.txt":
@@ -214,7 +153,7 @@ public class CmdExecutorTest extends BaseTest {
 //              break;
 //          }
         });
-    EventLoop.io().execute(pw::start);
+    EventLoop.asyncIO(pw::start);
 
     Process process = builder.start();
 

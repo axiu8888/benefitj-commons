@@ -2,6 +2,7 @@ package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
+import com.benefitj.jpuppeteer.Event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -223,7 +224,7 @@ public interface Browser {
    */
   @Event("downloadProgress")
   @Data
-  public static class DownloadProgress {
+  public class DownloadProgress {
     /**
      * Id of the frame that caused the download to begin.
      */
@@ -253,7 +254,7 @@ public interface Browser {
    */
   @Event("downloadWillBegin")
   @Data
-  public static class DownloadWillBegin {
+  public class DownloadWillBegin {
     /**
      * Id of the frame that caused the download to begin.
      */
@@ -277,7 +278,7 @@ public interface Browser {
    * Browser window bounds information
    */
   @Data
-  public static class Bounds {
+  public class Bounds {
     /**
      * The offset from the left edge of the screen to the window in pixels.
      */
@@ -305,7 +306,7 @@ public interface Browser {
    * 直方图
    */
   @Data
-  public static class Histogram {
+  public class Histogram {
     /**
      * Name.
      */
@@ -328,7 +329,7 @@ public interface Browser {
    * Chrome histogram bucket.
    */
   @Data
-  public static class Bucket {
+  public class Bucket {
     /**
      * Minimum value (inclusive).
      */
@@ -396,7 +397,7 @@ public interface Browser {
   }
 
   @Data
-  public static class PermissionDescriptor {
+  public class PermissionDescriptor {
     /**
      * Name of permission. See https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/permissions/permission_descriptor.idl for valid permission names.
      */

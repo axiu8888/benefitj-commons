@@ -68,8 +68,8 @@ subprojects {
     ]
   }
 
-  sourceCompatibility = JavaVersion.VERSION_15
-  targetCompatibility = JavaVersion.VERSION_15
+  sourceCompatibility = ext.compatibilityVersion
+  targetCompatibility = ext.compatibilityVersion
 
   dependencies {
 //		def commons = project(":commons");

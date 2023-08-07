@@ -675,7 +675,7 @@ public interface Network {
     /**
      * Certificate ID value.
      */
-    Security.CertificateId certificateId;
+    Integer certificateId;
     /**
      * Certificate subject name.
      */
