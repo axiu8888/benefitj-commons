@@ -10,6 +10,8 @@ import java.util.List;
 
 /**
  * 浏览器
+ * <p>
+ * The Browser domain defines methods and events for browser managing.
  */
 public interface Browser {
 

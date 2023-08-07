@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Parameter;
@@ -101,7 +102,8 @@ public class ChromiumTest {
       if (!targetInfos.isEmpty()) {
         // 需要创建新页面
         Target.TargetInfo targetInfo = targetInfos.get(0);
-        JSONObject targetId = target.createTarget(targetInfo.getTargetId(), null, null, targetInfo.getBrowserContextId(), true, false, false, true);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        JSONObject targetId = target.createTarget(targetInfo.getTargetId(), screenSize.width, screenSize.height, targetInfo.getBrowserContextId(), false, false, false, true);
         log.info("targetId: {}", targetId);
       }
       EventLoop.sleepSecond(2);

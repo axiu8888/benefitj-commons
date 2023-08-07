@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * This domain emulates different environments for the page.
+ */
 public interface Emulation {
 
   /**
