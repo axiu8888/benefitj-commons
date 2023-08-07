@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.jpuppeteer.Event;
 import lombok.Data;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -65,7 +66,7 @@ public interface Target {
    *   targetInfo: array[TargetInfo]
    * }
    */
-  JSONObject getTargets(TargetFilter filter);
+  JSONObject getTargets(@Nullable TargetFilter filter);
 
   /**
    * Controls whether to discover available targets and notify via targetCreated/targetInfoChanged/targetDestroyed events.
@@ -74,7 +75,7 @@ public interface Target {
    * @param filter   TargetFilter
    *                 Only targets matching filter will be attached. If discover is false, filter must be omitted or empty.
    */
-  void setDiscoverTargets(boolean discover, TargetFilter filter);
+  void setDiscoverTargets(boolean discover, @Nullable TargetFilter filter);
 
   /**
    * Sends protocol message over session with given id. Consider using flat mode instead; see commands attachToTarget, setAutoAttach, and crbug.com/991325.
@@ -102,7 +103,7 @@ public interface Target {
    * @param filter                 TargetFilter
    *                               Only targets matching filter will be attached. EXPERIMENTAL
    */
-  void autoAttachRelated(String targetId, boolean waitForDebuggerOnStart, TargetFilter filter);
+  void autoAttachRelated(String targetId, boolean waitForDebuggerOnStart, @Nullable TargetFilter filter);
 
   /**
    * Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
@@ -152,7 +153,7 @@ public interface Target {
    * @param filter                 TargetFilter
    *                               Only targets matching filter will be attached.
    */
-  void setAutoAttach(boolean autoAttach, boolean waitForDebuggerOnStart, boolean flatten, TargetFilter filter);
+  void setAutoAttach(boolean autoAttach, boolean waitForDebuggerOnStart, boolean flatten, @Nullable TargetFilter filter);
 
 
   /**

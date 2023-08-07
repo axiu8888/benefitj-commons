@@ -29,9 +29,6 @@ import java.util.stream.Stream;
 
 @Slf4j
 public class ChromiumTest {
-  public static void main(String[] args) {
-    new ChromiumTest().testProxyMethods();
-  }
 
   @Before
   public void setUp() throws Exception {
@@ -97,16 +94,16 @@ public class ChromiumTest {
       Target target = launcher.newTarget();
       //target.createTarget("");
       //target.setDiscoverTargets(true, new Target.TargetFilter());
-      JSONObject targets = target.getTargets(new Target.TargetFilter());
+      JSONObject targets = target.getTargets(null);
       List<Target.TargetInfo> targetInfos = targets.getList("targetInfos", Target.TargetInfo.class);
       log.info("targets: {}", JSON.toJSONString(targetInfos));
 
-      if (targetInfos.isEmpty()) {
+      if (!targetInfos.isEmpty()) {
         // 需要创建新页面
+        Target.TargetInfo targetInfo = targetInfos.get(0);
+        JSONObject targetId = target.createTarget(targetInfo.getTargetId(), null, null, targetInfo.getBrowserContextId(), true, false, false, true);
+        log.info("targetId: {}", targetId);
       }
-      Target.TargetInfo targetInfo = targetInfos.get(0);
-      JSONObject targetId = target.createTarget(targetInfo.getTargetId(), null, null, targetInfo.getBrowserContextId(), true, false, false, true);
-      log.info("targetId: {}", targetId);
       EventLoop.sleepSecond(2);
     } finally {
       log.info("关闭...");
