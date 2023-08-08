@@ -21,7 +21,7 @@ public interface Target {
    * @param targetId
    * @param flatten  Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
    */
-  String attachToTarget(String targetId, boolean flatten);
+  String attachToTarget(String targetId, Boolean flatten);
 
   /**
    * Closes the target. If the target is a page that gets closed too.
@@ -47,7 +47,7 @@ public interface Target {
    *   targetId: String
    * }
    */
-  JSONObject createTarget(String targetId, Integer width, Integer height, String browserContextId, boolean enableBeginFrameControl, boolean newWindow, boolean background, boolean forTab);
+  JSONObject createTarget(String targetId, Integer width, Integer height, String browserContextId, Boolean enableBeginFrameControl, Boolean newWindow, Boolean background, Boolean forTab);
 
   /**
    * Detaches session with given id.
@@ -75,7 +75,7 @@ public interface Target {
    * @param filter   TargetFilter
    *                 Only targets matching filter will be attached. If discover is false, filter must be omitted or empty.
    */
-  void setDiscoverTargets(boolean discover, @Nullable TargetFilter filter);
+  void setDiscoverTargets(Boolean discover, @Nullable TargetFilter filter);
 
   /**
    * Sends protocol message over session with given id. Consider using flat mode instead; see commands attachToTarget, setAutoAttach, and crbug.com/991325.
@@ -103,7 +103,7 @@ public interface Target {
    * @param filter                 TargetFilter
    *                               Only targets matching filter will be attached. EXPERIMENTAL
    */
-  void autoAttachRelated(String targetId, boolean waitForDebuggerOnStart, @Nullable TargetFilter filter);
+  void autoAttachRelated(String targetId, Boolean waitForDebuggerOnStart, @Nullable TargetFilter filter);
 
   /**
    * Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
@@ -153,7 +153,7 @@ public interface Target {
    * @param filter                 TargetFilter
    *                               Only targets matching filter will be attached.
    */
-  void setAutoAttach(boolean autoAttach, boolean waitForDebuggerOnStart, boolean flatten, @Nullable TargetFilter filter);
+  void setAutoAttach(Boolean autoAttach, Boolean waitForDebuggerOnStart, Boolean flatten, @Nullable TargetFilter filter);
 
 
   /**
@@ -212,7 +212,7 @@ public interface Target {
    * @param waitingForDebugger boolean
    */
   @Event("attachedToTarget")
-  void attachedToTarget(String sessionId, TargetInfo targetInfo, boolean waitingForDebugger);
+  void attachedToTarget(String sessionId, TargetInfo targetInfo, Boolean waitingForDebugger);
 
   /**
    * Issued when detached from target for any reason (including detachFromTarget command). Can be issued multiple times per target if multiple sessions have been attached to it.

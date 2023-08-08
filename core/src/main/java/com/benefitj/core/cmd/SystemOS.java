@@ -1,46 +1,57 @@
 package com.benefitj.core.cmd;
 
-import java.util.Locale;
-
 /**
  * 系统
  */
 public enum SystemOS {
 
-  LOCALE;
+  win32,
+  win64,
+  linux,
+  mac,
+  ;
 
-  private final String name;
-  private final String osName;
-
-  SystemOS() {
-    this.osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+  public static SystemOS getLocale() {
     if (isWindows()) {
-      this.name = "windows";
-    } else if (isMacOSX()) {
-      this.name = "mac";
-    } else {
-      this.name = "linux";
+      return isWin64() ? win64 : win32;
     }
+    if (isLinux()) {
+      return linux;
+    }
+    if (isMac()) {
+      return mac;
+    }
+    throw new IllegalStateException("未知的操作系统: " + platform());
   }
 
-  public String getName() {
-    return name;
+  public static boolean isWindows() {
+    return platform(true).contains("windows");
   }
 
-  public String getOsName() {
-    return osName;
+  public static boolean isMac() {
+    return platform(true).contains("mac");
   }
 
-  public boolean isWindows() {
-    return getOsName().contains("Windows");
+  public static boolean isLinux() {
+    return platform(true).contains("linux");
   }
 
-  public boolean isMacOSX() {
-    return getOsName().contains("Mac");
+  /**
+   * 是否是win64
+   *
+   * @return true is win64
+   */
+  public static boolean isWin64() {
+    return System.getProperty("os.arch").contains("64");
   }
 
-  public boolean isLinux() {
-    return getOsName().contains("Linux");
+  public static String platform() {
+    return platform(false);
+  }
+
+  public static String platform(boolean lowercase) {
+    String os = System.getProperty("os.name");
+    return lowercase ? os.toLowerCase() : os;
   }
 
 }

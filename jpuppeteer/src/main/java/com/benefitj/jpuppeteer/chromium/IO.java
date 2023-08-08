@@ -2,6 +2,7 @@ package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Input/Output operations for streams produced by DevTools.
@@ -47,6 +48,7 @@ public interface IO {
   /**
    * This is either obtained from another method or specified as blob:<uuid> where <uuid> is an UUID of a Blob.
    */
+  @EqualsAndHashCode(callSuper = true)
   @Data
   public class StreamHandle extends JSONObject {
   }

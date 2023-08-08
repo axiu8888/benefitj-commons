@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
+import java.net.SocketException;
 
 /**
  * 连接的客户端
@@ -92,26 +93,26 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
 
   @Override
   public void onMessage(@NotNull okhttp3.WebSocket webSocket, @NotNull String text) {
-    log.trace("[{}] onOpen, url: {}, text[{}]: {}", getId(), getUrl(), text.length(), text);
+    log.trace("[{}] onMessage, url: {}, text[{}]: {}", getId(), getUrl(), text.length(), text);
     getListener().onMessage(this, text);
   }
 
   @Override
   public void onMessage(@NotNull okhttp3.WebSocket ws, @NotNull ByteString bytes) {
-    log.trace("[{}] onOpen, url: {}, bytes[{}]: {}", getId(), obtainUrl(ws), bytes.size(), bytes.base64());
+    log.trace("[{}] onMessage, url: {}, bytes[{}]: {}", getId(), obtainUrl(ws), bytes.size(), bytes.base64());
     getListener().onMessage(this, bytes);
   }
 
   @Override
   public void onFailure(@NotNull okhttp3.WebSocket ws, @NotNull Throwable error, @Nullable Response response) {
-    log.trace("[{}] onOpen, url: {}, response.code: {}, response.message: {}"
+    log.trace("[{}] onFailure, url: {}, response.code: {}, response.message: {}"
         , getId()
         , obtainUrl(ws)
         , response != null ? response.code() : -1
         , response != null ? response.message() : ""
     );
     this.open = error instanceof EOFException;
-    if (error instanceof EOFException) {
+    if (error instanceof EOFException || error instanceof SocketException) {
       getListener().onClosed(this, 1, "");
     } else {
       getListener().onFailure(this, error, response);
@@ -128,8 +129,11 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
   @Override
   public void onClosed(@NotNull okhttp3.WebSocket ws, int code, @NotNull String reason) {
     log.trace("[{}] onClosed, url: {}, code: {}, reason: {}", getId(), obtainUrl(ws), code, reason);
+    boolean opened = this.open;
     this.open = false;
-    getListener().onClosed(this, code, reason);
+    if (!opened) {
+      getListener().onClosed(this, code, reason);
+    }
   }
 
   /**

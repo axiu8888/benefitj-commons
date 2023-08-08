@@ -23,10 +23,10 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
   @Override
   public void onConnect(VertxMqttServer server, MqttEndpoint endpoint) {
     // shows main connect info
-    log.debug("MQTT client [{}] request to connect, clean session = {}", endpoint.clientIdentifier(), endpoint.isCleanSession());
+    log.trace("MQTT client [{}] request to connect, clean session = {}", endpoint.clientIdentifier(), endpoint.isCleanSession());
 
     if (endpoint.auth() != null) {
-      log.debug("[username = {}, password = {}]", endpoint.auth().getUsername(), endpoint.auth().getPassword());
+      log.trace("[username = {}, password = {}]", endpoint.auth().getUsername(), endpoint.auth().getPassword());
     }
     if (!server.getAuthenticator().authenticate(endpoint)) {
       // 认证失败，直接关闭
@@ -36,7 +36,7 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
 
     MqttWill will = endpoint.will();
     if (will != null) {
-      log.debug("[will flag = {} topic = {} msg = {} QoS = {} isRetain = {}]",
+      log.trace("[will flag = {} topic = {} msg = {} QoS = {} isRetain = {}]",
           will.isWillFlag(), will.getWillTopic(), will.getWillMessage(), will.getWillQos(), will.isWillRetain()
       );
     }
@@ -64,7 +64,7 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
         .map(Subscription::qualityOfService)
         .collect(Collectors.toList()));
 
-    log.debug("client[{}], subscriber: {}", endpoint.clientIdentifier(), subscriptions.stream()
+    log.trace("client[{}], subscriber: {}", endpoint.clientIdentifier(), subscriptions.stream()
         .map(s -> String.format("[%s, %d]", s.topicName(), s.qualityOfService().value()))
         .collect(Collectors.toList()));
   }
@@ -75,7 +75,7 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
     // ack the subscriptions request
     endpoint.unsubscribeAcknowledge(message.messageId());
 
-    log.debug("clientId[{}], Unsubscription for {}", endpoint.clientIdentifier(), topics.stream()
+    log.trace("clientId[{}], Unsubscription for {}", endpoint.clientIdentifier(), topics.stream()
         .map(MqttTopic::getTopicName)
         .collect(Collectors.toList()));
   }
@@ -86,12 +86,12 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
       endpoint.publishRelease(messageId);
     }
 
-    log.debug("clientId[{}], Received ack for message = {}, state = {}", endpoint.clientIdentifier(), messageId, state);
+    log.trace("clientId[{}], Received ack for message = {}, state = {}", endpoint.clientIdentifier(), messageId, state);
   }
 
   @Override
   public void onPingMessage(VertxMqttServer server, VertxMqttEndpoint endpoint) {
-    log.debug("clientId[{}], Ping...", endpoint.clientIdentifier());
+    log.trace("clientId[{}], Ping...", endpoint.clientIdentifier());
   }
 
   @Override
@@ -111,7 +111,7 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
       endpoint.publishReceived(message.messageId());
     }
 
-    log.debug("clientId[{}], received message on [{}] payload.length [{}] with QoS [{}], messageId[{}]"
+    log.trace("clientId[{}], received message on [{}] payload.length [{}] with QoS [{}], messageId[{}]"
         , endpoint.clientIdentifier(), message.topicName(), message.payload().length(), message.qosLevel(), message.messageId());
 
   }
@@ -121,12 +121,12 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
     if (server.hasClientId(endpoint.clientIdentifier())) {
       server.removeEndpoint(endpoint.clientIdentifier());
     }
-    log.debug("clientId[{}], Connection close", endpoint.clientIdentifier());
+    log.trace("clientId[{}], Connection close", endpoint.clientIdentifier());
   }
 
   @Override
   public void onDisconnect(VertxMqttServer server, VertxMqttEndpoint endpoint) {
-    log.debug("clientId[{}], Received disconnect from client", endpoint.clientIdentifier());
+    log.trace("clientId[{}], Received disconnect from client", endpoint.clientIdentifier());
   }
 
 

@@ -103,7 +103,7 @@ public class VertxMqttServer extends AbstractVerticle {
     // 监听
     this.getMqttServer().listen(ar -> {
       if (ar.succeeded()) {
-        log.debug("MQTT server started and listening on port {}", mqttServer.actualPort());
+        log.trace("MQTT server started and listening on port {}", mqttServer.actualPort());
       } else {
         log.warn("MQTT server error on start: " + ar.cause().getMessage(), ar.cause());
       }
@@ -117,7 +117,7 @@ public class VertxMqttServer extends AbstractVerticle {
       this.setMqttServer(null);
       // 重置服务端
       server.close()
-          .onSuccess(event -> log.debug("MQTT server stop success on port {}", server.actualPort()))
+          .onSuccess(event -> log.trace("MQTT server stop success on port {}", server.actualPort()))
           .onFailure(err -> log.warn("MQTT server stop failure on port {}", server.actualPort() + ", error: " + err.getMessage()))
           // 清空连接
           .onComplete(event -> getEndpoints().clear());

@@ -31,14 +31,14 @@ public class CmdExecutor {
   public static final String CRLF;
 
   static {
-    CRLF = SystemOS.LOCALE.isWindows() ? "\r\n" : "\n";
+    CRLF = SystemOS.isWindows() ? "\r\n" : "\n";
   }
 
   /**
    * 判断是否为Windows
    */
   public static boolean isWindows() {
-    return SystemOS.LOCALE.isWindows();
+    return SystemOS.isWindows();
   }
 
   /**

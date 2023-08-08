@@ -3,11 +3,10 @@ package com.benefitj.mqtt.vertx.client;
 import com.benefitj.core.EventLoop;
 import com.benefitj.mqtt.vertx.VertxHolder;
 import io.netty.handler.codec.mqtt.MqttQoS;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -15,9 +14,8 @@ import java.util.concurrent.CountDownLatch;
 /**
  * 测试客户端
  */
+@Slf4j
 public class VertxMqttClientTest {
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private VertxMqttClient client;
 
@@ -32,8 +30,8 @@ public class VertxMqttClientTest {
           // 初始化
         })
         .setAutoConnectTimer(new AutoConnectTimer(true).setPeriod(10))
-//        .setRemoteAddress("127.0.0.1", 1883))
-        .setRemoteAddress("192.168.85.128", 1883))
+        .setRemoteAddress("127.0.0.1", 1883))
+//        .setRemoteAddress("192.168.85.128", 1883))
         .onComplete(event -> {
           latch.countDown();
           log.info("deploy: {}", event.result());
@@ -77,7 +75,7 @@ public class VertxMqttClientTest {
 
 
   public static void loop(Callable<Boolean> callable) {
-    for (; ; ) {
+    for (;;) {
       try {
         Boolean status = callable.call();
         if (Boolean.TRUE.equals(status)) {

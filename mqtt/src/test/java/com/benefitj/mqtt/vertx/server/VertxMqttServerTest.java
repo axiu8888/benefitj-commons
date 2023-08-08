@@ -2,15 +2,13 @@ package com.benefitj.mqtt.vertx.server;
 
 import com.benefitj.core.EventLoop;
 import com.benefitj.mqtt.vertx.VertxHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class VertxMqttServerTest {
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
 
   VertxMqttServer server;
 
@@ -33,7 +31,7 @@ public class VertxMqttServerTest {
         .setEndpointHandler(new MqttEndpointHandlerImpl())
     ).onComplete(event -> log.info("deploy: {}", event.result()));
 
-    EventLoop.sleepSecond(5);
+    EventLoop.sleepSecond(300);
   }
 
   @After

@@ -6,7 +6,7 @@ import com.alibaba.fastjson2.JSONWriter;
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.NetworkUtils;
-import com.benefitj.core.ReflectUtils;
+import com.benefitj.jpuppeteer.BrowserFetcher;
 import com.benefitj.jpuppeteer.Chromium;
 import com.benefitj.jpuppeteer.LauncherOptions;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,6 @@ import org.junit.Test;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -25,7 +24,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Slf4j
@@ -57,25 +55,16 @@ public class ChromiumTest {
   }
 
   @Test
-  public void testProxyMethods() {
-    ReflectUtils.findMethods(ReflectUtils.class
-        , m -> true
-        , m -> {
-          log.info("{}.{}({})"
-              , m.getDeclaringClass().getSimpleName()
-              , m.getName()
-              , Stream.of(m.getParameters()).map(Parameter::getName).collect(Collectors.toList())
-          );
-        }
-        , m -> false
-    );
+  public void testDownloadIfNotExist() {
+    BrowserFetcher.get().getRevisionInfo().setFolder(new File("D:/home/tmp2"));
+    BrowserFetcher.downloadIfNotExist();
   }
 
   @Test
   public void testLauncher() {
     String dir = "D:/tmp/.local-browser/win64-1132420";
-    Chromium launcher = new Chromium();
-    launcher.setOptions(new LauncherOptions()
+    Chromium chromium = new Chromium();
+    chromium.setOptions(new LauncherOptions()
         .setExecutablePath(new File(dir + "/chrome-win/chrome.exe"))
         .setUserDataDir(new File(dir, "userDataDir"))
         .useDefaultArgs()
@@ -87,12 +76,14 @@ public class ChromiumTest {
         )
         .setRemoteDebuggingPort(NetworkUtils.availablePort())
     );
-    Browser browser = launcher.launch();
+    Browser browser = chromium.launch();
     try {
       Browser.Version version = browser.getVersion();
       log.info("version: {}", JSON.toJSONString(version));
 
-      Target target = launcher.newTarget();
+      Target target = chromium.newTarget();
+      target.setDiscoverTargets(true, null);
+      //target.attachedToTarget();
       //target.createTarget("");
       //target.setDiscoverTargets(true, new Target.TargetFilter());
       JSONObject targets = target.getTargets(null);

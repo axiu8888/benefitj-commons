@@ -8,7 +8,6 @@ import java.lang.reflect.Field;
 
 @Deprecated
 public class StackLogger implements Logger {
-
   public static Logger getLogger() {
     return new StackLogger(LoggerFactory.getLogger("StackLogger"));
   }
