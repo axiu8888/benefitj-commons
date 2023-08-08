@@ -56,8 +56,9 @@ public class ChromiumTest {
 
   @Test
   public void testDownloadIfNotExist() {
-    BrowserFetcher.get().getRevisionInfo().setFolder(new File("D:/home/tmp2"));
-    BrowserFetcher.downloadIfNotExist();
+    BrowserFetcher fetcher = BrowserFetcher.get();
+    fetcher.getRevisionInfo().setFolder(new File("D:/tmp/.local-browser"));
+    BrowserFetcher.downloadIfNotExist(fetcher);
   }
 
   @Test

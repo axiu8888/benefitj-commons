@@ -16,10 +16,6 @@ import java.io.File;
 public class RevisionInfo {
 
   /**
-   * 本地是否存在
-   */
-  private boolean local;
-  /**
    * 版本
    */
   private String revision;
