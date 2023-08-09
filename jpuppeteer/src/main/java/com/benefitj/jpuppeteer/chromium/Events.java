@@ -1,6 +1,8 @@
 package com.benefitj.jpuppeteer.chromium;
 
-public interface Events {
+import com.benefitj.jpuppeteer.ChromiumApi;
+
+public interface Events extends ChromiumApi {
 
 
 

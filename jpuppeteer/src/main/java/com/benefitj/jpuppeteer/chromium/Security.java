@@ -1,5 +1,6 @@
 package com.benefitj.jpuppeteer.chromium;
 
+import com.benefitj.jpuppeteer.ChromiumApi;
 import com.benefitj.jpuppeteer.Event;
 import lombok.Data;
 
@@ -7,7 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public interface Security {
+public interface Security extends ChromiumApi {
 
   /**
    * Disables tracking security state changes.

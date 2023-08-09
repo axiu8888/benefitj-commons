@@ -1,6 +1,7 @@
 package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.benefitj.jpuppeteer.ChromiumApi;
 import lombok.Data;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 /**
  * 运行时
  */
-public interface Runtime {
+public interface Runtime extends ChromiumApi {
 
   /**
    * Represents function call argument. Either remote object id objectId, primitive value, unserializable primitive value or neither of (for undefined) them should be specified.

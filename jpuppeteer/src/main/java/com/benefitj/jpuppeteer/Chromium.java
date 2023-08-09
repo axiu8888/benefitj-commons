@@ -13,6 +13,7 @@ import com.benefitj.http.WebSocketListener;
 import com.benefitj.jpuppeteer.chromium.Browser;
 import com.benefitj.jpuppeteer.chromium.Page;
 import com.benefitj.jpuppeteer.chromium.Target;
+import com.google.common.reflect.ClassPath;
 import lombok.extern.slf4j.Slf4j;
 import okio.ByteString;
 import org.apache.commons.lang3.StringUtils;
@@ -20,9 +21,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -49,21 +52,44 @@ public class Chromium implements Launcher {
    */
   private DevtoolSocket socket = new DevtoolSocket(this);
   /**
+   * 全局处理监听
+   */
+  private final IntervalInterceptor interceptor = new IntervalInterceptor(this);
+  /**
    * 当前正在请求的消息
    */
   final Map<Long, Message> messages = new ConcurrentHashMap<>();
+  /**
+   * 消息监听
+   */
+  private final List<MessageListener> listeners = new CopyOnWriteArrayList<>();
   /**
    * 当前结果缓存
    */
   private final ThreadLocal<Message> msgLocal = new ThreadLocal<>();
   /**
-   * 浏览器对象
+   * 初始化的对象
    */
-  private Browser browser;
-  /**
-   * 当前的页面
-   */
-  private final Map<String, Page> pages = new ConcurrentHashMap<>();
+  private final Map<Class<? extends ChromiumApi>, Object> apis = new ConcurrentHashMap<>();
+
+  public Chromium() {
+  }
+
+  public Chromium(LauncherOptions options) {
+    this.options = options;
+  }
+
+  public LauncherOptions getOptions() {
+    return options;
+  }
+
+  public void setOptions(LauncherOptions options) {
+    this.options = options;
+  }
+
+  public CmdCall getCall() {
+    return call;
+  }
 
   @Override
   public Browser launch() {
@@ -72,10 +98,9 @@ public class Chromium implements Launcher {
     if (executableFile == null) {
       throw new IllegalStateException("不存在可执行文件!");
     }
-    String executablePath = executableFile.getAbsolutePath().replace("\\", "/");
     String userDataDir = StringUtils.getIfBlank(opts.getUserDataDir(), () -> executableFile.getParentFile().getParentFile().getAbsolutePath().replace("\\", "/"));
     opts.setUserDataDir(new File(userDataDir));
-    String cmd = executablePath + " " + opts.getArgumentsCommandLine();
+    String cmd = executableFile.getAbsolutePath().replace("\\", "/") + " " + opts.getArgumentsCommandLine();
     log.trace("startup cmd: {}", cmd);
     final CountDownLatch latch = new CountDownLatch(1);
     AtomicReference<String> wsEndpointRef = new AtomicReference<>();
@@ -120,32 +145,38 @@ public class Chromium implements Launcher {
     }
     log.trace("ws endpoint: {}", url);
     HttpClient.newWebSocket(socket, url);
-    this.browser = newProxy(this, Browser.class);
-    return browser;
+    try {
+      String packageName = Chromium.class.getPackage().getName() + "." + "chromium";
+      ClassPath.from(ClassLoader.getSystemClassLoader())
+          .getAllClasses()
+          .stream()
+          .filter(c -> packageName.equalsIgnoreCase(c.getPackageName()))
+          .map(ClassPath.ClassInfo::load)
+          .filter(ChromiumApi.class::isAssignableFrom)
+          .forEach(cls -> {
+            log.trace("load chromium api: {}", cls);
+            this.apis.put((Class) cls, newProxy(this, cls));
+          });
+      return getBrowser();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
-  public LauncherOptions getOptions() {
-    return options;
+  public <T extends ChromiumApi> T getApi(Class<T> type) {
+    return (T) apis.get(type);
   }
 
-  public void setOptions(LauncherOptions options) {
-    this.options = options;
+  public Browser getBrowser() {
+    return getApi(Browser.class);
   }
 
-  public CmdCall getCall() {
-    return call;
+  public Target getTarget() {
+    return getApi(Target.class);
   }
 
-  public Map<String, Page> getPages() {
-    return pages;
-  }
-
-  public Target newTarget() {
-    return newProxy(this, Target.class);
-  }
-
-  public Page newPage() {
-    return newProxy(this, Page.class);
+  public Page getPage() {
+    return getApi(Page.class);
   }
 
   /**
@@ -154,6 +185,34 @@ public class Chromium implements Launcher {
   @Nullable
   public Message getLocalMsg() {
     return msgLocal.get();
+  }
+
+  public List<MessageListener> getListeners() {
+    return listeners;
+  }
+
+  /**
+   * 监听消息
+   *
+   * @param listener 监听
+   * @return 返回是否监听
+   */
+  public boolean register(MessageListener listener) {
+    List<MessageListener> list = getListeners();
+    if (!list.contains(listener)) {
+      list.add(listener);
+    }
+    return true;
+  }
+
+  /**
+   * 取消监听
+   *
+   * @param listener 监听
+   * @return 返回是否取消
+   */
+  public boolean unregister(MessageListener listener) {
+    return getListeners().remove(listener);
   }
 
   /**
@@ -221,6 +280,21 @@ public class Chromium implements Launcher {
     });
   }
 
+
+  static class IntervalInterceptor {
+
+    final Chromium chromium;
+
+    public IntervalInterceptor(Chromium chromium) {
+      this.chromium = chromium;
+    }
+
+    public boolean intercept(String method, JSONObject msg) {
+      return false;
+    }
+
+  }
+
   static class DevtoolSocket extends WebSocketImpl implements WebSocketListener {
 
     final Chromium chromium;
@@ -239,16 +313,31 @@ public class Chromium implements Launcher {
     public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
       log.info("onMessage, text: {}", text);
       JSONObject json = JSON.parseObject(text);
-      Long id = json.getLong("id");
-      Message msg = chromium.messages.remove(id);
-      if (msg != null) {
-        msg.setRawResponse(json);
-        msg.setResult(json.getJSONObject("result"));
-        JSONObject error = json.getJSONObject("error");
-        if (error != null) {
-          msg.setError(error.toJavaObject(Message.Error.class));
+      String method = json.getString("method");
+      // 优先全局处理
+      boolean intercepted = chromium.interceptor.intercept(method, json);
+      try {
+        Long id = json.getLong("id");
+        Message msg = chromium.messages.remove(id != null ? id : -1);
+        if (msg != null) {
+          msg.setRawResponse(json);
+          msg.setResult(json.getJSONObject("result"));
+          JSONObject error = json.getJSONObject("error");
+          if (error != null) {
+            msg.setError(error.toJavaObject(Message.Error.class));
+          }
+          msg.getLatch().countDown();
         }
-        msg.getLatch().countDown();
+      } finally {
+        if (!intercepted && StringUtils.isNotBlank(method)) {
+          chromium.listeners.forEach(listener -> {
+            try {
+              listener.onMessage(method, json);
+            } catch (Exception e) {
+              log.warn("call {}, error: {}", listener.getClass(), e.getMessage());
+            }
+          });
+        }
       }
     }
 

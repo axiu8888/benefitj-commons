@@ -1,5 +1,6 @@
 package com.benefitj.jpuppeteer.chromium;
 
+import com.benefitj.jpuppeteer.ChromiumApi;
 import com.benefitj.jpuppeteer.Event;
 import lombok.Data;
 
@@ -8,7 +9,7 @@ import java.util.List;
 /**
  * This domain emulates different environments for the page.
  */
-public interface Emulation {
+public interface Emulation extends ChromiumApi {
 
   /**
    * Tells whether emulation is supported.

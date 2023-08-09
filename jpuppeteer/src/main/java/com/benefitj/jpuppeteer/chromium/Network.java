@@ -2,6 +2,7 @@ package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
+import com.benefitj.jpuppeteer.ChromiumApi;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,7 +15,7 @@ import java.util.List;
  * Network domain allows tracking network activities of the page. It exposes information about http, file, data and other requests and responses, their headers, bodies, timing, etc.
  */
 @Deprecated
-public interface Network {
+public interface Network extends ChromiumApi {
 
 
   /**

@@ -2,13 +2,14 @@ package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.benefitj.jpuppeteer.ChromiumApi;
 import com.benefitj.jpuppeteer.Event;
 import lombok.Data;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public interface Target {
+public interface Target extends ChromiumApi {
 
   /**
    * Activates (focuses) the target.

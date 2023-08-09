@@ -21,7 +21,7 @@ import java.util.zip.ZipFile;
 
 
 /**
- * 用于下载chrome浏览器
+ * 用于下载chrome/firefox浏览器
  */
 @Slf4j
 public class BrowserFetcher {

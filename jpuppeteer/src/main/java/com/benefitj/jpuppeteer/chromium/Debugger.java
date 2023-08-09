@@ -2,6 +2,7 @@ package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
+import com.benefitj.jpuppeteer.ChromiumApi;
 import com.benefitj.jpuppeteer.Event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -9,7 +10,7 @@ import lombok.Data;
 import java.net.Inet4Address;
 import java.util.List;
 
-public interface Debugger {
+public interface Debugger extends ChromiumApi {
 
   /**
    * Continues execution until specific location is reached.

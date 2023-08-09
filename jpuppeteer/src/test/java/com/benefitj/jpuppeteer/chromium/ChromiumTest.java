@@ -6,6 +6,7 @@ import com.alibaba.fastjson2.JSONWriter;
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.NetworkUtils;
+import com.benefitj.core.SystemProperty;
 import com.benefitj.jpuppeteer.BrowserFetcher;
 import com.benefitj.jpuppeteer.Chromium;
 import com.benefitj.jpuppeteer.LauncherOptions;
@@ -56,6 +57,7 @@ public class ChromiumTest {
 
   @Test
   public void testDownloadIfNotExist() {
+    log.info("user.dir ==> {}", SystemProperty.getProperty("user.dir"));
     BrowserFetcher fetcher = BrowserFetcher.get();
     fetcher.getRevisionInfo().setFolder(new File("D:/tmp/.local-browser"));
     BrowserFetcher.downloadIfNotExist(fetcher);
@@ -82,7 +84,7 @@ public class ChromiumTest {
       Browser.Version version = browser.getVersion();
       log.info("version: {}", JSON.toJSONString(version));
 
-      Target target = chromium.newTarget();
+      Target target = chromium.getTarget();
       target.setDiscoverTargets(true, null);
       //target.attachedToTarget();
       //target.createTarget("");

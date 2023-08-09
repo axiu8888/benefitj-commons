@@ -1,13 +1,14 @@
 package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.benefitj.jpuppeteer.ChromiumApi;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
  * Input/Output operations for streams produced by DevTools.
  */
-public interface IO {
+public interface IO extends ChromiumApi {
 
   /**
    * Close the stream, discard any temporary backing storage.
