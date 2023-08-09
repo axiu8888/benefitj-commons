@@ -1,13 +1,13 @@
 package com.benefitj.jpuppeteer.chromium;
 
-import com.benefitj.jpuppeteer.ChromiumApi;
 import com.benefitj.jpuppeteer.Event;
 import lombok.Data;
 
 /**
  * This domain is deprecated - use Runtime or Log instead. DEPRECATED
  */
-public interface Console extends ChromiumApi {
+@ChromiumApi("Console")
+public interface Console {
 
   /**
    * Does nothing.

@@ -2,7 +2,6 @@ package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
-import com.benefitj.jpuppeteer.ChromiumApi;
 import com.benefitj.jpuppeteer.Event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -14,7 +13,8 @@ import java.util.List;
  * <p>
  * The Browser domain defines methods and events for browser managing.
  */
-public interface Browser extends ChromiumApi {
+@ChromiumApi("Browser")
+public interface Browser {
 
   /**
    * Allows a site to use privacy sandbox features that require enrollment without the site actually being enrolled. Only supported on page targets.

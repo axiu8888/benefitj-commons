@@ -5,19 +5,21 @@ import com.benefitj.core.SingletonSupplier;
 import com.benefitj.core.Utils;
 import com.benefitj.core.cmd.SystemOS;
 import com.benefitj.core.file.CompressUtils;
+import com.benefitj.frameworks.TarUtils;
 import com.benefitj.http.FileProgressListener;
 import com.benefitj.http.HttpHelper;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 /**
@@ -125,91 +127,12 @@ public class BrowserFetcher {
     if (name.endsWith(".zip")) {
       CompressUtils.unzip(archive, destDir);
     } else if (name.endsWith(".tar.bz2")) {
-      extractTar(archive, destDir);
+      TarUtils.extractTar(archive, destDir);
     } else if (name.endsWith(".dmg")) {
-      installDMG(archive, destDir);
+      TarUtils.extractDMG(archive, destDir);
     } else {
       throw new IllegalArgumentException("Unsupported archive format: " + archive);
     }
-  }
-
-  /**
-   * 解压tar文件
-   *
-   * @param archive zip路径
-   * @param destDir 存放路径
-   */
-  public static void extractTar(File archive, File destDir) {
-    try (final TarArchiveInputStream tarArchiveIs = new TarArchiveInputStream(new FileInputStream(archive));) {
-      byte[] buf = new byte[1024 << 10];
-      ArchiveEntry nextEntry;
-      while ((nextEntry = tarArchiveIs.getNextEntry()) != null) {
-        File dest = new File(destDir, nextEntry.getName());
-        if (nextEntry.isDirectory()) {
-          dest.mkdirs();
-        } else {
-          try (final BufferedInputStream in = new BufferedInputStream(tarArchiveIs);
-               final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(IOUtils.createFile(dest)));) {
-            int len;
-            while ((len = in.read(buf)) > 0) {
-              out.write(buf, 0, len);
-              out.flush();
-            }
-          }
-        }
-      }
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  /**
-   * 解压zip文件
-   *
-   * @param archive zip路径
-   * @param destDir 存放路径
-   */
-  public static File extractZip(File archive, File destDir) {
-    try (ZipFile zipFile = new ZipFile(archive)) {
-      Enumeration<? extends ZipEntry> entries = zipFile.entries();
-      byte[] buf = new byte[1024 << 10];
-      while (entries.hasMoreElements()) {
-        ZipEntry zipEntry = entries.nextElement();
-        Path path = Paths.get(destDir.getAbsolutePath(), zipEntry.getName());
-        if (zipEntry.isDirectory()) {
-          path.toFile().mkdirs();
-        } else {
-          try (final BufferedInputStream reader = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-               final BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(path.toString()));) {
-            int perReadcount;
-            while ((perReadcount = reader.read(buf, 0, buf.length)) != -1) {
-              writer.write(buf, 0, perReadcount);
-              writer.flush();
-            }
-          }
-        }
-      }
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
-    return destDir;
-  }
-
-  /**
-   * Install *.app directory from dmg file
-   *
-   * @param archive zip路径
-   * @param destDir 存放路径
-   */
-  public static File installDMG(File archive, File destDir) {
-    try {
-      net.lingala.zip4j.ZipFile zipFile = new net.lingala.zip4j.ZipFile(archive);
-      destDir.mkdirs();
-      zipFile.extractAll(destDir.getAbsolutePath());
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
-    return destDir;
   }
 
   /**
@@ -346,13 +269,39 @@ public class BrowserFetcher {
   }
 
   /**
-   * 检测给定的路径是否存在
-   *
-   * @param filePath 文件路径
-   * @return boolean
+   * 版本信息
    */
-  public static boolean exists(String filePath) {
-    return Files.exists(Paths.get(filePath));
+  @SuperBuilder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Data
+  public static class RevisionInfo {
+
+    /**
+     * 版本
+     */
+    private String revision;
+    /**
+     * 下载的目录
+     */
+    private File folder;
+
+    /**
+     * 下载的URL路径
+     */
+    private String url;
+
+    /**
+     * 平台 win linux mac
+     */
+    @Builder.Default
+    private SystemOS platform = SystemOS.getLocale();
+    /**
+     * 目前支持两种产品：chrome or firefix
+     */
+    @Builder.Default
+    private Product product = Product.chrome;
+
   }
 
 }

@@ -2,7 +2,6 @@ package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
-import com.benefitj.jpuppeteer.ChromiumApi;
 import com.benefitj.jpuppeteer.Event;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -15,7 +14,8 @@ import java.util.List;
 /**
  * 页面
  */
-public interface Page extends ChromiumApi {
+@ChromiumApi("Page")
+public interface Page {
 
   /**
    * 在创建时(在加载框架的脚本之前)计算每个帧中的给定脚本。

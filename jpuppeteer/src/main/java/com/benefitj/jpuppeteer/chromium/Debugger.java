@@ -2,7 +2,6 @@ package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
-import com.benefitj.jpuppeteer.ChromiumApi;
 import com.benefitj.jpuppeteer.Event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -10,7 +9,11 @@ import lombok.Data;
 import java.net.Inet4Address;
 import java.util.List;
 
-public interface Debugger extends ChromiumApi {
+/**
+ * Debugger domain exposes JavaScript debugging capabilities. It allows setting and removing breakpoints, stepping through execution, exploring stack traces, etc.
+ */
+@ChromiumApi("Debugger")
+public interface Debugger {
 
   /**
    * Continues execution until specific location is reached.

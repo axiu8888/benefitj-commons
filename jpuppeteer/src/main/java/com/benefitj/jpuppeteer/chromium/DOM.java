@@ -1,7 +1,6 @@
 package com.benefitj.jpuppeteer.chromium;
 
 import cn.hutool.json.JSONArray;
-import com.benefitj.jpuppeteer.ChromiumApi;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -18,7 +17,8 @@ import java.util.List;
  * information about the nodes that were sent to the client. Note that iframe owner elements will return corresponding
  * document elements as their child nodes.
  */
-public interface DOM extends ChromiumApi {
+@ChromiumApi("DOM")
+public interface DOM {
 
   /**
    * Called when shadow root is popped from the element.

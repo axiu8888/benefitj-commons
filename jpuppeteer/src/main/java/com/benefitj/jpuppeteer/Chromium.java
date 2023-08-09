@@ -11,6 +11,7 @@ import com.benefitj.http.WebSocket;
 import com.benefitj.http.WebSocketImpl;
 import com.benefitj.http.WebSocketListener;
 import com.benefitj.jpuppeteer.chromium.Browser;
+import com.benefitj.jpuppeteer.chromium.ChromiumApi;
 import com.benefitj.jpuppeteer.chromium.Page;
 import com.benefitj.jpuppeteer.chromium.Target;
 import com.google.common.reflect.ClassPath;
@@ -32,6 +33,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * 浏览器对象
+ */
 @Slf4j
 public class Chromium implements Launcher {
 
@@ -152,7 +156,7 @@ public class Chromium implements Launcher {
           .stream()
           .filter(c -> packageName.equalsIgnoreCase(c.getPackageName()))
           .map(ClassPath.ClassInfo::load)
-          .filter(ChromiumApi.class::isAssignableFrom)
+          .filter(cls -> cls.isAnnotationPresent(ChromiumApi.class))
           .forEach(cls -> {
             log.trace("load chromium api: {}", cls);
             this.apis.put((Class) cls, newProxy(this, cls));
@@ -163,7 +167,7 @@ public class Chromium implements Launcher {
     }
   }
 
-  public <T extends ChromiumApi> T getApi(Class<T> type) {
+  public <T> T getApi(Class<T> type) {
     return (T) apis.get(type);
   }
 
