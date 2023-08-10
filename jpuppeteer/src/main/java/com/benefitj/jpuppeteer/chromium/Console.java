@@ -25,13 +25,20 @@ public interface Console {
   void enable();
 
   /**
-   * Issued when new console message is added.
-   *
-   * @param message ConsoleMessage
-   *                Console message that has been added.
+   * 事件
    */
-  @Event("messageAdded")
-  void messageAdded(ConsoleMessage message);
+  @Event("Console")
+  public interface Events {
+    /**
+     * Issued when new console message is added.
+     *
+     * @param message ConsoleMessage
+     *                Console message that has been added.
+     */
+    @Event("messageAdded")
+    void messageAdded(ConsoleMessage message);
+
+  }
 
   /**
    * Console message.

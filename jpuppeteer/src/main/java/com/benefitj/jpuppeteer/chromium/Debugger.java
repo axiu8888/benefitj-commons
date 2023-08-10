@@ -389,134 +389,141 @@ public interface Debugger {
   void pauseOnAsyncCall(String parentStackTraceId);
 
   /**
-   * Fired when breakpoint is resolved to an actual script and location.
-   *
-   * @param breakpointId BreakpointId
-   *                     Breakpoint unique identifier.
-   * @param location     Location
-   *                     Actual breakpoint location.
+   * 事件
    */
-  @Event("breakpointResolved")
-  void breakpointResolved(String breakpointId, Location location);
+  @Event("Debugger")
+  public interface Events {
+    /**
+     * Fired when breakpoint is resolved to an actual script and location.
+     *
+     * @param breakpointId BreakpointId
+     *                     Breakpoint unique identifier.
+     * @param location     Location
+     *                     Actual breakpoint location.
+     */
+    @Event("breakpointResolved")
+    void breakpointResolved(String breakpointId, Location location);
 
-  /**
-   * Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
-   *
-   * @param callFrames            array[ CallFrame ]
-   *                              Call stack the virtual machine stopped on.
-   * @param reason                string
-   *                              Pause reason.
-   *                              Allowed Values: ambiguous, assert, CSPViolation, debugCommand, DOM, EventListener, exception, instrumentation, OOM, other, promiseRejection, XHR, step
-   * @param data                  object
-   *                              Object containing break-specific auxiliary properties.
-   * @param hitBreakpoints        array[ string ]
-   *                              Hit breakpoints IDs
-   * @param asyncStackTrace       Runtime.StackTrace
-   *                              Async stack trace, if any.
-   * @param asyncStackTraceId     Runtime.StackTraceId
-   *                              Async stack trace, if any. EXPERIMENTAL
-   * @param asyncCallStackTraceId Runtime.StackTraceId
-   *                              Never present, will be removed. EXPERIMENTALDEPRECATED
-   */
-  @Event("paused")
-  void paused(List<CallFrame> callFrames, String reason, JSONObject data, JSONObject hitBreakpoints, Runtime.StackTrace asyncStackTrace, String asyncStackTraceId, String asyncCallStackTraceId);
+    /**
+     * Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
+     *
+     * @param callFrames            array[ CallFrame ]
+     *                              Call stack the virtual machine stopped on.
+     * @param reason                string
+     *                              Pause reason.
+     *                              Allowed Values: ambiguous, assert, CSPViolation, debugCommand, DOM, EventListener, exception, instrumentation, OOM, other, promiseRejection, XHR, step
+     * @param data                  object
+     *                              Object containing break-specific auxiliary properties.
+     * @param hitBreakpoints        array[ string ]
+     *                              Hit breakpoints IDs
+     * @param asyncStackTrace       Runtime.StackTrace
+     *                              Async stack trace, if any.
+     * @param asyncStackTraceId     Runtime.StackTraceId
+     *                              Async stack trace, if any. EXPERIMENTAL
+     * @param asyncCallStackTraceId Runtime.StackTraceId
+     *                              Never present, will be removed. EXPERIMENTALDEPRECATED
+     */
+    @Event("paused")
+    void paused(List<CallFrame> callFrames, String reason, JSONObject data, JSONObject hitBreakpoints, Runtime.StackTrace asyncStackTrace, String asyncStackTraceId, String asyncCallStackTraceId);
 
-  /**
-   * Fired when the virtual machine resumed execution.
-   */
-  @Event("resumed")
-  void resumed();
+    /**
+     * Fired when the virtual machine resumed execution.
+     */
+    @Event("resumed")
+    void resumed();
 
-  /**
-   * Fired when virtual machine fails to parse the script.
-   *
-   * @param scriptId                Runtime.ScriptId
-   *                                Identifier of the script parsed.
-   * @param url                     string
-   *                                URL or name of the script parsed (if any).
-   * @param startLine               integer
-   *                                Line offset of the script within the resource with given URL (for script tags).
-   * @param startColumn             integer
-   *                                Column offset of the script within the resource with given URL.
-   * @param endLine                 integer
-   *                                Last line of the script.
-   * @param endColumn               integer
-   *                                Length of the last line of the script.
-   * @param executionContextId      Runtime.ExecutionContextId
-   *                                Specifies script creation context.
-   * @param hash                    string
-   *                                Content hash of the script, SHA-256.
-   * @param executionContextAuxData object
-   *                                Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
-   * @param sourceMapURL            string
-   *                                URL of source map associated with script (if any).
-   * @param hasSourceURL            boolean
-   *                                True, if this script has sourceURL.
-   * @param isModule                boolean
-   *                                True, if this script is ES6 module.
-   * @param length                  integer
-   *                                This script length.
-   * @param stackTrace              Runtime.StackTrace
-   *                                JavaScript top stack frame of where the script parsed event was triggered if available. EXPERIMENTAL
-   * @param codeOffset              integer
-   *                                If the scriptLanguage is WebAssembly, the code section offset in the module. EXPERIMENTAL
-   * @param scriptLanguage          Debugger.ScriptLanguage
-   *                                The language of the script. EXPERIMENTAL
-   * @param embedderName            string
-   *                                The name the embedder supplied for this script. EXPERIMENTAL
-   */
-  @Event("scriptFailedToParse")
-  void scriptFailedToParse(String scriptId, String url, Integer startLine, Integer startColumn, Inet4Address endLine,
-                           Integer endColumn, String executionContextId, String hash, JSONObject executionContextAuxData,
-                           String sourceMapURL, boolean hasSourceURL, boolean isModule, Integer length, Runtime.StackTrace stackTrace,
-                           Integer codeOffset, ScriptLanguage scriptLanguage, String embedderName);
+    /**
+     * Fired when virtual machine fails to parse the script.
+     *
+     * @param scriptId                Runtime.ScriptId
+     *                                Identifier of the script parsed.
+     * @param url                     string
+     *                                URL or name of the script parsed (if any).
+     * @param startLine               integer
+     *                                Line offset of the script within the resource with given URL (for script tags).
+     * @param startColumn             integer
+     *                                Column offset of the script within the resource with given URL.
+     * @param endLine                 integer
+     *                                Last line of the script.
+     * @param endColumn               integer
+     *                                Length of the last line of the script.
+     * @param executionContextId      Runtime.ExecutionContextId
+     *                                Specifies script creation context.
+     * @param hash                    string
+     *                                Content hash of the script, SHA-256.
+     * @param executionContextAuxData object
+     *                                Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
+     * @param sourceMapURL            string
+     *                                URL of source map associated with script (if any).
+     * @param hasSourceURL            boolean
+     *                                True, if this script has sourceURL.
+     * @param isModule                boolean
+     *                                True, if this script is ES6 module.
+     * @param length                  integer
+     *                                This script length.
+     * @param stackTrace              Runtime.StackTrace
+     *                                JavaScript top stack frame of where the script parsed event was triggered if available. EXPERIMENTAL
+     * @param codeOffset              integer
+     *                                If the scriptLanguage is WebAssembly, the code section offset in the module. EXPERIMENTAL
+     * @param scriptLanguage          Debugger.ScriptLanguage
+     *                                The language of the script. EXPERIMENTAL
+     * @param embedderName            string
+     *                                The name the embedder supplied for this script. EXPERIMENTAL
+     */
+    @Event("scriptFailedToParse")
+    void scriptFailedToParse(String scriptId, String url, Integer startLine, Integer startColumn, Inet4Address endLine,
+                             Integer endColumn, String executionContextId, String hash, JSONObject executionContextAuxData,
+                             String sourceMapURL, boolean hasSourceURL, boolean isModule, Integer length, Runtime.StackTrace stackTrace,
+                             Integer codeOffset, ScriptLanguage scriptLanguage, String embedderName);
 
-  /**
-   * Fired when virtual machine parses script. This event is also fired for all known and uncollected scripts upon enabling debugger.
-   *
-   * @param scriptId                Runtime.ScriptId
-   *                                Identifier of the script parsed.
-   * @param url                     string
-   *                                URL or name of the script parsed (if any).
-   * @param startLine               integer
-   *                                Line offset of the script within the resource with given URL (for script tags).
-   * @param startColumn             integer
-   *                                Column offset of the script within the resource with given URL.
-   * @param endLine                 integer
-   *                                Last line of the script.
-   * @param endColumn               integer
-   *                                Length of the last line of the script.
-   * @param executionContextId      Runtime.ExecutionContextId
-   *                                Specifies script creation context.
-   * @param hash                    string
-   *                                Content hash of the script, SHA-256.
-   * @param executionContextAuxData object
-   *                                Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
-   * @param isLiveEdit              boolean
-   *                                True, if this script is generated as a result of the live edit operation. EXPERIMENTAL
-   * @param sourceMapURL            string
-   *                                URL of source map associated with script (if any).
-   * @param hasSourceURL            boolean
-   *                                True, if this script has sourceURL.
-   * @param isModule                boolean
-   *                                True, if this script is ES6 module.
-   * @param length                  integer
-   *                                This script length.
-   * @param stackTrace              Runtime.StackTrace
-   *                                JavaScript top stack frame of where the script parsed event was triggered if available. EXPERIMENTAL
-   * @param codeOffset              integer
-   *                                If the scriptLanguage is WebAssembly, the code section offset in the module. EXPERIMENTAL
-   * @param scriptLanguage          Debugger.ScriptLanguage
-   *                                The language of the script. EXPERIMENTAL
-   * @param debugSymbols            Debugger.DebugSymbols
-   *                                If the scriptLanguage is WebASsembly, the source of debug symbols for the module. EXPERIMENTAL
-   * @param embedderName            string
-   *                                The name the embedder supplied for this script. EXPERIMENTAL
-   */
-  @Event("scriptParsed")
-  void scriptParsed(String scriptId, String url, Integer startLine, Integer startColumn, Integer endLine, Integer endColumn, String executionContextId
-      , String hash, JSONObject executionContextAuxData, boolean isLiveEdit, String sourceMapURL, boolean hasSourceURL, boolean isModule
-      , Integer length, Runtime.StackTrace stackTrace, Integer codeOffset, ScriptLanguage scriptLanguage, DebugSymbols debugSymbols, String embedderName);
+    /**
+     * Fired when virtual machine parses script. This event is also fired for all known and uncollected scripts upon enabling debugger.
+     *
+     * @param scriptId                Runtime.ScriptId
+     *                                Identifier of the script parsed.
+     * @param url                     string
+     *                                URL or name of the script parsed (if any).
+     * @param startLine               integer
+     *                                Line offset of the script within the resource with given URL (for script tags).
+     * @param startColumn             integer
+     *                                Column offset of the script within the resource with given URL.
+     * @param endLine                 integer
+     *                                Last line of the script.
+     * @param endColumn               integer
+     *                                Length of the last line of the script.
+     * @param executionContextId      Runtime.ExecutionContextId
+     *                                Specifies script creation context.
+     * @param hash                    string
+     *                                Content hash of the script, SHA-256.
+     * @param executionContextAuxData object
+     *                                Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
+     * @param isLiveEdit              boolean
+     *                                True, if this script is generated as a result of the live edit operation. EXPERIMENTAL
+     * @param sourceMapURL            string
+     *                                URL of source map associated with script (if any).
+     * @param hasSourceURL            boolean
+     *                                True, if this script has sourceURL.
+     * @param isModule                boolean
+     *                                True, if this script is ES6 module.
+     * @param length                  integer
+     *                                This script length.
+     * @param stackTrace              Runtime.StackTrace
+     *                                JavaScript top stack frame of where the script parsed event was triggered if available. EXPERIMENTAL
+     * @param codeOffset              integer
+     *                                If the scriptLanguage is WebAssembly, the code section offset in the module. EXPERIMENTAL
+     * @param scriptLanguage          Debugger.ScriptLanguage
+     *                                The language of the script. EXPERIMENTAL
+     * @param debugSymbols            Debugger.DebugSymbols
+     *                                If the scriptLanguage is WebASsembly, the source of debug symbols for the module. EXPERIMENTAL
+     * @param embedderName            string
+     *                                The name the embedder supplied for this script. EXPERIMENTAL
+     */
+    @Event("scriptParsed")
+    void scriptParsed(String scriptId, String url, Integer startLine, Integer startColumn, Integer endLine, Integer endColumn, String executionContextId
+        , String hash, JSONObject executionContextAuxData, boolean isLiveEdit, String sourceMapURL, boolean hasSourceURL, boolean isModule
+        , Integer length, Runtime.StackTrace stackTrace, Integer codeOffset, ScriptLanguage scriptLanguage, DebugSymbols debugSymbols, String embedderName);
+
+  }
 
   /**
    *

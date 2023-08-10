@@ -48,7 +48,7 @@ public interface Target {
    * @param background              Whether to create the target in background or foreground (chrome-only, false by default).
    * @param forTab                  Whether to create the target of type "tab". EXPERIMENTAL
    * @return {
-   *   targetId: String
+   * targetId: String
    * }
    */
   JSONObject createTarget(String targetId, Integer width, Integer height, String browserContextId, Boolean enableBeginFrameControl, Boolean newWindow, Boolean background, Boolean forTab);
@@ -67,7 +67,7 @@ public interface Target {
    *
    * @param filter Only targets matching filter will be reported. If filter is not specified and target discovery is currently enabled, a filter used for target discovery is used for consistency.
    * @return {
-   *   targetInfo: array[TargetInfo]
+   * targetInfo: array[TargetInfo]
    * }
    */
   JSONObject getTargets(@Nullable TargetFilter filter);
@@ -166,68 +166,74 @@ public interface Target {
   String setRemoteLocations(List<RemoteLocation> locations);
 
   /**
-   * Notifies about a new protocol message received from the session (as reported in attachedToTarget event).
-   *
-   * @param sessionId SessionID
-   *                  Identifier of a session which sends a message.
-   * @param message   string
-   * @param targetId  TargetID
-   *                  Deprecated.
+   * 事件
    */
-  @Event("receivedMessageFromTarget")
-  void receivedMessageFromTarget(String sessionId, String message, String targetId);
+  @Event("Target")
+  public interface Events {
+    /**
+     * Notifies about a new protocol message received from the session (as reported in attachedToTarget event).
+     *
+     * @param sessionId SessionID
+     *                  Identifier of a session which sends a message.
+     * @param message   string
+     * @param targetId  TargetID
+     *                  Deprecated.
+     */
+    @Event("receivedMessageFromTarget")
+    void receivedMessageFromTarget(String sessionId, String message, String targetId);
 
-  /**
-   * Issued when a target has crashed.
-   *
-   * @param targetId  TargetID
-   * @param status    string
-   *                  Termination status type.
-   * @param errorCode integer
-   *                  Termination error code.
-   */
-  @Event("targetCrashed")
-  void targetCrashed(String targetId, String status, Integer errorCode);
+    /**
+     * Issued when a target has crashed.
+     *
+     * @param targetId  TargetID
+     * @param status    string
+     *                  Termination status type.
+     * @param errorCode integer
+     *                  Termination error code.
+     */
+    @Event("targetCrashed")
+    void targetCrashed(String targetId, String status, Integer errorCode);
 
-  /**
-   * Issued when a possible inspection target is created.
-   */
-  @Event("targetCreated")
-  void targetCreated(TargetInfo targetInfo);
+    /**
+     * Issued when a possible inspection target is created.
+     */
+    @Event("targetCreated")
+    void targetCreated(TargetInfo targetInfo);
 
-  /**
-   * Issued when a target is destroyed.
-   */
-  @Event("targetDestroyed")
-  void targetDestroyed(String targetId);
+    /**
+     * Issued when a target is destroyed.
+     */
+    @Event("targetDestroyed")
+    void targetDestroyed(String targetId);
 
-  /**
-   * Issued when some information about a target has changed. This only happens between targetCreated and targetDestroyed.
-   */
-  @Event("targetInfoChanged")
-  void targetInfoChanged(TargetInfo targetInfo);
+    /**
+     * Issued when some information about a target has changed. This only happens between targetCreated and targetDestroyed.
+     */
+    @Event("targetInfoChanged")
+    void targetInfoChanged(TargetInfo targetInfo);
 
-  /**
-   * Issued when attached to target because of auto-attach or attachToTarget command.
-   *
-   * @param sessionId          SessionID
-   *                           Identifier assigned to the session used to send/receive messages.
-   * @param targetInfo         TargetInfo
-   * @param waitingForDebugger boolean
-   */
-  @Event("attachedToTarget")
-  void attachedToTarget(String sessionId, TargetInfo targetInfo, Boolean waitingForDebugger);
+    /**
+     * Issued when attached to target because of auto-attach or attachToTarget command.
+     *
+     * @param sessionId          SessionID
+     *                           Identifier assigned to the session used to send/receive messages.
+     * @param targetInfo         TargetInfo
+     * @param waitingForDebugger boolean
+     */
+    @Event("attachedToTarget")
+    void attachedToTarget(String sessionId, TargetInfo targetInfo, Boolean waitingForDebugger);
 
-  /**
-   * Issued when detached from target for any reason (including detachFromTarget command). Can be issued multiple times per target if multiple sessions have been attached to it.
-   *
-   * @param sessionId SessionID
-   *                  Detached session identifier.
-   * @param targetId  TargetID
-   */
-  @Event("detachedFromTarget")
-  void detachedFromTarget(String sessionId, String targetId);
+    /**
+     * Issued when detached from target for any reason (including detachFromTarget command). Can be issued multiple times per target if multiple sessions have been attached to it.
+     *
+     * @param sessionId SessionID
+     *                  Detached session identifier.
+     * @param targetId  TargetID
+     */
+    @Event("detachedFromTarget")
+    void detachedFromTarget(String sessionId, String targetId);
 
+  }
 
   /**
    *

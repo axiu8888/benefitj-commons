@@ -98,28 +98,36 @@ public interface Animation {
   void setTiming(String animationId, Long duration, Long delay);
 
   /**
-   * Event for when an animation has been cancelled.
-   *
-   * @param id Id of the animation that was cancelled.
+   * 事件
    */
-  @Event("animationCanceled")
-  void animationCanceled(String id);
+  @Event("Animation")
+  public interface Events {
 
-  /**
-   * Event for each animation that has been created.
-   *
-   * @param id Id of the animation that was created.
-   */
-  @Event("animationCreated")
-  void animationCreated(String id);
+    /**
+     * Event for when an animation has been cancelled.
+     *
+     * @param id Id of the animation that was cancelled.
+     */
+    @Event("animationCanceled")
+    void animationCanceled(String id);
 
-  /**
-   * Event for animation that has been started.
-   *
-   * @param animation Animation that was started.
-   */
-  @Event("animationStarted")
-  void animationStarted(Anim animation);
+    /**
+     * Event for each animation that has been created.
+     *
+     * @param id Id of the animation that was created.
+     */
+    @Event("animationCreated")
+    void animationCreated(String id);
+
+    /**
+     * Event for animation that has been started.
+     *
+     * @param animation Animation that was started.
+     */
+    @Event("animationStarted")
+    void animationStarted(Anim animation);
+
+  }
 
   /**
    * Animation instance.

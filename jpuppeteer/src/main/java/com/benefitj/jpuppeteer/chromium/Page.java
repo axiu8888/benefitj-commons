@@ -526,247 +526,256 @@ public interface Page {
    */
   void setTouchEmulationEnabled(boolean enabled, String configuration);
 
-  @Event("domContentEventFired")
-  void domContentEventFired(long timestamp);
-
   /**
-   * Emitted only when page.interceptFileChooser is enabled.
-   *
-   * @param frameId       Id of the frame containing input node. EXPERIMENTAL
-   * @param mode          Input mode.
-   *                      Allowed Values: selectSingle, selectMultiple
-   * @param backendNodeId Input node id. Only present for file choosers opened via an <input type="file"> element. EXPERIMENTAL
+   * 事件
    */
-  @Event("fileChooserOpened")
-  void fileChooserOpened(String frameId, String mode, String backendNodeId);
+  @Event("Page")
+  public interface Events {
 
-  /**
-   * Fired when frame has been attached to its parent.
-   *
-   * @param frameId       Id of the frame that has been attached.
-   * @param parentFrameId FrameId
-   *                      Parent frame identifier.
-   * @param stack         Runtime.StackTrace
-   *                      JavaScript stack trace of when frame was attached, only set if frame initiated from script.
-   */
-  @Event("frameAttached")
-  void frameAttached(String frameId, String parentFrameId, Runtime.StackTrace stack);
+    @Event("domContentEventFired")
+    void domContentEventFired(long timestamp);
 
-  /**
-   * Fired when frame has been detached from its parent.
-   *
-   * @param frameId FrameId
-   *                Id of the frame that has been detached.
-   * @param reason  Allowed Values: remove, swap
-   *                EXPERIMENTAL
-   */
-  @Event("frameDetached")
-  void frameDetached(String frameId, String reason);
+    /**
+     * Emitted only when page.interceptFileChooser is enabled.
+     *
+     * @param frameId       Id of the frame containing input node. EXPERIMENTAL
+     * @param mode          Input mode.
+     *                      Allowed Values: selectSingle, selectMultiple
+     * @param backendNodeId Input node id. Only present for file choosers opened via an <input type="file"> element. EXPERIMENTAL
+     */
+    @Event("fileChooserOpened")
+    void fileChooserOpened(String frameId, String mode, String backendNodeId);
 
-  /**
-   * Fired once navigation of the frame has completed. Frame is now associated with the new loader.
-   *
-   * @param frame Frame object.
-   * @param type  EXPERIMENTAL
-   */
-  @Event("frameNavigated")
-  void frameNavigated(Frame frame, NavigationType type);
+    /**
+     * Fired when frame has been attached to its parent.
+     *
+     * @param frameId       Id of the frame that has been attached.
+     * @param parentFrameId FrameId
+     *                      Parent frame identifier.
+     * @param stack         Runtime.StackTrace
+     *                      JavaScript stack trace of when frame was attached, only set if frame initiated from script.
+     */
+    @Event("frameAttached")
+    void frameAttached(String frameId, String parentFrameId, Runtime.StackTrace stack);
 
-  /**
-   * Fired when interstitial page was hidden
-   */
-  @Event("interstitialHidden")
-  void interstitialHidden();
+    /**
+     * Fired when frame has been detached from its parent.
+     *
+     * @param frameId FrameId
+     *                Id of the frame that has been detached.
+     * @param reason  Allowed Values: remove, swap
+     *                EXPERIMENTAL
+     */
+    @Event("frameDetached")
+    void frameDetached(String frameId, String reason);
 
-  /**
-   * Fired when interstitial page was shown
-   */
-  @Event("interstitialShown")
-  void interstitialShown();
+    /**
+     * Fired once navigation of the frame has completed. Frame is now associated with the new loader.
+     *
+     * @param frame Frame object.
+     * @param type  EXPERIMENTAL
+     */
+    @Event("frameNavigated")
+    void frameNavigated(Frame frame, NavigationType type);
 
-  /**
-   * Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.
-   *
-   * @param result    Whether dialog was confirmed.
-   * @param userInput User input in case of prompt.
-   */
-  @Event("javascriptDialogClosed")
-  void javascriptDialogClosed(boolean result, String userInput);
+    /**
+     * Fired when interstitial page was hidden
+     */
+    @Event("interstitialHidden")
+    void interstitialHidden();
 
-  /**
-   * Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to open.
-   *
-   * @param url               Frame url.
-   * @param message           Message that will be displayed by the dialog.
-   * @param type              Dialog type.
-   * @param hasBrowserHandler True iff browser is capable showing or acting on the given dialog. When browser has no dialog handler for given target, calling alert while Page domain is engaged will stall the page execution. Execution can be resumed via calling Page.handleJavaScriptDialog.
-   * @param defaultPrompt     Default dialog prompt.
-   */
-  @Event("javascriptDialogOpening")
-  void javascriptDialogOpening(String url, String message, DialogType type, boolean hasBrowserHandler, String defaultPrompt);
+    /**
+     * Fired when interstitial page was shown
+     */
+    @Event("interstitialShown")
+    void interstitialShown();
 
-  /**
-   * Fired for top level page lifecycle events such as navigation, load, paint, etc.
-   *
-   * @param frameId   Id of the frame.
-   * @param loaderId  Loader identifier. Empty string if the request is fetched from worker.
-   * @param name
-   * @param timestamp Network.MonotonicTime
-   */
-  @Event("lifecycleEvent")
-  void lifecycleEvent(String frameId, String loaderId, String name, Long timestamp);
+    /**
+     * Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.
+     *
+     * @param result    Whether dialog was confirmed.
+     * @param userInput User input in case of prompt.
+     */
+    @Event("javascriptDialogClosed")
+    void javascriptDialogClosed(boolean result, String userInput);
 
-  /**
-   * @param timestamp Network.MonotonicTime
-   */
-  @Event("loadEventFired")
-  void loadEventFired(Long timestamp);
+    /**
+     * Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to open.
+     *
+     * @param url               Frame url.
+     * @param message           Message that will be displayed by the dialog.
+     * @param type              Dialog type.
+     * @param hasBrowserHandler True iff browser is capable showing or acting on the given dialog. When browser has no dialog handler for given target, calling alert while Page domain is engaged will stall the page execution. Execution can be resumed via calling Page.handleJavaScriptDialog.
+     * @param defaultPrompt     Default dialog prompt.
+     */
+    @Event("javascriptDialogOpening")
+    void javascriptDialogOpening(String url, String message, DialogType type, boolean hasBrowserHandler, String defaultPrompt);
 
-  /**
-   * Fired when a new window is going to be opened, via window.open(), link click, form submission, etc.
-   *
-   * @param url            The URL for the new window.
-   * @param windowName     Window name.
-   * @param windowFeatures array[ string ]
-   *                       An array of enabled window features.
-   * @param userGesture    Whether or not it was triggered by user gesture.
-   */
-  @Event("windowOpen")
-  void windowOpen(String url, String windowName, List<String> windowFeatures, boolean userGesture);
+    /**
+     * Fired for top level page lifecycle events such as navigation, load, paint, etc.
+     *
+     * @param frameId   Id of the frame.
+     * @param loaderId  Loader identifier. Empty string if the request is fetched from worker.
+     * @param name
+     * @param timestamp Network.MonotonicTime
+     */
+    @Event("lifecycleEvent")
+    void lifecycleEvent(String frameId, String loaderId, String name, Long timestamp);
 
-  /**
-   * Fired when frame no longer has a scheduled navigation.
-   *
-   * @param frameId Id of the frame that has cleared its scheduled navigation.
-   */
-  @Event("frameClearedScheduledNavigation")
-  void frameClearedScheduledNavigation(String frameId);
+    /**
+     * @param timestamp Network.MonotonicTime
+     */
+    @Event("loadEventFired")
+    void loadEventFired(Long timestamp);
 
-  /**
-   * Fired when frame schedules a potential navigation.
-   *
-   * @param frameId Id of the frame that has scheduled a navigation.
-   * @param delay   Delay (in seconds) until the navigation is scheduled to begin. The navigation is not guaranteed to start.
-   * @param reason  The reason for the navigation.
-   * @param url     The destination URL for the scheduled navigation.
-   */
-  @Event("frameScheduledNavigation")
-  void frameScheduledNavigation(String frameId, int delay, ClientNavigationReason reason, String url);
+    /**
+     * Fired when a new window is going to be opened, via window.open(), link click, form submission, etc.
+     *
+     * @param url            The URL for the new window.
+     * @param windowName     Window name.
+     * @param windowFeatures array[ string ]
+     *                       An array of enabled window features.
+     * @param userGesture    Whether or not it was triggered by user gesture.
+     */
+    @Event("windowOpen")
+    void windowOpen(String url, String windowName, List<String> windowFeatures, boolean userGesture);
 
-  /**
-   * Fired for failed bfcache history navigations if BackForwardCache feature is enabled. Do not assume any ordering with the Page.frameNavigated event. This event is fired only for main-frame history navigation where the document changes (non-same-document navigations), when bfcache navigation fails.
-   *
-   * @param loaderId                    The loader id for the associated navgation.
-   * @param frameId                     The frame id of the associated frame.
-   * @param notRestoredExplanations     array[ BackForwardCacheNotRestoredExplanation ]
-   *                                    Array of reasons why the page could not be cached. This must not be empty.
-   * @param notRestoredExplanationsTree BackForwardCacheNotRestoredExplanationTree
-   *                                    Tree structure of reasons why the page could not be cached for each frame.
-   */
-  @Event("backForwardCacheNotUsed")
-  void backForwardCacheNotUsed(String loaderId, String frameId, List<BackForwardCacheNotRestoredExplanation> notRestoredExplanations, List<BackForwardCacheNotRestoredExplanationTree> notRestoredExplanationsTree);
+    /**
+     * Fired when frame no longer has a scheduled navigation.
+     *
+     * @param frameId Id of the frame that has cleared its scheduled navigation.
+     */
+    @Event("frameClearedScheduledNavigation")
+    void frameClearedScheduledNavigation(String frameId);
 
-  /**
-   * Issued for every compilation cache generated. Is only available if Page.setGenerateCompilationCache is enabled.
-   *
-   * @param url
-   * @param data Base64-encoded data (Encoded as a base64 string when passed over JSON)
-   */
-  @Event("compilationCacheProduced")
-  void compilationCacheProduced(String url, String data);
+    /**
+     * Fired when frame schedules a potential navigation.
+     *
+     * @param frameId Id of the frame that has scheduled a navigation.
+     * @param delay   Delay (in seconds) until the navigation is scheduled to begin. The navigation is not guaranteed to start.
+     * @param reason  The reason for the navigation.
+     * @param url     The destination URL for the scheduled navigation.
+     */
+    @Event("frameScheduledNavigation")
+    void frameScheduledNavigation(String frameId, int delay, ClientNavigationReason reason, String url);
 
-  /**
-   * Fired when opening document to write to.
-   *
-   * @param frame Frame object.
-   */
-  @Event("documentOpened")
-  void documentOpened(Frame frame);
+    /**
+     * Fired for failed bfcache history navigations if BackForwardCache feature is enabled. Do not assume any ordering with the Page.frameNavigated event. This event is fired only for main-frame history navigation where the document changes (non-same-document navigations), when bfcache navigation fails.
+     *
+     * @param loaderId                    The loader id for the associated navgation.
+     * @param frameId                     The frame id of the associated frame.
+     * @param notRestoredExplanations     array[ BackForwardCacheNotRestoredExplanation ]
+     *                                    Array of reasons why the page could not be cached. This must not be empty.
+     * @param notRestoredExplanationsTree BackForwardCacheNotRestoredExplanationTree
+     *                                    Tree structure of reasons why the page could not be cached for each frame.
+     */
+    @Event("backForwardCacheNotUsed")
+    void backForwardCacheNotUsed(String loaderId, String frameId, List<BackForwardCacheNotRestoredExplanation> notRestoredExplanations, List<BackForwardCacheNotRestoredExplanationTree> notRestoredExplanationsTree);
 
-  /**
-   * Fired when a renderer-initiated navigation is requested. Navigation may still be cancelled after the event is issued.
-   *
-   * @param frameId     FrameId
-   *                    Id of the frame that is being navigated.
-   * @param reason      ClientNavigationReason
-   *                    The reason for the navigation.
-   * @param url         The destination URL for the requested navigation.
-   * @param disposition ClientNavigationDisposition
-   *                    The disposition for the navigation.
-   */
-  @Event("frameRequestedNavigation")
-  void frameRequestedNavigation(String frameId, ClientNavigationReason reason, String url, ClientNavigationDisposition disposition);
+    /**
+     * Issued for every compilation cache generated. Is only available if Page.setGenerateCompilationCache is enabled.
+     *
+     * @param url
+     * @param data Base64-encoded data (Encoded as a base64 string when passed over JSON)
+     */
+    @Event("compilationCacheProduced")
+    void compilationCacheProduced(String url, String data);
 
-  @Event("frameResized")
-  void frameResized();
+    /**
+     * Fired when opening document to write to.
+     *
+     * @param frame Frame object.
+     */
+    @Event("documentOpened")
+    void documentOpened(Frame frame);
 
-  /**
-   * Fired when frame has started loading.
-   *
-   * @param frameId Id of the frame that has started loading.
-   */
-  @Event("frameStartedLoading")
-  void frameStartedLoading(String frameId);
+    /**
+     * Fired when a renderer-initiated navigation is requested. Navigation may still be cancelled after the event is issued.
+     *
+     * @param frameId     FrameId
+     *                    Id of the frame that is being navigated.
+     * @param reason      ClientNavigationReason
+     *                    The reason for the navigation.
+     * @param url         The destination URL for the requested navigation.
+     * @param disposition ClientNavigationDisposition
+     *                    The disposition for the navigation.
+     */
+    @Event("frameRequestedNavigation")
+    void frameRequestedNavigation(String frameId, ClientNavigationReason reason, String url, ClientNavigationDisposition disposition);
 
-  /**
-   * Fired when frame has stopped loading.
-   *
-   * @param frameId Id of the frame that has stopped loading.
-   */
-  @Event("frameStoppedLoading")
-  void frameStoppedLoading(String frameId);
+    @Event("frameResized")
+    void frameResized();
 
-  /**
-   * Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
-   *
-   * @param frameId Id of the frame.
-   * @param url     Frame's new url.
-   */
-  @Event("navigatedWithinDocument")
-  void navigatedWithinDocument(String frameId, String url);
+    /**
+     * Fired when frame has started loading.
+     *
+     * @param frameId Id of the frame that has started loading.
+     */
+    @Event("frameStartedLoading")
+    void frameStartedLoading(String frameId);
 
-  /**
-   * Compressed image data requested by the startScreencast.
-   *
-   * @param data      Base64-encoded compressed image. (Encoded as a base64 string when passed over JSON)
-   * @param metadata  ScreencastFrameMetadata
-   *                  Screencast frame metadata.
-   * @param sessionId Frame number.
-   */
-  @Event("screencastFrame")
-  void screencastFrame(String data, ScreencastFrameMetadata metadata, String sessionId);
+    /**
+     * Fired when frame has stopped loading.
+     *
+     * @param frameId Id of the frame that has stopped loading.
+     */
+    @Event("frameStoppedLoading")
+    void frameStoppedLoading(String frameId);
 
-  /**
-   * Fired when the page with currently enabled screencast was shown or hidden `.
-   *
-   * @param visible True if the page is visible.
-   */
-  @Event("screencastVisibilityChanged")
-  void screencastVisibilityChanged(boolean visible);
+    /**
+     * Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
+     *
+     * @param frameId Id of the frame.
+     * @param url     Frame's new url.
+     */
+    @Event("navigatedWithinDocument")
+    void navigatedWithinDocument(String frameId, String url);
 
-  /**
-   * Fired when download makes progress. Last call has |done| == true. Deprecated. Use Browser.downloadProgress instead.
-   *
-   * @param guid          Global unique identifier of the download.
-   * @param totalBytes    Total expected bytes to download.
-   * @param receivedBytes Total bytes received.
-   * @param state         Download status.
-   *                      Allowed Values: inProgress, completed, canceled
-   */
-  @Event("downloadProgress")
-  void downloadProgress(String guid, long totalBytes, long receivedBytes, String state);
+    /**
+     * Compressed image data requested by the startScreencast.
+     *
+     * @param data      Base64-encoded compressed image. (Encoded as a base64 string when passed over JSON)
+     * @param metadata  ScreencastFrameMetadata
+     *                  Screencast frame metadata.
+     * @param sessionId Frame number.
+     */
+    @Event("screencastFrame")
+    void screencastFrame(String data, ScreencastFrameMetadata metadata, String sessionId);
 
-  /**
-   * Fired when page is about to start a download. Deprecated. Use Browser.downloadWillBegin instead.
-   *
-   * @param frameId           Id of the frame that caused download to begin.
-   * @param guid              Global unique identifier of the download.
-   * @param url               URL of the resource being downloaded.
-   * @param suggestedFilename Suggested file name of the resource (the actual name of the file saved on disk may differ).
-   *                          Allowed Values: inProgress, completed, canceled
-   */
-  @Event("downloadWillBegin")
-  void downloadWillBegin(String frameId, String guid, String url, String suggestedFilename);
+    /**
+     * Fired when the page with currently enabled screencast was shown or hidden `.
+     *
+     * @param visible True if the page is visible.
+     */
+    @Event("screencastVisibilityChanged")
+    void screencastVisibilityChanged(boolean visible);
+
+    /**
+     * Fired when download makes progress. Last call has |done| == true. Deprecated. Use Browser.downloadProgress instead.
+     *
+     * @param guid          Global unique identifier of the download.
+     * @param totalBytes    Total expected bytes to download.
+     * @param receivedBytes Total bytes received.
+     * @param state         Download status.
+     *                      Allowed Values: inProgress, completed, canceled
+     */
+    @Event("downloadProgress")
+    void downloadProgress(String guid, long totalBytes, long receivedBytes, String state);
+
+    /**
+     * Fired when page is about to start a download. Deprecated. Use Browser.downloadWillBegin instead.
+     *
+     * @param frameId           Id of the frame that caused download to begin.
+     * @param guid              Global unique identifier of the download.
+     * @param url               URL of the resource being downloaded.
+     * @param suggestedFilename Suggested file name of the resource (the actual name of the file saved on disk may differ).
+     *                          Allowed Values: inProgress, completed, canceled
+     */
+    @Event("downloadWillBegin")
+    void downloadWillBegin(String frameId, String guid, String url, String suggestedFilename);
+
+  }
+
 
   public enum TransferMode {
     ReturnAsBase64, ReturnAsStream

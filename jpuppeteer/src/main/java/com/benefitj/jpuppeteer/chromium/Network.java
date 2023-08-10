@@ -371,453 +371,458 @@ public interface Network {
   void setRequestInterception(List<RequestPattern> patterns);
 
   /**
-   * Fired when data chunk was received over the network.
-   *
-   * @param requestId         RequestId
-   *                          Request identifier.
-   * @param timestamp         MonotonicTime
-   *                          Timestamp.
-   * @param dataLength        integer
-   *                          Data chunk length.
-   * @param encodedDataLength integer
-   *                          Actual bytes received (might be less than dataLength for compressed encodings).
+   * 事件
    */
-  @Event("dataReceived")
-  void dataReceived(String requestId, Long timestamp, Long dataLength, Long encodedDataLength);
+  @Event("Network")
+  public interface Events {
+    /**
+     * Fired when data chunk was received over the network.
+     *
+     * @param requestId         RequestId
+     *                          Request identifier.
+     * @param timestamp         MonotonicTime
+     *                          Timestamp.
+     * @param dataLength        integer
+     *                          Data chunk length.
+     * @param encodedDataLength integer
+     *                          Actual bytes received (might be less than dataLength for compressed encodings).
+     */
+    @Event("dataReceived")
+    void dataReceived(String requestId, Long timestamp, Long dataLength, Long encodedDataLength);
 
-  /**
-   * Fired when EventSource message is received.
-   *
-   * @param requestId RequestId
-   *                  Request identifier.
-   * @param timestamp MonotonicTime
-   *                  Timestamp.
-   * @param eventName string
-   *                  Message type.
-   * @param eventId   string
-   *                  Message identifier.
-   * @param data      string
-   *                  Message content.
-   */
-  @Event("eventSourceMessageReceived")
-  void eventSourceMessageReceived(String requestId, Long timestamp, String eventName, String eventId, String data);
+    /**
+     * Fired when EventSource message is received.
+     *
+     * @param requestId RequestId
+     *                  Request identifier.
+     * @param timestamp MonotonicTime
+     *                  Timestamp.
+     * @param eventName string
+     *                  Message type.
+     * @param eventId   string
+     *                  Message identifier.
+     * @param data      string
+     *                  Message content.
+     */
+    @Event("eventSourceMessageReceived")
+    void eventSourceMessageReceived(String requestId, Long timestamp, String eventName, String eventId, String data);
 
-  /**
-   * Fired when HTTP request has failed to load.
-   *
-   * @param requestId       RequestId
-   *                        Request identifier.
-   * @param timestamp       MonotonicTime
-   *                        Timestamp.
-   * @param type            ResourceType
-   *                        Resource type.
-   * @param errorText       string
-   *                        User friendly error message.
-   * @param canceled        boolean
-   *                        True if loading was canceled.
-   * @param blockedReason   BlockedReason
-   *                        The reason why loading was blocked, if any.
-   * @param corsErrorStatus CorsErrorStatus
-   *                        The reason why loading was blocked by CORS, if any.
-   */
-  @Event("loadingFailed")
-  void loadingFailed(String requestId, Long timestamp, ResourceType type, String errorText, Boolean canceled, BlockedReason blockedReason, CorsErrorStatus corsErrorStatus);
+    /**
+     * Fired when HTTP request has failed to load.
+     *
+     * @param requestId       RequestId
+     *                        Request identifier.
+     * @param timestamp       MonotonicTime
+     *                        Timestamp.
+     * @param type            ResourceType
+     *                        Resource type.
+     * @param errorText       string
+     *                        User friendly error message.
+     * @param canceled        boolean
+     *                        True if loading was canceled.
+     * @param blockedReason   BlockedReason
+     *                        The reason why loading was blocked, if any.
+     * @param corsErrorStatus CorsErrorStatus
+     *                        The reason why loading was blocked by CORS, if any.
+     */
+    @Event("loadingFailed")
+    void loadingFailed(String requestId, Long timestamp, ResourceType type, String errorText, Boolean canceled, BlockedReason blockedReason, CorsErrorStatus corsErrorStatus);
 
-  /**
-   * Fired when HTTP request has finished loading.
-   *
-   * @param requestId         RequestId
-   *                          Request identifier.
-   * @param timestamp         MonotonicTime
-   *                          Timestamp.
-   * @param encodedDataLength number
-   *                          Total number of bytes received for this request.
-   */
-  @Event("loadingFinished")
-  void loadingFinished(String requestId, Long timestamp, Intrinsics.Kotlin encodedDataLength);
+    /**
+     * Fired when HTTP request has finished loading.
+     *
+     * @param requestId         RequestId
+     *                          Request identifier.
+     * @param timestamp         MonotonicTime
+     *                          Timestamp.
+     * @param encodedDataLength number
+     *                          Total number of bytes received for this request.
+     */
+    @Event("loadingFinished")
+    void loadingFinished(String requestId, Long timestamp, Intrinsics.Kotlin encodedDataLength);
 
-  /**
-   * Fired if request ended up loading from cache.
-   *
-   * @param requestId RequestId
-   *                  Request identifier.
-   */
-  @Event("requestServedFromCache")
-  void requestServedFromCache(String requestId);
+    /**
+     * Fired if request ended up loading from cache.
+     *
+     * @param requestId RequestId
+     *                  Request identifier.
+     */
+    @Event("requestServedFromCache")
+    void requestServedFromCache(String requestId);
 
-  /**
-   * Fired when page is about to send HTTP request.
-   *
-   * @param requestId            RequestId
-   *                             Request identifier.
-   * @param loaderId             LoaderId
-   *                             Loader identifier. Empty string if the request is fetched from worker.
-   * @param documentURL          string
-   *                             URL of the document this request is loaded for.
-   * @param request              Request
-   *                             Request data.
-   * @param timestamp            MonotonicTime
-   *                             Timestamp.
-   * @param wallTime             TimeSinceEpoch
-   *                             Timestamp.
-   * @param initiator            Initiator
-   *                             Request initiator.
-   * @param redirectHasExtraInfo boolean
-   *                             In the case that redirectResponse is populated, this flag indicates whether requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be or were emitted for the request which was just redirected. EXPERIMENTAL
-   * @param redirectResponse     Response
-   *                             Redirect response data.
-   * @param type                 ResourceType
-   *                             Type of this resource.
-   * @param frameId              Page.FrameId
-   *                             Frame identifier.
-   * @param hasUserGesture       boolean
-   *                             Whether the request is initiated by a user gesture. Defaults to false.
-   */
-  @Event("requestWillBeSent")
-  void requestWillBeSent(String requestId, String loaderId, String documentURL, Request request, Long timestamp, Long wallTime,
-                         Initiator initiator, Boolean redirectHasExtraInfo, Response redirectResponse, ResourceType type, String frameId, Boolean hasUserGesture);
+    /**
+     * Fired when page is about to send HTTP request.
+     *
+     * @param requestId            RequestId
+     *                             Request identifier.
+     * @param loaderId             LoaderId
+     *                             Loader identifier. Empty string if the request is fetched from worker.
+     * @param documentURL          string
+     *                             URL of the document this request is loaded for.
+     * @param request              Request
+     *                             Request data.
+     * @param timestamp            MonotonicTime
+     *                             Timestamp.
+     * @param wallTime             TimeSinceEpoch
+     *                             Timestamp.
+     * @param initiator            Initiator
+     *                             Request initiator.
+     * @param redirectHasExtraInfo boolean
+     *                             In the case that redirectResponse is populated, this flag indicates whether requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be or were emitted for the request which was just redirected. EXPERIMENTAL
+     * @param redirectResponse     Response
+     *                             Redirect response data.
+     * @param type                 ResourceType
+     *                             Type of this resource.
+     * @param frameId              Page.FrameId
+     *                             Frame identifier.
+     * @param hasUserGesture       boolean
+     *                             Whether the request is initiated by a user gesture. Defaults to false.
+     */
+    @Event("requestWillBeSent")
+    void requestWillBeSent(String requestId, String loaderId, String documentURL, Request request, Long timestamp, Long wallTime,
+                           Initiator initiator, Boolean redirectHasExtraInfo, Response redirectResponse, ResourceType type, String frameId, Boolean hasUserGesture);
 
-  /**
-   * Fired when HTTP response is available.
-   *
-   * @param requestId    RequestId
-   *                     Request identifier.
-   * @param loaderId     LoaderId
-   *                     Loader identifier. Empty string if the request is fetched from worker.
-   * @param timestamp    MonotonicTime
-   *                     Timestamp.
-   * @param type         ResourceType
-   *                     Resource type.
-   * @param response     Response
-   *                     Response data.
-   * @param hasExtraInfo boolean
-   *                     Indicates whether requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be or were emitted for this request. EXPERIMENTAL
-   * @param frameId      Page.FrameId
-   *                     Frame identifier.
-   */
-  @Event("responseReceived")
-  void responseReceived(String requestId, String loaderId, Long timestamp, ResourceType type, Response response, Boolean hasExtraInfo, String frameId);
+    /**
+     * Fired when HTTP response is available.
+     *
+     * @param requestId    RequestId
+     *                     Request identifier.
+     * @param loaderId     LoaderId
+     *                     Loader identifier. Empty string if the request is fetched from worker.
+     * @param timestamp    MonotonicTime
+     *                     Timestamp.
+     * @param type         ResourceType
+     *                     Resource type.
+     * @param response     Response
+     *                     Response data.
+     * @param hasExtraInfo boolean
+     *                     Indicates whether requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be or were emitted for this request. EXPERIMENTAL
+     * @param frameId      Page.FrameId
+     *                     Frame identifier.
+     */
+    @Event("responseReceived")
+    void responseReceived(String requestId, String loaderId, Long timestamp, ResourceType type, Response response, Boolean hasExtraInfo, String frameId);
 
-  /**
-   * Fired when WebSocket is closed.
-   *
-   * @param requestId RequestId
-   *                  Request identifier.
-   * @param timestamp MonotonicTime
-   *                  Timestamp.
-   */
-  @Event("webSocketClosed")
-  void webSocketClosed(String requestId, Long timestamp);
+    /**
+     * Fired when WebSocket is closed.
+     *
+     * @param requestId RequestId
+     *                  Request identifier.
+     * @param timestamp MonotonicTime
+     *                  Timestamp.
+     */
+    @Event("webSocketClosed")
+    void webSocketClosed(String requestId, Long timestamp);
 
-  /**
-   * Fired upon WebSocket creation.
-   *
-   * @param requestId RequestId
-   *                  Request identifier.
-   * @param url       string
-   *                  WebSocket request URL.
-   * @param initiator Initiator
-   *                  Request initiator.
-   */
-  @Event("webSocketCreated")
-  void webSocketCreated(String requestId, String url, Long initiator);
+    /**
+     * Fired upon WebSocket creation.
+     *
+     * @param requestId RequestId
+     *                  Request identifier.
+     * @param url       string
+     *                  WebSocket request URL.
+     * @param initiator Initiator
+     *                  Request initiator.
+     */
+    @Event("webSocketCreated")
+    void webSocketCreated(String requestId, String url, Long initiator);
 
-  /**
-   * Fired when WebSocket message error occurs.
-   *
-   * @param requestId    RequestId
-   *                     Request identifier.
-   * @param timestamp    MonotonicTime
-   *                     Timestamp.
-   * @param errorMessage string
-   *                     WebSocket error message.
-   */
-  @Event("webSocketFrameError")
-  void webSocketFrameError(String requestId, Long timestamp, String errorMessage);
+    /**
+     * Fired when WebSocket message error occurs.
+     *
+     * @param requestId    RequestId
+     *                     Request identifier.
+     * @param timestamp    MonotonicTime
+     *                     Timestamp.
+     * @param errorMessage string
+     *                     WebSocket error message.
+     */
+    @Event("webSocketFrameError")
+    void webSocketFrameError(String requestId, Long timestamp, String errorMessage);
 
-  /**
-   * Fired when WebSocket message is received.
-   *
-   * @param requestId RequestId
-   *                  Request identifier.
-   * @param timestamp MonotonicTime
-   *                  Timestamp.
-   * @param response  WebSocketFrame
-   *                  WebSocket response data.
-   */
-  @Event("webSocketFrameReceived")
-  void webSocketFrameReceived(String requestId, Long timestamp, WebSocketFrame response);
+    /**
+     * Fired when WebSocket message is received.
+     *
+     * @param requestId RequestId
+     *                  Request identifier.
+     * @param timestamp MonotonicTime
+     *                  Timestamp.
+     * @param response  WebSocketFrame
+     *                  WebSocket response data.
+     */
+    @Event("webSocketFrameReceived")
+    void webSocketFrameReceived(String requestId, Long timestamp, WebSocketFrame response);
 
-  /**
-   * Fired when WebSocket message is sent.
-   *
-   * @param requestId RequestId
-   *                  Request identifier.
-   * @param timestamp MonotonicTime
-   *                  Timestamp.
-   * @param response  WebSocketFrame
-   *                  WebSocket response data.
-   */
-  @Event("webSocketFrameSent")
-  void webSocketFrameSent(String requestId, Long timestamp, WebSocketFrame response);
+    /**
+     * Fired when WebSocket message is sent.
+     *
+     * @param requestId RequestId
+     *                  Request identifier.
+     * @param timestamp MonotonicTime
+     *                  Timestamp.
+     * @param response  WebSocketFrame
+     *                  WebSocket response data.
+     */
+    @Event("webSocketFrameSent")
+    void webSocketFrameSent(String requestId, Long timestamp, WebSocketFrame response);
 
-  /**
-   * Fired when WebSocket handshake response becomes available.
-   *
-   * @param requestId RequestId
-   *                  Request identifier.
-   * @param timestamp MonotonicTime
-   *                  Timestamp.
-   * @param response  WebSocketResponse
-   *                  WebSocket response data.
-   */
-  @Event("webSocketHandshakeResponseReceived")
-  void webSocketHandshakeResponseReceived(String requestId, Long timestamp, WebSocketFrame response);
+    /**
+     * Fired when WebSocket handshake response becomes available.
+     *
+     * @param requestId RequestId
+     *                  Request identifier.
+     * @param timestamp MonotonicTime
+     *                  Timestamp.
+     * @param response  WebSocketResponse
+     *                  WebSocket response data.
+     */
+    @Event("webSocketHandshakeResponseReceived")
+    void webSocketHandshakeResponseReceived(String requestId, Long timestamp, WebSocketFrame response);
 
-  /**
-   * Fired when WebSocket is about to initiate handshake.
-   *
-   * @param requestId RequestId
-   *                  Request identifier.
-   * @param timestamp MonotonicTime
-   *                  Timestamp.
-   * @param wallTime  TimeSinceEpoch
-   *                  UTC Timestamp.
-   * @param request   WebSocketRequest
-   *                  WebSocket request data.
-   */
-  @Event("webSocketWillSendHandshakeRequest")
-  void webSocketWillSendHandshakeRequest(String requestId, Long timestamp, Long wallTime, WebSocketRequest request);
+    /**
+     * Fired when WebSocket is about to initiate handshake.
+     *
+     * @param requestId RequestId
+     *                  Request identifier.
+     * @param timestamp MonotonicTime
+     *                  Timestamp.
+     * @param wallTime  TimeSinceEpoch
+     *                  UTC Timestamp.
+     * @param request   WebSocketRequest
+     *                  WebSocket request data.
+     */
+    @Event("webSocketWillSendHandshakeRequest")
+    void webSocketWillSendHandshakeRequest(String requestId, Long timestamp, Long wallTime, WebSocketRequest request);
 
-  /**
-   * Fired when WebTransport is disposed.
-   *
-   * @param transportId RequestId
-   *                    WebTransport identifier.
-   * @param timestamp   MonotonicTime
-   *                    Timestamp.
-   */
-  @Event("webTransportClosed")
-  void webTransportClosed(String transportId, Long timestamp);
+    /**
+     * Fired when WebTransport is disposed.
+     *
+     * @param transportId RequestId
+     *                    WebTransport identifier.
+     * @param timestamp   MonotonicTime
+     *                    Timestamp.
+     */
+    @Event("webTransportClosed")
+    void webTransportClosed(String transportId, Long timestamp);
 
-  /**
-   * Fired when WebTransport handshake is finished.
-   *
-   * @param transportId RequestId
-   *                    WebTransport identifier.
-   * @param timestamp   MonotonicTime
-   *                    Timestamp.
-   */
-  @Event("webTransportConnectionEstablished")
-  void webTransportConnectionEstablished(String transportId, Long timestamp);
+    /**
+     * Fired when WebTransport handshake is finished.
+     *
+     * @param transportId RequestId
+     *                    WebTransport identifier.
+     * @param timestamp   MonotonicTime
+     *                    Timestamp.
+     */
+    @Event("webTransportConnectionEstablished")
+    void webTransportConnectionEstablished(String transportId, Long timestamp);
 
-  /**
-   * Fired upon WebTransport creation.
-   *
-   * @param transportId RequestId
-   *                    WebTransport identifier.
-   * @param url         string
-   *                    WebTransport request URL.
-   * @param timestamp   MonotonicTime
-   *                    Timestamp.
-   * @param initiator   Initiator
-   *                    Request initiator.
-   */
-  @Event("webTransportCreated")
-  void webTransportCreated(String transportId, String url, Long timestamp, Initiator initiator);
+    /**
+     * Fired upon WebTransport creation.
+     *
+     * @param transportId RequestId
+     *                    WebTransport identifier.
+     * @param url         string
+     *                    WebTransport request URL.
+     * @param timestamp   MonotonicTime
+     *                    Timestamp.
+     * @param initiator   Initiator
+     *                    Request initiator.
+     */
+    @Event("webTransportCreated")
+    void webTransportCreated(String transportId, String url, Long timestamp, Initiator initiator);
 
-  /**
-   * @param origin    string
-   *                  Origin of the document(s) which configured the endpoints.
-   * @param endpoints array[ ReportingApiEndpoint ]
-   */
-  @Event("reportingApiEndpointsChangedForOrigin")
-  void reportingApiEndpointsChangedForOrigin(String origin, List<ReportingApiEndpoint> endpoints);
+    /**
+     * @param origin    string
+     *                  Origin of the document(s) which configured the endpoints.
+     * @param endpoints array[ ReportingApiEndpoint ]
+     */
+    @Event("reportingApiEndpointsChangedForOrigin")
+    void reportingApiEndpointsChangedForOrigin(String origin, List<ReportingApiEndpoint> endpoints);
 
-  /**
-   * Is sent whenever a new report is added. And after 'enableReportingApi' for all existing reports.
-   *
-   * @param report ReportingApiReport
-   */
-  @Event("reportingApiReportAdded")
-  void reportingApiReportAdded(ReportingApiReport report);
+    /**
+     * Is sent whenever a new report is added. And after 'enableReportingApi' for all existing reports.
+     *
+     * @param report ReportingApiReport
+     */
+    @Event("reportingApiReportAdded")
+    void reportingApiReportAdded(ReportingApiReport report);
 
-  /**
-   * @param report ReportingApiReport
-   */
-  @Event("reportingApiReportUpdated")
-  void reportingApiReportUpdated(ReportingApiReport report);
+    /**
+     * @param report ReportingApiReport
+     */
+    @Event("reportingApiReportUpdated")
+    void reportingApiReportUpdated(ReportingApiReport report);
 
-  /**
-   * Fired when additional information about a requestWillBeSent event is available from the network stack. Not every requestWillBeSent
-   * event will have an additional requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent or
-   * requestWillBeSentExtraInfo will be fired first for the same request.
-   *
-   * @param requestId                     RequestId
-   *                                      Request identifier. Used to match this information to an existing requestWillBeSent event.
-   * @param associatedCookies             array[ BlockedCookieWithReason ]
-   *                                      A list of cookies potentially associated to the requested URL. This includes both cookies sent with the request and the ones not sent; the latter are distinguished by having blockedReason field set.
-   * @param headers                       Headers
-   *                                      Raw request headers as they will be sent over the wire.
-   * @param connectTiming                 ConnectTiming
-   *                                      Connection timing information for the request. EXPERIMENTAL
-   * @param clientSecurityState           ClientSecurityState
-   *                                      The client security state set for the request.
-   * @param siteHasCookieInOtherPartition boolean
-   *                                      Whether the site has partitioned cookies stored in a partition different than the current one.
-   */
-  @Event("requestWillBeSentExtraInfo")
-  void requestWillBeSentExtraInfo(String requestId, List<BlockedCookieWithReason> associatedCookies, Headers headers, ConnectTiming connectTiming, ClientSecurityState clientSecurityState, Boolean siteHasCookieInOtherPartition);
+    /**
+     * Fired when additional information about a requestWillBeSent event is available from the network stack. Not every requestWillBeSent
+     * event will have an additional requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent or
+     * requestWillBeSentExtraInfo will be fired first for the same request.
+     *
+     * @param requestId                     RequestId
+     *                                      Request identifier. Used to match this information to an existing requestWillBeSent event.
+     * @param associatedCookies             array[ BlockedCookieWithReason ]
+     *                                      A list of cookies potentially associated to the requested URL. This includes both cookies sent with the request and the ones not sent; the latter are distinguished by having blockedReason field set.
+     * @param headers                       Headers
+     *                                      Raw request headers as they will be sent over the wire.
+     * @param connectTiming                 ConnectTiming
+     *                                      Connection timing information for the request. EXPERIMENTAL
+     * @param clientSecurityState           ClientSecurityState
+     *                                      The client security state set for the request.
+     * @param siteHasCookieInOtherPartition boolean
+     *                                      Whether the site has partitioned cookies stored in a partition different than the current one.
+     */
+    @Event("requestWillBeSentExtraInfo")
+    void requestWillBeSentExtraInfo(String requestId, List<BlockedCookieWithReason> associatedCookies, Headers headers, ConnectTiming connectTiming, ClientSecurityState clientSecurityState, Boolean siteHasCookieInOtherPartition);
 
-  /**
-   * Fired when resource loading priority is changed
-   *
-   * @param requestId   RequestId
-   *                    Request identifier.
-   * @param newPriority ResourcePriority
-   *                    New priority
-   * @param timestamp   MonotonicTime
-   *                    Timestamp.
-   */
-  @Event("resourceChangedPriority")
-  void resourceChangedPriority(String requestId, ResourcePriority newPriority, Long timestamp);
+    /**
+     * Fired when resource loading priority is changed
+     *
+     * @param requestId   RequestId
+     *                    Request identifier.
+     * @param newPriority ResourcePriority
+     *                    New priority
+     * @param timestamp   MonotonicTime
+     *                    Timestamp.
+     */
+    @Event("resourceChangedPriority")
+    void resourceChangedPriority(String requestId, ResourcePriority newPriority, Long timestamp);
 
-  /**
-   * Fired when additional information about a responseReceived event is available from the network stack. Not every responseReceived event
-   * will have an additional responseReceivedExtraInfo for it, and responseReceivedExtraInfo may be fired before or after responseReceived.
-   *
-   * @param requestId                RequestId
-   *                                 Request identifier. Used to match this information to another responseReceived event.
-   * @param blockedCookies           array[ BlockedSetCookieWithReason ]
-   *                                 A list of cookies which were not stored from the response along with the corresponding reasons for blocking. The cookies here may not be valid due to syntax errors, which are represented by the invalid cookie line string instead of a proper cookie.
-   * @param headers                  Headers
-   *                                 Raw response headers as they were received over the wire.
-   * @param resourceIPAddressSpace   IPAddressSpace
-   *                                 The IP address space of the resource. The address space can only be determined once the transport established the connection, so we can't send it in requestWillBeSentExtraInfo.
-   * @param statusCode               integer
-   *                                 The status code of the response. This is useful in cases the request failed and no responseReceived event is triggered, which is the case for, e.g., CORS errors. This is also the correct status code for cached requests, where the status in responseReceived is a 200 and this will be 304.
-   * @param headersText              string
-   *                                 Raw response header text as it was received over the wire. The raw text may not always be available, such as in the case of HTTP/2 or QUIC.
-   * @param cookiePartitionKey       string
-   *                                 The cookie partition key that will be used to store partitioned cookies set in this response. Only sent when partitioned cookies are enabled.
-   * @param cookiePartitionKeyOpaque boolean
-   *                                 True if partitioned cookies are enabled, but the partition key is not serializeable to string.
-   */
-  @Event("responseReceivedExtraInfo")
-  void responseReceivedExtraInfo(String requestId, List<BlockedSetCookieWithReason> blockedCookies, Headers headers, IPAddressSpace resourceIPAddressSpace,
-                                 Integer statusCode, String headersText, String cookiePartitionKey, Boolean cookiePartitionKeyOpaque);
+    /**
+     * Fired when additional information about a responseReceived event is available from the network stack. Not every responseReceived event
+     * will have an additional responseReceivedExtraInfo for it, and responseReceivedExtraInfo may be fired before or after responseReceived.
+     *
+     * @param requestId                RequestId
+     *                                 Request identifier. Used to match this information to another responseReceived event.
+     * @param blockedCookies           array[ BlockedSetCookieWithReason ]
+     *                                 A list of cookies which were not stored from the response along with the corresponding reasons for blocking. The cookies here may not be valid due to syntax errors, which are represented by the invalid cookie line string instead of a proper cookie.
+     * @param headers                  Headers
+     *                                 Raw response headers as they were received over the wire.
+     * @param resourceIPAddressSpace   IPAddressSpace
+     *                                 The IP address space of the resource. The address space can only be determined once the transport established the connection, so we can't send it in requestWillBeSentExtraInfo.
+     * @param statusCode               integer
+     *                                 The status code of the response. This is useful in cases the request failed and no responseReceived event is triggered, which is the case for, e.g., CORS errors. This is also the correct status code for cached requests, where the status in responseReceived is a 200 and this will be 304.
+     * @param headersText              string
+     *                                 Raw response header text as it was received over the wire. The raw text may not always be available, such as in the case of HTTP/2 or QUIC.
+     * @param cookiePartitionKey       string
+     *                                 The cookie partition key that will be used to store partitioned cookies set in this response. Only sent when partitioned cookies are enabled.
+     * @param cookiePartitionKeyOpaque boolean
+     *                                 True if partitioned cookies are enabled, but the partition key is not serializeable to string.
+     */
+    @Event("responseReceivedExtraInfo")
+    void responseReceivedExtraInfo(String requestId, List<BlockedSetCookieWithReason> blockedCookies, Headers headers, IPAddressSpace resourceIPAddressSpace,
+                                   Integer statusCode, String headersText, String cookiePartitionKey, Boolean cookiePartitionKeyOpaque);
 
-  /**
-   * Fired when a signed exchange was received over the network
-   *
-   * @param requestId RequestId
-   *                  Request identifier.
-   * @param info      SignedExchangeInfo
-   *                  Information about the signed exchange response.
-   */
-  @Event("signedExchangeReceived")
-  void signedExchangeReceived(String requestId, SignedExchangeInfo info);
+    /**
+     * Fired when a signed exchange was received over the network
+     *
+     * @param requestId RequestId
+     *                  Request identifier.
+     * @param info      SignedExchangeInfo
+     *                  Information about the signed exchange response.
+     */
+    @Event("signedExchangeReceived")
+    void signedExchangeReceived(String requestId, SignedExchangeInfo info);
 
-  /**
-   * Fired when request for resources within a .wbn file failed.
-   *
-   * @param innerRequestId  RequestId
-   *                        Request identifier of the subresource request
-   * @param innerRequestURL string
-   *                        URL of the subresource resource.
-   * @param errorMessage    string
-   *                        Error message
-   * @param bundleRequestId RequestId
-   *                        Bundle request identifier. Used to match this information to another event. This made be absent in case when the instrumentation was enabled only after webbundle was parsed.
-   */
-  @Event("subresourceWebBundleInnerResponseError")
-  void subresourceWebBundleInnerResponseError(String innerRequestId, String innerRequestURL, String errorMessage, String bundleRequestId);
+    /**
+     * Fired when request for resources within a .wbn file failed.
+     *
+     * @param innerRequestId  RequestId
+     *                        Request identifier of the subresource request
+     * @param innerRequestURL string
+     *                        URL of the subresource resource.
+     * @param errorMessage    string
+     *                        Error message
+     * @param bundleRequestId RequestId
+     *                        Bundle request identifier. Used to match this information to another event. This made be absent in case when the instrumentation was enabled only after webbundle was parsed.
+     */
+    @Event("subresourceWebBundleInnerResponseError")
+    void subresourceWebBundleInnerResponseError(String innerRequestId, String innerRequestURL, String errorMessage, String bundleRequestId);
 
-  /**
-   * Fired when handling requests for resources within a .wbn file. Note: this will only be fired for resources that are requested by the webpage.
-   *
-   * @param innerRequestId  RequestId
-   *                        Request identifier of the subresource request
-   * @param innerRequestURL string
-   *                        URL of the subresource resource.
-   * @param bundleRequestId RequestId
-   *                        Bundle request identifier. Used to match this information to another event. This made be absent in case when the instrumentation was enabled only after webbundle was parsed.
-   */
-  @Event("subresourceWebBundleInnerResponseParsed")
-  void subresourceWebBundleInnerResponseParsed(String innerRequestId, String innerRequestURL, String bundleRequestId);
+    /**
+     * Fired when handling requests for resources within a .wbn file. Note: this will only be fired for resources that are requested by the webpage.
+     *
+     * @param innerRequestId  RequestId
+     *                        Request identifier of the subresource request
+     * @param innerRequestURL string
+     *                        URL of the subresource resource.
+     * @param bundleRequestId RequestId
+     *                        Bundle request identifier. Used to match this information to another event. This made be absent in case when the instrumentation was enabled only after webbundle was parsed.
+     */
+    @Event("subresourceWebBundleInnerResponseParsed")
+    void subresourceWebBundleInnerResponseParsed(String innerRequestId, String innerRequestURL, String bundleRequestId);
 
-  /**
-   * Fired once when parsing the .wbn file has failed.
-   *
-   * @param requestId    RequestId
-   *                     Request identifier. Used to match this information to another event.
-   * @param errorMessage string
-   *                     Error message
-   */
-  @Event("subresourceWebBundleMetadataError")
-  void subresourceWebBundleMetadataError(String requestId, String errorMessage);
+    /**
+     * Fired once when parsing the .wbn file has failed.
+     *
+     * @param requestId    RequestId
+     *                     Request identifier. Used to match this information to another event.
+     * @param errorMessage string
+     *                     Error message
+     */
+    @Event("subresourceWebBundleMetadataError")
+    void subresourceWebBundleMetadataError(String requestId, String errorMessage);
 
-  /**
-   * Fired once when parsing the .wbn file has succeeded. The event contains the information about the web bundle contents.
-   *
-   * @param requestId RequestId
-   *                  Request identifier. Used to match this information to another event.
-   * @param urls      array[ string ]
-   *                  A list of URLs of resources in the subresource Web Bundle.
-   */
-  @Event("subresourceWebBundleMetadataReceived")
-  void subresourceWebBundleMetadataReceived(String requestId, List<String> urls);
+    /**
+     * Fired once when parsing the .wbn file has succeeded. The event contains the information about the web bundle contents.
+     *
+     * @param requestId RequestId
+     *                  Request identifier. Used to match this information to another event.
+     * @param urls      array[ string ]
+     *                  A list of URLs of resources in the subresource Web Bundle.
+     */
+    @Event("subresourceWebBundleMetadataReceived")
+    void subresourceWebBundleMetadataReceived(String requestId, List<String> urls);
 
-  /**
-   * Fired exactly once for each Trust Token operation. Depending on the type of the operation and whether the operation succeeded
-   * or failed, the event is fired before the corresponding request was sent or after the response was received.
-   *
-   * @param status           string
-   *                         Detailed success or error status of the operation. 'AlreadyExists' also signifies a successful operation, as the result of the operation already exists und thus, the operation was abort preemptively (e.g. a cache hit).
-   *                         Allowed Values: Ok, InvalidArgument, MissingIssuerKeys, FailedPrecondition, ResourceExhausted, AlreadyExists, Unavailable, Unauthorized, BadResponse, InternalError, UnknownError, FulfilledLocally
-   * @param type             TrustTokenOperationType
-   * @param requestId        RequestId
-   * @param topLevelOrigin   string
-   *                         Top level origin. The context in which the operation was attempted.
-   * @param issuerOrigin     string
-   *                         Origin of the issuer in case of a "Issuance" or "Redemption" operation.
-   * @param issuedTokenCount integer
-   *                         The number of obtained Trust Tokens on a successful "Issuance" operation.
-   */
-  @Event("trustTokenOperationDone")
-  void trustTokenOperationDone(String status, TrustTokenOperationType type, String requestId, String topLevelOrigin, String issuerOrigin, Integer issuedTokenCount);
+    /**
+     * Fired exactly once for each Trust Token operation. Depending on the type of the operation and whether the operation succeeded
+     * or failed, the event is fired before the corresponding request was sent or after the response was received.
+     *
+     * @param status           string
+     *                         Detailed success or error status of the operation. 'AlreadyExists' also signifies a successful operation, as the result of the operation already exists und thus, the operation was abort preemptively (e.g. a cache hit).
+     *                         Allowed Values: Ok, InvalidArgument, MissingIssuerKeys, FailedPrecondition, ResourceExhausted, AlreadyExists, Unavailable, Unauthorized, BadResponse, InternalError, UnknownError, FulfilledLocally
+     * @param type             TrustTokenOperationType
+     * @param requestId        RequestId
+     * @param topLevelOrigin   string
+     *                         Top level origin. The context in which the operation was attempted.
+     * @param issuerOrigin     string
+     *                         Origin of the issuer in case of a "Issuance" or "Redemption" operation.
+     * @param issuedTokenCount integer
+     *                         The number of obtained Trust Tokens on a successful "Issuance" operation.
+     */
+    @Event("trustTokenOperationDone")
+    void trustTokenOperationDone(String status, TrustTokenOperationType type, String requestId, String topLevelOrigin, String issuerOrigin, Integer issuedTokenCount);
 
-  /**
-   * Details of an intercepted HTTP request, which must be either allowed, blocked, modified or mocked. Deprecated, use Fetch.requestPaused instead.
-   *
-   * @param interceptionId      InterceptionId
-   *                            Each request the page makes will have a unique id, however if any redirects are encountered while processing that fetch, they will be reported with the same id as the original fetch. Likewise if HTTP authentication is needed then the same fetch id will be used.
-   * @param request             Request
-   * @param frameId             Page.FrameId
-   *                            The id of the frame that initiated the request.
-   * @param resourceType        ResourceType
-   *                            How the requested resource will be used.
-   * @param isNavigationRequest boolean
-   *                            Whether this is a navigation request, which can abort the navigation completely.
-   * @param isDownload          boolean
-   *                            Set if the request is a navigation that will result in a download. Only present after response is received from the server (i.e. HeadersReceived stage).
-   * @param redirectUrl         string
-   *                            Redirect location, only sent if a redirect was intercepted.
-   * @param authChallenge       AuthChallenge
-   *                            Details of the Authorization Challenge encountered. If this is set then continueInterceptedRequest must contain an authChallengeResponse.
-   * @param responseErrorReason ErrorReason
-   *                            Response error if intercepted at response stage or if redirect occurred while intercepting request.
-   * @param responseStatusCode  integer
-   *                            Response code if intercepted at response stage or if redirect occurred while intercepting request or auth retry occurred.
-   * @param responseHeaders     Headers
-   *                            Response headers if intercepted at the response stage or if redirect occurred while intercepting request or auth retry occurred.
-   * @param requestId           RequestId
-   *                            If the intercepted request had a corresponding requestWillBeSent event fired for it, then this requestId will be the same as the requestId present in the requestWillBeSent event.
-   */
-  @Event("requestIntercepted")
-  void requestIntercepted(String interceptionId, Request request, String frameId, ResourceType resourceType, Boolean isNavigationRequest, Boolean isDownload,
-                          String redirectUrl, AuthChallenge authChallenge, ErrorReason responseErrorReason, Integer responseStatusCode, Headers responseHeaders, String requestId);
-
+    /**
+     * Details of an intercepted HTTP request, which must be either allowed, blocked, modified or mocked. Deprecated, use Fetch.requestPaused instead.
+     *
+     * @param interceptionId      InterceptionId
+     *                            Each request the page makes will have a unique id, however if any redirects are encountered while processing that fetch, they will be reported with the same id as the original fetch. Likewise if HTTP authentication is needed then the same fetch id will be used.
+     * @param request             Request
+     * @param frameId             Page.FrameId
+     *                            The id of the frame that initiated the request.
+     * @param resourceType        ResourceType
+     *                            How the requested resource will be used.
+     * @param isNavigationRequest boolean
+     *                            Whether this is a navigation request, which can abort the navigation completely.
+     * @param isDownload          boolean
+     *                            Set if the request is a navigation that will result in a download. Only present after response is received from the server (i.e. HeadersReceived stage).
+     * @param redirectUrl         string
+     *                            Redirect location, only sent if a redirect was intercepted.
+     * @param authChallenge       AuthChallenge
+     *                            Details of the Authorization Challenge encountered. If this is set then continueInterceptedRequest must contain an authChallengeResponse.
+     * @param responseErrorReason ErrorReason
+     *                            Response error if intercepted at response stage or if redirect occurred while intercepting request.
+     * @param responseStatusCode  integer
+     *                            Response code if intercepted at response stage or if redirect occurred while intercepting request or auth retry occurred.
+     * @param responseHeaders     Headers
+     *                            Response headers if intercepted at the response stage or if redirect occurred while intercepting request or auth retry occurred.
+     * @param requestId           RequestId
+     *                            If the intercepted request had a corresponding requestWillBeSent event fired for it, then this requestId will be the same as the requestId present in the requestWillBeSent event.
+     */
+    @Event("requestIntercepted")
+    void requestIntercepted(String interceptionId, Request request, String frameId, ResourceType resourceType, Boolean isNavigationRequest, Boolean isDownload,
+                            String redirectUrl, AuthChallenge authChallenge, ErrorReason responseErrorReason, Integer responseStatusCode, Headers responseHeaders, String requestId);
+  }
 
   /**
    * The reason why request was blocked.

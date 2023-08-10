@@ -41,21 +41,28 @@ public interface BackgroundService {
   void stopObserving(ServiceName service);
 
   /**
-   * Called with all existing backgroundServiceEvents when enabled, and all new events afterwards if enabled and recording.
-   *
-   * @param backgroundServiceEvent BackgroundServiceEvent
+   * 事件
    */
-  @Event("backgroundServiceEventReceived")
-  void backgroundServiceEventReceived(BackgroundServiceEvent backgroundServiceEvent);
+  @Event("BackgroundService")
+  public interface Events {
 
-  /**
-   * Called when the recording state for the service has been updated.
-   *
-   * @param isRecording boolean
-   * @param service     ServiceName
-   */
-  @Event("recordingStateChanged")
-  void recordingStateChanged(boolean isRecording, ServiceName service);
+    /**
+     * Called with all existing backgroundServiceEvents when enabled, and all new events afterwards if enabled and recording.
+     *
+     * @param backgroundServiceEvent BackgroundServiceEvent
+     */
+    @Event("backgroundServiceEventReceived")
+    void backgroundServiceEventReceived(BackgroundServiceEvent backgroundServiceEvent);
+
+    /**
+     * Called when the recording state for the service has been updated.
+     *
+     * @param isRecording boolean
+     * @param service     ServiceName
+     */
+    @Event("recordingStateChanged")
+    void recordingStateChanged(boolean isRecording, ServiceName service);
+  }
 
   @Data
   public class BackgroundServiceEvent {

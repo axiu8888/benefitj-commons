@@ -226,11 +226,16 @@ public interface Emulation {
   void setVisibleSize(int width, int height);
 
   /**
-   * Notification sent after the virtual time budget for the current VirtualTimePolicy has run out.
+   * 事件
    */
-  @Event("virtualTimeBudgetExpired")
-  void virtualTimeBudgetExpired();
-
+  @Event("Emulation")
+  public interface Events {
+    /**
+     * Notification sent after the virtual time budget for the current VirtualTimePolicy has run out.
+     */
+    @Event("virtualTimeBudgetExpired")
+    void virtualTimeBudgetExpired();
+  }
   /**
    * Screen orientation.
    */

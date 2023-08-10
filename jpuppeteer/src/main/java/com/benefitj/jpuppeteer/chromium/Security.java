@@ -48,34 +48,40 @@ public interface Security {
   void setIgnoreCertificateErrors(boolean ignore);
 
   /**
-   * There is a certificate error. If overriding certificate errors is enabled, then it should be handled with the handleCertificateError command. Note: this event does not fire if the certificate error has been allowed internally. Only one client per target should override certificate errors at the same time.
-   *
-   * @param eventId    The ID of the event.
-   * @param errorType  The type of the error.
-   * @param requestURL The url that was requested.
+   * 事件
    */
-  @Event("certificateError")
-  void certificateError(String eventId, String errorType, String requestURL);
+  @Event("Security")
+  public interface Events {
+    /**
+     * There is a certificate error. If overriding certificate errors is enabled, then it should be handled with the handleCertificateError command. Note: this event does not fire if the certificate error has been allowed internally. Only one client per target should override certificate errors at the same time.
+     *
+     * @param eventId    The ID of the event.
+     * @param errorType  The type of the error.
+     * @param requestURL The url that was requested.
+     */
+    @Event("certificateError")
+    void certificateError(String eventId, String errorType, String requestURL);
 
-  /**
-   * The security state of the page changed. No longer being sent.
-   *
-   * @param securityState         Security state.
-   * @param schemeIsCryptographic True if the page was loaded over cryptographic transport such as HTTPS. DEPRECATED
-   * @param explanations          Previously a list of explanations for the security state. Now always empty. DEPRECATED
-   * @param insecureContentStatus Information about insecure content on the page. DEPRECATED
-   * @param summary               Overrides user-visible description of the state. Always omitted. DEPRECATED
-   */
-  @Event("securityStateChanged")
-  void securityStateChanged(SecurityState securityState, boolean schemeIsCryptographic, List<SecurityStateExplanation> explanations, InsecureContentStatus insecureContentStatus, String summary);
+    /**
+     * The security state of the page changed. No longer being sent.
+     *
+     * @param securityState         Security state.
+     * @param schemeIsCryptographic True if the page was loaded over cryptographic transport such as HTTPS. DEPRECATED
+     * @param explanations          Previously a list of explanations for the security state. Now always empty. DEPRECATED
+     * @param insecureContentStatus Information about insecure content on the page. DEPRECATED
+     * @param summary               Overrides user-visible description of the state. Always omitted. DEPRECATED
+     */
+    @Event("securityStateChanged")
+    void securityStateChanged(SecurityState securityState, boolean schemeIsCryptographic, List<SecurityStateExplanation> explanations, InsecureContentStatus insecureContentStatus, String summary);
 
-  /**
-   * The security state of the page changed.
-   *
-   * @param visibleSecurityState Security state information about the page.
-   */
-  @Event("visibleSecurityStateChanged")
-  void visibleSecurityStateChanged(VisibleSecurityState visibleSecurityState);
+    /**
+     * The security state of the page changed.
+     *
+     * @param visibleSecurityState Security state information about the page.
+     */
+    @Event("visibleSecurityStateChanged")
+    void visibleSecurityStateChanged(VisibleSecurityState visibleSecurityState);
+  }
 
   /**
    * The action to take when a certificate error occurs. continue will continue processing the request and cancel will cancel the request.

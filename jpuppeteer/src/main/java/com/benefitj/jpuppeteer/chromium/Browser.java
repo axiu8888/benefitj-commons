@@ -178,6 +178,44 @@ public interface Browser {
    */
   void setWindowBounds(String windowId, Bounds bounds);
 
+  /**
+   * 事件
+   */
+  @Event("Browser")
+  public interface Events {
+
+    /**
+     * Fired when download makes progress. Last call has |done| == true.
+     *
+     * @param guid          string
+     *                      Global unique identifier of the download.
+     * @param totalBytes    number
+     *                      Total expected bytes to download.
+     * @param receivedBytes number
+     *                      Total bytes received.
+     * @param state         string
+     *                      Download status.
+     *                      Allowed Values: inProgress, completed, canceled
+     */
+    @Event("downloadProgress")
+    void downloadProgress(String guid, Long totalBytes, Long receivedBytes, String state);
+
+    /**
+     * Fired when page is about to start a download.
+     *
+     * @param frameId           Page.FrameId
+     *                          Id of the frame that caused the download to begin.
+     * @param guid              string
+     *                          Global unique identifier of the download.
+     * @param url               string
+     *                          URL of the resource being downloaded.
+     * @param suggestedFilename string
+     *                          Suggested file name of the resource (the actual name of the file saved on disk may differ).
+     */
+    @Event("downloadWillBegin")
+    void downloadWillBegin(String frameId, String guid, String url, String suggestedFilename);
+
+  }
   @Data
   public class Version {
     /**
@@ -225,7 +263,6 @@ public interface Browser {
    * 当下载取得进展时触发。最后一次调用已经|done| == true。
    * Fired when download makes progress. Last call has |done| == true.
    */
-  @Event("downloadProgress")
   @Data
   public class DownloadProgress {
     /**
