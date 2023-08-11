@@ -11,7 +11,6 @@ import java.util.List;
 /**
  * Accessibility Domain
  */
-@Deprecated
 public interface Accessibility {
 
   /**
