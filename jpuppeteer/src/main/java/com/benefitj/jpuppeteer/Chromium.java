@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,7 +55,7 @@ public class Chromium implements Launcher {
   /**
    * 连接的WebSocket
    */
-  private DevtoolSocket socket = new DevtoolSocket(this);
+  private final DevtoolSocket socket = new DevtoolSocket(this);
   /**
    * 全局处理监听
    */
@@ -68,6 +69,10 @@ public class Chromium implements Launcher {
    */
   private final List<MessageListener> listeners = new CopyOnWriteArrayList<>();
   /**
+   * 事件监听
+   */
+  private final Map<String, List<MessageListener>> eventListeners = new ConcurrentHashMap<>();
+  /**
    * 当前结果缓存
    */
   private final ThreadLocal<Message> msgLocal = new ThreadLocal<>();
@@ -75,6 +80,8 @@ public class Chromium implements Launcher {
    * 初始化的对象
    */
   private final Map<Class<? extends ChromiumApi>, Object> apis = new ConcurrentHashMap<>();
+
+  private volatile boolean initialized = false;
 
   public Chromium() {
   }
@@ -95,8 +102,52 @@ public class Chromium implements Launcher {
     return call;
   }
 
+  protected void loadApis() {
+    if (!initialized) {
+      synchronized (this) {
+        try {
+          String packageName = Chromium.class.getPackage().getName() + "." + "chromium";
+          ClassPath.from(ClassLoader.getSystemClassLoader())
+              .getAllClasses()
+              .stream()
+              .filter(c -> packageName.equalsIgnoreCase(c.getPackageName()))
+              .map(ClassPath.ClassInfo::load)
+              .filter(cls -> cls.isAnnotationPresent(ChromiumApi.class) || cls.isAnnotationPresent(Event.class))
+              .forEach(cls -> {
+                if (cls.isAnnotationPresent(ChromiumApi.class)) {
+                  log.trace("load chromium api: {}", cls);
+                  Object old = this.apis.put((Class) cls, newProxy(this, cls));
+                  if (old != null) {
+                    throw new IllegalStateException("存在重复的Chromium接口: " + cls.getAnnotation(ChromiumApi.class).value());
+                  }
+                } else if (cls.isAnnotationPresent(Event.class)) {
+                  Event cls_event = cls.getAnnotation(Event.class);
+                  List<Method> methods = ReflectUtils.getMethods(cls, m -> true);
+                  for (Method method : methods) {
+                    if (!method.isAnnotationPresent(Event.class)) {
+                      throw new IllegalStateException("缺少Event注解: " + method.getDeclaringClass().getName() + "." + method.getName());
+                    }
+                    Event m_event = method.getAnnotation(Event.class);
+                    if (StringUtils.isBlank(m_event.value())) {
+                      throw new IllegalStateException("Event注解[" + method.getDeclaringClass().getName() + "." + method.getName() + "]名称不能为空!");
+                    }
+                    List<MessageListener> old = eventListeners.put(cls_event.value() + "." + m_event.value(), new CopyOnWriteArrayList<>());
+                    if (old != null) {
+                      throw new IllegalStateException("存在重复的事件: " + cls_event.value() + "." + m_event.value() + ", " + cls);
+                    }
+                  }
+                }
+              });
+        } catch (IOException e) {
+          throw new IllegalStateException(e);
+        }
+      }
+    }
+  }
+
   @Override
   public Browser launch() {
+    this.loadApis();
     LauncherOptions opts = getOptions();
     File executableFile = opts.getExecutablePath();
     if (executableFile == null) {
@@ -149,22 +200,7 @@ public class Chromium implements Launcher {
     }
     log.trace("ws endpoint: {}", url);
     HttpClient.newWebSocket(socket, url);
-    try {
-      String packageName = Chromium.class.getPackage().getName() + "." + "chromium";
-      ClassPath.from(ClassLoader.getSystemClassLoader())
-          .getAllClasses()
-          .stream()
-          .filter(c -> packageName.equalsIgnoreCase(c.getPackageName()))
-          .map(ClassPath.ClassInfo::load)
-          .filter(cls -> cls.isAnnotationPresent(ChromiumApi.class))
-          .forEach(cls -> {
-            log.trace("load chromium api: {}", cls);
-            this.apis.put((Class) cls, newProxy(this, cls));
-          });
-      return getBrowser();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+    return getBrowser();
   }
 
   public <T> T getApi(Class<T> type) {
@@ -240,9 +276,14 @@ public class Chromium implements Launcher {
       DevtoolSocket socket = chromium.socket;
       if (!socket.isOpen()) {
         socket.reconnect();
+        Thread thread = Thread.currentThread();
         long start = System.currentTimeMillis();
         while ((System.currentTimeMillis() - start) < 2_000) {
-          EventLoop.sleep(1, TimeUnit.MILLISECONDS);
+          // 让出5毫秒，等待连接成功
+          thread.join(5);
+          if (socket.isOpen()) {
+            break;
+          }
         }
         if (!socket.isOpen()) {
           throw new IllegalStateException("socket客户端已断开连接!");

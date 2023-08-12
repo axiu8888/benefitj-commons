@@ -97,7 +97,8 @@ public class ChromiumTest {
         // 需要创建新页面
         Target.TargetInfo targetInfo = targetInfos.get(0);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        JSONObject targetId = target.createTarget(targetInfo.getTargetId(), screenSize.width, screenSize.height, targetInfo.getBrowserContextId(), false, false, false, true);
+        JSONObject targetId = target.createTarget(targetInfo.getTargetId(), screenSize.width, screenSize.height
+            , targetInfo.getBrowserContextId(), true, true, true, true);
         log.info("targetId: {}", targetId);
       }
       EventLoop.sleepSecond(2);

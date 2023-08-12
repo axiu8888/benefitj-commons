@@ -411,11 +411,6 @@ public interface Runtime {
     @Event("bindingCalled")
     void bindingCalled(String name, String payload, String executionContextId);
 
-    /**
-     *
-     */
-    @Event("executionContextCreated")
-    void executionContextCreated();
   }
 
   /**

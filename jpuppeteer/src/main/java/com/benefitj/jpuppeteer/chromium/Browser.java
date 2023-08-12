@@ -256,7 +256,7 @@ public interface Browser {
     allowAndName,
     @JSONField(name = "default")
     @JsonProperty(namespace = "default")
-    _default
+    __default
   }
 
   /**
@@ -292,7 +292,6 @@ public interface Browser {
    * 当页面即将开始下载时触发。
    * Fired when page is about to start a download.
    */
-  @Event("downloadWillBegin")
   @Data
   public class DownloadWillBegin {
     /**

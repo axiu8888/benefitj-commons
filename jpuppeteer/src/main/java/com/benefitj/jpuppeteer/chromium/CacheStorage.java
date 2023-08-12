@@ -6,6 +6,9 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * CacheStorage Domain
+ */
 @ChromiumApi("CacheStorage")
 public interface CacheStorage {
 
@@ -125,7 +128,7 @@ public interface CacheStorage {
    * Allowed Values: basic, cors, default, error, opaqueResponse, opaqueRedirect
    */
   public enum CachedResponseType {
-    basic, cors, _default, error, opaqueResponse, opaqueRedirect
+    basic, cors, __default, error, opaqueResponse, opaqueRedirect
   }
 
   /**

@@ -1,7 +1,7 @@
 package com.benefitj.jpuppeteer.chromium;
 
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.jpuppeteer.Event;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -141,17 +141,17 @@ public interface DOM {
   /**
    * Hides any highlight.
    */
-  JSONObject hideHighlight();
+  void hideHighlight();
 
   /**
    * Highlights DOM node.
    */
-  JSONObject highlightNode();
+  void highlightNode();
 
   /**
    * Highlights given rectangle.
    */
-  JSONObject highlightRect();
+  void highlightRect();
 
   /**
    * Moves node into the new container, places it before the given anchor.
@@ -252,7 +252,7 @@ public interface DOM {
    * object: Runtime.RemoteObject  JavaScript object wrapper for given node.
    * }
    */
-  JSONObject resolveNode(String nodeId, String backendNodeId, String executionContextId);
+  JSONObject resolveNode(String nodeId, String backendNodeId, String objectGroup, String executionContextId);
 
   /**
    * Sets attributes on element with given id. This method is useful when user edits some existing attribute value and types in several attribute name/value pairs.
@@ -718,32 +718,6 @@ public interface DOM {
      */
     @Event("shadowRootPopped")
     void shadowRootPopped(String hostId, String rootId);
-
-    /**
-     * Called when shadow root is pushed into the element.
-     *
-     * @param hostId NodeId
-     *               Host element id.
-     * @param root   Node
-     *               Shadow root.
-     */
-    @Event("shadowRootPushed")
-    void shadowRootPushed(String hostId, Node root);
-
-    /**
-     * Called when top layer elements are changed.
-     */
-    @Event("topLayerElementsUpdated")
-    void topLayerElementsUpdated();
-
-    /**
-     * Called when shadow root is popped from the element.
-     *
-     * @param hostId Host element id.
-     * @param rootId Shadow root id.
-     */
-    @Event("shadowRootPopped")
-    void shadowRootPopped(Serializable hostId, Serializable rootId);
 
     /**
      * Called when shadow root is pushed into the element.
