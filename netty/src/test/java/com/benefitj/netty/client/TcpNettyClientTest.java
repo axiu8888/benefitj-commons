@@ -1,40 +1,21 @@
 package com.benefitj.netty.client;
 
 import com.benefitj.netty.handler.InboundHandler;
-import com.benefitj.netty.log.Log4jNettyLogger;
-import com.benefitj.netty.log.NettyLogger;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-
+@Slf4j
 public class TcpNettyClientTest {
-  public static void main(String[] args) throws Exception {
-    TcpNettyClientTest test = new TcpNettyClientTest();
-
-
-    test.before();
-
-    test.testTcpClientAutoReconnect();
-
-    test.after();
-  }
-
-  static {
-    NettyLogger.INSTANCE.setLogger(new Log4jNettyLogger());
-  }
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private TcpNettyClient client;
 
@@ -43,7 +24,7 @@ public class TcpNettyClientTest {
     client = new TcpNettyClient()
         .autoReconnect(true, 3, TimeUnit.SECONDS)
         .remoteAddress(new InetSocketAddress("127.0.0.1", 63015))
-        .self();
+        ._self();
   }
 
   @Test

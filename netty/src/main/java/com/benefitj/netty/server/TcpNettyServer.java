@@ -49,14 +49,14 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
   @Override
   protected TcpNettyServer useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
-      this.executeWhileNull(this.workerGroup(), () ->
+      this.whenNull(this.workerGroup(), () ->
           this.group(new EpollEventLoopGroup(newBoss(name())), new EpollEventLoopGroup(newWorker(name()))));
-      this.executeWhileNull(this.channelFactory(), () -> this.channel(EpollServerSocketChannel.class));
+      this.whenNull(this.channelFactory(), () -> this.channel(EpollServerSocketChannel.class));
       this.option(UnixChannelOption.SO_REUSEPORT, true);
     } else {
-      this.executeWhileNull(this.workerGroup(), () ->
+      this.whenNull(this.workerGroup(), () ->
           this.group(new NioEventLoopGroup(newBoss(name())), new NioEventLoopGroup(newWorker(name()))));
-      this.executeWhileNull(this.channelFactory(), () -> channel(NioServerSocketChannel.class));
+      this.whenNull(this.channelFactory(), () -> channel(NioServerSocketChannel.class));
     }
 
     // add options
@@ -72,7 +72,7 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
     childOptions.putAll(coMap);
     childOptions.putAll(childOptions());
     childOptions(childOptions);
-    return self();
+    return _self();
   }
 
   @Deprecated

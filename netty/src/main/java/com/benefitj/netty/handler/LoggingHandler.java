@@ -1,16 +1,17 @@
 package com.benefitj.netty.handler;
 
 import com.benefitj.core.HexUtils;
-import com.benefitj.netty.log.NettyLogger;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 打印日志
  */
 @ChannelHandler.Sharable
-public class LoggingHandler extends CopyInboundHandler<ByteBuf> {
+public class LoggingHandler extends SimpleByteBufHandler<ByteBuf> {
 
   public static final LoggingHandler INSTANCE = new LoggingHandler(50, true);
 
@@ -23,7 +24,7 @@ public class LoggingHandler extends CopyInboundHandler<ByteBuf> {
    */
   private boolean print = false;
 
-  private final NettyLogger log = NettyLogger.INSTANCE;
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public LoggingHandler() {
   }
@@ -41,27 +42,22 @@ public class LoggingHandler extends CopyInboundHandler<ByteBuf> {
   protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
     try {
       if (isPrint() && msg.readableBytes() > 0) {
-        int size = Math.max(0, Math.min(getReadMaxSize(), msg.readableBytes()));
+        int size = Math.min(getReadMaxSize(), msg.readableBytes());
         byte[] data = copyAndReset(msg, size, true);
-        printLog(ctx, msg, data);
+        log.info("remote: {}, data[{}]: {}"
+            , ctx.channel().remoteAddress()
+            , msg.readableBytes()
+            , HexUtils.bytesToHex(data));
       }
     } finally {
       ctx.fireChannelRead(msg.retain());
     }
   }
 
-  /**
-   * 打印日志
-   *
-   * @param ctx 上下文
-   * @param msg 消息
-   * @param buf 读取的缓冲数据
-   */
-  public void printLog(ChannelHandlerContext ctx, ByteBuf msg, byte[] buf) {
-    log.info("remote: {}, size: {}, data: {}"
-        , ctx.channel().remoteAddress()
-        , msg.readableBytes()
-        , HexUtils.bytesToHex(buf));
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    //super.exceptionCaught(ctx, cause);
+    log.error("throws: " + cause.getMessage(), cause);
   }
 
   public int getReadMaxSize() {

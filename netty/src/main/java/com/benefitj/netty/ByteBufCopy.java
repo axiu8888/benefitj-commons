@@ -4,11 +4,6 @@ import com.benefitj.core.BufCopy;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.socket.DatagramPacket;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.function.Function;
-
 /**
  * 读取 ByteBuf
  */

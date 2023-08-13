@@ -24,13 +24,13 @@ public class UdpNettyClient extends AbstractNettyClient<UdpNettyClient> {
   @Override
   protected UdpNettyClient useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
-      this.executeWhileNull(this.group(), () -> group(new EpollEventLoopGroup(newThreadFactory(name(), "-client-", false))));
-      this.executeWhileNull(this.channelFactory(), () -> channel(EpollDatagramChannel.class));
+      this.whenNull(this.group(), () -> group(new EpollEventLoopGroup(newThreadFactory(name(), "-client-", false))));
+      this.whenNull(this.channelFactory(), () -> channel(EpollDatagramChannel.class));
     } else {
-      this.executeWhileNull(this.group(), () -> group(new NioEventLoopGroup()));
-      this.executeWhileNull(this.channelFactory(), () -> channel(NioDatagramChannel.class));
+      this.whenNull(this.group(), () -> group(new NioEventLoopGroup()));
+      this.whenNull(this.channelFactory(), () -> channel(NioDatagramChannel.class));
     }
-    this.executeWhileNull(localAddress(), () -> checkAndResetPort(null));
+    this.whenNull(localAddress(), () -> checkAndResetPort(null));
     this.option(ChannelOption.SO_BROADCAST, true);
     this.option(ChannelOption.SO_REUSEADDR, true);
 
@@ -41,7 +41,7 @@ public class UdpNettyClient extends AbstractNettyClient<UdpNettyClient> {
     options.putIfAbsent(ChannelOption.SO_SNDBUF, (1024 << 10) * 4);
     this.options(options);
 
-    return self();
+    return _self();
   }
 
   @Override

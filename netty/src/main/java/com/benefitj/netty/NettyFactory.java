@@ -4,6 +4,7 @@ import com.benefitj.netty.client.TcpNettyClient;
 import com.benefitj.netty.client.UdpNettyClient;
 import com.benefitj.netty.server.TcpNettyServer;
 import com.benefitj.netty.server.UdpNettyServer;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -11,6 +12,7 @@ import io.netty.channel.socket.SocketChannel;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Netty 客户端/服务端实例
@@ -33,6 +35,19 @@ public class NettyFactory {
    */
   public static TcpNettyServer newTcpServer(int port, ChannelHandler... handlers) {
     return newTcpServer(port, Arrays.asList(handlers));
+  }
+
+  /**
+   * 创建TCP的服务端
+   *
+   * @param port         本地监听端口
+   * @param childHandler Handler
+   * @return 返回创建的TCP服务端
+   */
+  public static TcpNettyServer newTcpServer(int port, final Consumer<Channel> childHandler) {
+    return new TcpNettyServer()
+        .localAddress(port)
+        .childHandler(childHandler);
   }
 
   /**

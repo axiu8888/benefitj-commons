@@ -296,7 +296,7 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
    * @param obj 检查对象
    * @param r   执行操作
    */
-  default void executeWhileNull(Object obj, Runnable r) {
+  default void whenNull(Object obj, Runnable r) {
     if (obj == null) {
       r.run();
     }
@@ -308,7 +308,7 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
    * @param obj 检查对象
    * @param r   执行操作
    */
-  default void executeWhileNotNull(Object obj, Runnable r) {
+  default void whenNotNull(Object obj, Runnable r) {
     if (obj != null) {
       r.run();
     }

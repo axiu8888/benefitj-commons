@@ -3,24 +3,17 @@ package com.benefitj.netty.server;
 import com.benefitj.core.EventLoop;
 import com.benefitj.netty.NettyFactory;
 import com.benefitj.netty.handler.InboundHandler;
-import com.benefitj.netty.handler.InboundConsumer;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class TcpNettyServerTest {
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
-
 
   @Before
   public void setUp() throws Exception {
@@ -30,18 +23,38 @@ public class TcpNettyServerTest {
   public void testHttpServer() {
     TcpNettyServer server = NettyFactory.newTcpServer()
         .name("httpServer")
-        .childHandler(new ChannelInitializer<Channel>() {
-          @Override
-          protected void initChannel(Channel ch) throws Exception {
-            ch.pipeline()
-                // http 编解码
-                .addLast(new HttpServerCodec())
-                // http 消息聚合器，512*1024为接收的最大contentlength
-                .addLast(new HttpObjectAggregator(512 * 1024))
-                // 请求处理器
-                .addLast(InboundHandler.newHandler(FullHttpRequest.class, new HttpRequestConsumer()))
-            ;
-          }
+        .childHandler(ch -> {
+          ch.pipeline()
+              // http 编解码
+              .addLast(new HttpServerCodec())
+              // http 消息聚合器，512*1024为接收的最大contentlength
+              .addLast(new HttpObjectAggregator(1024 << 1024))
+              // 请求处理器
+              .addLast(InboundHandler.newHandler(FullHttpRequest.class, (handler, ctx, msg) -> {
+                //100 Continue
+                if (HttpUtil.is100ContinueExpected(msg)) {
+                  ctx.write(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
+                }
+
+                StringBuilder sb = new StringBuilder();
+
+                sb.append("uri: ").append(msg.uri()).append("\n");
+                sb.append("method: ").append(msg.method().name()).append("\n");
+                sb.append("protocolVersion: ").append(msg.protocolVersion()).append("\n");
+
+                sb.append("\n------------------- headers -------------------\n");
+                msg.headers().forEach(entry -> sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n"));
+                sb.append("\n------------------- headers -------------------\n");
+
+                String str = sb.toString();
+                // 创建http响应
+                FullHttpResponse response = new DefaultFullHttpResponse(
+                    HttpVersion.HTTP_1_1,
+                    HttpResponseStatus.OK,
+                    Unpooled.copiedBuffer(str, CharsetUtil.UTF_8));
+                ctx.writeAndFlush(response)
+                    .addListener(ChannelFutureListener.CLOSE);
+              }));
         })
         .localAddress(8080)
         .start(f -> log.info("start http server"));
@@ -53,34 +66,5 @@ public class TcpNettyServerTest {
   public void tearDown() throws Exception {
   }
 
-
-  static class HttpRequestConsumer implements InboundConsumer<FullHttpRequest> {
-    @Override
-    public void accept(InboundHandler<FullHttpRequest> handler, ChannelHandlerContext ctx, FullHttpRequest req) {
-      //100 Continue
-      if (HttpUtil.is100ContinueExpected(req)) {
-        ctx.write(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
-      }
-
-      StringBuilder sb = new StringBuilder();
-
-      sb.append("uri: ").append(req.uri()).append("\n");
-      sb.append("method: ").append(req.method().name()).append("\n");
-      sb.append("protocolVersion: ").append(req.protocolVersion()).append("\n");
-
-      sb.append("\n------------------- headers -------------------\n");
-      req.headers().forEach(entry -> sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n"));
-      sb.append("\n------------------- headers -------------------\n");
-
-      String msg = sb.toString();
-      // 创建http响应
-      FullHttpResponse response = new DefaultFullHttpResponse(
-          HttpVersion.HTTP_1_1,
-          HttpResponseStatus.OK,
-          Unpooled.copiedBuffer(msg, CharsetUtil.UTF_8));
-      ctx.writeAndFlush(response)
-          .addListener(ChannelFutureListener.CLOSE);
-    }
-  }
 
 }

@@ -1,6 +1,5 @@
 package com.benefitj.netty;
 
-import com.benefitj.netty.log.NettyLogger;
 import io.netty.bootstrap.AbstractBootstrap;
 import io.netty.bootstrap.AbstractBootstrapConfig;
 import io.netty.bootstrap.Bootstrap;
@@ -9,6 +8,8 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -35,7 +36,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
     return klass.getSimpleName() + "-" + NAME_GENERATOR.incrementAndGet();
   }
 
-  protected final NettyLogger log = NettyLogger.INSTANCE;
+  protected final Logger log = LoggerFactory.getLogger(getClass());
 
   /**
    * 服务名称
@@ -61,7 +62,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   public AbstractNetty() {
   }
 
-  protected S self() {
+  protected S _self() {
     return (S) this;
   }
 
@@ -74,7 +75,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S name(String name) {
     this.name = name;
-    return self();
+    return _self();
   }
 
   /**
@@ -112,7 +113,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
    * 默认配置
    */
   protected S useDefaultConfig() {
-    return self();
+    return _self();
   }
 
   private Channel start0(GenericFutureListener<? extends Future<Void>>... listeners) {
@@ -120,9 +121,9 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
       B b = bootstrap();
       useDefaultConfig();
       // 使用默认端口
-      executeWhileNotNull(localAddress(), () -> localAddress(checkAndResetPort(localAddress())));
+      whenNotNull(localAddress(), () -> localAddress(checkAndResetPort(localAddress())));
       ChannelFuture future = startOnly(b).addListeners(listeners);
-      executeWhileNull(getServeChannel(), () -> setServeChannel(future.channel()));
+      whenNull(getServeChannel(), () -> setServeChannel(future.channel()));
     } else {
       final Channel c = getServeChannel();
       if (c != null) {
@@ -157,7 +158,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S start(GenericFutureListener<? extends Future<Void>>... listeners) {
     start0(listeners);
-    return self();
+    return _self();
   }
 
   /**
@@ -194,7 +195,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
         }
       }
     }
-    return self();
+    return _self();
   }
 
   @Override
@@ -205,7 +206,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S setServeChannel(Channel serveChannel) {
     this.serveChannel = serveChannel;
-    return self();
+    return _self();
   }
 
   public void closeServeChannel() {
@@ -236,7 +237,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S localAddress(SocketAddress address) {
     this.bootstrap().localAddress(address);
-    return self();
+    return _self();
   }
 
   /**
@@ -272,7 +273,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
     if (b instanceof Bootstrap) {
       ((Bootstrap) b).remoteAddress(address);
     }
-    return self();
+    return _self();
   }
 
   /**
@@ -296,7 +297,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S group(EventLoopGroup group) {
     this.bootstrap().group(group);
-    return self();
+    return _self();
   }
 
   /**
@@ -316,7 +317,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S channelFactory(ChannelFactory<? extends Channel> channelFactory) {
     this.bootstrap().channelFactory((io.netty.bootstrap.ChannelFactory) channelFactory);
-    return self();
+    return _self();
   }
 
   /**
@@ -330,7 +331,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S channel(Class<? extends Channel> channelClass) {
     channelFactory(new ReflectiveChannelFactory<>(channelClass));
-    return self();
+    return _self();
   }
 
   /**
@@ -342,7 +343,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S handler(ChannelHandler handler) {
     this.bootstrap().handler(handler);
-    return self();
+    return _self();
   }
 
   /**
@@ -358,13 +359,13 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public <T> S option(ChannelOption<T> option, T value) {
     bootstrap().option(option, value);
-    return self();
+    return _self();
   }
 
   @Override
   public S options(Map<ChannelOption<?>, Object> options) {
     options.forEach((option, value) -> bootstrap().option((ChannelOption) option, value));
-    return self();
+    return _self();
   }
 
   /**
@@ -378,13 +379,13 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public <T> S attr(AttributeKey<T> key, T value) {
     bootstrap().attr(key, value);
-    return self();
+    return _self();
   }
 
   @Override
   public S attrs(Map<AttributeKey<?>, Object> attrs) {
     attrs.forEach((key, value) -> bootstrap().attr((AttributeKey) key, value));
-    return self();
+    return _self();
   }
 
   @Override
@@ -455,7 +456,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S useLinuxNativeEpoll(boolean use) {
     this.useLinuxNativeEpoll = use;
-    return self();
+    return _self();
   }
 
   /**

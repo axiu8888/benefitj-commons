@@ -2,14 +2,13 @@ package com.benefitj.netty.handler;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.util.concurrent.TimeUnit;
 
 @ChannelHandler.Sharable
-public class IdleStateEventHandler extends ChannelInboundHandlerAdapter {
+public class IdleStateEventHandler extends SimpleByteBufHandler<Object> {
 
   /**
    * 事件监听

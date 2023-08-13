@@ -150,7 +150,7 @@ public class Chromium implements Launcher {
     this.loadApis();
     LauncherOptions opts = getOptions();
     File executableFile = opts.getExecutablePath();
-    if (executableFile == null) {
+    if (executableFile == null || !executableFile.exists()) {
       throw new IllegalStateException("不存在可执行文件!");
     }
     String userDataDir = StringUtils.getIfBlank(opts.getUserDataDir(), () -> executableFile.getParentFile().getParentFile().getAbsolutePath().replace("\\", "/"));

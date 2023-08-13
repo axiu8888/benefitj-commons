@@ -11,7 +11,7 @@ import io.netty.channel.socket.DatagramPacket;
  * @param <I>
  */
 @ChannelHandler.Sharable
-public abstract class InboundHandler<I> extends CopyInboundHandler<I> {
+public abstract class InboundHandler<I> extends SimpleByteBufHandler<I> {
 
   public InboundHandler() {
   }

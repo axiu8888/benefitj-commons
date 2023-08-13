@@ -12,13 +12,21 @@ import io.netty.channel.socket.DatagramPacket;
  * @param <I>
  */
 @ChannelHandler.Sharable
-public abstract class OutboundHandler<I> extends CopyOutboundHandler<I> {
+public abstract class OutboundHandler<I> extends SimpleByteBufHandler<I> {
 
   public OutboundHandler() {
   }
 
-  public OutboundHandler(Class<? extends I> outboundMessageType) {
-    super(outboundMessageType);
+  public OutboundHandler(boolean autoRelease) {
+    super(autoRelease);
+  }
+
+  public OutboundHandler(Class<? extends I> inboundMessageType) {
+    super(inboundMessageType);
+  }
+
+  public OutboundHandler(Class<? extends I> inboundMessageType, boolean autoRelease) {
+    super(inboundMessageType, autoRelease);
   }
 
   @Override

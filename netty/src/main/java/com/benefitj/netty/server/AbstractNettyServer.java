@@ -3,16 +3,14 @@ package com.benefitj.netty.server;
 import com.benefitj.netty.AbstractNetty;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.bootstrap.ServerBootstrapConfig;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
 import java.net.SocketAddress;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Netty Server
@@ -60,14 +58,14 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
     if (!isStopped()) {
       shutdownGracefully(workerGroup(), true);
     }
-    return self();
+    return _self();
   }
 
 
   @Override
   public S group(EventLoopGroup bossGroup, EventLoopGroup workerGroup) {
     bootstrap().group(bossGroup, workerGroup);
-    return self();
+    return _self();
   }
 
   @Override
@@ -83,13 +81,13 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
   @Override
   public <T> S childOption(ChannelOption<T> childOption, T value) {
     bootstrap().childOption(childOption, value);
-    return self();
+    return _self();
   }
 
   @Override
   public S childOptions(Map<ChannelOption<?>, Object> ops) {
     ops.forEach((option, value) -> childOption((ChannelOption) option, value));
-    return self();
+    return _self();
   }
 
   @Override
@@ -100,13 +98,13 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
   @Override
   public <T> S childAttr(AttributeKey<T> key, T value) {
     bootstrap().childAttr(key, value);
-    return self();
+    return _self();
   }
 
   @Override
   public S childAttrs(Map<AttributeKey<?>, Object> childAttrs) {
     childAttrs.forEach((key, o) -> childAttr((AttributeKey) key, o));
-    return self();
+    return _self();
   }
 
   @Override
@@ -122,7 +120,17 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
   @Override
   public S childHandler(ChannelHandler childHandler) {
     bootstrap().childHandler(childHandler);
-    return self();
+    return _self();
+  }
+
+  @Override
+  public S childHandler(Consumer<Channel> childHandler) {
+    return childHandler(new ChannelInitializer<Channel>() {
+      @Override
+      protected void initChannel(Channel ch) throws Exception {
+        childHandler.accept(ch);
+      }
+    });
   }
 
 }

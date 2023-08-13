@@ -1,7 +1,6 @@
 package com.benefitj.netty.handler;
 
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
  * 标记为可复用的 SimpleChannelInboundHandler
@@ -9,5 +8,5 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * @param <I>
  */
 @ChannelHandler.Sharable
-public abstract class SharableSimpleInboundHandler<I> extends SimpleChannelInboundHandler<I> {
+public abstract class SharableHandler<I> extends SimpleByteBufHandler<I> {
 }

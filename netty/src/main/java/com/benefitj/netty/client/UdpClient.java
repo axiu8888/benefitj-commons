@@ -31,10 +31,9 @@ import java.util.function.Consumer;
  */
 public class UdpClient implements AttributeMap {
 
+  static final GenericFutureListener<Future<? super Void>> _default_future_listener = f -> { /* ~ */ };
 
-  static final GenericFutureListener<Future<? super Void>> _DEFAULT_FUTURE_LISTENER = f -> { /* ~ */ };
-
-  final Logger log = LoggerFactory.getLogger(getClass());
+  protected final Logger log = LoggerFactory.getLogger(getClass());
   /**
    * 本地IP和端口
    */
@@ -247,7 +246,7 @@ public class UdpClient implements AttributeMap {
    * @return 返回客户端对象
    */
   public UdpClient send(byte[] msg) {
-    return send(msg, _DEFAULT_FUTURE_LISTENER);
+    return send(msg, _default_future_listener);
   }
 
   /**
@@ -271,7 +270,7 @@ public class UdpClient implements AttributeMap {
    * @return 返回客户端对象
    */
   public UdpClient send(byte[] msg, InetSocketAddress remote) {
-    return send(msg, remote, _DEFAULT_FUTURE_LISTENER);
+    return send(msg, remote, _default_future_listener);
   }
 
   /**

@@ -1,9 +1,8 @@
 package com.benefitj.netty.client;
 
 import com.benefitj.netty.DefaultThreadFactory;
-import com.benefitj.netty.handler.ActiveChannelHandler;
-import com.benefitj.netty.handler.ActiveState;
-import com.benefitj.netty.handler.ChannelShutdownEventHandler;
+import com.benefitj.netty.handler.ActiveHandler;
+import com.benefitj.netty.handler.ShutdownEventHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -49,7 +48,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   }
 
   @Override
-  public TcpNettyClient self() {
+  public TcpNettyClient _self() {
     return this;
   }
 
@@ -59,8 +58,8 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
       this.group(new EpollEventLoopGroup());
       this.channel(EpollSocketChannel.class);
     } else {
-      this.executeWhileNull(group(), () -> group(new NioEventLoopGroup(newThreadFactory(name(), "-client-", false))));
-      this.executeWhileNull(channelFactory(), () -> channel(NioSocketChannel.class));
+      this.whenNull(group(), () -> group(new NioEventLoopGroup(newThreadFactory(name(), "-client-", false))));
+      this.whenNull(channelFactory(), () -> channel(NioSocketChannel.class));
     }
 
     Map<ChannelOption<?>, Object> options = new HashMap<>(16);
@@ -78,12 +77,12 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     this.options(options);
 
     if (autoReconnect()) {
-      this.executeWhileNull(super.handler(), () -> super.handler(watchdog));
+      this.whenNull(super.handler(), () -> super.handler(watchdog));
     } else {
       super.handler(handler);
     }
 
-    return self();
+    return _self();
   }
 
   @Override
@@ -94,7 +93,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   @Override
   public TcpNettyClient handler(ChannelHandler handler) {
     this.handler = handler;
-    return self();
+    return _self();
   }
 
   @Override
@@ -119,7 +118,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
       watchdog.stopReconnectSchedule();
       return super.stop(listeners);
     }
-    return self();
+    return _self();
   }
 
   /**
@@ -134,7 +133,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     this.autoReconnect(autoReconnect);
     this.reconnectPeriod(reconnectDelay);
     this.reconnectPeriodUnit(unit);
-    return self();
+    return _self();
   }
 
   public boolean autoReconnect() {
@@ -143,7 +142,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   public TcpNettyClient autoReconnect(boolean autoReconnect) {
     this.autoReconnect = autoReconnect;
-    return self();
+    return _self();
   }
 
   public int reconnectPeriod() {
@@ -152,7 +151,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   public TcpNettyClient reconnectPeriod(int period) {
     this.watchdog.period = period;
-    return self();
+    return _self();
   }
 
   public TimeUnit reconnectPeriodUnit() {
@@ -161,7 +160,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   public TcpNettyClient reconnectPeriodUnit(TimeUnit periodUnit) {
     this.watchdog.periodUnit = periodUnit;
-    return self();
+    return _self();
   }
 
   public ScheduledExecutorService executor() {
@@ -169,9 +168,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     if (e == null) {
       synchronized (this) {
         if ((e = this.executor) == null) {
-          ThreadFactory factory = new DefaultThreadFactory("tcp-", "-reconnect-", true);
-          this.executor = Executors.newSingleThreadScheduledExecutor(factory);
-          e = this.executor;
+          e = this.executor = Executors.newSingleThreadScheduledExecutor(new DefaultThreadFactory("tcp-", "-reconnect-", true));
         }
       }
     }
@@ -180,7 +177,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   public TcpNettyClient executor(ScheduledExecutorService executor) {
     this.executor = executor;
-    return self();
+    return _self();
   }
 
   private boolean isRunning() {
@@ -190,7 +187,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   /**
    * 自动重连的初始化程序
    */
-  final class Watchdog extends ChannelInitializer<Channel> implements ActiveChannelHandler.ActiveStateListener {
+  final class Watchdog extends ChannelInitializer<Channel> implements ActiveHandler.ActiveStateListener {
 
     /**
      * 客户端连接的时间
@@ -211,8 +208,8 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     @Override
     protected void initChannel(Channel ch) throws Exception {
       ch.pipeline()
-          .addLast(ChannelShutdownEventHandler.INSTANCE)
-          .addLast(ActiveChannelHandler.newHandler(this))
+          .addLast(ShutdownEventHandler.INSTANCE)
+          .addLast(ActiveHandler.newHandler(this))
           .addLast(handler);
     }
 
@@ -224,8 +221,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
         ScheduledFuture<?> t = this.timer;
         if (t == null || t.isCancelled()) {
           // 开始调度
-          this.timer = executor().scheduleAtFixedRate(
-              this::reconnect, period, period, periodUnit);
+          this.timer = executor().scheduleAtFixedRate(this::reconnect, period, period, periodUnit);
         }
       }
     }
@@ -257,9 +253,9 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     }
 
     @Override
-    public void onChanged(ActiveChannelHandler handler, ChannelHandlerContext ctx, ActiveState state) {
+    public void onChanged(ActiveHandler handler, ChannelHandlerContext ctx, ActiveHandler.State state) {
       // 立刻重新尝试开启一个新的连接
-      if (state == ActiveState.INACTIVE) {
+      if (state == ActiveHandler.State.INACTIVE) {
         if (!executor().isShutdown()) {
           executor().schedule(this::reconnect, 1, TimeUnit.MILLISECONDS);
         }

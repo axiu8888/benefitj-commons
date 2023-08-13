@@ -13,8 +13,8 @@ ext {
 
   swagger2Version = "3.0.0"
   jjwtVersion = "0.11.5"
-  nettyAllVersion = '4.1.92.Final'
-  vertxVersion = "4.4.1"
+  nettyAllVersion = '4.1.96.Final'
+  vertxVersion = "4.4.4"
 
   rxJavaVersion = '2.2.21'
   okHttpVersion = '4.10.0'
@@ -48,7 +48,7 @@ subprojects {
 //  apply from: "${scriptFile}"
 
   group = 'com.benefitj'
-  version = "2.3.0-SNAPSHOT"
+  version = "2.3.1-SNAPSHOT"
 
   ext {
     compatibilityVersion = JavaVersion.VERSION_1_8

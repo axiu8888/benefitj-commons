@@ -23,14 +23,14 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
   @Override
   protected UdpNettyServer useDefaultConfig() {
     if (useLinuxNativeEpoll()) {
-      this.executeWhileNull(bossGroup(), () ->
+      this.whenNull(bossGroup(), () ->
           this.group(new NioEventLoopGroup(1, newBoss(name())), new DefaultEventLoopGroup(newWorker(name()))));
-      this.executeWhileNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
+      this.whenNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
       this.option(UnixChannelOption.SO_REUSEPORT, false);
     } else {
-      this.executeWhileNull(bossGroup(), () ->
+      this.whenNull(bossGroup(), () ->
           this.group(new NioEventLoopGroup(1, newBoss(name())), new DefaultEventLoopGroup(newWorker(name()))));
-      this.executeWhileNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
+      this.whenNull(channelFactory(), () -> this.channel(NioDatagramServerChannel.class));
     }
     this.option(ChannelOption.SO_BROADCAST, true);
     this.option(ChannelOption.SO_REUSEADDR, false);
@@ -40,7 +40,7 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
     options.putIfAbsent(ChannelOption.SO_SNDBUF, (1024 << 10) * 4);
     this.options(options);
 
-    return self();
+    return _self();
   }
 
   /**
@@ -48,7 +48,7 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
    */
   public UdpNettyServer soRcvbufSize(Integer soRcvbufSize) {
     this.option(ChannelOption.SO_RCVBUF, (1024 << 10) * soRcvbufSize);
-    return self();
+    return _self();
   }
 
   /**
@@ -56,7 +56,7 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
    */
   public UdpNettyServer soSndbufSize(Integer soSndbufSize) {
     this.option(ChannelOption.SO_SNDBUF, (1024 << 10) * soSndbufSize);
-    return self();
+    return _self();
   }
 
 

@@ -2,12 +2,14 @@ package com.benefitj.netty.server;
 
 import com.benefitj.netty.INetty;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.util.AttributeKey;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * 服务端
@@ -93,6 +95,14 @@ public interface INettyServer<S extends INettyServer<S>> extends INetty<ServerBo
    * @return 返回当前对象
    */
   S childHandler(ChannelHandler childHandler);
+
+  /**
+   * 设置child的Handler
+   *
+   * @param childHandler child Handler
+   * @return 返回当前对象
+   */
+  S childHandler(Consumer<Channel> childHandler);
 
   /**
    * 服务端类型
