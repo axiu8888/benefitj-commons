@@ -2,7 +2,6 @@ package com.benefitj.core.file;
 
 import com.benefitj.core.AttributeMap;
 import com.benefitj.core.IOUtils;
-import com.benefitj.core.CatchUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -20,12 +19,12 @@ public class FileWriterImpl implements IWriter, AttributeMap {
   private final BufferedOutputStream out;
   private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
-  public FileWriterImpl(File source) {
+  public FileWriterImpl(File source, boolean append) {
     this.source = source;
     try {
-      this.out = new BufferedOutputStream(new FileOutputStream(source));
+      this.out = new BufferedOutputStream(new FileOutputStream(source, append));
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -85,7 +84,29 @@ public class FileWriterImpl implements IWriter, AttributeMap {
       }
       return this;
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param buf    字节缓冲
+   * @param offset 偏移量
+   * @param len    长度
+   * @param flush  是否刷新
+   */
+  protected FileWriterImpl write0(char[] buf, int offset, int len, boolean flush) {
+    try {
+      for (int i = 0; i < len; i++) {
+        out().write(buf[offset + i]);
+      }
+      if (flush) {
+        out().flush();
+      }
+      return this;
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
     }
   }
 
@@ -96,7 +117,7 @@ public class FileWriterImpl implements IWriter, AttributeMap {
     try {
       out().flush();
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -104,11 +125,10 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * 刷新
    */
   @Override
-  public FileWriterImpl flush() {
+  public void flush() {
     synchronized (this) {
       flush0();
     }
-    return this;
   }
 
   /**

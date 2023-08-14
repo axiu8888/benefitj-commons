@@ -155,7 +155,7 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
   }
 
   @Override
-  public FileSlicer<T> flush() {
+  public void flush() {
     T writer;
     synchronized (this) {
       writer = getWriter(false);
@@ -167,7 +167,6 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
     if (writer != null) {
       getFileListener().onHandle(writer, writer.getSource());
     }
-    return this;
   }
 
   @Override

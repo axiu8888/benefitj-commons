@@ -70,7 +70,7 @@ public class ApiBuilderTest extends TestCase {
     api.getImg()
         .subscribe(body -> {
           log.info("线程: {}", EventLoop.threadName());
-          final IWriter img = IWriter.newFileWriter("D:/home/tmp/ew4nf5737jvn.jpg_760w.png");
+          final IWriter img = IWriter.createWriter("D:/home/tmp/ew4nf5737jvn.jpg_760w.png", false);
           BodyUtils.progressResponseBody(body
               , (buf, len) -> img.write(buf, 0, len)
               , (totalLength, progress, done) ->

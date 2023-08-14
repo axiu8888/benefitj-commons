@@ -3,8 +3,9 @@ package com.benefitj.core.file;
 import com.benefitj.core.IOUtils;
 
 import java.io.File;
+import java.io.Flushable;
 
-public interface IWriter extends AutoCloseable {
+public interface IWriter extends AutoCloseable, Appendable, Flushable {
 
   /**
    * 写入数据
@@ -80,34 +81,59 @@ public interface IWriter extends AutoCloseable {
    */
   IWriter writeAndFlush(byte[] buf, int offset, int len);
 
+  @Override
+  default IWriter append(CharSequence csq) {
+    return append(csq, 0, csq.length());
+  }
+
+  @Override
+  default IWriter append(CharSequence csq, int start, int end) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = start; i < end; i++) {
+      sb.append(csq.charAt(i));
+    }
+    return write(sb.toString());
+  }
+
+  @Override
+  default IWriter append(char c) {
+    return write(String.valueOf(c));
+  }
+
+
   /**
    * 刷新
    */
-  IWriter flush();
+  @Override
+  void flush();
 
+  /**
+   * 关闭
+   */
   @Override
   void close();
-
 
   /**
    * 创建文件写入器
    *
-   * @param file 文件
+   * @param file   文件
+   * @param append 是否在文件后拼接
    * @return 返回文件写入器
    */
-  static IWriter newFileWriter(String file) {
-    return newFileWriter(new File(file));
+  static IWriter createWriter(String file, boolean append) {
+    return createWriter(new File(file), append);
   }
 
   /**
    * 创建文件写入器
    *
-   * @param file 文件
+   * @param file   文件
+   * @param append 是否在文件后拼接
    * @return 返回文件写入器
    */
-  static IWriter newFileWriter(File file) {
+  static IWriter createWriter(File file, boolean append) {
     IOUtils.createFile(file.getAbsolutePath());
-    return new FileWriterImpl(file);
+    return new FileWriterImpl(file, append);
   }
 
 }
