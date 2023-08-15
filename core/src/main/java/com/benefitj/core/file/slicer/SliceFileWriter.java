@@ -11,7 +11,11 @@ import java.io.File;
 public class SliceFileWriter extends FileWriterImpl implements IWriter {
 
   public SliceFileWriter(File file) {
-    super(file);
+    this(file, false);
+  }
+
+  public SliceFileWriter(File file, boolean append) {
+    super(file, append);
   }
 
 }

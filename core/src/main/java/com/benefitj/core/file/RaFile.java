@@ -219,9 +219,8 @@ public class RaFile implements OutputWriter<RaFile> {
   }
 
   @Override
-  public RaFile flush() {
+  public void flush() {
     // ignore
-    return this;
   }
 
   @Override

@@ -80,7 +80,7 @@ public interface OutputWriter<T extends OutputWriter<T>> extends IWriter {
   }
 
   @Override
-  T flush();
+  void flush();
 
   @Override
   void close();

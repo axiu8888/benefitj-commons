@@ -61,16 +61,16 @@ public class ApiBuilderTest extends TestCase {
 
 //    // 写入文件
 //    api.getBody()
-//        .subscribe(body -> BodyUtils.transferTo(body, new File("D:/opt/tmp/super_load-eb15f1e5a8.js")));
+//        .subscribe(body -> BodyUtils.transferTo(body, new File("D:/tmp/super_load-eb15f1e5a8.js")));
     // 写入文件
 //    api.getImg()
-//        .subscribe(body -> BodyUtils.transferTo(body, new File("D:/opt/tmp/ew4nf5737jvn.jpg_760w.png")));
+//        .subscribe(body -> BodyUtils.transferTo(body, new File("D:/tmp/ew4nf5737jvn.jpg_760w.png")));
 
     CountDownLatch latch = new CountDownLatch(1);
     api.getImg()
         .subscribe(body -> {
           log.info("线程: {}", EventLoop.threadName());
-          final IWriter img = IWriter.createWriter("D:/home/tmp/ew4nf5737jvn.jpg_760w.png", false);
+          final IWriter img = IWriter.createWriter("D:/tmp/ew4nf5737jvn.jpg_760w.png", false);
           BodyUtils.progressResponseBody(body
               , (buf, len) -> img.write(buf, 0, len)
               , (totalLength, progress, done) ->
@@ -117,7 +117,7 @@ public class ApiBuilderTest extends TestCase {
           // 处理响应
           final AtomicInteger index = new AtomicInteger();
           BodyUtils.progressResponseBody(response.body()
-              , new File("D:/opt/tmp/simulator2.zip") // 写入文件中
+              , new File("D:/tmp/simulator2.zip") // 写入文件中
               , (totalLength, progress, done) -> {
                 if (index.incrementAndGet() % 50 == 0 || done) {
                   log.info("总长度: {}, 已下载: {}, 进度: {}%， done[{}]"
@@ -324,7 +324,7 @@ public class ApiBuilderTest extends TestCase {
     String url = "https://npm.taobao.org/mirrors/chromium-browser-snapshots/Win_x64/1132420/chrome-win.zip";
     okhttp3.Response response = HttpHelper.get().get(url);
     log.info("headers: {}", response.headers());
-    File dest = IOUtils.createFile("D:/home/tmp/chrome-win222.zip");
+    File dest = IOUtils.createFile("D:/tmp/chrome-win222.zip");
     BodyUtils.transferTo(response.body(), dest, (total, progress) -> {
       log.info("{}, {}, {}， {}"
           , dest.getName()
@@ -341,7 +341,6 @@ public class ApiBuilderTest extends TestCase {
 //    String url = "https://mirrors.tuna.tsinghua.edu.cn/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso";
     String url = "https://npm.taobao.org/mirrors/chromium-browser-snapshots/Win_x64/1132420/chrome-win.zip";
 //    String url = "http://127.0.0.1/api/files/download?bucketName=test&filename=/测试/chrome-win.zip";
-    System.err.println("size ==>: " + (4.0 * (1024 << 10)) / Utils.MB);
     okhttp3.Response response = HttpHelper.get()
         .setGzipEnable(false)
         .get(url);
@@ -349,11 +348,6 @@ public class ApiBuilderTest extends TestCase {
       log.info("headers ==>: \n{}", response.headers());
 
       HttpUrl httpUrl = response.request().url();
-
-//      Map<String, String> headers = new LinkedHashMap<>();
-//      Map<String, String> parameters = new LinkedHashMap<>();
-//      HttpHelper.get().download(url, headers, parameters);
-
       String filename = httpUrl.queryParameter("filename");
       filename = StringUtils.isNotBlank(filename) ? filename : httpUrl.pathSegments().get(httpUrl.pathSize() - 1);
       filename = filename.substring(filename.lastIndexOf("/") + 1);
@@ -361,12 +355,12 @@ public class ApiBuilderTest extends TestCase {
       long MAX_SIZE = 200 * Utils.MB;
       long contentLength = BodyUtils.getContentLength(response.headers());
       CountDownLatch latch = new CountDownLatch((int) (contentLength / MAX_SIZE) + 1);
-      File dest = IOUtils.createFile("D:/home/tmp/" + filename);
+      File dest = IOUtils.createFile("D:/tmp/" + filename);
       new RandomAccessFile(dest, "rw").setLength(contentLength);
       for (int i = 0, j = 0; i < contentLength; i += MAX_SIZE, j++) {
         long startPosition = i, endPosition = Math.min(i + MAX_SIZE, contentLength) - 1;
         int index = j;
-        EventLoop.single().execute(() -> {
+        EventLoop.asyncIO(() -> {
           try {
             download(IOUtils.createFile(dest.getParentFile(), index + "__" + dest.getName()), url, startPosition, endPosition, index);
           } finally {
@@ -386,22 +380,45 @@ public class ApiBuilderTest extends TestCase {
     Map<String, String> headers = new HashMap<>();
     headers.put("Range", "bytes=" + startPosition + "-" + endPosition);
     headers.put("accept-encoding", "gzip, deflate, br");
-    HttpHelper httpHelper = HttpHelper.get().setGzipEnable(false);
-    okhttp3.Response response = httpHelper.get(url, headers);
+    okhttp3.Response response = HttpHelper.get()
+        .setGzipEnable(false)
+        .get(url, headers);
     log.warn("{}, start~end: {} ~ {}. headers: {}", dest.getName(), startPosition, endPosition, response.headers());
     long totalLength = BodyUtils.getContentLength(response.headers());
-    BodyUtils.transferTo(response.body(), dest, startPosition, endPosition, (total, progress) -> {
-      log.info("{} [{} - {}]下载中：{}, totalLength: {}, total: {}, progress: {}, {}%, ..."
-          , index
-          , startPosition
-          , endPosition
-          , dest.getName()
-          , totalLength
-          , total
-          , progress
-          , Utils.fmt((progress * 100.0) / totalLength, "0.00")
-      );
-    });
+
+    // 直接保存
+    try (final RandomAccessFile rw = new RandomAccessFile(dest, "rw");) {
+      AtomicLong progress = new AtomicLong();
+      IOUtils.read(response.body().byteStream(), 1024 << 10, true, (buf, len) -> {
+        progress.addAndGet(len);
+        log.info("{} [{} - {}]下载中：{}, totalLength: {}, len: {}, progress: {}%, ..."
+            , index
+            , startPosition
+            , endPosition
+            , dest.getName()
+            , Utils.ofMB(totalLength, 2)
+            , len
+            , Utils.fmt(((progress.get() * 1.0) / totalLength * 100.0), "0.00")
+        );
+        //rw.write(buf, 0, len);
+      });
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+
+//    BodyUtils.transferTo(response.body(), dest, startPosition, endPosition, (total, progress) -> {
+//      log.info("{} [{} - {}]下载中：{}, totalLength: {}, total: {}, progress: {}, {}%, ..."
+//          , index
+//          , startPosition
+//          , endPosition
+//          , dest.getName()
+//          , Utils.ofMB(totalLength, 2)
+//          , Utils.ofMB(total, 2)
+//          , progress
+//          , Utils.fmt(((progress * 1.0) / totalLength * 100.0), "0.00")
+//      );
+//    });
   }
 
   @Test
