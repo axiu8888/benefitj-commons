@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 测试客户端
@@ -39,7 +40,7 @@ public class VertxMqttClientTest {
 
     latch.await();
 
-    EventLoop.sleepSecond(1);
+    EventLoop.await(1, TimeUnit.SECONDS);
   }
 
   @Test
@@ -51,7 +52,7 @@ public class VertxMqttClientTest {
         break;
       }
     }
-    EventLoop.sleepSecond(1);
+    EventLoop.await(1, TimeUnit.SECONDS);
   }
 
   @Test
@@ -60,7 +61,7 @@ public class VertxMqttClientTest {
     dispatcher.subscribe("/message/#", (topicName, message) ->
         log.info("rcv topic[{}], msg: {}", topicName, message.payload().toString()));
 
-    EventLoop.sleepSecond(120);
+    EventLoop.await(120, TimeUnit.SECONDS);
   }
 
   @After
@@ -69,7 +70,7 @@ public class VertxMqttClientTest {
       VertxHolder.undeploy(client.deploymentID())
           .onFailure(Throwable::printStackTrace)
           .onComplete(event -> log.info("undeploy: {}", event.succeeded()));
-      EventLoop.sleepSecond(1);
+      EventLoop.await(1, TimeUnit.SECONDS);
     }
   }
 

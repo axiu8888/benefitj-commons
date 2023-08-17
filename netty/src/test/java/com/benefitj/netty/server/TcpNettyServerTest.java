@@ -12,6 +12,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.TimeUnit;
+
 @Slf4j
 public class TcpNettyServerTest {
 
@@ -58,7 +60,7 @@ public class TcpNettyServerTest {
         })
         .localAddress(8080)
         .start(f -> log.info("start http server"));
-    EventLoop.sleepSecond(30);
+    EventLoop.await(30, TimeUnit.SECONDS);
     server.stop(f -> log.info("stop http server, {}", EventLoop.threadName()));
   }
 

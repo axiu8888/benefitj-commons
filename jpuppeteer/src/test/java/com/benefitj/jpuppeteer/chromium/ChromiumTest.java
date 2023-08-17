@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -86,22 +87,31 @@ public class ChromiumTest {
 
       Target target = chromium.getTarget();
       target.setDiscoverTargets(true, null);
-      //target.attachedToTarget();
-      //target.createTarget("");
-      //target.setDiscoverTargets(true, new Target.TargetFilter());
       JSONObject targets = target.getTargets(null);
       List<Target.TargetInfo> targetInfos = targets.getList("targetInfos", Target.TargetInfo.class);
       log.info("targets: {}", JSON.toJSONString(targetInfos));
 
+      String url = "http://research.sensecho.com/monitorReports/physical?reportZid=8146bbac1b284d31a9e683d09f75138e&loginName=haoyanli&version=undefined&extend=undefined";
+
       if (!targetInfos.isEmpty()) {
         // 需要创建新页面
         Target.TargetInfo targetInfo = targetInfos.get(0);
+
+        JSONObject sessionIdResult = target.attachToTarget(targetInfo.getTargetId(), true);
+        String sessionId = sessionIdResult.getString("sessionId");
+        Page page = chromium.getPage();
+        page.enable();
+        page.setLifecycleEventsEnabled(true);
+        Runtime runtime = chromium.getRuntime();
+        runtime.enable();
+
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         JSONObject targetId = target.createTarget(targetInfo.getTargetId(), screenSize.width, screenSize.height
             , targetInfo.getBrowserContextId(), true, true, true, true);
         log.info("targetId: {}", targetId);
+
       }
-      EventLoop.sleepSecond(2);
+      EventLoop.await(2, TimeUnit.SECONDS);
     } finally {
       log.info("关闭...");
       // 关闭

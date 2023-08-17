@@ -37,6 +37,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -227,9 +228,9 @@ public class ApiBuilderTest extends TestCase {
     latch.await();
     for (int i = 0; i < 20; i++) {
       socket.send("about:blank");
-      EventLoop.sleepSecond(1);
+      EventLoop.await(1, TimeUnit.SECONDS);
     }
-    EventLoop.sleepSecond(10);
+    EventLoop.await(10, TimeUnit.SECONDS);
     socket.close(1000, "done");
   }
 

@@ -24,8 +24,11 @@ public interface Target {
    *
    * @param targetId
    * @param flatten  Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
+   * @return {
+   * sessionId: SessionID Id assigned to the session.
+   * }
    */
-  String attachToTarget(String targetId, Boolean flatten);
+  JSONObject attachToTarget(String targetId, Boolean flatten);
 
   /**
    * Closes the target. If the target is a page that gets closed too.

@@ -7,6 +7,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.TimeUnit;
+
 @Slf4j
 public class VertxMqttServerTest {
 
@@ -31,7 +33,7 @@ public class VertxMqttServerTest {
         .setEndpointHandler(new MqttEndpointHandlerImpl())
     ).onComplete(event -> log.info("deploy: {}", event.result()));
 
-    EventLoop.sleepSecond(300);
+    EventLoop.await(300, TimeUnit.SECONDS);
   }
 
   @After
@@ -39,7 +41,7 @@ public class VertxMqttServerTest {
     if (server != null) {
       VertxHolder.undeploy(server.deploymentID())
           .onComplete(event -> log.info("undeploy: {}", event.succeeded()));
-      EventLoop.sleepSecond(1);
+      EventLoop.await(1, TimeUnit.SECONDS);
     }
   }
 }

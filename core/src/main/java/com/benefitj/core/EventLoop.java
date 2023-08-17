@@ -172,7 +172,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
       try {
         task.run();
       } catch (Exception e) {
-        logger.error("event_loop throws: "+ e.getMessage(), e);
+        logger.error("event_loop throws: " + e.getMessage(), e);
         throw e;
       }
     };
@@ -190,7 +190,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
       try {
         return task.call();
       } catch (Exception e) {
-        logger.error("event_loop throws: "+ e.getMessage(), e);
+        logger.error("event_loop throws: " + e.getMessage(), e);
         throw e;
       }
     };
@@ -259,28 +259,89 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
 
   }
 
+
+  public static String threadName() {
+    return Thread.currentThread().getName();
+  }
+
+  /**
+   * 已过时，建议使用 {@link #await(long, TimeUnit)}
+   */
+  @Deprecated
   public static void sleep(long duration) {
     sleep(duration, TimeUnit.MILLISECONDS);
   }
 
+  /**
+   * 已过时，建议使用 {@link #await(long, TimeUnit)}
+   */
+  @Deprecated
   public static void sleepSecond(long duration) {
     sleep(duration, TimeUnit.SECONDS);
   }
 
+  /**
+   * 已过时，建议使用 {@link #await(long, TimeUnit)}
+   */
+  @Deprecated
   public static void sleepMinute(long duration) {
     sleep(duration, TimeUnit.MINUTES);
   }
 
+  /**
+   * 已过时，建议使用 {@link #await(long, TimeUnit)}
+   */
+  @Deprecated
   public static void sleep(long duration, TimeUnit unit) {
     try {
       unit.sleep(duration);
     } catch (InterruptedException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw new IllegalStateException(e);
     }
   }
 
-  public static String threadName() {
-    return Thread.currentThread().getName();
+  /**
+   * 等待
+   *
+   * @param durationMillis 时长
+   */
+  public static void await(long durationMillis) {
+    await(Thread.currentThread(), durationMillis);
+  }
+
+  /**
+   * 等待
+   *
+   * @param t              等待的线程
+   * @param durationMillis 时长
+   */
+  public static void await(Thread t, long durationMillis) {
+    await(t, durationMillis, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * 等待
+   *
+   * @param duration 时长
+   * @param unit     单位
+   */
+  public static void await(long duration, TimeUnit unit) {
+    await(Thread.currentThread(), duration, unit);
+  }
+
+  /**
+   * 等待
+   *
+   * @param t        等待的线程
+   * @param duration 时长
+   * @param unit     单位
+   */
+  public static void await(Thread t, long duration, TimeUnit unit) {
+    try {
+      t.join(unit.toMillis(duration));
+    } catch (InterruptedException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   public static ScheduledFuture<?> asyncIO(Runnable task) {
@@ -288,7 +349,11 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
   }
 
   public static ScheduledFuture<?> asyncIO(Runnable task, long delay) {
-    return io().schedule(task, delay, TimeUnit.MILLISECONDS);
+    return asyncIO(task, delay, TimeUnit.MILLISECONDS);
+  }
+
+  public static ScheduledFuture<?> asyncIO(Runnable task, long delay, TimeUnit unit) {
+    return io().schedule(task, delay, unit);
   }
 
   public static ScheduledFuture<?> asyncIOFixedRate(Runnable task, long period) {
@@ -296,7 +361,11 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
   }
 
   public static ScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period) {
-    return io().scheduleAtFixedRate(task, initialDelay, period, TimeUnit.MILLISECONDS);
+    return asyncIOFixedRate(task, initialDelay, period, TimeUnit.MILLISECONDS);
+  }
+
+  public static ScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period, TimeUnit unit) {
+    return io().scheduleAtFixedRate(task, initialDelay, period, unit);
   }
 
 }

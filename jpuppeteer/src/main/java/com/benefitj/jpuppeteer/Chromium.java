@@ -10,10 +10,8 @@ import com.benefitj.http.HttpClient;
 import com.benefitj.http.WebSocket;
 import com.benefitj.http.WebSocketImpl;
 import com.benefitj.http.WebSocketListener;
-import com.benefitj.jpuppeteer.chromium.Browser;
-import com.benefitj.jpuppeteer.chromium.ChromiumApi;
-import com.benefitj.jpuppeteer.chromium.Page;
-import com.benefitj.jpuppeteer.chromium.Target;
+import com.benefitj.jpuppeteer.chromium.Runtime;
+import com.benefitj.jpuppeteer.chromium.*;
 import com.google.common.reflect.ClassPath;
 import lombok.extern.slf4j.Slf4j;
 import okio.ByteString;
@@ -220,6 +218,20 @@ public class Chromium implements Launcher {
   }
 
   /**
+   * 获取运行时
+   */
+  public Runtime getRuntime() {
+    return getApi(Runtime.class);
+  }
+
+  /**
+   * 获取网络
+   */
+  public Network getNetwork() {
+    return getApi(Network.class);
+  }
+
+  /**
    * 获取当前调用的Message
    */
   @Nullable
@@ -276,11 +288,10 @@ public class Chromium implements Launcher {
       DevtoolSocket socket = chromium.socket;
       if (!socket.isOpen()) {
         socket.reconnect();
-        Thread thread = Thread.currentThread();
         long start = System.currentTimeMillis();
         while ((System.currentTimeMillis() - start) < 2_000) {
           // 让出5毫秒，等待连接成功
-          thread.join(5);
+          EventLoop.await(5);
           if (socket.isOpen()) {
             break;
           }
@@ -310,6 +321,9 @@ public class Chromium implements Launcher {
               , msg.getId()
               , msg.getResult()
           );
+          if (JSONObject.class.isAssignableFrom(returnType)) {
+            return result;
+          }
           return result.toJavaObject(returnType);
         }
         if (!result.isEmpty()) {
@@ -319,7 +333,8 @@ public class Chromium implements Launcher {
 
       Message.Error error = msg.getError();
       if (error != null) {
-        throw new IllegalStateException(error.getMessage() + ", " + error.getData());
+        throw new IllegalStateException(error.getMessage()
+            + (StringUtils.isNotBlank(error.getData()) ? ", " + error.getData() : ""));
       }
       return null;
     });
