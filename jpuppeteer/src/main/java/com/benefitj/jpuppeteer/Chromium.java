@@ -80,6 +80,10 @@ public class Chromium implements Launcher {
   private final Map<Class<? extends ChromiumApi>, Object> apis = new ConcurrentHashMap<>();
 
   private volatile boolean initialized = false;
+  /**
+   * 会话ID
+   */
+  private String sessionId;
 
   public Chromium() {
   }
@@ -98,6 +102,14 @@ public class Chromium implements Launcher {
 
   public CmdCall getCall() {
     return call;
+  }
+
+  public void setSessionId(String sessionId) {
+    this.sessionId = sessionId;
+  }
+
+  public String getSessionId() {
+    return sessionId;
   }
 
   protected void loadApis() {
@@ -232,6 +244,27 @@ public class Chromium implements Launcher {
   }
 
   /**
+   * Emulation
+   */
+  public Emulation getEmulation() {
+    return getApi(Emulation.class);
+  }
+
+  /**
+   * Debugger
+   */
+  public Debugger getDebugger() {
+    return getApi(Debugger.class);
+  }
+
+  /**
+   * DeviceAccess
+   */
+  public DeviceAccess getDeviceAccess() {
+    return getApi(DeviceAccess.class);
+  }
+
+  /**
    * 获取当前调用的Message
    */
   @Nullable
@@ -302,6 +335,7 @@ public class Chromium implements Launcher {
       }
       Message msg = new Message();
       chromium.msgLocal.set(msg);
+      msg.setSessionId(chromium.getSessionId());
       msg.setMethod(type.getSimpleName() + "." + method.getName());
       msg.getParams().putAll(ReflectUtils.getParameterValues(method.getParameters(), args));
       msg.setLatch(new CountDownLatch(1));
@@ -311,7 +345,9 @@ public class Chromium implements Launcher {
       );
       chromium.messages.put(msg.getId(), msg);
       socket.send(JSON.toJSONString(msg));
-      msg.getLatch().await();
+      if (!method.isAnnotationPresent(NoAwait.class)) {
+        msg.getLatch().await();
+      }
       JSONObject result = msg.getResult();
       if (result != null) {
         Class<?> returnType = method.getReturnType();
@@ -366,12 +402,12 @@ public class Chromium implements Launcher {
 
     @Override
     public void onOpen(@NotNull WebSocket webSocket, @NotNull okhttp3.Response response) {
-      log.info("onOpen, code: {}, {}, {}", response.code(), response.message(), CatchUtils.ignore(() -> response.body().string()));
+      log.info("[Chromium] onOpen, code: {}, {}, {}", response.code(), response.message(), CatchUtils.ignore(() -> response.body().string()));
     }
 
     @Override
     public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
-      log.info("onMessage, text: {}", text);
+      log.info("[Chromium] onMessage, text: {}", text);
       JSONObject json = JSON.parseObject(text);
       String method = json.getString("method");
       // 优先全局处理
@@ -403,23 +439,23 @@ public class Chromium implements Launcher {
 
     @Override
     public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
-      log.info("onMessage, bytes: {}", HexUtils.bytesToHex(bytes.toByteArray()));
+      log.info("[Chromium] onMessage, bytes: {}", HexUtils.bytesToHex(bytes.toByteArray()));
     }
 
     @Override
     public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable e, @Nullable okhttp3.Response response) {
-      log.info("onFailure, error: {}, {}, {}", e.getMessage(), response != null ? response.message() : null, CatchUtils.ignore(() -> response.body().string()));
+      log.info("[Chromium] onFailure, error: {}, {}, {}", e.getMessage(), response != null ? response.message() : null, CatchUtils.ignore(() -> response.body().string()));
       e.printStackTrace();
     }
 
     @Override
     public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
-      log.info("onClosing, code: {}, reason: {}", code, reason);
+      log.info("[Chromium] onClosing, code: {}, reason: {}", code, reason);
     }
 
     @Override
     public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
-      log.info("onClosed, code: {}, reason: {}", code, reason);
+      log.info("[Chromium] onClosed, code: {}, reason: {}", code, reason);
     }
   }
 

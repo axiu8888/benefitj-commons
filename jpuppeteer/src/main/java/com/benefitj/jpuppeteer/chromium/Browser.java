@@ -3,6 +3,7 @@ package com.benefitj.jpuppeteer.chromium;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
 import com.benefitj.jpuppeteer.Event;
+import com.benefitj.jpuppeteer.NoAwait;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -26,6 +27,7 @@ public interface Browser {
    * Close browser gracefully.
    * 优雅地关闭浏览器。
    */
+  @NoAwait
   void close();
 
   /**

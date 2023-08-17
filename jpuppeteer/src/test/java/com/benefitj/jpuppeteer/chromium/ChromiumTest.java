@@ -10,12 +10,12 @@ import com.benefitj.core.SystemProperty;
 import com.benefitj.jpuppeteer.BrowserFetcher;
 import com.benefitj.jpuppeteer.Chromium;
 import com.benefitj.jpuppeteer.LauncherOptions;
+import com.benefitj.jpuppeteer.PaperFormats;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -74,7 +74,7 @@ public class ChromiumTest {
         .useDefaultArgs()
         .add(
             "--start-maximized", // 最大化
-            //"--auto-open-devtools-for-tabs", // 打开开发者工具
+            "--auto-open-devtools-for-tabs", // 打开开发者工具
             "about:blank",
             ""
         )
@@ -99,19 +99,50 @@ public class ChromiumTest {
 
         JSONObject sessionIdResult = target.attachToTarget(targetInfo.getTargetId(), true);
         String sessionId = sessionIdResult.getString("sessionId");
+        chromium.setSessionId(sessionId);
         Page page = chromium.getPage();
-        page.enable();
         page.setLifecycleEventsEnabled(true);
-        Runtime runtime = chromium.getRuntime();
-        runtime.enable();
+        page.enable();
+        chromium.getRuntime().enable();
+        chromium.getNetwork().enable(null, null, null);
+//        chromium.getNetwork().enable(50L * (1024 << 10), 20L * (1024 << 10), 20L * (1024 << 10));
+//        chromium.getEmulation().canEmulate(true);
+//        chromium.getEmulation().setScriptExecutionDisabled(false);
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        JSONObject targetId = target.createTarget(targetInfo.getTargetId(), screenSize.width, screenSize.height
-            , targetInfo.getBrowserContextId(), true, true, true, true);
-        log.info("targetId: {}", targetId);
+        JSONObject navigate = page.navigate(url, null, Page.TransitionType.link, targetInfo.getTargetId(), Page.ReferrerPolicy.noReferrer);
+        log.info("navigate ==>: {}", navigate);
+
+        EventLoop.await(500);
+        JSONObject pdf = page.printToPDF(false,
+            true,
+            true,
+            1.0,
+            PaperFormats.a4.width,
+            PaperFormats.a4.height,
+            0,
+            0,
+            0,
+            0,
+            "",
+            "",
+            "",
+            false,
+            Page.TransferMode.ReturnAsBase64,
+            true
+        );
+        log.info("pdf ==>: \n{}", pdf);
+
+
+//        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//        JSONObject targetId = target.createTarget(targetInfo.getTargetId(), screenSize.width, screenSize.height
+//            , targetInfo.getBrowserContextId(), true, true, true, true);
+//        log.info("targetId: {}", targetId);
+
 
       }
-      EventLoop.await(2, TimeUnit.SECONDS);
+      log.error("start await...");
+      EventLoop.await(20, TimeUnit.SECONDS);
+      log.error("end await...");
     } finally {
       log.info("关闭...");
       // 关闭

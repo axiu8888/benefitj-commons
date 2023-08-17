@@ -49,7 +49,6 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
     this.listener = listener;
   }
 
-
   /**
    * 重连
    */
@@ -111,11 +110,17 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
         , response != null ? response.code() : -1
         , response != null ? response.message() : ""
     );
-    this.open = error instanceof EOFException;
-    if (error instanceof EOFException || error instanceof SocketException) {
-      getListener().onClosed(this, 1, "");
-    } else {
+    try {
       getListener().onFailure(this, error, response);
+    } finally {
+      if (error instanceof EOFException || error instanceof SocketException) {
+        this.open = false;
+        try {
+          getListener().onClosed(this, 1, error.getMessage());
+        } catch (Exception e) {
+          log.error(e.getMessage(), e);
+        }
+      }
     }
   }
 
@@ -131,7 +136,7 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
     log.trace("[{}] onClosed, url: {}, code: {}, reason: {}", getId(), obtainUrl(ws), code, reason);
     boolean opened = this.open;
     this.open = false;
-    if (!opened) {
+    if (opened) {
       getListener().onClosed(this, code, reason);
     }
   }

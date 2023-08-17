@@ -159,8 +159,9 @@ public interface Page {
    * stream: IO.StreamHandle, A handle of the stream that holds resulting PDF data. EXPERIMENTAL
    * }
    */
-  String printToPDF(boolean landscape, boolean displayHeaderFooter, boolean printBackground, double scale, int paperWidth, int paperHeight,
-                    int marginTop, int marginBottom, int marginLeft, int marginRight, String pageRanges, String headerTemplate, String footerTemplate, boolean preferCSSPageSize, TransferMode transferMode, boolean generateTaggedPDF);
+  JSONObject printToPDF(boolean landscape, boolean displayHeaderFooter, boolean printBackground, double scale, double paperWidth, double paperHeight,
+                    int marginTop, int marginBottom, int marginLeft, int marginRight, String pageRanges, String headerTemplate,
+                    String footerTemplate, boolean preferCSSPageSize, TransferMode transferMode, boolean generateTaggedPDF);
 
   /**
    * Reloads given page optionally ignoring the cache.

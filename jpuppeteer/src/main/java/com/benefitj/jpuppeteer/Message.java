@@ -28,6 +28,9 @@ public class Message {
   private long id = last_id.getAndIncrement();
   private String method;
   private Map<String, Object> params = new LinkedHashMap<>();
+  /**
+   * 会话ID
+   */
   private String sessionId;
   /**
    * 本次发送消息返回的结果
