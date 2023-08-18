@@ -78,7 +78,9 @@ public class Chromium implements Launcher {
    * 初始化的对象
    */
   private final Map<Class<? extends ChromiumApi>, Object> apis = new ConcurrentHashMap<>();
-
+  /**
+   * 是否已初始化
+   */
   private volatile boolean initialized = false;
   /**
    * 会话ID
@@ -131,19 +133,19 @@ public class Chromium implements Launcher {
                     throw new IllegalStateException("存在重复的Chromium接口: " + cls.getAnnotation(ChromiumApi.class).value());
                   }
                 } else if (cls.isAnnotationPresent(Event.class)) {
-                  Event cls_event = cls.getAnnotation(Event.class);
+                  Event clsEvent = cls.getAnnotation(Event.class);
                   List<Method> methods = ReflectUtils.getMethods(cls, m -> true);
                   for (Method method : methods) {
                     if (!method.isAnnotationPresent(Event.class)) {
                       throw new IllegalStateException("缺少Event注解: " + method.getDeclaringClass().getName() + "." + method.getName());
                     }
-                    Event m_event = method.getAnnotation(Event.class);
-                    if (StringUtils.isBlank(m_event.value())) {
+                    Event methodEvent = method.getAnnotation(Event.class);
+                    if (StringUtils.isBlank(methodEvent.value())) {
                       throw new IllegalStateException("Event注解[" + method.getDeclaringClass().getName() + "." + method.getName() + "]名称不能为空!");
                     }
-                    List<MessageListener> old = eventListeners.put(cls_event.value() + "." + m_event.value(), new CopyOnWriteArrayList<>());
+                    List<MessageListener> old = eventListeners.put(clsEvent.value() + "." + methodEvent.value(), new CopyOnWriteArrayList<>());
                     if (old != null) {
-                      throw new IllegalStateException("存在重复的事件: " + cls_event.value() + "." + m_event.value() + ", " + cls);
+                      throw new IllegalStateException("存在重复的事件: " + clsEvent.value() + "." + methodEvent.value() + ", " + cls);
                     }
                   }
                 }
@@ -211,6 +213,10 @@ public class Chromium implements Launcher {
     log.trace("ws endpoint: {}", url);
     HttpClient.newWebSocket(socket, url);
     return getBrowser();
+  }
+
+  public void exec(Runnable r) {
+    r.run();
   }
 
   public <T> T getApi(Class<T> type) {
@@ -375,7 +381,6 @@ public class Chromium implements Launcher {
       return null;
     });
   }
-
 
   static class IntervalInterceptor {
 

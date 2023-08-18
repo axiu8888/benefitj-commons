@@ -109,8 +109,10 @@ public class ChromiumTest {
 //        chromium.getEmulation().canEmulate(true);
 //        chromium.getEmulation().setScriptExecutionDisabled(false);
 
-        JSONObject navigate = page.navigate(url, null, Page.TransitionType.link, targetInfo.getTargetId(), Page.ReferrerPolicy.noReferrer);
-        log.info("navigate ==>: {}", navigate);
+        chromium.exec(() -> {
+          JSONObject navigate = page.navigate(url, null, Page.TransitionType.link, targetInfo.getTargetId(), Page.ReferrerPolicy.noReferrer);
+          log.info("navigate ==>: {}", navigate);
+        });
 
         EventLoop.await(500);
         JSONObject pdf = page.printToPDF(false,
