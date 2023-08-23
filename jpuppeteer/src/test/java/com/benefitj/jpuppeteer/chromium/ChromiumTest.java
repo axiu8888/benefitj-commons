@@ -3,14 +3,8 @@ package com.benefitj.jpuppeteer.chromium;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter;
-import com.benefitj.core.EventLoop;
-import com.benefitj.core.IOUtils;
-import com.benefitj.core.NetworkUtils;
-import com.benefitj.core.SystemProperty;
-import com.benefitj.jpuppeteer.BrowserFetcher;
-import com.benefitj.jpuppeteer.Chromium;
-import com.benefitj.jpuppeteer.LauncherOptions;
-import com.benefitj.jpuppeteer.PaperFormats;
+import com.benefitj.core.*;
+import com.benefitj.jpuppeteer.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +18,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -87,6 +82,7 @@ public class ChromiumTest {
 
       Target target = chromium.getTarget();
       target.setDiscoverTargets(true, null);
+      target.setAutoAttach(true, false, true, null);
       JSONObject targets = target.getTargets(null);
       List<Target.TargetInfo> targetInfos = targets.getList("targetInfos", Target.TargetInfo.class);
       log.info("targets: {}", JSON.toJSONString(targetInfos));
@@ -99,48 +95,58 @@ public class ChromiumTest {
 
         JSONObject sessionIdResult = target.attachToTarget(targetInfo.getTargetId(), true);
         String sessionId = sessionIdResult.getString("sessionId");
-        chromium.setSessionId(sessionId);
         Page page = chromium.getPage();
+        chromium.setLocalSessionId(sessionId);
         page.setLifecycleEventsEnabled(true);
         page.enable();
         chromium.getRuntime().enable();
         chromium.getNetwork().enable(null, null, null);
 //        chromium.getNetwork().enable(50L * (1024 << 10), 20L * (1024 << 10), 20L * (1024 << 10));
 //        chromium.getEmulation().canEmulate(true);
-//        chromium.getEmulation().setScriptExecutionDisabled(false);
+        chromium.getEmulation().setScriptExecutionDisabled(false);
+
+        CountDownLatch latch = new CountDownLatch(1);
+        chromium.once(new MessageListener.MatchMessageListener() {
+          @Override
+          public void onHandle(String method, JSONObject msg) {
+            //EventLoop.await(500);
+            JSONObject pdf = page.printToPDF(false,
+                true,
+                true,
+                1.0,
+                PaperFormats.a4.width,
+                PaperFormats.a4.height,
+                0,
+                0,
+                0,
+                0,
+                "",
+                "",
+                "",
+                false,
+                Page.TransferMode.ReturnAsBase64,
+                true
+            );
+            log.info("pdf ==>: \n{}", pdf);
+            latch.countDown();
+          }
+
+          @Override
+          public boolean match(String method, JSONObject msg) {
+            return method.equalsIgnoreCase("Page.frameStoppedLoading");
+          }
+        });
 
         chromium.exec(() -> {
           JSONObject navigate = page.navigate(url, null, Page.TransitionType.link, targetInfo.getTargetId(), Page.ReferrerPolicy.noReferrer);
           log.info("navigate ==>: {}", navigate);
         });
-
-        EventLoop.await(500);
-        JSONObject pdf = page.printToPDF(false,
-            true,
-            true,
-            1.0,
-            PaperFormats.a4.width,
-            PaperFormats.a4.height,
-            0,
-            0,
-            0,
-            0,
-            "",
-            "",
-            "",
-            false,
-            Page.TransferMode.ReturnAsBase64,
-            true
-        );
-        log.info("pdf ==>: \n{}", pdf);
-
+        CatchUtils.ignore(() -> latch.await(3, TimeUnit.SECONDS));
 
 //        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 //        JSONObject targetId = target.createTarget(targetInfo.getTargetId(), screenSize.width, screenSize.height
 //            , targetInfo.getBrowserContextId(), true, true, true, true);
 //        log.info("targetId: {}", targetId);
-
-
       }
       log.error("start await...");
       EventLoop.await(20, TimeUnit.SECONDS);

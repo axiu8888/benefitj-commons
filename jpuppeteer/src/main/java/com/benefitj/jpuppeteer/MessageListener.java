@@ -64,5 +64,35 @@ public interface MessageListener {
 
   }
 
+  class OnceMessageListener implements MessageListener {
+
+    final Chromium chromium;
+    final MessageListener listener;
+
+    public OnceMessageListener(Chromium chromium, MessageListener listener) {
+      this.chromium = chromium;
+      this.listener = listener;
+    }
+
+    @Override
+    public void onMessage(String method, JSONObject msg) {
+      try {
+        listener.onMessage(method, msg);
+      } finally {
+        chromium.unregister(this);
+      }
+    }
+
+    @Override
+    public int hashCode() {
+      return listener.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      return listener.equals(obj);
+    }
+  }
+
 }
 

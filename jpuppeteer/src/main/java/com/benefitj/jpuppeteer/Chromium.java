@@ -85,7 +85,9 @@ public class Chromium implements Launcher {
   /**
    * 会话ID
    */
-  private String sessionId;
+  private final List<String> sessionIds = new ArrayList<>();
+
+  private final ThreadLocal<String> sessionIdLocal = ThreadLocal.withInitial(() -> !sessionIds.isEmpty() ? sessionIds.get(0) : null);
 
   public Chromium() {
   }
@@ -106,12 +108,18 @@ public class Chromium implements Launcher {
     return call;
   }
 
-  public void setSessionId(String sessionId) {
-    this.sessionId = sessionId;
+  void addSessionId(String sessionId) {
+    if (StringUtils.isNotBlank(sessionId) && !sessionIds.contains(sessionId)) {
+      sessionIds.add(sessionId);
+    }
   }
 
-  public String getSessionId() {
-    return sessionId;
+  public void setLocalSessionId(String sessionId) {
+    this.sessionIdLocal.set(sessionId);
+  }
+
+  public String getLocalSessionId() {
+    return sessionIdLocal.get();
   }
 
   protected void loadApis() {
@@ -223,48 +231,64 @@ public class Chromium implements Launcher {
     return (T) apis.get(type);
   }
 
+  /**
+   * {@link Browser}
+   */
   public Browser getBrowser() {
     return getApi(Browser.class);
   }
 
+  /**
+   * {@link Target}
+   */
   public Target getTarget() {
     return getApi(Target.class);
   }
 
+  /**
+   * {@link Page}
+   */
   public Page getPage() {
     return getApi(Page.class);
   }
 
   /**
-   * 获取运行时
+   * {@link Runtime}
    */
   public Runtime getRuntime() {
     return getApi(Runtime.class);
   }
 
   /**
-   * 获取网络
+   * {@link Network}
    */
   public Network getNetwork() {
     return getApi(Network.class);
   }
 
   /**
-   * Emulation
+   * {@link Emulation}
    */
   public Emulation getEmulation() {
     return getApi(Emulation.class);
   }
 
   /**
-   * Debugger
+   * {@link Performance}
+   */
+  public Performance getPerformance() {
+    return getApi(Performance.class);
+  }
+
+  /**
+   * {@link Debugger}
    */
   public Debugger getDebugger() {
     return getApi(Debugger.class);
   }
 
   /**
-   * DeviceAccess
+   * {@link DeviceAccess}
    */
   public DeviceAccess getDeviceAccess() {
     return getApi(DeviceAccess.class);
@@ -307,6 +331,13 @@ public class Chromium implements Launcher {
   }
 
   /**
+   * 一次性监听
+   */
+  public void once(MessageListener listener) {
+    register(new MessageListener.OnceMessageListener(this, listener));
+  }
+
+  /**
    * 创建代理对象
    *
    * @param chromium Chromium对象
@@ -320,65 +351,69 @@ public class Chromium implements Launcher {
       if (methods.contains(method.getName())) {
         return null;
       }
-      if (method.isAnnotationPresent(Event.class)) {
-        throw new IllegalStateException("不支持直接调用Event函数: " + method.getName());
-      }
-
-      DevtoolSocket socket = chromium.socket;
-      if (!socket.isOpen()) {
-        socket.reconnect();
-        long start = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - start) < 2_000) {
-          // 让出5毫秒，等待连接成功
-          EventLoop.await(5);
-          if (socket.isOpen()) {
-            break;
-          }
+      try {
+        if (method.isAnnotationPresent(Event.class)) {
+          throw new IllegalStateException("不支持直接调用Event函数: " + method.getName());
         }
+
+        DevtoolSocket socket = chromium.socket;
         if (!socket.isOpen()) {
-          throw new IllegalStateException("socket客户端已断开连接!");
-        }
-      }
-      Message msg = new Message();
-      chromium.msgLocal.set(msg);
-      msg.setSessionId(chromium.getSessionId());
-      msg.setMethod(type.getSimpleName() + "." + method.getName());
-      msg.getParams().putAll(ReflectUtils.getParameterValues(method.getParameters(), args));
-      msg.setLatch(new CountDownLatch(1));
-      log.info("[BEFORE] {}.{}({}), id: {}", type.getSimpleName(), method.getName()
-          , (args == null || args.length == 0) ? "" : JSON.toJSONString(msg.getParams())
-          , msg.getId()
-      );
-      chromium.messages.put(msg.getId(), msg);
-      socket.send(JSON.toJSONString(msg));
-      if (!method.isAnnotationPresent(NoAwait.class)) {
-        msg.getLatch().await();
-      }
-      JSONObject result = msg.getResult();
-      if (result != null) {
-        Class<?> returnType = method.getReturnType();
-        if (returnType != void.class) {
-          log.info("[AFTER] {}.{}({}), id: {}, result: {}", type.getSimpleName(), method.getName()
-              , (args == null || args.length == 0) ? "" : JSON.toJSONString(msg.getParams())
-              , msg.getId()
-              , msg.getResult()
-          );
-          if (JSONObject.class.isAssignableFrom(returnType)) {
-            return result;
+          socket.reconnect();
+          long start = System.currentTimeMillis();
+          while ((System.currentTimeMillis() - start) < 2_000) {
+            // 让出5毫秒，等待连接成功
+            EventLoop.await(5);
+            if (socket.isOpen()) {
+              break;
+            }
           }
-          return result.toJavaObject(returnType);
+          if (!socket.isOpen()) {
+            throw new IllegalStateException("socket客户端已断开连接!");
+          }
         }
-        if (!result.isEmpty()) {
-          log.info("出错了? {}", msg);
+        Message msg = new Message();
+        chromium.msgLocal.set(msg);
+        msg.setSessionId(chromium.getLocalSessionId());
+        msg.setMethod(type.getSimpleName() + "." + method.getName());
+        msg.getParams().putAll(ReflectUtils.getParameterValues(method.getParameters(), args));
+        msg.setLatch(new CountDownLatch(1));
+        log.info("[BEFORE] {}.{}({}), id: {}", type.getSimpleName(), method.getName()
+            , (args == null || args.length == 0) ? "" : JSON.toJSONString(msg.getParams())
+            , msg.getId()
+        );
+        chromium.messages.put(msg.getId(), msg);
+        socket.send(JSON.toJSONString(msg));
+        if (!method.isAnnotationPresent(NoAwait.class)) {
+          msg.getLatch().await();
         }
-      }
+        JSONObject result = msg.getResult();
+        if (result != null) {
+          Class<?> returnType = method.getReturnType();
+          if (returnType != void.class) {
+            log.info("[AFTER] {}.{}({}), id: {}, result: {}", type.getSimpleName(), method.getName()
+                , (args == null || args.length == 0) ? "" : JSON.toJSONString(msg.getParams())
+                , msg.getId()
+                , msg.getResult()
+            );
+            if (JSONObject.class.isAssignableFrom(returnType)) {
+              return result;
+            }
+            return result.toJavaObject(returnType);
+          }
+          if (!result.isEmpty()) {
+            log.info("出错了? {}", msg);
+          }
+        }
 
-      Message.Error error = msg.getError();
-      if (error != null) {
-        throw new IllegalStateException(error.getMessage()
-            + (StringUtils.isNotBlank(error.getData()) ? ", " + error.getData() : ""));
+        Message.Error error = msg.getError();
+        if (error != null) {
+          throw new IllegalStateException(error.getMessage()
+              + (StringUtils.isNotBlank(error.getData()) ? ", " + error.getData() : ""));
+        }
+        return null;
+      } finally {
+        chromium.sessionIdLocal.remove();
       }
-      return null;
     });
   }
 
@@ -419,6 +454,7 @@ public class Chromium implements Launcher {
       boolean intercepted = chromium.interceptor.intercept(method, json);
       try {
         Long id = json.getLong("id");
+        chromium.addSessionId(json.getString("sessionId"));
         Message msg = chromium.messages.remove(id != null ? id : -1);
         if (msg != null) {
           msg.setRawResponse(json);
@@ -426,6 +462,9 @@ public class Chromium implements Launcher {
           JSONObject error = json.getJSONObject("error");
           if (error != null) {
             msg.setError(error.toJavaObject(Message.Error.class));
+          }
+          if (msg.getResult() != null) {
+            chromium.addSessionId(msg.getResult().getString("sessionId"));
           }
           msg.getLatch().countDown();
         }
@@ -463,5 +502,6 @@ public class Chromium implements Launcher {
       log.info("[Chromium] onClosed, code: {}, reason: {}", code, reason);
     }
   }
+
 
 }
