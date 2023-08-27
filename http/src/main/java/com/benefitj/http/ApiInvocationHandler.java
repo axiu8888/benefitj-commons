@@ -76,7 +76,9 @@ public interface ApiInvocationHandler<T> {
           }
         }
         return value;
-      } else if (value instanceof Flowable) {
+      }
+
+      if (value instanceof Flowable) {
         SchedulerOn schedulerOn = method.getAnnotation(SchedulerOn.class);
         if (schedulerOn != null) {
           Scheduler observeOn = schedulerOn.observeOn().getScheduler();

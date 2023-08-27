@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.net.SocketException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 连接的客户端
@@ -20,6 +22,8 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
   private static final Logger log = LoggerFactory.getLogger(WebSocketImpl.class);
 
   private final String id = IdUtils.uuid();
+
+  private final Map<String, Object> attrs = new ConcurrentHashMap<>();
 
   private okhttp3.WebSocket raw;
   private WebSocketListener listener;
@@ -161,6 +165,11 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
   public String getUrl() {
     okhttp3.WebSocket raw = getRaw();
     return raw != null ? raw.request().url().toString() : null;
+  }
+
+  @Override
+  public Map<String, Object> attrs() {
+    return attrs;
   }
 
   @Override

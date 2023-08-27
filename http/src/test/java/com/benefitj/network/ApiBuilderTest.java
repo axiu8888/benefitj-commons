@@ -9,7 +9,7 @@ import com.benefitj.core.file.IWriter;
 import com.benefitj.core.file.PathWatcher;
 import com.benefitj.http.*;
 import io.reactivex.Observable;
-import junit.framework.TestCase;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
 import okhttp3.HttpUrl;
 import okhttp3.RequestBody;
@@ -20,8 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -42,9 +40,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ApiBuilderTest extends TestCase {
-
-  private Logger log = LoggerFactory.getLogger(getClass());
+@Slf4j
+public class ApiBuilderTest {
 
   private ServiceApi api;
 
@@ -53,6 +50,9 @@ public class ApiBuilderTest extends TestCase {
         , ServiceApi.BASE_URL
         , builder -> builder.setLogLevel(HttpLoggingInterceptor.Level.NONE)
     );
+  }
+
+  public void tearDown() throws Exception {
   }
 
   @Test
@@ -524,9 +524,45 @@ public class ApiBuilderTest extends TestCase {
     System.err.println(province.values());
   }
 
-  public void tearDown() throws Exception {
-  }
+  @Test
+  public void test_WebSocket() {
+    String url = "http://127.0.0.1:80/api/sockets/producer";
+    WebSocket socket = HttpClient.newWebSocket(url, new WebSocketListener() {
+      @Override
+      public void onOpen(WebSocket socket, okhttp3.Response response) {
+        log.info("onOpen...");
+      }
 
+      @Override
+      public void onMessage(WebSocket socket, String text) {
+        log.info("onMessage, text: {}", text);
+      }
+
+      @Override
+      public void onMessage(WebSocket socket, ByteString bytes) {
+        log.info("onMessage, bytes: {}", HexUtils.bytesToHex(bytes.toByteArray()));
+      }
+
+      @Override
+      public void onClosing(WebSocket socket, int code, String reason) {
+        log.info("onClosing, code: {}, reason: {}", code, reason);
+      }
+
+      @Override
+      public void onClosed(WebSocket socket, int code, String reason) {
+        log.info("onClosed, code: {}, reason: {}", code, reason);
+      }
+
+      @Override
+      public void onFailure(WebSocket socket, Throwable error, okhttp3.Response response) {
+        log.error("onFailure, " + error.getMessage(), error.getCause());
+      }
+    });
+
+    EventLoop.await(120, TimeUnit.SECONDS);
+    socket.close();
+
+  }
 
   interface ServiceApi {
 
