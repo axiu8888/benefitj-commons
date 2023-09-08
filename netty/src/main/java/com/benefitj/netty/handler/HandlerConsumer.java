@@ -13,6 +13,10 @@ public interface HandlerConsumer<T> {
     ctx.fireChannelInactive();
   }
 
+  default void userEventTriggered(T handler, ChannelHandlerContext ctx, Object evt) {
+    ctx.fireUserEventTriggered(evt);
+  }
+
   default void exceptionCaught(T handler, ChannelHandlerContext ctx, Throwable cause) throws Exception {
     ctx.fireExceptionCaught(cause);
   }

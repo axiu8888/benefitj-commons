@@ -80,6 +80,11 @@ public abstract class OutboundHandler<I> extends SimpleCopyHandler<I> {
       }
 
       @Override
+      public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        consumer.userEventTriggered(this, ctx, evt);
+      }
+
+      @Override
       public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         consumer.exceptionCaught(this, ctx, cause);
       }
