@@ -12,7 +12,7 @@ import io.netty.channel.socket.DatagramPacket;
  * @param <I>
  */
 @ChannelHandler.Sharable
-public abstract class OutboundHandler<I> extends SimpleByteBufHandler<I> {
+public abstract class OutboundHandler<I> extends SimpleCopyHandler<I> {
 
   public OutboundHandler() {
   }
@@ -66,7 +66,22 @@ public abstract class OutboundHandler<I> extends SimpleByteBufHandler<I> {
     return new OutboundHandler<T>(type) {
       @Override
       protected void channelWrite0(ChannelHandlerContext ctx, T msg, ChannelPromise promise) {
-        consumer.accept(this, ctx, msg, promise);
+        consumer.channelWrite0(this, ctx, msg, promise);
+      }
+
+      @Override
+      public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        consumer.channelActive(this, ctx);
+      }
+
+      @Override
+      public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        consumer.channelInactive(this, ctx);
+      }
+
+      @Override
+      public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        consumer.exceptionCaught(this, ctx, cause);
       }
     };
   }

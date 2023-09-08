@@ -12,27 +12,27 @@ import io.netty.util.internal.TypeParameterMatcher;
  *
  * @param <I>
  */
-public abstract class ByteBufCopyHandler<I> extends ChannelDuplexHandler implements ByteBufCopy {
+public abstract class AbstractCopyHandler<I> extends ChannelDuplexHandler implements ByteBufCopy {
 
   private final ByteBufCopy cache = ByteBufCopy.newByteBufCopy();
 
   private final TypeParameterMatcher matcher;
   private final boolean autoRelease;
 
-  public ByteBufCopyHandler() {
+  public AbstractCopyHandler() {
     this(true);
   }
 
-  public ByteBufCopyHandler(boolean autoRelease) {
+  public AbstractCopyHandler(boolean autoRelease) {
     matcher = TypeParameterMatcher.find(this, SimpleChannelInboundHandler.class, "I");
     this.autoRelease = autoRelease;
   }
 
-  public ByteBufCopyHandler(Class<? extends I> inboundMessageType) {
+  public AbstractCopyHandler(Class<? extends I> inboundMessageType) {
     this(inboundMessageType, true);
   }
 
-  public ByteBufCopyHandler(Class<? extends I> inboundMessageType, boolean autoRelease) {
+  public AbstractCopyHandler(Class<? extends I> inboundMessageType, boolean autoRelease) {
     matcher = TypeParameterMatcher.get(inboundMessageType);
     this.autoRelease = autoRelease;
   }

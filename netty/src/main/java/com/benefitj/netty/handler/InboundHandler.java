@@ -11,7 +11,7 @@ import io.netty.channel.socket.DatagramPacket;
  * @param <I>
  */
 @ChannelHandler.Sharable
-public abstract class InboundHandler<I> extends SimpleByteBufHandler<I> {
+public abstract class InboundHandler<I> extends SimpleCopyHandler<I> {
 
   public InboundHandler() {
   }
@@ -43,7 +43,22 @@ public abstract class InboundHandler<I> extends SimpleByteBufHandler<I> {
     return new InboundHandler<T>(type, true) {
       @Override
       protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
-        consumer.accept(this, ctx, msg);
+        consumer.channelRead0(this, ctx, msg);
+      }
+
+      @Override
+      public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        consumer.channelActive(this, ctx);
+      }
+
+      @Override
+      public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        consumer.channelInactive(this, ctx);
+      }
+
+      @Override
+      public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        consumer.exceptionCaught(this, ctx, cause);
       }
     };
   }

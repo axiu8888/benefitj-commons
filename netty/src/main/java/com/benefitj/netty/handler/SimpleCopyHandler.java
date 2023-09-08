@@ -3,20 +3,20 @@ package com.benefitj.netty.handler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 
-public abstract class SimpleByteBufHandler<I> extends ByteBufCopyHandler<I> {
+public abstract class SimpleCopyHandler<I> extends AbstractCopyHandler<I> {
 
-  public SimpleByteBufHandler() {
+  public SimpleCopyHandler() {
   }
 
-  public SimpleByteBufHandler(boolean autoRelease) {
+  public SimpleCopyHandler(boolean autoRelease) {
     super(autoRelease);
   }
 
-  public SimpleByteBufHandler(Class<? extends I> inboundMessageType) {
+  public SimpleCopyHandler(Class<? extends I> inboundMessageType) {
     super(inboundMessageType);
   }
 
-  public SimpleByteBufHandler(Class<? extends I> inboundMessageType, boolean autoRelease) {
+  public SimpleCopyHandler(Class<? extends I> inboundMessageType, boolean autoRelease) {
     super(inboundMessageType, autoRelease);
   }
 

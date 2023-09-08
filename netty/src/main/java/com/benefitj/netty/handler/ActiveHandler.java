@@ -8,7 +8,7 @@ import io.netty.channel.ChannelHandlerContext;
  * 监听 Channel 的状态
  */
 @ChannelHandler.Sharable
-public class ActiveHandler extends SimpleByteBufHandler<Object> {
+public class ActiveHandler extends SimpleCopyHandler<Object> {
 
   private ActiveStateListener listener;
 

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * 打印日志
  */
 @ChannelHandler.Sharable
-public class LoggingHandler extends SimpleByteBufHandler<ByteBuf> {
+public class LoggingHandler extends SimpleCopyHandler<ByteBuf> {
 
   public static final LoggingHandler INSTANCE = new LoggingHandler(50, true);
 

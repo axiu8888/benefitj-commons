@@ -2,6 +2,8 @@ package com.benefitj.frameworks;
 
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.IOUtils;
+import com.benefitj.core.Utils;
+import lombok.extern.slf4j.Slf4j;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
 import org.junit.Test;
@@ -15,6 +17,7 @@ import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+@Slf4j
 public class ApkParserTest extends BaseTest {
 
   @Override
@@ -27,9 +30,7 @@ public class ApkParserTest extends BaseTest {
 
   @Test
   public void testParse() throws IOException {
-//    File apk = new File("D:\\home\\47\\app-FREE-V1.2.159.20221111.apk");
-    File apk = new File("D:\\tmp\\Coolapk-12.5.2-2211031-coolapk-app-sign.apk");
-
+    File apk = new File("D:/tmp/伤员转运-230815.apk");
     if (apk.exists() && apk.isFile()) {
       ApkFile apkFile = new ApkFile(apk);
       ApkMeta apkMeta = apkFile.getApkMeta();
@@ -39,7 +40,7 @@ public class ApkParserTest extends BaseTest {
       System.out.println("包名\t: " + apkMeta.getPackageName());
       System.out.println("版本号\t: " + apkMeta.getVersionName());
       System.out.println("图标\t: " + apkMeta.getIcon());
-      System.out.println("大小\t: " + (double) (apk.length() * 100 / 1024 / 1024) / 100 + " MB");
+      System.out.println("大小\t: " + Utils.fmtMB(apk.length(), "0.00 MB"));
       //  System.out.println("全部       :===============================");
       //  System.out.println(apkMeta.toString());
 
@@ -67,7 +68,7 @@ public class ApkParserTest extends BaseTest {
         .min((o1, o2) -> -Long.compare(o1.getSize(), o2.getSize()))
         .orElse(null);
     System.err.println("icon.name: " + iconEntry.getName());
-    System.err.println("icon.size: " + iconEntry.getSize());
+    System.err.println("icon.size: " + Utils.fmtKB(iconEntry.getSize(), "0.00 KB"));
     System.err.println("icon.time: " + DateFmtter.fmt(iconEntry.getTime()));
     IOUtils.write(zf.getInputStream(iconEntry), IOUtils.createFile(apk.getParentFile(), iconEntry.getName()), true);
 

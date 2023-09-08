@@ -9,7 +9,7 @@ import io.netty.channel.socket.ChannelOutputShutdownEvent;
  * 处理输入或输出关闭的事件
  */
 @ChannelHandler.Sharable
-public class ShutdownEventHandler extends SimpleByteBufHandler<Object> {
+public class ShutdownEventHandler extends SimpleCopyHandler<Object> {
 
   public static final ShutdownEventHandler INSTANCE = new ShutdownEventHandler();
 

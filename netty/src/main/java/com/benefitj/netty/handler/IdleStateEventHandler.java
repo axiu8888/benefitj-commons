@@ -8,7 +8,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import java.util.concurrent.TimeUnit;
 
 @ChannelHandler.Sharable
-public class IdleStateEventHandler extends SimpleByteBufHandler<Object> {
+public class IdleStateEventHandler extends SimpleCopyHandler<Object> {
 
   /**
    * 事件监听

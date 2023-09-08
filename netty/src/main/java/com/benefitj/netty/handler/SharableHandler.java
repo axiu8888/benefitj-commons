@@ -8,5 +8,5 @@ import io.netty.channel.ChannelHandler;
  * @param <I>
  */
 @ChannelHandler.Sharable
-public abstract class SharableHandler<I> extends SimpleByteBufHandler<I> {
+public abstract class SharableHandler<I> extends SimpleCopyHandler<I> {
 }

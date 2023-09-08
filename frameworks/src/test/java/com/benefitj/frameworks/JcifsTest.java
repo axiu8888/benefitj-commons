@@ -3,7 +3,6 @@ package com.benefitj.frameworks;
 import com.benefitj.core.TimeUtils;
 import com.benefitj.frameworks.smb.Jsmb;
 import com.benefitj.frameworks.smb.JsmbFile;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -50,7 +49,6 @@ public class JcifsTest extends BaseTest {
 
   @SuperBuilder
   @NoArgsConstructor
-  @AllArgsConstructor
   @Data
   public static class JsmbFileInfo {
 
