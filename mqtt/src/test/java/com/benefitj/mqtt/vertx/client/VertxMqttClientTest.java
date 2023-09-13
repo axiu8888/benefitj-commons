@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,41 +23,37 @@ public class VertxMqttClientTest {
 
   @Before
   public void setUp() throws Exception {
-    final CountDownLatch latch = new CountDownLatch(1);
     VertxHolder.deploy(client = new VertxMqttClient()
         .setHandler(dispatcher)
         .setInitializer(verticle -> {
           // 初始化
         })
-        .setAutoConnectTimer(new AutoConnectTimer(true).setPeriod(10))
-        .setRemoteAddress("127.0.0.1", 1883))
+        .setAutoConnectTimer(new AutoConnectTimer(true).setPeriod(5))
+//        .setRemoteAddress("127.0.0.1", 1883))
 //        .setRemoteAddress("192.168.85.128", 1883))
+        .setRemoteAddress("192.168.1.198", 1883))
         .onComplete(event -> {
-          latch.countDown();
           log.info("deploy: {}", event.result());
         });
-
-    latch.await();
-
-    EventLoop.await(1, TimeUnit.SECONDS);
+    for (int i = 0; i < 5; i++) {
+      if (client.isConnected()) {
+        return;
+      } else {
+        EventLoop.await(1, TimeUnit.SECONDS);
+      }
+    }
   }
 
   @Test
   public void testPublish() {
-    for (;;) {
-      if (client.isConnected()) {
-        client.publish("/message/hello", "Hello World !", MqttQoS.AT_LEAST_ONCE
-            , event -> log.info("publish  {}, {}", event.result(), event.succeeded()));
-        break;
-      }
-    }
-    EventLoop.await(1, TimeUnit.SECONDS);
+    client.publish("/message/hello", "Hello World !", MqttQoS.AT_LEAST_ONCE
+        , event -> log.info("publish  {}, {}", event.result(), event.succeeded()));
   }
 
   @Test
   public void testSubscribe() {
     // 订阅消息
-    dispatcher.subscribe("/message/#", (topicName, message) ->
+    dispatcher.subscribe("save/#", (topicName, message) ->
         log.info("rcv topic[{}], msg: {}", topicName, message.payload().toString()));
 
     EventLoop.await(120, TimeUnit.SECONDS);

@@ -1,9 +1,9 @@
 package com.benefitj.netty;
 
+import com.benefitj.core.functions.IConsumer;
 import io.netty.bootstrap.AbstractBootstrap;
 import io.netty.bootstrap.AbstractBootstrapConfig;
 import io.netty.channel.*;
-import io.netty.channel.ChannelFactory;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -248,7 +248,7 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
    * @param c 消费者回调
    * @return 返回是否使用了通道
    */
-  boolean useServeChannel(NettyConsumer<Channel> c);
+  boolean useServeChannel(IConsumer<Channel> c);
 
   /**
    * 是否已启动

@@ -43,7 +43,14 @@ public class MqttTopic {
     if (parts.length <= index) {
       return null;
     }
-    Node current = new Node(parts[index], prev, null, index);
+    String part = parts[index].trim();
+    if (part.contains("#") || part.contains("+")) {
+      String part2 = part.trim();
+      if (!(part2.equals("#") || part2.equals("+"))) {
+        throw new IllegalStateException("错误的主题片段: " + part);
+      }
+    }
+    Node current = new Node(part, prev, null, index);
     current.setPrev(prev);
     Node next = recursiveNode(parts, ++index, current);
     current.setNext(next);

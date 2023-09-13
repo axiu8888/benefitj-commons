@@ -400,7 +400,7 @@ public class CmdExecutor {
         CountDownLatch latch = new CountDownLatch(2);
         executor.execute(() -> {
           try {
-            IOUtils.readLines(pipeReader, line -> {
+            IOUtils.readLines(pipeReader, (line, index) -> {
               msgLines.add(line);
               cb.onMessage(call, msgLines, line, false);
             });
@@ -410,7 +410,7 @@ public class CmdExecutor {
         });
         executor.execute(() -> {
           try {
-            IOUtils.readLines(errorReader, line -> {
+            IOUtils.readLines(errorReader, (line, index) -> {
               errLines.add(line);
               cb.onMessage(call, errLines, line, true);
             });

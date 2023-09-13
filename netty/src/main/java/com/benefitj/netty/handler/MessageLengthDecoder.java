@@ -1,7 +1,7 @@
 package com.benefitj.netty.handler;
 
+import com.benefitj.core.HexUtils;
 import com.benefitj.netty.ByteBufCopy;
-import com.benefitj.netty.NettyUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -154,7 +154,7 @@ public class MessageLengthDecoder extends ByteToMessageDecoder implements ByteBu
     if (validator != null) {
       return validator.isHead(head, segment, start);
     }
-    return head.length == 0 || NettyUtils.match(head, segment, start);
+    return head.length == 0 || HexUtils.isEquals(head, segment, start);
   }
 
   /**
@@ -166,7 +166,7 @@ public class MessageLengthDecoder extends ByteToMessageDecoder implements ByteBu
    * @return 返回是否丢弃数据
    */
   protected boolean isDiscard(byte[] head, byte[] segment, int start) {
-    return head.length == 0 || !NettyUtils.match(head, segment, start);
+    return head.length == 0 || !HexUtils.isEquals(head, segment, start);
   }
 
   /**

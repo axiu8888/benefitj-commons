@@ -493,10 +493,13 @@ public class ApiBuilderTest {
   public void testDownloadApk() {
     long start = TimeUtils.now();
 //    String url = "http://192.168.1.47/api/app/download?id=969f7a19751d4c0e91519e9eebfeb067";
-    String url = "http://192.168.1.47/api/app/download?id=fad84b9e98814482b86398ee22ba8632";
+//    String url = "http://192.168.1.47/api/app/download?id=fad84b9e98814482b86398ee22ba8632";
+    String url = "http://192.168.1.198/support/api/statistics/analyse?startTime=&endTime=&category=age&items=&export=true";
     okhttp3.Response response = HttpHelper.get()
         .setLogLevel(HttpLoggingInterceptor.Level.BODY)
-        .get(url);
+        .get(url, new HashMap(){{
+          put("X-Access-Token", "eyJhbGciOiJIUzUxMiJ9.eyJkZXBhcnRzIjoiW1wiZjgyYWU3ODcyOThmNDQ1NGI4NGMxODMyMzNlMDE0MGJcIixcIjcyYjI3N2ZmODU2ODQ2ZDU5MzJkZDhlZjc3NDBjZGU2XCIsXCJmNjIyY2U3YzdhYTA0ZjYyOTY5ZWFlZDkxNWIwZGQwY1wiLFwiNmRmNTlmM2QxMjMxNDA4ZWI0YzMyZWQxNTMxOGI5OGZcIixcIjVlODlkYTdlYzZhZjQ2OWRhZWIzZTIyNmMzNTU2NTUyXCJdIiwib3JnSWQiOiJmODJhZTc4NzI5OGY0NDU0Yjg0YzE4MzIzM2UwMTQwYiIsInJvb3RPcmdJZCI6IjkwNDJlNGQ2MmI0OTQxMWJhNzkxNmQyOGMyNzVmYmY2IiwianRpIjoiMGJlYzNmZGU4ZDAzNDNhOGJkY2VkNDFmZWFjZmU4OGMiLCJzdWIiOiI3MDI0YWVjZDBiNDc2YTRiMDY2N2Q4YzdjODMxMjc2NCIsImlzcyI6ImhzcmciLCJpYXQiOjE2OTQ0MjQ3MDgsImV4cCI6MTY5NTAyOTUwOH0.zg-OmvG0TuVHHm3Jed-FvDDxbTd1QRnp7qZeBcUuWtYlqz2mO-TwbFWb95HoWkxBXgNNGKyKm87O817o_560yg");
+    }});
     if (response.isSuccessful()) {
       log.info("headers ==>: \n{}", response.headers());
       String filename = BodyUtils.getFilename(response.headers(), IdUtils.uuid() + ".apk");

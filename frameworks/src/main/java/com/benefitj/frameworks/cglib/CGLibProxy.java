@@ -112,6 +112,9 @@ public class CGLibProxy implements MethodInterceptor {
 
   /**
    * 创建代理
+   * <p>
+   * 在高版本JDK上，需要添加 --add-opens java.base/java.lang=ALL-UNNAMED 启动参数
+   * 参考: https://blog.csdn.net/FatalFlower/article/details/122589921
    *
    * @param superclass  父类
    * @param interfaces  接口
@@ -119,6 +122,8 @@ public class CGLibProxy implements MethodInterceptor {
    * @return 返回创建的代理对象
    */
   public static <T> T newProxy(Class<?> superclass, Class<?>[] interfaces, MethodInterceptor interceptor) {
+    // TODO 在高版本JDK上(15以上)，需要添加 --add-opens java.base/java.lang=ALL-UNNAMED 启动参数
+    // 参考: https://blog.csdn.net/FatalFlower/article/details/122589921
     Enhancer enhancer = new Enhancer();
     if (interfaces != null && interfaces.length > 0) {
       // 接口过滤

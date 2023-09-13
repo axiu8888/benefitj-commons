@@ -1,5 +1,6 @@
 package com.benefitj.netty;
 
+import com.benefitj.core.functions.IConsumer;
 import io.netty.bootstrap.AbstractBootstrap;
 import io.netty.bootstrap.AbstractBootstrapConfig;
 import io.netty.bootstrap.Bootstrap;
@@ -394,7 +395,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   }
 
   @Override
-  public boolean useServeChannel(NettyConsumer<Channel> c) {
+  public boolean useServeChannel(IConsumer<Channel> c) {
     final Channel channel = getServeChannel();
     if (channel != null) {
       try {

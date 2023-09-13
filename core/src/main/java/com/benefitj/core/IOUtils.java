@@ -1,7 +1,6 @@
 package com.benefitj.core;
 
 import com.benefitj.core.functions.IBiConsumer;
-import com.benefitj.core.functions.IConsumer;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -473,7 +472,7 @@ public class IOUtils {
    * @param file     文件
    * @param consumer 处理回调
    */
-  public static void readLines(File file, IConsumer<String> consumer) {
+  public static void readLines(File file, IBiConsumer<String, Integer> consumer) {
     try (final FileReader reader = new FileReader(file);) {
       readLines(reader, false, consumer);
     } catch (IOException e) {
@@ -487,7 +486,7 @@ public class IOUtils {
    * @param reader   输入
    * @param consumer 处理回调
    */
-  public static void readLines(Reader reader, IConsumer<String> consumer) {
+  public static void readLines(Reader reader, IBiConsumer<String, Integer> consumer) {
     readLines(reader, true, consumer);
   }
 
@@ -498,12 +497,14 @@ public class IOUtils {
    * @param close    是否关闭流
    * @param consumer 处理回调
    */
-  public static void readLines(Reader reader, boolean close, IConsumer<String> consumer) {
+  public static void readLines(Reader reader, boolean close, IBiConsumer<String, Integer> consumer) {
     final BufferedReader br = wrapReader(reader);
     try {
       String line;
+      int index = 0;
       while ((line = br.readLine()) != null) {
-        consumer.accept(line);
+        consumer.accept(line, index);
+        index++;
       }
     } catch (Exception e) {
       throw throwing(e, IllegalStateException.class);
@@ -521,7 +522,7 @@ public class IOUtils {
    */
   public static List<String> readLines(Reader reader) {
     List<String> lines = new LinkedList<>();
-    readLines(reader, lines::add);
+    readLines(reader, (str, num) -> lines.add(str));
     return lines;
   }
 
@@ -597,7 +598,8 @@ public class IOUtils {
     if (exists(file)) {
       final FileInputStream fis = newFIS(file);
       try {
-        return readFully(fis).toString(charset);
+        ByteArrayOutputStream baos = readFully(fis);
+        return new String(baos.toByteArray(), charset);
       } finally {
         closeQuietly(fis);
       }
