@@ -831,7 +831,7 @@ public class BinaryHelper {
    */
   public String bytesToHex(byte[] bin, HexConsumer consumer) {
     if (isEmpty(bin)) {
-      return null;
+      return "";
     }
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < bin.length; i++) {

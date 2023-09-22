@@ -1,0 +1,7 @@
+
+apply from: "${scriptFile}"
+
+dependencies {
+	api project(":core")
+	api project(":all")
+}

@@ -31,3 +31,6 @@ include ":javastruct"       // java结构体转换
 include ":jdbc"             // jdbc
 include ":jpuppeteer"       // chromium puppeteer
 include ":all"              // 全部的依赖
+
+// 测试demo
+include ":others"            // 其他测试

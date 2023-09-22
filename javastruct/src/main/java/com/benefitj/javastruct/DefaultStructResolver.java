@@ -18,7 +18,7 @@ public class DefaultStructResolver implements StructResolver {
   public StructClass resolve(JavaStructManager manager, Class<?> type) {
     JavaStructClass jsc = type.getAnnotation(JavaStructClass.class);
     if (jsc == null) {
-      throw new IllegalStateException("不支持的结构类[" + type + "]，请使用@ClassStruct注释！");
+      throw new IllegalStateException("不支持的结构类[" + type + "]，请使用@JavaStructClass注释！");
     }
 
     Instantiator instantiator = manager.findInstantiator(jsc.instantiator());

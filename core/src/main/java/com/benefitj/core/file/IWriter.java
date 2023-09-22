@@ -113,6 +113,12 @@ public interface IWriter extends AutoCloseable, Appendable, Flushable {
   @Override
   void close();
 
+  default IWriter flushAndClose() {
+    flush();
+    close();
+    return this;
+  }
+
   /**
    * 创建文件写入器
    *
