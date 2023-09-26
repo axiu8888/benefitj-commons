@@ -11,11 +11,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class BreathTrainingHelper {
+public class Helper {
 
-  public static SingletonSupplier<BreathTrainingHelper> singleton = SingletonSupplier.of(BreathTrainingHelper::new);
+  public static SingletonSupplier<Helper> singleton = SingletonSupplier.of(Helper::new);
 
-  public static BreathTrainingHelper get() {
+  public static Helper get() {
     return singleton.get();
   }
 
@@ -27,6 +27,18 @@ public class BreathTrainingHelper {
    * 缓存数据
    */
   final ByteArrayBuf buf = new ByteArrayBuf(1024 * 1024);
+
+  public Cmd getCmd(byte[] data) {
+    int mode = data[1] & 0xff;
+    int address = HexUtils.bytesToInt(data[2], data[3]);
+    int payload = HexUtils.bytesToInt(data[4], data[5]);
+    switch (mode) {
+      case 0x03:
+        return Cmd.ofRead(address, payload);
+      default:
+        return Cmd.ofWrite(address, payload);
+    }
+  }
 
   /**
    * 写入，并返回可解析的数据

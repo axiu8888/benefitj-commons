@@ -1,6 +1,6 @@
 package com.benefitj.devices.breath;
 
-public enum Mode {
+public enum OpType {
   /**
    * 0 退出任何评估训练模式
    * 111 进入呼气肌力评估
@@ -21,7 +21,7 @@ public enum Mode {
   private final int flag;
   private final String descriptor;
 
-  Mode(int flag, String descriptor) {
+  OpType(int flag, String descriptor) {
     this.flag = flag;
     this.descriptor = descriptor;
   }
