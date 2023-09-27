@@ -1,10 +1,12 @@
 package com.benefitj.netty.client;
 
+import com.benefitj.core.EventLoop;
 import com.benefitj.netty.handler.InboundHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.concurrent.FutureListener;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
@@ -47,17 +49,12 @@ public class TcpNettyClientTest {
     });
     client.start(f -> log.info("client started... "));
 
-    TimeUnit.SECONDS.sleep(1);
+    EventLoop.awaitSeconds(1);
 
     for (int i = 0; i < 1000; i++) {
-      Channel channel = client.getServeChannel();
-      if (channel != null && channel.isActive()) {
-        channel.writeAndFlush("ss " + i);
-      } else {
-        log.info(">>>: ~ " + i);
-      }
+      client.writeAndFlush("ss " + i, (FutureListener<Void>) f -> log.info("send: " + f.isSuccess()));
       // wait
-      TimeUnit.SECONDS.sleep(1);
+      EventLoop.awaitSeconds(1);
     }
 
     client.stop();

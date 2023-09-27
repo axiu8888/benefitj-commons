@@ -23,7 +23,7 @@ public class StatementRoot extends SourceRoot<Statement> implements WrappedMap<S
   }
 
   @Override
-  public Map<String, Object> getOriginal() {
+  public Map<String, Object> map() {
     return map;
   }
 

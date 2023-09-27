@@ -27,7 +27,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
   private static final SingletonSupplier<EventLoop> IO_EVENT_LOOP
       = SingletonSupplier.of(() -> new GlobalEventLoop(128, "-io-", true));
 
-  private static final Logger logger = LoggerFactory.getLogger(EventLoop.class);
+  private static final Logger log = LoggerFactory.getLogger(EventLoop.class);
 
   /**
    * 多线程事件
@@ -172,7 +172,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
       try {
         task.run();
       } catch (Exception e) {
-        logger.error("event_loop throws: " + e.getMessage(), e);
+        log.error("event_loop throws: " + e.getMessage(), e);
         throw e;
       }
     };
@@ -190,7 +190,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
       try {
         return task.call();
       } catch (Exception e) {
-        logger.error("event_loop throws: " + e.getMessage(), e);
+        log.error("event_loop throws: " + e.getMessage(), e);
         throw e;
       }
     };
@@ -265,39 +265,12 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
   }
 
   /**
-   * 已过时，建议使用 {@link #await(long, TimeUnit)}
+   * 等待
+   *
+   * @param seconds 时长(秒)
    */
-  @Deprecated
-  public static void sleep(long duration) {
-    sleep(duration, TimeUnit.MILLISECONDS);
-  }
-
-  /**
-   * 已过时，建议使用 {@link #await(long, TimeUnit)}
-   */
-  @Deprecated
-  public static void sleepSecond(long duration) {
-    sleep(duration, TimeUnit.SECONDS);
-  }
-
-  /**
-   * 已过时，建议使用 {@link #await(long, TimeUnit)}
-   */
-  @Deprecated
-  public static void sleepMinute(long duration) {
-    sleep(duration, TimeUnit.MINUTES);
-  }
-
-  /**
-   * 已过时，建议使用 {@link #await(long, TimeUnit)}
-   */
-  @Deprecated
-  public static void sleep(long duration, TimeUnit unit) {
-    try {
-      unit.sleep(duration);
-    } catch (InterruptedException e) {
-      throw new IllegalStateException(e);
-    }
+  public static void awaitSeconds(int seconds) {
+    await(TimeUnit.SECONDS.toMillis(seconds));
   }
 
   /**

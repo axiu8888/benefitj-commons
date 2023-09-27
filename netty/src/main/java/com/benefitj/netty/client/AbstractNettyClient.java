@@ -3,6 +3,8 @@ package com.benefitj.netty.client;
 import com.benefitj.netty.AbstractNetty;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.BootstrapConfig;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.Future;
@@ -48,11 +50,11 @@ public abstract class AbstractNettyClient<S extends AbstractNettyClient<S>> exte
       if (f.isSuccess()) {
         log.debug("Netty client start at localAddress: " + localAddress + ", remoteAddress: " + remoteAddress);
       } else {
-        setServeChannel(null);
+        setMainChannel(null);
         log.debug("Netty client start failed at localAddress: " + localAddress + ", remoteAddress: " + remoteAddress);
       }
     });
-    setServeChannel(cf.channel());
+    setMainChannel(cf.channel());
     return cf;
   }
 
@@ -78,7 +80,24 @@ public abstract class AbstractNettyClient<S extends AbstractNettyClient<S>> exte
    * @return 如果已连接返回 true，否则返回 false
    */
   public boolean isConnected() {
-    final Channel channel = getServeChannel();
-    return channel != null && channel.isActive();
+    final Channel ch = getMainChannel();
+    return ch != null && ch.isActive();
   }
+
+  public S writeAndFlush(byte[] msg, GenericFutureListener<Future<Void>>... listeners) {
+    return writeAndFlush(Unpooled.wrappedBuffer(msg), listeners);
+  }
+
+  public S writeAndFlush(ByteBuf msg, GenericFutureListener<Future<Void>>... listeners) {
+    return writeAndFlush((Object) msg, listeners);
+  }
+
+  public S writeAndFlush(Object msg, GenericFutureListener<Future<Void>>... listeners) {
+    Channel ch = getMainChannel();
+    if (ch != null) {
+      ch.writeAndFlush(msg).addListeners(listeners);
+    }
+    return _self();
+  }
+
 }

@@ -54,7 +54,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   /**
    * 主通道，启动后返回的通道
    */
-  private Channel serveChannel;
+  private volatile Channel mainChannel;
   /**
    * 执行状态
    */
@@ -124,18 +124,18 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
       // 使用默认端口
       whenNotNull(localAddress(), () -> localAddress(checkAndResetPort(localAddress())));
       ChannelFuture future = startOnly(b).addListeners(listeners);
-      whenNull(getServeChannel(), () -> setServeChannel(future.channel()));
+      whenNull(getMainChannel(), () -> setMainChannel(future.channel()));
     } else {
-      final Channel c = getServeChannel();
-      if (c != null) {
-        if (c.isActive()) {
-          c.newSucceededFuture().addListeners(listeners);
+      final Channel ch = getMainChannel();
+      if (ch != null) {
+        if (ch.isActive()) {
+          ch.newSucceededFuture().addListeners(listeners);
         } else {
-          c.newFailedFuture(new IllegalStateException("yet stopped !")).addListeners(listeners);
+          ch.newFailedFuture(new IllegalStateException("yet stopped !")).addListeners(listeners);
         }
       }
     }
-    return getServeChannel();
+    return getMainChannel();
   }
 
   /**
@@ -181,9 +181,9 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
     if (expectAndSet(Thread.State.RUNNABLE, newState) || expectAndSet(Thread.State.NEW, newState)) {
       // 停止
       shutdownGracefully(group(), true
-          , copyListeners(f -> setServeChannel(null), listeners));
+          , copyListeners(f -> setMainChannel(null), listeners));
     } else {
-      final Channel c = getServeChannel();
+      final Channel c = getMainChannel();
       if (c != null) {
         if (c.isActive()) {
           // 停止
@@ -200,18 +200,18 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   }
 
   @Override
-  public Channel getServeChannel() {
-    return serveChannel;
+  public Channel getMainChannel() {
+    return mainChannel;
   }
 
   @Override
-  public S setServeChannel(Channel serveChannel) {
-    this.serveChannel = serveChannel;
+  public S setMainChannel(Channel ch) {
+    this.mainChannel = ch;
     return _self();
   }
 
   public void closeServeChannel() {
-    Channel ch = getServeChannel();
+    Channel ch = getMainChannel();
     if (ch != null && ch.isActive()) {
       ch.close();
     }
@@ -396,7 +396,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
 
   @Override
   public boolean useServeChannel(IConsumer<Channel> c) {
-    final Channel channel = getServeChannel();
+    final Channel channel = getMainChannel();
     if (channel != null) {
       try {
         c.accept(channel);

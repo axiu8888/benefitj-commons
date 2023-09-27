@@ -1,4 +1,4 @@
-package com.benefitj.core.property;
+package com.benefitj.core.properties;
 
 import com.benefitj.core.CatchUtils;
 

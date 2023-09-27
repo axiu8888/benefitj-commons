@@ -232,7 +232,7 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
   /**
    * @return 获取主通道，主通道是bind或connect之后的channel对象
    */
-  Channel getServeChannel();
+  Channel getMainChannel();
 
   /**
    * 设置主通道，主通道是bind或connect之后的channel对象
@@ -240,7 +240,7 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
    * @param serverChannel 主通道
    * @return 返回当前对象
    */
-  S setServeChannel(Channel serverChannel);
+  S setMainChannel(Channel serverChannel);
 
   /**
    * 使用主通道

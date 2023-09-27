@@ -24,7 +24,7 @@ public abstract class AbstractCopyHandler<I> extends ChannelDuplexHandler implem
   }
 
   public AbstractCopyHandler(boolean autoRelease) {
-    matcher = TypeParameterMatcher.find(this, SimpleChannelInboundHandler.class, "I");
+    matcher = TypeParameterMatcher.find(this, AbstractCopyHandler.class, "I");
     this.autoRelease = autoRelease;
   }
 

@@ -1,6 +1,8 @@
 package com.benefitj.netty.client;
 
-import com.benefitj.netty.DefaultThreadFactory;
+import com.benefitj.core.CatchUtils;
+import com.benefitj.core.EventLoop;
+import com.benefitj.core.NetworkUtils;
 import com.benefitj.netty.handler.ActiveHandler;
 import com.benefitj.netty.handler.ShutdownEventHandler;
 import io.netty.bootstrap.Bootstrap;
@@ -13,9 +15,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -168,7 +173,8 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     if (e == null) {
       synchronized (this) {
         if ((e = this.executor) == null) {
-          e = this.executor = Executors.newSingleThreadScheduledExecutor(new DefaultThreadFactory("tcp-", "-reconnect-", true));
+          //e = (this.executor = Executors.newSingleThreadScheduledExecutor(new DefaultThreadFactory("tcp-", "-reconnect-", true)));
+          e = (this.executor = EventLoop.io());
         }
       }
     }
@@ -236,7 +242,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
           t.cancel(true);
           this.timer = null;
         }
-        executor().shutdownNow();
+        CatchUtils.ignore(() -> executor().shutdownNow());
       }
     }
 
@@ -245,7 +251,8 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
      */
     void reconnect() {
       synchronized (this) {
-        if (!isConnected()) {
+        InetSocketAddress remote = (InetSocketAddress) remoteAddress();
+        if (!isConnected() && NetworkUtils.isReachable(remote, Math.min(period, 2000))) {
           stateHolder().set(Thread.State.NEW);
           start();
         }

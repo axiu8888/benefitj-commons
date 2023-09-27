@@ -12,6 +12,49 @@ import java.util.stream.Collectors;
 public class NetworkUtils {
 
   /**
+   * 地址是否可达
+   *
+   * @param host 主机
+   * @param port 端口
+   * @return 是否可达
+   */
+  public static boolean isReachable(String host, Integer port) {
+    return isReachable(host, port, 2000);
+  }
+
+  /**
+   * 地址是否可达
+   *
+   * @param host    主机
+   * @param port    端口
+   * @param timeout 超时时长
+   * @return 是否可达
+   */
+  public static boolean isReachable(String host, Integer port, int timeout) {
+    try {
+      InetSocketAddress address = new InetSocketAddress(host, port);
+      return address.getAddress().isReachable(timeout);
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
+   * 地址是否可达
+   *
+   * @param address 地址
+   * @param timeout 超时时长
+   * @return 是否可达
+   */
+  public static boolean isReachable(InetSocketAddress address, int timeout) {
+    try {
+      return address.getAddress().isReachable(timeout);
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
    * 获取一个可用的端口
    *
    * @return 返回可用的端口

@@ -64,15 +64,15 @@ public interface FunctionMap<K, V> extends WrappedMap<K, V> {
   }
 
   default V computeIfAbsent(K key) {
-    return getOriginal().computeIfAbsent(key, getAbsentFunction());
+    return map().computeIfAbsent(key, getAbsentFunction());
   }
 
   default V computeIfPresent(K key) {
-    return getOriginal().computeIfPresent(key, getPresentFunction());
+    return map().computeIfPresent(key, getPresentFunction());
   }
 
   default V compute(K key) {
-    return getOriginal().compute(key, getComputeFunction());
+    return map().compute(key, getComputeFunction());
   }
 
   Function<? super K, ? extends V> getAbsentFunction();
@@ -90,19 +90,19 @@ public interface FunctionMap<K, V> extends WrappedMap<K, V> {
 
   class FunctionMapImpl<K, V> implements FunctionMap<K, V> {
 
-    private final Map<K, V> original;
+    private final Map<K, V> _map;
 
     private Function<? super K, ? extends V> absentFunction;
     private BiFunction<? super K, ? super V, ? extends V> presentFunction;
     private BiFunction<? super K, ? super V, ? extends V> computeFunction;
 
-    public FunctionMapImpl(Map<K, V> original) {
-      this.original = original;
+    public FunctionMapImpl(Map<K, V> map) {
+      this._map = map;
     }
 
     @Override
-    public Map<K, V> getOriginal() {
-      return original;
+    public Map<K, V> map() {
+      return _map;
     }
 
     @Override

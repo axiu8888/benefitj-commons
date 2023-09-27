@@ -15,121 +15,121 @@ import java.util.function.Function;
  */
 public interface WrappedMap<K, V> extends Map<K, V> {
 
-  Map<K, V> getOriginal();
+  Map<K, V> map();
 
   @Override
   default int size() {
-    return getOriginal().size();
+    return map().size();
   }
 
   @Override
   default boolean isEmpty() {
-    return getOriginal().isEmpty();
+    return map().isEmpty();
   }
 
   @Override
   default boolean containsKey(Object key) {
-    return getOriginal().containsKey(key);
+    return map().containsKey(key);
   }
 
   @Override
   default boolean containsValue(Object value) {
-    return getOriginal().containsValue(value);
+    return map().containsValue(value);
   }
 
   @Override
   default V get(Object key) {
-    return getOriginal().get(key);
+    return map().get(key);
   }
 
   @Override
   default V put(K key, V value) {
-    return getOriginal().put(key, value);
+    return map().put(key, value);
   }
 
   @Override
   default V remove(Object key) {
-    return getOriginal().remove(key);
+    return map().remove(key);
   }
 
   @Override
   default void putAll(Map<? extends K, ? extends V> m) {
-    getOriginal().putAll(m);
+    map().putAll(m);
   }
 
   @Override
   default void clear() {
-    getOriginal().clear();
+    map().clear();
   }
 
   @Override
   default Set<K> keySet() {
-    return getOriginal().keySet();
+    return map().keySet();
   }
 
   @Override
   default Collection<V> values() {
-    return getOriginal().values();
+    return map().values();
   }
 
   @Override
   default Set<Entry<K, V>> entrySet() {
-    return getOriginal().entrySet();
+    return map().entrySet();
   }
 
   @Override
   default V getOrDefault(Object key, V defaultValue) {
-    return getOriginal().getOrDefault(key, defaultValue);
+    return map().getOrDefault(key, defaultValue);
   }
 
   @Override
   default void forEach(BiConsumer<? super K, ? super V> action) {
-    getOriginal().forEach(action);
+    map().forEach(action);
   }
 
   @Override
   default void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
-    getOriginal().replaceAll(function);
+    map().replaceAll(function);
   }
 
   @Override
   default V putIfAbsent(K key, V value) {
-    return getOriginal().putIfAbsent(key, value);
+    return map().putIfAbsent(key, value);
   }
 
   @Override
   default boolean remove(Object key, Object value) {
-    return getOriginal().remove(key, value);
+    return map().remove(key, value);
   }
 
   @Override
   default boolean replace(K key, V oldValue, V newValue) {
-    return getOriginal().replace(key, oldValue, newValue);
+    return map().replace(key, oldValue, newValue);
   }
 
   @Override
   default V replace(K key, V value) {
-    return getOriginal().replace(key, value);
+    return map().replace(key, value);
   }
 
   @Override
   default V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
-    return getOriginal().computeIfAbsent(key, mappingFunction);
+    return map().computeIfAbsent(key, mappingFunction);
   }
 
   @Override
   default V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-    return getOriginal().computeIfPresent(key, remappingFunction);
+    return map().computeIfPresent(key, remappingFunction);
   }
 
   @Override
   default V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-    return getOriginal().compute(key, remappingFunction);
+    return map().compute(key, remappingFunction);
   }
 
   @Override
   default V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-    return getOriginal().merge(key, value, remappingFunction);
+    return map().merge(key, value, remappingFunction);
   }
 
 }
