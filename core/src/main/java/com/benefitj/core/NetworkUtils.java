@@ -55,6 +55,22 @@ public class NetworkUtils {
   }
 
   /**
+   * 地址是否可连接
+   *
+   * @param address 地址
+   * @param timeout 超时时长
+   * @return 是否可连接
+   */
+  public static boolean isConnectable(InetSocketAddress address, int timeout) {
+    try (Socket sock = new Socket()) {
+      sock.connect(address, timeout);
+      return sock.isConnected();
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
    * 获取一个可用的端口
    *
    * @return 返回可用的端口

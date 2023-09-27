@@ -2,7 +2,6 @@ package com.benefitj.netty.client;
 
 import com.benefitj.core.CatchUtils;
 import com.benefitj.core.EventLoop;
-import com.benefitj.core.NetworkUtils;
 import com.benefitj.netty.handler.ActiveHandler;
 import com.benefitj.netty.handler.ShutdownEventHandler;
 import io.netty.bootstrap.Bootstrap;
@@ -15,7 +14,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,7 +41,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   /**
    * 线程调度
    */
-  private ScheduledExecutorService executor;
+  private ScheduledExecutorService executor = EventLoop.io();
   /**
    * 执行状态
    */
@@ -169,16 +167,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   }
 
   public ScheduledExecutorService executor() {
-    ScheduledExecutorService e = this.executor;
-    if (e == null) {
-      synchronized (this) {
-        if ((e = this.executor) == null) {
-          //e = (this.executor = Executors.newSingleThreadScheduledExecutor(new DefaultThreadFactory("tcp-", "-reconnect-", true)));
-          e = (this.executor = EventLoop.io());
-        }
-      }
-    }
-    return e;
+    return executor;
   }
 
   public TcpNettyClient executor(ScheduledExecutorService executor) {
@@ -251,8 +240,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
      */
     void reconnect() {
       synchronized (this) {
-        InetSocketAddress remote = (InetSocketAddress) remoteAddress();
-        if (!isConnected() && NetworkUtils.isReachable(remote, Math.min(period, 2000))) {
+        if (!isConnected()) {
           stateHolder().set(Thread.State.NEW);
           start();
         }
@@ -263,8 +251,11 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     public void onChanged(ActiveHandler handler, ChannelHandlerContext ctx, ActiveHandler.State state) {
       // 立刻重新尝试开启一个新的连接
       if (state == ActiveHandler.State.INACTIVE) {
-        if (!executor().isShutdown()) {
-          executor().schedule(this::reconnect, 1, TimeUnit.MILLISECONDS);
+        if (!executor().isShutdown() && autoReconnect()) {
+          ScheduledFuture<?> t = this.timer;
+          if (t == null) {
+            executor().schedule(this::reconnect, period, TimeUnit.MILLISECONDS);
+          }
         }
       } else {
         ScheduledFuture<?> t = this.timer;
