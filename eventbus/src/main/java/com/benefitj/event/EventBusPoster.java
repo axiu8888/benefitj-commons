@@ -297,8 +297,7 @@ public class EventBusPoster {
     private final String namePrefix;
 
     DefaultThreadFactory() {
-      SecurityManager s = System.getSecurityManager();
-      group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+      group = Thread.currentThread().getThreadGroup();
       namePrefix = "EventBus-" + poolNumber.getAndIncrement() + "@";
     }
 
