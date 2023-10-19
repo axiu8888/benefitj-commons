@@ -42,7 +42,7 @@ public interface ApiBuilder<T> {
   String getBaseUrl();
 
   /**
-   * 设置基基本的URL前缀
+   * 设置基本的URL前缀
    *
    * @param baseUrl 路径
    * @return 返回 RetrofitApi

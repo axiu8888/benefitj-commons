@@ -172,7 +172,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
       try {
         task.run();
       } catch (Exception e) {
-        log.error("event_loop throws: " + e.getMessage(), e);
+        log.error(e.getMessage(), e);
         throw e;
       }
     };
@@ -190,7 +190,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
       try {
         return task.call();
       } catch (Exception e) {
-        log.error("event_loop throws: " + e.getMessage(), e);
+        log.error(e.getMessage(), e);
         throw e;
       }
     };

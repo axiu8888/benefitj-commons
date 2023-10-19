@@ -623,6 +623,7 @@ public class HexUtils {
   public static boolean isEquals(byte[] src, int srcPos, byte[] dest, int destPos, int len) {
     return getHelper().isEquals(src, srcPos, dest, destPos, len);
   }
+
   /**
    * 查找匹配的字节数组的开始位置
    *
@@ -631,7 +632,7 @@ public class HexUtils {
    * @return 返回找到的位置，如果未找到返回-1
    */
   public static int indexOf(byte[] src, byte[] find) {
-    return getHelper().indexOf(src, 0, src.length, find);
+    return getHelper().indexOf(src, find);
   }
 
   /**
@@ -650,46 +651,46 @@ public class HexUtils {
   /**
    * 解析整数数组
    *
-   * @param data    数据
-   * @param start   开始的位置
-   * @param len     数据占字节的长度
+   * @param data   数据
+   * @param start  开始的位置
+   * @param len    数据占字节的长度
    * @param size   字节长度
-   * @param order   字节顺序
-   * @param signed  是否为有符号数
+   * @param order  字节顺序
+   * @param signed 是否为有符号数
    * @return 返回解析的数组
    */
   public static short[] parseShortArray(byte[] data, int start, int len, int size, ByteOrder order, boolean signed) {
-    return BinaryHelper.getHelper(order).parseShortArray(data, start, len, size, signed);
+    return BinaryHelper.get(order).parseShortArray(data, start, len, size, signed);
   }
 
   /**
    * 解析整数数组
    *
-   * @param data    数据
-   * @param start   开始的位置
-   * @param len     数据占字节的长度
+   * @param data   数据
+   * @param start  开始的位置
+   * @param len    数据占字节的长度
    * @param size   字节长度
-   * @param order   字节顺序
-   * @param signed  是否为有符号数
+   * @param order  字节顺序
+   * @param signed 是否为有符号数
    * @return 返回解析的数组
    */
   public static int[] parseIntArray(byte[] data, int start, int len, int size, ByteOrder order, boolean signed) {
-    return BinaryHelper.getHelper(order).parseIntArray(data, start, len, size, signed);
+    return BinaryHelper.get(order).parseIntArray(data, start, len, size, signed);
   }
 
   /**
    * 解析整数数组
    *
-   * @param data    数据
-   * @param start   开始的位置
-   * @param len     数据占字节的长度
+   * @param data   数据
+   * @param start  开始的位置
+   * @param len    数据占字节的长度
    * @param size   字节长度
-   * @param order   字节顺序
-   * @param signed  是否为有符号数
+   * @param order  字节顺序
+   * @param signed 是否为有符号数
    * @return 返回解析的数组
    */
   public static long[] parseLongArray(byte[] data, int start, int len, int size, ByteOrder order, boolean signed) {
-    return BinaryHelper.getHelper(order).parseLongArray(data, start, len, size, signed);
+    return BinaryHelper.get(order).parseLongArray(data, start, len, size, signed);
   }
 
 }

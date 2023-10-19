@@ -16,8 +16,10 @@ public class BinaryHelper {
    * @param order 字节顺序
    * @return 返回对象
    */
-  public static BinaryHelper getHelper(ByteOrder order) {
-    return order == ByteOrder.LITTLE_ENDIAN ? BinaryHelper.LITTLE_ENDIAN : BinaryHelper.BIG_ENDIAN;
+  public static BinaryHelper get(ByteOrder order) {
+    return order == ByteOrder.LITTLE_ENDIAN
+        ? BinaryHelper.LITTLE_ENDIAN
+        : BinaryHelper.BIG_ENDIAN;
   }
 
   /**
@@ -996,7 +998,7 @@ public class BinaryHelper {
    * @return 返回找到的位置，如果未找到返回-1
    */
   public int indexOf(byte[] src, byte[] find) {
-    return indexOf(src, 0, src.length, find);
+    return indexOf(src, 0, Math.max(src.length - find.length, 1), find);
   }
 
   /**
@@ -1038,7 +1040,7 @@ public class BinaryHelper {
    */
   public short[] parseShortArray(byte[] data, int start, int len, int size, boolean signed) {
     short[] array = new short[len / size];
-    for (int i = 0; i < array.length; i ++) {
+    for (int i = 0; i < array.length; i++) {
       array[i] = bytesToShort(bufCopy.copy(data, start + i * size, size, true), signed);
     }
     return array;
@@ -1056,7 +1058,7 @@ public class BinaryHelper {
    */
   public int[] parseIntArray(byte[] data, int start, int len, int size, boolean signed) {
     int[] array = new int[len / size];
-    for (int i = 0; i < array.length; i ++) {
+    for (int i = 0; i < array.length; i++) {
       array[i] = bytesToInt(bufCopy.copy(data, start + i * size, size, true), signed);
     }
     return array;
@@ -1074,7 +1076,7 @@ public class BinaryHelper {
    */
   public long[] parseLongArray(byte[] data, int start, int len, int size, boolean signed) {
     long[] array = new long[len / size];
-    for (int i = 0; i < array.length; i ++) {
+    for (int i = 0; i < array.length; i++) {
       array[i] = bytesToLong(bufCopy.copy(data, start + i * size, size, true), signed);
     }
     return array;
