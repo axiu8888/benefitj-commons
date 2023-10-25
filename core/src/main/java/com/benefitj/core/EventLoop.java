@@ -25,7 +25,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
   private static final SingletonSupplier<EventLoop> SINGLE_EVENT_LOOP
       = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-single-", true));
   private static final SingletonSupplier<EventLoop> IO_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(128, "-io-", true));
+      = SingletonSupplier.of(() -> new GlobalEventLoop(64, "-io-", true));
 
   private static final Logger log = LoggerFactory.getLogger(EventLoop.class);
 

@@ -72,14 +72,14 @@ public class DefaultExpireChecker<Id, T extends Device<Id>> implements ExpireChe
         return;
       }
       // 启动定时
-      this.timer = EventLoop.io().scheduleAtFixedRate(
+      this.timer = EventLoop.single().scheduleAtFixedRate(
           () -> check(getDeviceManager()), getInitialDelay(), getDelay(), getUnit());
     }
   }
 
   @Override
   public void check(DeviceManager<Id, T> manager) {
-    if (manager.size() > 0) {
+    if (manager.isNotEmpty()) {
       final Map<Id, T> removalMap = getRemovalMap();
       for (Map.Entry<Id, T> entry : manager.getDevices().entrySet()) {
         final T device = entry.getValue();

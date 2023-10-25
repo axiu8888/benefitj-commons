@@ -17,6 +17,20 @@ public interface DeviceManager<Id, T extends Device<Id>> {
   Map<Id, T> getDevices();
 
   /**
+   * 是否为空
+   */
+  default boolean isEmpty() {
+    return getDevices().isEmpty();
+  }
+
+  /**
+   * 是否不为空
+   */
+  default boolean isNotEmpty() {
+    return !isEmpty();
+  }
+
+  /**
    * 获取设备
    *
    * @param id 设备ID
