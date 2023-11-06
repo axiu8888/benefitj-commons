@@ -18,6 +18,11 @@ public interface WebSocket extends okhttp3.WebSocket {
   boolean isOpen();
 
   /**
+   * 重连
+   */
+  void reconnect();
+
+  /**
    * 获取URL
    */
   String getUrl();

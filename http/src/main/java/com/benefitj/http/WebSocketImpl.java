@@ -81,6 +81,9 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
     if (raw == null) {
       throw new IllegalStateException("还未连接过！");
     }
+    if (isOpen()) {
+      return;
+    }
     connect0(raw.request()
         .newBuilder()
         .build());
@@ -130,9 +133,9 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
 
   @Override
   public void onClosing(@NotNull okhttp3.WebSocket ws, int code, @NotNull String reason) {
-    log.trace("[{}] onClosing, url: {}, code: {}, reason: {}", getId(), getUrl(), code, reason);
-    this.open = false;
-    getListener().onClosing(this, code, reason);
+//    log.trace("[{}] onClosing, url: {}, code: {}, reason: {}", getId(), getUrl(), code, reason);
+//    this.open = false;
+    getListener().onClosed(this, code, reason);
   }
 
   @Override
