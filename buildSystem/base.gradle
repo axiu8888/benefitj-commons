@@ -71,7 +71,7 @@ trying({
 
 artifacts {
   archives sourcesJar
-  archives javadocJar
+  //archives javadocJar
 }
 
 configurations {
@@ -85,6 +85,15 @@ configurations {
 }
 
 repositories {
+  maven { url("https://maven.aliyun.com/repository/google") }
+  maven { url("https://maven.aliyun.com/repository/central") }
+  maven { url("https://maven.aliyun.com/repository/gradle-plugin") }
+  maven { url("https://maven.aliyun.com/repository/public") }
+  maven { url("https://maven.aliyun.com/repository/jcenter") }
+  maven { url 'https://repo.spring.io/milestone' }
+  maven { url 'https://repo.spring.io/release' }
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+
   trying({
     maven {
       url = repoUrl
@@ -95,28 +104,18 @@ repositories {
       }
     }
   })
-
-  maven { url("https://maven.aliyun.com/repository/google") }
-  maven { url("https://maven.aliyun.com/repository/central") }
-  maven { url("https://maven.aliyun.com/repository/gradle-plugin") }
-  maven { url("https://maven.aliyun.com/repository/public") }
-  maven { url("https://maven.aliyun.com/repository/jcenter") }
-  maven { url 'https://repo.spring.io/milestone' }
-  maven { url 'https://repo.spring.io/release' }
-  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
 }
 
 
 ext {
-  lombokVersion = trying({ rootProject.lombokVersion }, "1.18.28")
-  jacksonVersion = trying({ rootProject.jacksonVersion }, "2.14.1")
-  guavaVersion = trying({ rootProject.guavaVersion }, '31.1-jre')
-  fastjson2Version = trying({ rootProject.fastjson2Version }, '2.0.38')
-  commonsIOVersion = trying({ rootProject.commonsIOVersion }, "2.11.0")
-  commonsLang3Version = trying({ rootProject.commonsLang3Version }, "3.12.0")
-  slf4jVersion = trying({ rootProject.slf4jVersion }, '2.0.7')
-  logbackVersion = trying({ rootProject.logbackVersion }, '1.4.8')
-  hutoolVersion = trying({ rootProject.hutoolVersion }, '5.8.18')
+  lombokVersion = trying({ project.ext.lombokVersion }, "1.18.28")
+  jacksonVersion = trying({ project.ext.jacksonVersion }, "2.14.1")
+  guavaVersion = trying({ project.ext.guavaVersion }, '31.1-jre')
+  fastjson2Version = trying({ project.ext.fastjson2Version }, '2.0.38')
+  commonsIOVersion = trying({ project.ext.commonsIOVersion }, "2.11.0")
+  commonsLang3Version = trying({ project.ext.commonsLang3Version }, "3.12.0")
+  slf4jVersion = trying({ project.ext.slf4jVersion }, '2.0.7')
+  hutoolVersion = trying({ project.ext.hutoolVersion }, '5.8.18')
 
   if (trying({ project.ext.springEnv }, false)) {
     set('springCloudVersion', "2021.0.0")
@@ -124,36 +123,36 @@ ext {
 }
 
 dependencies {
-  implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation fileTree(dir: 'libs/jar', include: ['*.jar'])
+  def libsApi = trying({ project.ext.libsApi }, false)
+  [
+      fileTree(dir: 'libs', include: ['*.jar']),
+      fileTree(dir: 'libs/jar', include: ['*.jar'])
+  ].forEach {
+    libsApi ? api(it) : implementation(it)
+  }
+
   compileOnly fileTree(dir: 'libs/source', include: ['*.jar'])
 
   annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
   compileOnly("org.projectlombok:lombok:${lombokVersion}")
   testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-  testImplementation "org.projectlombok:lombok:${lombokVersion}"
+  testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
 
-  compileOnly "ch.qos.logback:logback-classic:${logbackVersion}"
-  testImplementation "ch.qos.logback:logback-classic:${logbackVersion}"
+  compileOnly("org.slf4j:slf4j-api:${slf4jVersion}")
+  testImplementation("org.slf4j:slf4j-api:${slf4jVersion}")
 
-  def deps = [
+  [
       //"javax.inject:javax.inject:1",
       //"com.google.code.findbugs:jsr305:3.0.2",
-      //"org.projectlombok:lombok:${lombokVersion}",
       "commons-io:commons-io:${commonsIOVersion}",
       "org.apache.commons:commons-lang3:${commonsLang3Version}",
       "com.google.guava:guava:${guavaVersion}",
-      "org.slf4j:slf4j-api:${slf4jVersion}",
-      "cn.hutool:hutool-all:${hutoolVersion}",
       "com.alibaba.fastjson2:fastjson2:${fastjson2Version}",
-
+      "cn.hutool:hutool-all:${hutoolVersion}",
       //"com.fasterxml.jackson.core:jackson-core:${jacksonVersion}",
       "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
       "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}",
-  ]
-
-
-  deps.forEach {
+  ].forEach {
     implementation(it)
     testImplementation(it)
   }
@@ -232,7 +231,7 @@ afterEvaluate {
 
       artifacts {
         archives sourcesJar
-        archives javadocJar
+        //archives javadocJar
       }
     }
   })
@@ -261,7 +260,7 @@ afterEvaluate {
               from components.java
               // 配置上传源码
               artifact sourcesJar
-              artifact javadocJar
+              //artifact javadocJar
             }
           }
 

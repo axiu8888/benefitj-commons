@@ -7,6 +7,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,6 +19,10 @@ public class FileWriterImpl implements IWriter, AttributeMap {
   private final File source;
   private final BufferedOutputStream out;
   private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+  /**
+   * 编码
+   */
+  private Charset charset = Charset.defaultCharset();
 
   public FileWriterImpl(File source, boolean append) {
     this.source = source;
@@ -131,6 +136,14 @@ public class FileWriterImpl implements IWriter, AttributeMap {
     }
   }
 
+  public Charset getCharset() {
+    return charset;
+  }
+
+  public void setCharset(Charset charset) {
+    this.charset = charset;
+  }
+
   /**
    * 写入数据
    *
@@ -138,7 +151,7 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    */
   @Override
   public FileWriterImpl write(String str) {
-    return write(str.getBytes());
+    return write(str.getBytes(getCharset()));
   }
 
   /**
@@ -149,7 +162,7 @@ public class FileWriterImpl implements IWriter, AttributeMap {
   @Override
   public FileWriterImpl write(String... strings) {
     for (String str : strings) {
-      write(str.getBytes());
+      write(str.getBytes(getCharset()));
     }
     return this;
   }
@@ -199,14 +212,14 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    */
   @Override
   public FileWriterImpl writeAndFlush(String str) {
-    return writeAndFlush(str.getBytes());
+    return writeAndFlush(str.getBytes(getCharset()));
   }
 
   @Override
   public FileWriterImpl writeAndFlush(String... strings) {
     synchronized (this) {
       for (int i = 0; i < strings.length; i++) {
-        byte[] buf = strings[i].getBytes();
+        byte[] buf = strings[i].getBytes(getCharset());
         write0(buf, 0, buf.length, i == (strings.length - 1));
       }
     }

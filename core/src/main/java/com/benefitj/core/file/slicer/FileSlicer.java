@@ -3,6 +3,7 @@ package com.benefitj.core.file.slicer;
 import com.benefitj.core.file.IWriter;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.Properties;
 
 /**
@@ -49,6 +50,10 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
    * 上次写入时间
    */
   private long lastWriteTime = -1;
+  /**
+   * 编码
+   */
+  private Charset charset = Charset.defaultCharset();
 
   public FileSlicer() {
   }
@@ -60,7 +65,7 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
 
   @Override
   public FileSlicer<T> write(String str) {
-    return writeAndFlush(str.getBytes());
+    return writeAndFlush(str.getBytes(getCharset()));
   }
 
   @Override
@@ -85,13 +90,13 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
 
   @Override
   public FileSlicer<T> writeAndFlush(String str) {
-    return writeAndFlush(str.getBytes());
+    return writeAndFlush(str.getBytes(getCharset()));
   }
 
   @Override
   public FileSlicer<T> writeAndFlush(String... strings) {
     for (int i = 0; i < strings.length; i++) {
-      byte[] buf = strings[i].getBytes();
+      byte[] buf = strings[i].getBytes(getCharset());
       write0(buf, 0, buf.length, i == strings.length - 1);
     }
     return this;
@@ -188,6 +193,14 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
    */
   public void setLastWriteTime(long lastWriteTime) {
     this.lastWriteTime = lastWriteTime;
+  }
+
+  public Charset getCharset() {
+    return charset;
+  }
+
+  public void setCharset(Charset charset) {
+    this.charset = charset;
   }
 
   /**
