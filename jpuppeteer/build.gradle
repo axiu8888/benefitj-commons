@@ -4,9 +4,14 @@ apply from: "${scriptFile}"
 ext.upload = false
 
 dependencies {
-  api(project(":core"))
-  api(project(":http"))
-  api(project(":frameworks"))
+  [
+      project(":core"),
+      project(":http"),
+      project(":frameworks"),
+  ].forEach {
+    api(it)
+    testImplementation(it)
+  }
   //implementation("com.alibaba.fastjson2:fastjson2:${fastjson2Version}")
 }
 

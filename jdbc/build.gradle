@@ -1,12 +1,15 @@
-
 apply from: "${scriptFile}"
 
 // 上传到nexus/maven仓库
 ext.upload = false
 
 dependencies {
-    api(project(":core"))
-    api(project(":frameworks"))
-    api "mysql:mysql-connector-java:$mysqlVersion"
+  [
+      project(":core"),
+      project(":frameworks"),
+      "mysql:mysql-connector-java:$mysqlVersion",
+  ].forEach {
+    api(it)
+  }
 }
 

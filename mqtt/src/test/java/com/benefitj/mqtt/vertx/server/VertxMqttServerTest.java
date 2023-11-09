@@ -28,6 +28,7 @@ public class VertxMqttServerTest {
         // 认证
         .setAuthenticator(endpoint -> {
           //MqttAuth auth = endpoint.auth();
+          log.info("auth: {}", endpoint.auth());
           return true;
         })
         .setEndpointHandler(new MqttEndpointHandlerImpl())

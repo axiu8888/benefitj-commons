@@ -1,16 +1,22 @@
-
 apply from: "${scriptFile}"
 
 // 上传到nexus/maven仓库
 ext.upload = true
 
 dependencies {
-	api(project(":core"))
-	api "io.vertx:vertx-core:${vertxVersion}"
-	api "io.vertx:vertx-unit:${vertxVersion}"
-	api "io.vertx:vertx-mqtt:${vertxVersion}"
-	api "io.vertx:vertx-codegen:${vertxVersion}"
-	api 'io.vertx:vertx-codetrans:4.0.3'
-	api 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
+  [
+      project(":core"),
+
+      "io.vertx:vertx-core:${vertxVersion}",
+      "io.vertx:vertx-unit:${vertxVersion}",
+      "io.vertx:vertx-mqtt:${vertxVersion}",
+      "io.vertx:vertx-codegen:${vertxVersion}",
+      'io.vertx:vertx-codetrans:4.0.3',
+      'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5',
+
+  ].forEach {
+    api(it)
+    testImplementation(it)
+  }
 }
 

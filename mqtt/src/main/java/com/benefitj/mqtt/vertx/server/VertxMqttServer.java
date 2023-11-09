@@ -194,7 +194,7 @@ public class VertxMqttServer extends AbstractVerticle {
    * @param error 异常
    */
   protected void onExceptionHandle(Throwable error) {
-    error.printStackTrace();
+    log.warn(error.getMessage(), error);
   }
 
   public MqttServerProperty getProperty() {

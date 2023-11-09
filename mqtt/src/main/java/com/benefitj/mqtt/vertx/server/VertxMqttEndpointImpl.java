@@ -3,11 +3,8 @@ package com.benefitj.mqtt.vertx.server;
 import com.benefitj.mqtt.MqttTopic;
 import io.vertx.mqtt.MqttEndpoint;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * MQTT客户端连接
@@ -89,11 +86,19 @@ public class VertxMqttEndpointImpl implements VertxMqttEndpoint {
    * @return 返回匹配的订阅
    */
   @Override
-  public Set<Subscription> matches(MqttTopic topic) {
-    return getSubscriptions().values()
+  public Collection<Subscription> matches(MqttTopic topic) {
+    List<Subscription> subscriptions = new LinkedList<>();
+    for (Map.Entry<MqttTopic, Subscription> entry : getSubscriptions().entrySet()) {
+      Subscription subscription = entry.getValue();
+      if (subscription.match(topic)) {
+        subscriptions.add(subscription);
+      }
+    }
+    return subscriptions;
+    /*return getSubscriptions().values()
         .stream()
         .filter(subscription -> subscription.getTopic().match(topic))
-        .collect(Collectors.toSet());
+        .collect(Collectors.toSet());*/
   }
 
 }

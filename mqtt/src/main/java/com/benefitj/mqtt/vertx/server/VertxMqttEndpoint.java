@@ -17,10 +17,7 @@ import io.vertx.mqtt.messages.*;
 import io.vertx.mqtt.messages.codes.*;
 
 import javax.net.ssl.SSLSession;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * MQTT客户端连接
@@ -99,7 +96,7 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
    * @param topic 主題
    * @return 返回匹配的订阅
    */
-  Set<Subscription> matches(MqttTopic topic);
+  Collection<Subscription> matches(MqttTopic topic);
 
   @Override
   default void close() {
