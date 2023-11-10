@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory;
 
 public class LoggingVertxClientHandler implements VertxClientHandler {
 
-  protected Logger logger = LoggerFactory.getLogger(getClass());
+  protected Logger log = LoggerFactory.getLogger(getClass());
 
   @Override
   public void onConnected(VertxMqttClient client, AsyncResult<MqttConnAckMessage> event, boolean reconnect) {
-    logger.debug("[{}] onConnected, {}:{}, status: {}, reconnect: {}"
+    log.debug("[{}] onConnected, {}:{}, status: {}, reconnect: {}"
         , client.getClientId(), client.getHost(), client.getPort(), event.succeeded(), reconnect);
   }
 
@@ -24,7 +24,7 @@ public class LoggingVertxClientHandler implements VertxClientHandler {
    */
   @Override
   public void onPingResponse(VertxMqttClient client) {
-    logger.debug("[{}] onPingResponse, {}:{}"
+    log.debug("[{}] onPingResponse, {}:{}"
         , client.getClientId(), client.getHost(), client.getPort());
   }
 
@@ -36,7 +36,7 @@ public class LoggingVertxClientHandler implements VertxClientHandler {
    */
   @Override
   public void onSubscribeCompletion(VertxMqttClient client, MqttSubAckMessage message) {
-    logger.debug("[{}] onSubscribeCompletion, {}:{}, messageId[{}]"
+    log.debug("[{}] onSubscribeCompletion, {}:{}, messageId[{}]"
         , client.getClientId(), client.getHost(), client.getPort(), message.messageId());
   }
 
@@ -48,7 +48,7 @@ public class LoggingVertxClientHandler implements VertxClientHandler {
    */
   @Override
   public void onUnsubscribeCompletion(VertxMqttClient client, Integer messageId) {
-    logger.debug("[{}] onUnsubscribeCompletion, {}:{}, messageId[{}]"
+    log.debug("[{}] onUnsubscribeCompletion, {}:{}, messageId[{}]"
         , client.getClientId(), client.getHost(), client.getPort(), messageId);
   }
 
@@ -60,7 +60,7 @@ public class LoggingVertxClientHandler implements VertxClientHandler {
    */
   @Override
   public void onPublishMessage(VertxMqttClient client, MqttPublishMessage message) {
-    logger.debug("[{}] onPublishMessage, {}:{}, message[{}, {}, {}]"
+    log.debug("[{}] onPublishMessage, {}:{}, message[{}, {}, {}]"
         , client.getClientId(), client.getHost(), client.getPort()
         , message.messageId(), message.topicName(), message.qosLevel().value());
   }
@@ -73,7 +73,7 @@ public class LoggingVertxClientHandler implements VertxClientHandler {
    */
   @Override
   public void onPublishCompletion(VertxMqttClient client, Integer messageId) {
-    logger.debug("[{}] onPublishCompletion, {}:{}, messageId[{}]"
+    log.debug("[{}] onPublishCompletion, {}:{}, messageId[{}]"
         , client.getClientId(), client.getHost(), client.getPort(), messageId);
   }
 
@@ -85,7 +85,7 @@ public class LoggingVertxClientHandler implements VertxClientHandler {
    */
   @Override
   public void onPublishCompletionExpiration(VertxMqttClient client, Integer messageId) {
-    logger.debug("[{}] onPublishCompletionExpiration, {}:{}, messageId[{}]"
+    log.debug("[{}] onPublishCompletionExpiration, {}:{}, messageId[{}]"
         , client.getClientId(), client.getHost(), client.getPort(), messageId);
   }
 
@@ -97,7 +97,7 @@ public class LoggingVertxClientHandler implements VertxClientHandler {
    */
   @Override
   public void onPublishCompletionUnknownPacketId(VertxMqttClient client, Integer messageId) {
-    logger.debug("[{}] onPublishCompletionUnknownPacketId, {}:{}, messageId[{}]"
+    log.debug("[{}] onPublishCompletionUnknownPacketId, {}:{}, messageId[{}]"
         , client.getClientId(), client.getHost(), client.getPort(), messageId);
   }
 
@@ -109,9 +109,9 @@ public class LoggingVertxClientHandler implements VertxClientHandler {
    */
   @Override
   public void onException(VertxMqttClient client, Throwable error) {
-    logger.warn("[{}] onException, {}:{}, {}"
+    log.warn("[{}] onException, {}:{}, {}"
         , client.getClientId(), client.getHost(), client.getPort(), error.getCause());
-    logger.error(error.getMessage(), error);
+    log.error(error.getMessage(), error);
   }
 
   /**
@@ -121,7 +121,7 @@ public class LoggingVertxClientHandler implements VertxClientHandler {
    */
   @Override
   public void onClose(VertxMqttClient client) {
-    logger.debug("[{}] onClose, {}:{}"
+    log.debug("[{}] onClose, {}:{}"
         , client.getClientId(), client.getHost(), client.getPort());
   }
 }

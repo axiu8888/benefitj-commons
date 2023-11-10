@@ -21,6 +21,10 @@ public class MqttServerProperty {
    */
   private boolean useWebSocket = false;
   /**
+   * WebSocket 缓冲区大小
+   */
+  private int wsMaxFrameSize = MqttServerOptions.DEFAULT_WEB_SOCKET_MAX_FRAME_SIZE;
+  /**
    * 最大的消息体长度
    */
   private int maxMessageSize = MqttServerOptions.DEFAULT_MAX_MESSAGE_SIZE;
@@ -66,6 +70,14 @@ public class MqttServerProperty {
   public MqttServerProperty setUseWebSocket(boolean useWebSocket) {
     this.useWebSocket = useWebSocket;
     return this;
+  }
+
+  public int getWsMaxFrameSize() {
+    return wsMaxFrameSize;
+  }
+
+  public void setWsMaxFrameSize(int wsMaxFrameSize) {
+    this.wsMaxFrameSize = wsMaxFrameSize;
   }
 
   public int getMaxMessageSize() {

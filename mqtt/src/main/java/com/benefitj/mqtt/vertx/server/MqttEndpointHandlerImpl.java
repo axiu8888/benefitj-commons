@@ -42,7 +42,8 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
     }
 
     // accept connection from the remote client
-    VertxMqttEndpoint existEndpoint = server.getEndpoint(endpoint.clientIdentifier());
+    VertxMqttEndpointManager manager = server.getEndpointManager();
+    VertxMqttEndpoint existEndpoint = manager.getEndpoint(endpoint.clientIdentifier());
     if (existEndpoint != null) {
       if (!server.getProperty().isDislodgeSession()) {
         endpoint.accept(true);
@@ -52,7 +53,7 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
     }
     endpoint.accept(false);
     // 添加客户端
-    server.addEndpoint(endpoint.clientIdentifier(), new VertxMqttEndpointImpl(endpoint));
+    manager.addEndpoint(endpoint.clientIdentifier(), new VertxMqttEndpointImpl(endpoint));
   }
 
   @Override
@@ -97,7 +98,7 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
   @Override
   public void onPublishMessage(VertxMqttServer server, VertxMqttEndpoint endpoint, MqttPublishMessage message) {
     MqttTopic topic = MqttTopic.get(message.topicName());
-    for (VertxMqttEndpoint vme : server.getEndpoints().values()) {
+    for (VertxMqttEndpoint vme : server.getEndpointManager().values()) {
       if (vme != endpoint) {
         Subscription subscription = vme.getTopQosSubscription(topic);
         if (subscription != null) {
@@ -118,8 +119,9 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
 
   @Override
   public void onClose(VertxMqttServer server, VertxMqttEndpoint endpoint) {
-    if (server.hasClientId(endpoint.clientIdentifier())) {
-      server.removeEndpoint(endpoint.clientIdentifier());
+    VertxMqttEndpointManager manager = server.getEndpointManager();
+    if (manager.hasClientId(endpoint.clientIdentifier())) {
+      manager.removeEndpoint(endpoint.clientIdentifier());
     }
     log.trace("clientId[{}], Connection close", endpoint.clientIdentifier());
   }
@@ -128,6 +130,5 @@ public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
   public void onDisconnect(VertxMqttServer server, VertxMqttEndpoint endpoint) {
     log.trace("clientId[{}], Received disconnect from client", endpoint.clientIdentifier());
   }
-
 
 }

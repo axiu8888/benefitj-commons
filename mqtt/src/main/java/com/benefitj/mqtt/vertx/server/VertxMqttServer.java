@@ -18,7 +18,9 @@ package com.benefitj.mqtt.vertx.server;
 
 import com.benefitj.mqtt.MqttTopic;
 import com.benefitj.mqtt.vertx.VerticleInitializer;
-import io.vertx.core.*;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttServer;
@@ -26,11 +28,7 @@ import io.vertx.mqtt.MqttServerOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -64,7 +62,7 @@ public class VertxMqttServer extends AbstractVerticle {
   /**
    * 客户端
    */
-  private final Map<String, VertxMqttEndpoint> endpoints = new ConcurrentHashMap<>();
+  private VertxMqttEndpointManager endpointManager = VertxMqttEndpointManager.get();
   /**
    * 初始化器
    */
@@ -92,7 +90,9 @@ public class VertxMqttServer extends AbstractVerticle {
         .setMaxMessageSize(prop.getMaxMessageSize())
         .setUseWebSocket(prop.isUseWebSocket())
         .setPort(prop.getPort())
-        .setHost(prop.getHost());
+        .setHost(prop.getHost())
+        .setWebSocketMaxFrameSize(prop.getWsMaxFrameSize())
+    ;
     // 初始化
     getInitializer().onInitialize(this);
     // 创见服务端
@@ -120,7 +120,14 @@ public class VertxMqttServer extends AbstractVerticle {
           .onSuccess(event -> log.trace("MQTT server stop success on port {}", server.actualPort()))
           .onFailure(err -> log.warn("MQTT server stop failure on port {}", server.actualPort() + ", error: " + err.getMessage()))
           // 清空连接
-          .onComplete(event -> getEndpoints().clear());
+          .onComplete(event -> {
+            VertxMqttEndpointManager endpoints = getEndpointManager();
+            endpoints.forEach((clientId, endpoint) -> {
+              if (!endpoint.isConnected()) {
+                endpoints.remove(endpoint);
+              }
+            });
+          });
     }
   }
 
@@ -149,7 +156,7 @@ public class VertxMqttServer extends AbstractVerticle {
   protected void onEndpointHandle(MqttEndpoint endpoint) {
     // 处理连接
     getEndpointHandler().onConnect(VertxMqttServer.this, endpoint);
-    VertxMqttEndpoint vme = getEndpoint(endpoint.clientIdentifier());
+    VertxMqttEndpoint vme = getEndpointManager().getEndpoint(endpoint.clientIdentifier());
     endpoint
         // 订阅主题
         .subscribeHandler(message -> {
@@ -239,8 +246,12 @@ public class VertxMqttServer extends AbstractVerticle {
     return this;
   }
 
-  public Map<String, VertxMqttEndpoint> getEndpoints() {
-    return endpoints;
+  public VertxMqttEndpointManager getEndpointManager() {
+    return endpointManager;
+  }
+
+  public void setEndpointManager(VertxMqttEndpointManager endpoints) {
+    this.endpointManager = endpoints;
   }
 
   /**
@@ -276,75 +287,6 @@ public class VertxMqttServer extends AbstractVerticle {
   public VertxMqttServer setAuthenticator(MqttAuthenticator authenticator) {
     this.authenticator = authenticator;
     return this;
-  }
-
-  /**
-   * 判断是否有对应客户端
-   *
-   * @param clientId 客户端ID
-   * @return 返回判断结果，如果有返回true，否则返回false
-   */
-  public boolean hasClientId(String clientId) {
-    return getEndpoints().containsKey(clientId);
-  }
-
-  /**
-   * 添加客户端
-   *
-   * @param clientId 客户端ID
-   * @param endpoint 客户端
-   */
-  public VertxMqttServer addEndpoint(String clientId, VertxMqttEndpoint endpoint) {
-    getEndpoints().put(clientId, endpoint);
-    return this;
-  }
-
-  /**
-   * 移除客户端
-   *
-   * @param clientId 客户端ID
-   * @return 返回被移除的客户端
-   */
-  public VertxMqttEndpoint removeEndpoint(String clientId) {
-    return getEndpoints().remove(clientId);
-  }
-
-  /**
-   * 获取客户端
-   *
-   * @param clientId 客户端ID
-   * @return 返回获取的客户端
-   */
-  public VertxMqttEndpoint getEndpoint(String clientId) {
-    return getEndpoints().get(clientId);
-  }
-
-  /**
-   * 获取某一个客户端的订阅
-   *
-   * @param clientId 客户端ID
-   * @return 返回订阅的主题
-   */
-  public List<Subscription> getTopic(String clientId) {
-    VertxMqttEndpoint endpoint = getEndpoint(clientId);
-    if (endpoint != null) {
-      return new ArrayList<>(endpoint.getSubscriptions().values());
-    }
-    return Collections.emptyList();
-  }
-
-  /**
-   * 获取的全部的订阅
-   */
-  public List<String> getTopicAll() {
-    return getEndpoints().values()
-        .stream()
-        .flatMap(endpoint -> endpoint.getSubscriptions()
-            .values()
-            .stream())
-        .map(Subscription::topicName)
-        .distinct()
-        .collect(Collectors.toList());
   }
 
 }
