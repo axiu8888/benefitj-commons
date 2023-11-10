@@ -22,6 +22,9 @@ dependencies {
       // jcifs: windows 文件分享
       'org.codelibs:jcifs:2.1.36',
 
+      // jython
+      'org.python:jython-standalone:2.7.3',
+
   ].forEach {
     api(it)
     testImplementation(it)
