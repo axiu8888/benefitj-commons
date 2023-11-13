@@ -2,6 +2,7 @@ package com.benefitj.core;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -9,32 +10,26 @@ import java.util.WeakHashMap;
 import java.util.function.Function;
 
 /**
- * 字节拷贝
+ * 数组拷贝
  */
-public interface BufCopy {
-
-  SingletonSupplier<BufCopy> single = SingletonSupplier.of(BufCopy::newBufCopy);
-
-  static BufCopy get() {
-    return single.get();
-  }
+public interface ArrayCopy<T> {
 
   /**
-   * 获取缓存字节数组
+   * 获取缓存数组
    *
    * @param size  数组大小
    * @param local 是否为本地线程缓存数组
-   * @return 返回字节数据
+   * @return 返回数组
    */
-  byte[] getCache(int size, boolean local);
+  T getCache(int size, boolean local);
 
   /**
-   * 获取缓存字节数组
+   * 获取缓存数组
    *
    * @param size 数组大小
-   * @return 返回字节数据
+   * @return 返回数组
    */
-  default byte[] getCache(int size) {
+  default T getCache(int size) {
     return getCache(size, true);
   }
 
@@ -44,7 +39,7 @@ public interface BufCopy {
    * @param src 元数据
    * @return 返回拷贝后的数据
    */
-  default byte[] copy(byte[] src) {
+  default T copy(T src) {
     return copy(src, true);
   }
 
@@ -54,8 +49,8 @@ public interface BufCopy {
    * @param src 元数据
    * @return 返回拷贝后的数据
    */
-  default byte[] copy(byte[] src, boolean local) {
-    return copy(src, 0, src.length, local);
+  default T copy(T src, boolean local) {
+    return copy(src, 0, len(src), local);
   }
 
   /**
@@ -66,7 +61,7 @@ public interface BufCopy {
    * @param len   长度
    * @return 返回拷贝后的数据
    */
-  default byte[] copy(byte[] src, int start, int len) {
+  default T copy(T src, int start, int len) {
     return copy(src, start, len, true);
   }
 
@@ -77,7 +72,7 @@ public interface BufCopy {
    * @param len 长度
    * @return 返回拷贝后的数据
    */
-  default byte[] copy(byte[] src, int len) {
+  default T copy(T src, int len) {
     return copy(src, len, true);
   }
 
@@ -89,7 +84,7 @@ public interface BufCopy {
    * @param local 是否为本地线程缓存数组
    * @return 返回拷贝后的数据
    */
-  default byte[] copy(byte[] src, int len, boolean local) {
+  default T copy(T src, int len, boolean local) {
     return copy(src, 0, len, local);
   }
 
@@ -102,8 +97,8 @@ public interface BufCopy {
    * @param local 是否为本地线程缓存数组
    * @return 返回拷贝后的数据
    */
-  default byte[] copy(byte[] src, int start, int len, boolean local) {
-    byte[] dest = getCache(len, local);
+  default T copy(T src, int start, int len, boolean local) {
+    T dest = getCache(len, local);
     return copy(src, start, dest, 0, len);
   }
 
@@ -114,8 +109,8 @@ public interface BufCopy {
    * @param dest 目标数据
    * @return 返回拷贝后的数据
    */
-  default byte[] copy(byte[] src, byte[] dest) {
-    return copy(src, 0, dest, 0, Math.min(src.length, dest.length));
+  default T copy(T src, T dest) {
+    return copy(src, 0, dest, 0, Math.min(len(src), len(dest)));
   }
 
   /**
@@ -125,8 +120,8 @@ public interface BufCopy {
    * @param dest 目标数据
    * @return 返回拷贝后的数据
    */
-  default byte[] copy(byte[] src, int srcPos, byte[] dest, int destPos) {
-    return copy(src, srcPos, dest, destPos, Math.min(src.length - srcPos, dest.length - destPos));
+  default T copy(T src, int srcPos, T dest, int destPos) {
+    return copy(src, srcPos, dest, destPos, Math.min(len(src) - srcPos, len(dest) - destPos));
   }
 
   /**
@@ -139,13 +134,13 @@ public interface BufCopy {
    * @param len     长度
    * @return 返回拷贝后的数据
    */
-  default byte[] copy(byte[] src, int start, byte[] dest, int destPos, int len) {
+  default T copy(T src, int start, T dest, int destPos, int len) {
     System.arraycopy(src, start, dest, destPos, len);
     return dest;
   }
 
   /**
-   * 拼接字节数组
+   * 拼接数组
    *
    * @param array 数组
    * @return 返回拼接好的数据
@@ -155,7 +150,7 @@ public interface BufCopy {
   }
 
   /**
-   * 拼接字节数组
+   * 拼接数组
    *
    * @param list 字节列表
    * @return 返回拼接好的数据
@@ -174,35 +169,70 @@ public interface BufCopy {
     }
   }
 
-  /**
-   * 创建缓冲拷贝
-   */
-  static BufCopy newBufCopy() {
-    return new SimpleBufCopy();
+  static ArrayCopy<byte[]> newByteArrayCopy() {
+    return new SimpleBufCopy<>(byte[]::new, false, 0);
   }
 
-  class SimpleBufCopy implements BufCopy {
+  static ArrayCopy<short[]> newShortArrayCopy() {
+    return new SimpleBufCopy<>(short[]::new, false, 0);
+  }
 
-    private final ThreadLocal<Map<Integer, byte[]>> bytesCache = ThreadLocal.withInitial(WeakHashMap::new);
-    private final Function<Integer, byte[]> creator = byte[]::new;
+  static ArrayCopy<int[]> newIntArrayCopy() {
+    return new SimpleBufCopy<>(int[]::new, false, 0);
+  }
+
+  static ArrayCopy<long[]> newLongArrayCopy() {
+    return new SimpleBufCopy<>(long[]::new, false, 0);
+  }
+
+  static ArrayCopy<float[]> newFloatArrayCopy() {
+    return new SimpleBufCopy<>(float[]::new, false, 0);
+  }
+
+  static ArrayCopy<double[]> newDoubleArrayCopy() {
+    return new SimpleBufCopy<>(double[]::new, false, 0);
+  }
+
+  class SimpleBufCopy<T> implements ArrayCopy<T> {
+
+    private ThreadLocal<Map<Integer, T>> bytesCache = ThreadLocal.withInitial(WeakHashMap::new);
+    private Function<Integer, T> creator;
+
+    private boolean fill;
+    private Object fillValue;
+
+
+    public SimpleBufCopy(Function<Integer, T> creator, boolean fill, Object fillValue) {
+      this.creator = creator;
+      this.fill = fill;
+      this.fillValue = fillValue;
+    }
 
     /**
-     * 获取缓存字节数组
+     * 获取缓存数组
      *
      * @param size  数组大小
      * @param local 是否为本地线程缓存数组
-     * @return 返回字节数据
+     * @return 返回数组
      */
     @Override
-    public byte[] getCache(int size, boolean local) {
+    public T getCache(int size, boolean local) {
+      T buf;
       if (local) {
-        byte[] buff = bytesCache.get().computeIfAbsent(size, creator);
-        Arrays.fill(buff, (byte) 0x00);
-        return buff;
+        buf = bytesCache.get().computeIfAbsent(size, creator);
+      } else {
+        buf = creator.apply(size);
       }
-      return new byte[size];
+      if (fill) {
+        Arrays.fill((Object[]) buf, fillValue);
+      }
+      return buf;
     }
 
+  }
+
+  static int len(Object src) {
+    return Array.getLength(src);
   }
 
 }

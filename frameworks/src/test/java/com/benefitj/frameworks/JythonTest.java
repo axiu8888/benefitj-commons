@@ -1,6 +1,7 @@
 package com.benefitj.frameworks;
 
 import com.benefitj.core.ClasspathUtils;
+import com.benefitj.core.TimeUtils;
 import org.junit.Test;
 import org.python.core.PyInteger;
 import org.python.core.PyObject;
@@ -24,7 +25,11 @@ public class JythonTest extends BaseTest {
     PythonInterpreter interp1 = new PythonInterpreter();
     File testPy = ClasspathUtils.getFile("test.py");
 
-    interp1.execfile(testPy.getAbsolutePath());
+    long startAt = TimeUtils.now();
+    for (int i = 0; i < 1000; i++) {
+      interp1.execfile(testPy.getAbsolutePath());
+    }
+    System.err.println("耗时: " + TimeUtils.diffNow(startAt));
     //运行python命令
     PythonInterpreter interp = new PythonInterpreter();
     System.out.println("Hello, brave new world");

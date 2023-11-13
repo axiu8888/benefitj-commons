@@ -1,7 +1,7 @@
 package com.benefitj.devices.breath;
 
-import com.benefitj.core.BufCopy;
 import com.benefitj.core.ByteArrayBuf;
+import com.benefitj.core.ByteArrayCopy;
 import com.benefitj.core.HexUtils;
 import com.benefitj.core.SingletonSupplier;
 
@@ -22,7 +22,7 @@ public class Helper {
   /**
    * 拷贝字节
    */
-  final BufCopy copy = new BufCopy.SimpleBufCopy();
+  final ByteArrayCopy copy = ByteArrayCopy.newBufCopy();
   /**
    * 缓存数据
    */

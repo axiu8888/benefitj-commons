@@ -1,13 +1,15 @@
 package com.benefitj.netty;
 
-import com.benefitj.core.BufCopy;
+import com.benefitj.core.ByteArrayCopy;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.socket.DatagramPacket;
+
+import java.util.function.Function;
 
 /**
  * 读取 ByteBuf
  */
-public interface ByteBufCopy extends BufCopy {
+public interface ByteBufCopy extends com.benefitj.core.ByteArrayCopy {
 
   /**
    * 读取数据
@@ -208,11 +210,15 @@ public interface ByteBufCopy extends BufCopy {
    * 创建字节缓冲拷贝
    */
   static ByteBufCopy newByteBufCopy() {
-    return new SimpleByteBufCopy();
+    return new Copy(byte[]::new, false, 0x00);
   }
 
-  class SimpleByteBufCopy extends SimpleBufCopy implements ByteBufCopy {
-  }
+  class Copy extends ByteArrayCopy.BufCopy implements ByteBufCopy {
 
+    public Copy(Function<Integer, byte[]> creator, boolean fill, Object fillValue) {
+      super(creator, fill, fillValue);
+    }
+
+  }
 
 }

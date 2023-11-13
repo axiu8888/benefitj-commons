@@ -1,7 +1,7 @@
 package com.benefitj.javastruct.convert;
 
 import com.benefitj.core.BinaryHelper;
-import com.benefitj.core.BufCopy;
+import com.benefitj.core.ByteArrayCopy;
 import com.benefitj.javastruct.JavaStructField;
 import com.benefitj.javastruct.PrimitiveType;
 import com.benefitj.javastruct.StructField;
@@ -21,7 +21,7 @@ public abstract class BufCopyConverter<T> implements Converter<T> {
   /**
    * 缓冲
    */
-  private final BufCopy bufCopy = BufCopy.newBufCopy();
+  private final ByteArrayCopy byteArrayCopy = ByteArrayCopy.newBufCopy();
   /**
    * 是否优先使用本地缓冲
    */
@@ -59,8 +59,8 @@ public abstract class BufCopyConverter<T> implements Converter<T> {
   @Override
   public abstract byte[] convert(StructField field, Object value);
 
-  public BufCopy getBufCopy() {
-    return bufCopy;
+  public ByteArrayCopy getBufCopy() {
+    return byteArrayCopy;
   }
 
   public boolean isLocal() {
@@ -76,7 +76,7 @@ public abstract class BufCopyConverter<T> implements Converter<T> {
   }
 
   public byte[] getCache(int size, boolean local) {
-    return bufCopy.getCache(size, local);
+    return byteArrayCopy.getCache(size, local);
   }
 
   /**

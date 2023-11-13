@@ -45,11 +45,11 @@ public class CmdExecutorTest extends BaseTest {
 
   @Test
   public void testGitPull() {
-//    new GitPull(new File("D:/code/github"), 5).pull();
-//    new GitPull(new File("D:/code/github/java"), 5).pull();
+    //new GitPull(new File("D:/code/github"), 5).pull();
+    //new GitPull(new File("D:/code/github/java"), 5).pull();
 
     CountDownLatch latch = new CountDownLatch(1);
-    pull("D:/code/github/frontend", latch);
+    //pull("D:/code/github/frontend", latch);
     pull("D:/code/github/java/vertx", latch);
     CatchUtils.ignore((IRunnable) latch::await);
   }
@@ -90,7 +90,7 @@ public class CmdExecutorTest extends BaseTest {
 
     PathWatcher pathWatcher = new PathWatcher(Paths.get(dir))
         .setWatchEventListener((watcher, key, path, filename, kind) -> {
-          log.info("文件：" + (filename + " " + PathWatcher.ofDesc(kind)) + ", 发生事件：" + kind.name() +", " + DateFmtter.fmtNowS());
+          log.info("文件：" + (filename + " " + PathWatcher.ofDesc(kind)) + ", 发生事件：" + kind.name() + ", " + DateFmtter.fmtNowS());
           if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
 //            if (filename.getFileName().startsWith("error.txt")) {
 //              File file = filename.getFileName().toFile();

@@ -69,7 +69,7 @@ public class HexTest extends BaseTest {
     int[] wave = new int[(end - start) / step * size];
     byte b1, b2;
     for (int i = start, j = 0; i < end; i += step) {
-      System.err.println("segment: " + HexUtils.bytesToHex(BufCopy.get().copy(data, i, step)));
+      System.err.println("segment: " + HexUtils.bytesToHex(ByteArrayCopy.get().copy(data, i, step)));
       for (int k = 0, v; k < size; k++, j++) {
         b1 = data[i + 2 * k + offset];
         b2 = data[i + 1 + 2 * k + offset];

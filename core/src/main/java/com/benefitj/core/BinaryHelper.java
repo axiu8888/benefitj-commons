@@ -51,7 +51,7 @@ public class BinaryHelper {
   /**
    * 缓冲
    */
-  private final BufCopy bufCopy = BufCopy.newBufCopy();
+  private final ByteArrayCopy byteArrayCopy = ByteArrayCopy.newBufCopy();
   /**
    * 是否使用本地缓冲
    */
@@ -77,8 +77,8 @@ public class BinaryHelper {
     this.local = local;
   }
 
-  public BufCopy getBufCopy() {
-    return bufCopy;
+  public ByteArrayCopy getBufCopy() {
+    return byteArrayCopy;
   }
 
   public byte[] getCache(int size) {
@@ -86,7 +86,7 @@ public class BinaryHelper {
   }
 
   public byte[] getCache(int size, boolean local) {
-    return bufCopy.getCache(size, local);
+    return byteArrayCopy.getCache(size, local);
   }
 
   public ByteOrder getOrder() {
@@ -101,7 +101,7 @@ public class BinaryHelper {
    * 反转数组
    */
   public byte[] reverse(byte[] data) {
-    byte[] copy = bufCopy.copy(data);
+    byte[] copy = byteArrayCopy.copy(data);
     for (int i = 0; i < copy.length; i++) {
       data[copy.length - 1 - i] = copy[i];
     }
@@ -1041,7 +1041,7 @@ public class BinaryHelper {
   public short[] parseShortArray(byte[] data, int start, int len, int size, boolean signed) {
     short[] array = new short[len / size];
     for (int i = 0; i < array.length; i++) {
-      array[i] = bytesToShort(bufCopy.copy(data, start + i * size, size, true), signed);
+      array[i] = bytesToShort(byteArrayCopy.copy(data, start + i * size, size, true), signed);
     }
     return array;
   }
@@ -1059,7 +1059,7 @@ public class BinaryHelper {
   public int[] parseIntArray(byte[] data, int start, int len, int size, boolean signed) {
     int[] array = new int[len / size];
     for (int i = 0; i < array.length; i++) {
-      array[i] = bytesToInt(bufCopy.copy(data, start + i * size, size, true), signed);
+      array[i] = bytesToInt(byteArrayCopy.copy(data, start + i * size, size, true), signed);
     }
     return array;
   }
@@ -1077,7 +1077,7 @@ public class BinaryHelper {
   public long[] parseLongArray(byte[] data, int start, int len, int size, boolean signed) {
     long[] array = new long[len / size];
     for (int i = 0; i < array.length; i++) {
-      array[i] = bytesToLong(bufCopy.copy(data, start + i * size, size, true), signed);
+      array[i] = bytesToLong(byteArrayCopy.copy(data, start + i * size, size, true), signed);
     }
     return array;
   }

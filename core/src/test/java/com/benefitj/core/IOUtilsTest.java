@@ -50,7 +50,7 @@ public class IOUtilsTest extends BaseTest {
       // 4 把数组每一字节（一个字节占八位）换成16进制连成md5字符串
       System.err.println(message + ", " + HexUtils.bytesToLong(buff) + ", " + HexUtils.bytesToHex(buff));
       System.err.println("length: " + buff.length);
-      byte[] copy = BufCopy.get().copy(buff, 4, 8);
+      byte[] copy = ByteArrayCopy.get().copy(buff, 4, 8);
       System.err.println("2.1 ===>: " + HexUtils.bytesToHex(copy));
       System.err.println("2.2 ===>: " + HexUtils.bytesToLong(copy));
 

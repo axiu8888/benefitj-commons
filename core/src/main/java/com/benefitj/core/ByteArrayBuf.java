@@ -6,8 +6,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
- * 字节缓冲
+ * 字节缓冲，已过时，请使用netty的 {@link io.netty.buffer.ByteBuf}
  */
+@Deprecated
 public class ByteArrayBuf {
 
   public static final byte[] EMPTY = new byte[0];
