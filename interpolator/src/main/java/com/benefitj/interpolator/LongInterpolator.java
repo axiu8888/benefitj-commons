@@ -27,15 +27,15 @@ public class LongInterpolator extends ArrayInterpolator<long[], long[], long[]> 
    * 加值
    *
    * @param src   原数据
-   * @param buff  临时缓冲区
+   * @param buf  临时缓冲区
    * @param ratio 比率
    */
   @Override
-  public void accelerate(long[] src, long[] buff, int ratio) {
+  public void accelerate(long[] src, long[] buf, int ratio) {
     int index = 0;
     for (long v : src) {
       for (int i = 0; i < ratio; i++) {
-        buff[index++] = v;
+        buf[index++] = v;
       }
     }
   }
@@ -44,13 +44,13 @@ public class LongInterpolator extends ArrayInterpolator<long[], long[], long[]> 
    * 减值
    *
    * @param dest  目标数据
-   * @param buff  临时缓冲区
+   * @param buf  临时缓冲区
    * @param ratio 比率
    */
   @Override
-  public void decelerate(long[] dest, long[] buff, int ratio) {
-    for (int i = 0, j = 0; i < buff.length; i += ratio, j++) {
-      dest[j] = buff[i];
+  public void decelerate(long[] dest, long[] buf, int ratio) {
+    for (int i = 0, j = 0; i < buf.length; i += ratio, j++) {
+      dest[j] = buf[i];
     }
   }
 

@@ -5,6 +5,8 @@ import junit.framework.TestCase;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import java.util.Arrays;
+
 public class ArrayUtilsTest extends TestCase {
 
   protected final Logger log = StackLogger.getLogger();
@@ -26,6 +28,23 @@ public class ArrayUtilsTest extends TestCase {
     log.info("elapse: {}", System.currentTimeMillis() - start);
 
   }
+
+  @Test
+  public void test_SimpleInterpolator() {
+    SimpleInterpolator<int[]> interpolator = new SimpleInterpolator<int[]>(100, 25){};
+
+    log.info("interpolator.type =>: {}", interpolator.type);
+
+    int[] src = new int[100];
+    for (int i = 0; i < src.length; i++) {
+      src[i] = i;
+    }
+    int[] dest = interpolator.process(src);
+    log.info("dest: {}", Arrays.toString(dest));
+    System.err.println("dest: " + Arrays.toString(dest));
+
+  }
+
 
   public void tearDown() throws Exception {
   }

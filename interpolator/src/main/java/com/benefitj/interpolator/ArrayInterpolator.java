@@ -23,12 +23,12 @@ public abstract class ArrayInterpolator<S, D, T> extends Interpolator<S, D> {
 
   @Override
   public D process(S src, int length, int srcRatio, int destRatio) {
-    T buff = getBuffer();
+    T buf = getBuffer();
     D dest = getDest(getDestSize());
     setLocalSrc(src);
     setLocalDest(dest);
-    accelerate(src, buff, srcRatio);
-    decelerate(dest, buff, destRatio);
+    accelerate(src, buf, srcRatio);
+    decelerate(dest, buf, destRatio);
     setLocalSrc(null);
     setLocalDest(null);
     return dest;
@@ -69,18 +69,18 @@ public abstract class ArrayInterpolator<S, D, T> extends Interpolator<S, D> {
    * 加值
    *
    * @param src   原数据
-   * @param buff  临时缓冲区
+   * @param buf   临时缓冲区
    * @param ratio 比率
    */
-  public abstract void accelerate(S src, T buff, int ratio);
+  public abstract void accelerate(S src, T buf, int ratio);
 
   /**
    * 减值
    *
    * @param dest  目标数据
-   * @param buff  临时缓冲区
+   * @param buf   临时缓冲区
    * @param ratio 比率
    */
-  public abstract void decelerate(D dest, T buff, int ratio);
+  public abstract void decelerate(D dest, T buf, int ratio);
 
 }

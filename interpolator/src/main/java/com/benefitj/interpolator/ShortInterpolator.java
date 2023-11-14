@@ -27,15 +27,15 @@ public class ShortInterpolator extends ArrayInterpolator<short[], short[], short
    * 加值
    *
    * @param src   原数据
-   * @param buff  临时缓冲区
+   * @param buf  临时缓冲区
    * @param ratio 比率
    */
   @Override
-  public void accelerate(short[] src, short[] buff, int ratio) {
+  public void accelerate(short[] src, short[] buf, int ratio) {
     int index = 0;
     for (short v : src) {
       for (int i = 0; i < ratio; i++) {
-        buff[index++] = v;
+        buf[index++] = v;
       }
     }
   }
@@ -44,13 +44,13 @@ public class ShortInterpolator extends ArrayInterpolator<short[], short[], short
    * 减值
    *
    * @param dest  目标数据
-   * @param buff  临时缓冲区
+   * @param buf  临时缓冲区
    * @param ratio 比率
    */
   @Override
-  public void decelerate(short[] dest, short[] buff, int ratio) {
-    for (int i = 0, j = 0; i < buff.length; i += ratio, j++) {
-      dest[j] = buff[i];
+  public void decelerate(short[] dest, short[] buf, int ratio) {
+    for (int i = 0, j = 0; i < buf.length; i += ratio, j++) {
+      dest[j] = buf[i];
     }
   }
 
