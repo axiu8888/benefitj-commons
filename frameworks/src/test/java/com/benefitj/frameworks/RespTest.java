@@ -1,9 +1,13 @@
 package com.benefitj.frameworks;
 
+import com.benefitj.core.IOUtils;
+import com.benefitj.core.file.IWriter;
 import org.junit.Test;
 
-import java.util.LinkedList;
+import java.io.File;
+import java.nio.charset.Charset;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RespTest extends BaseTest {
 
@@ -16,80 +20,31 @@ public class RespTest extends BaseTest {
   }
 
   @Test
-  public void test() {
-    RespFilter filter = new RespFilter();
-  }
-
-  static class RespFilter {
-    List<Integer> res_buf = new LinkedList<>();
-    List<Integer> new_buf = new LinkedList<>();
-    int min_value;
-    int max_value;
-    int last;
-    int[] buf = new int[25];
-
-    public int[] res_proc(int[] new_signal_value) {
-      for (int i = 0; i < new_signal_value.length; i++) {
-        buf[i] = res_proc(new_signal_value[i]);
-      }
-      return buf;
-    }
-
-    public int res_proc(int new_signal_value) {
-      res_buf.add(new_signal_value);
-      if (res_buf.size() < 25) {
-        new_buf.add(new_signal_value);
-        return new_signal_value;
-      } else {
-        res_buf.remove(0);
-        new_buf.remove(0);
-      }
-
-      long window_sum = sum(res_buf);
-      int mean_sum = (int) (window_sum/25);
-      new_buf.add(mean_sum);
-
-      if (mean_sum < min_value) {
-        min_value = mean_sum;
-      } else if(mean_sum > max_value+100) {
-        max_value = mean_sum;
-      }
-      return (mean_sum - min_value) / (max_value - min_value);
-    }
-
-    private long sum(List<Integer> list) {
-      long sum = 0;
-      for (Integer v : list) {
-        sum += v;
-      }
-      return sum;
-    }
+  public void test1() {
+    RespFilter1 ch_filter = RespFilter1.get(0, "01000860");
+    RespFilter1 abd_filter = RespFilter1.get(1, "01000860");
+    File src = new File("D:/home/resp/ch_zhang.txt");
 
   }
 
-//res_buf = deque(maxlen=25)
-//new_buf = deque(maxlen=25)
-//min_value = float('inf')
-//max_value = float('-inf')
-//
-//
-//def res_proc(new_signal_value):
-//    global min_value, max_value, last
-//    res_buf.append(new_signal_value)
-//    if len(res_buf) < 25:
-//        new_buf.append(new_signal_value)
-//        return 0
-//
-//    window_sum = sum(res_buf)
-//    mean_sum = window_sum/25
-//    new_buf.append(mean_sum)
-//
-//    if mean_sum < min_value:
-//        min_value = mean_sum
-//    if mean_sum > max_value+100:
-//        max_value = mean_sum
-//    scaled_value = (mean_sum - min_value) / (max_value - min_value)
-//
-//    return scaled_value
+  @Test
+  public void test2() {
+    RespFilter2 ch_filter = RespFilter2.get(0, "01000860");
+    RespFilter2 abd_filter = RespFilter2.get(1, "01000860");
+    File src = new File("D:/home/resp/ch_zhang.txt");
+    List<Double> values = IOUtils.readLines(IOUtils.newBufferedReader(src, Charset.defaultCharset().name()))
+        .stream()
+        .map(Double::parseDouble)
+        .collect(Collectors.toList());
+    System.err.println(values);
+    IWriter writer = IWriter.createWriter(new File(src.getParentFile(), src.getName().replace(".txt", "_d.txt")), false);
+    for (Double value : values) {
+      int v = ch_filter.res_proc(value.intValue());
+      writer.writeAndFlush(value + ", " + v + "\n");
+    }
+
+
+  }
+
 
 }
