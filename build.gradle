@@ -1,30 +1,33 @@
 ext {
-  springbootVersion = "2.7.5"
+  springbootVersion = "2.7.17"
   springDependencyManagementVersion = "1.0.15.RELEASE"
-  springExperimentalAotVersion = "0.12.1"
+  springIntegrationVersion = "5.5.16"
 
-  springIntegrationVersion = "5.5.13"
-  slf4jVersion = '2.0.7'
-  lombokVersion = "1.18.28"
-  jacksonVersion = "2.14.1"
-  aspectjVersion = "1.9.9.1"
-  guavaVersion = "31.1-jre"
-  fastjson2Version = "2.0.38"
+  lombokVersion = "1.18.30"
+  jacksonVersion = "2.15.3"
+  guavaVersion = '32.1.3-jre'
+  fastjson2Version = '2.0.42'
+  commonsIOVersion = "2.15.0"
+  commonsLang3Version = "3.13.0"
+  slf4jVersion = '2.0.9'
+  hutoolVersion = '5.8.23'
 
-  swagger2Version = "3.0.0"
-  jjwtVersion = "0.11.5"
-  nettyAllVersion = '4.1.96.Final'
-  vertxVersion = "4.4.4"
+  aspectjVersion = "1.9.20"
+  swaggerVersion = "3.0.0"
+  knife4jVersion = "4.3.0"
+  jjwtVersion = "0.12.3"
+  nettyAllVersion = '4.1.101.Final'
+  vertxVersion = "4.4.6"
 
   rxJavaVersion = '2.2.21'
   okHttpVersion = '4.10.0'
   retrofitVersion = '2.9.0'
 
-  mysqlVersion = "8.0.33"
-  druidVersion = "1.2.17"
-  mybatisVersion = "2.2.2"
-  mapperVersion = "4.2.1"
-  pagehelperVersion = "1.4.6"
+  mysqlVersion = "8.2.0"
+  postgresqlVersion = "42.6.0"
+  druidVersion = "1.2.20"
+  mybatisPlusVersion = "3.5.4.1"
+  pagehelperVersion = "2.0.0"
 
   useRepository = false
 
