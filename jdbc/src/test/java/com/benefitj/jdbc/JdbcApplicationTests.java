@@ -6,6 +6,7 @@ import com.benefitj.core.TimeUtils;
 import com.benefitj.jdbc.sql.DatabaseConnector;
 import com.benefitj.jdbc.sql.EnhanceStatement;
 import com.benefitj.jdbc.sql.TableDDL;
+import com.mysql.cj.jdbc.Driver;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,10 +24,10 @@ public class JdbcApplicationTests {
       synchronized (this) {
         if ((c = this.connector) == null) {
           this.connector = new DatabaseConnector()
-              .setUrl("jdbc:mysql://192.168.85.128:3306")
+              .setUrl("jdbc:mysql://192.168.1.194:53306")
               .setUser("root")
-              .setPassword("admin")
-              .setDriver("com.mysql.cj.jdbc.Driver")
+              .setPassword("hsrg8888")
+              .setDriver(Driver.class.getName())
               .setAutoCommit(true)
               .setReadOnly(false)
               .setClientProperties(prop -> {
@@ -103,7 +104,7 @@ public class JdbcApplicationTests {
     EnhanceStatement stmt = getConnector().createStmt();
 
     long start = TimeUtils.now();
-    List<TableDDL> ddls = stmt.showTableDDLs("jeecg-boot");
+    List<TableDDL> ddls = stmt.showTableDDLs("hsrg");
     System.err.println(JSON.toJSONString(ddls));
 
 //    // 创建表

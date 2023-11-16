@@ -33,5 +33,4 @@ public class TimeUtilsTest extends BaseTest {
     log.info("获取周类型: {}", TimeUtils.getWeek(TimeUtils.now()).getName());
   }
 
-
 }

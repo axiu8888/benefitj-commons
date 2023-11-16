@@ -518,6 +518,24 @@ public class IOUtils {
   /**
    * 读取数据，每次读取一行，默认关闭流
    *
+   * @param input 输入
+   */
+  public static List<String> readLines(File input) {
+    return readLines(input, Charset.defaultCharset());
+  }
+
+  /**
+   * 读取数据，每次读取一行，默认关闭流
+   *
+   * @param input 输入
+   */
+  public static List<String> readLines(File input, Charset charset) {
+    return readLines(wrapReader(newISR(input, charset.name())));
+  }
+
+  /**
+   * 读取数据，每次读取一行，默认关闭流
+   *
    * @param reader 输入
    */
   public static List<String> readLines(Reader reader) {

@@ -4,7 +4,6 @@ import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
 import com.benefitj.jpuppeteer.Event;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import kotlin.jvm.internal.Intrinsics;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -439,7 +438,7 @@ public interface Network {
      *                          Total number of bytes received for this request.
      */
     @Event("loadingFinished")
-    void loadingFinished(String requestId, Long timestamp, Intrinsics.Kotlin encodedDataLength);
+    void loadingFinished(String requestId, Long timestamp, Long encodedDataLength);
 
     /**
      * Fired if request ended up loading from cache.

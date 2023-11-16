@@ -10,8 +10,4 @@ public interface EventWrapper {
    */
   Object wrap(Object original);
 
-
-
-
-
 }

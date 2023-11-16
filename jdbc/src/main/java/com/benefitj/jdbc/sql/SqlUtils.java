@@ -219,7 +219,7 @@ public class SqlUtils {
   public static List<String> refine(File sqlScript) {
     final List<String> lines = new LinkedList<>();
     final AtomicBoolean start = new AtomicBoolean(false);
-    IOUtils.readLines(sqlScript, line -> {
+    IOUtils.readLines(sqlScript, (line, lineNumber) -> {
       String tmp = refine(line, start);
       if (tmp != null) {
         lines.add(tmp);

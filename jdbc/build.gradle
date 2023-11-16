@@ -7,7 +7,7 @@ dependencies {
   [
       project(":core"),
       project(":frameworks"),
-      "mysql:mysql-connector-java:$mysqlVersion",
+      "com.mysql:mysql-connector-j:$mysqlVersion",
   ].forEach {
     api(it)
   }
