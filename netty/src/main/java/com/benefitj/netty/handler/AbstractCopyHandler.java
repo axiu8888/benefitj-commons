@@ -3,6 +3,7 @@ package com.benefitj.netty.handler;
 import com.benefitj.netty.ByteBufCopy;
 import io.netty.channel.*;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.ReferenceCounted;
 import io.netty.util.internal.TypeParameterMatcher;
 
 
@@ -52,7 +53,7 @@ public abstract class AbstractCopyHandler<I> extends ChannelDuplexHandler implem
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    boolean release = true;
+    boolean release = msg instanceof ReferenceCounted;
     try {
       if (acceptMessage(msg)) {
         @SuppressWarnings("unchecked")
@@ -64,7 +65,9 @@ public abstract class AbstractCopyHandler<I> extends ChannelDuplexHandler implem
       }
     } finally {
       if (autoRelease && release) {
-        ReferenceCountUtil.release(msg);
+        if (((ReferenceCounted) msg).refCnt() > 0) {
+          ReferenceCountUtil.release(msg);
+        }
       }
     }
   }
