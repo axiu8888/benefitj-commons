@@ -2,7 +2,6 @@ package com.benefitj.jpuppeteer.chromium;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.jpuppeteer.Event;
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.NodeType;
 import lombok.Data;
 
 /**
@@ -189,7 +188,7 @@ public interface WebAudio {
      * GraphObjectId
      */
     String contextId;
-    NodeType nodeType;
+    String nodeType;
     Integer numberOfInputs;
     Integer numberOfOutputs;
     Integer channelCount;

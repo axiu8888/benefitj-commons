@@ -34,7 +34,7 @@ public class ChromiumTest {
   public void testChromiumArgs() throws IOException {
     JSONObject json = new JSONObject(new LinkedHashMap());
     List<String> lines = new ArrayList<>();
-    IOUtils.readLines(IOUtils.wrapReader(Files.newInputStream(Paths.get("D:/tmp/chromium_startup_args_tmp.txt")), StandardCharsets.UTF_8), lines::add);
+    IOUtils.readLines(IOUtils.wrapReader(Files.newInputStream(Paths.get("D:/tmp/chromium_startup_args_tmp.txt")), StandardCharsets.UTF_8), (line, lineNumber) -> lines.add(line));
     List<String> nweLines = lines.stream()
         .map(line -> line.endsWith("⊗") ? line.substring(line.length() - "⊗".length()) : line)
         .map(line -> line.endsWith(" ↪") ? line.substring(0, line.length() - " ↪".length()) : line)
