@@ -1,11 +1,13 @@
 package com.benefitj.interpolator;
 
 import com.benefitj.core.StackLogger;
+import com.benefitj.core.TimeUtils;
 import junit.framework.TestCase;
 import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class ArrayUtilsTest extends TestCase {
 
@@ -45,6 +47,24 @@ public class ArrayUtilsTest extends TestCase {
 
   }
 
+  @Test
+  public void test_func() {
+    log.info("sum: {}", ArrayUtils.sum(Arrays.asList(1, 3, 5, 7, 9, 1024, 10240, 102400, 1024000, 10240000, 102400000)).longValue());
+    log.info("mean: {}", ArrayUtils.mean(Arrays.asList(1, 3, 5, 7, 9, 1024, 10240, 102400, 1024000, 10240000, 102400000)).longValue());
+    log.info("mean: {}", ArrayUtils.mean(Arrays.asList(1, 3, 5, 7, 9, 1024, 10240, 102400, 1024000, 10240000, 102400000)).doubleValue()); //
+    log.info("max: {}", ArrayUtils.max(Arrays.asList(1, 3, 5, 7, 9, 1024, 10240, 102400, 1024000, 10240000, 102400000)).longValue());
+    log.info("min: {}", ArrayUtils.min(Arrays.asList(1, 3, 5, 7, 9, 1024, 10240, 102400, 1024000, 10240000, 102400000)).longValue());
+
+
+    List<Integer> list = Arrays.asList(1, 3, 5, 7, 9, 1024, 10240, 102400, 1024000, 10240000, 102400000);
+    long startAt = TimeUtils.now();
+    long max = 0;
+    for (int i = 0; i < 1_000_000; i++) {
+      max = Math.max(max, ArrayUtils.mean(list).longValue());
+    }
+    log.info("耗时: {}", TimeUtils.diffNow(startAt));
+
+  }
 
   public void tearDown() throws Exception {
   }

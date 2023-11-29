@@ -23,6 +23,7 @@ public class CmdExecutorTest extends BaseTest {
   public void testJavaVersion() {
     CmdCall call = CmdExecutor.get().call("java --version");
     System.err.println(call.toPrintInfo("java version", null));
+    log.info("{}", call.toPrintInfo("java version", null));
   }
 
   @Test
@@ -50,7 +51,8 @@ public class CmdExecutorTest extends BaseTest {
 
     CountDownLatch latch = new CountDownLatch(1);
     //pull("D:/code/github/frontend", latch);
-    pull("D:/code/github/java/vertx", latch);
+    //pull("D:/code/github/java/vertx", latch);
+    pull("D:/code/github/golang", latch);
     CatchUtils.ignore((IRunnable) latch::await);
   }
 

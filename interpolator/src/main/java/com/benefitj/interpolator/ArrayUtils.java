@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -13,7 +14,7 @@ import java.util.function.Function;
  */
 public class ArrayUtils {
 
-  public static final Map<Class<? extends Number>, Function<Number, ? extends Number>> FUNCTIONS = Collections.unmodifiableMap(new HashMap() {{
+  public static final Map FUNCTIONS = Collections.unmodifiableMap(new HashMap() {{
     put(Byte.class, (Function<Number, Byte>) v -> v instanceof Byte ? (Byte) v : v.byteValue());
     put(Short.class, (Function<Number, Short>) v -> v instanceof Short ? (Short) v : v.shortValue());
     put(Integer.class, (Function<Number, Integer>) v -> v instanceof Integer ? (Integer) v : v.intValue());
@@ -34,9 +35,50 @@ public class ArrayUtils {
     return null;
   }
 
-  public static final BiFunction<BigDecimal, Number, BigDecimal> SUM = (v1, v2) -> v1.add(ofDecimal(obtainFunc(Double.class).apply(v2)));
-  public static final BiFunction<BigDecimal, Number, BigDecimal> MAX = (v1, v2) -> ofDecimal(Math.max(obtainFunc(Double.class).apply(v2), obtainFunc(Double.class).apply(v1)));
-  public static final BiFunction<BigDecimal, Number, BigDecimal> MIN = (v1, v2) -> ofDecimal(Math.min(obtainFunc(Double.class).apply(v2), obtainFunc(Double.class).apply(v1)));
+  public static final BiFunction<BigDecimal, Number, BigDecimal> SUM = (v1, v2) -> v1.add(ofDecimal(v2));
+  public static final BiFunction<BigDecimal, Number, BigDecimal> MAX = (v1, v2) -> v1.max(ofDecimal(v2));
+  public static final BiFunction<BigDecimal, Number, BigDecimal> MIN = (v1, v2) -> v1.min(ofDecimal(v2));
+  public static final BiFunction<BigDecimal, BigDecimal, BigDecimal> ADD = BigDecimal::add;
+  public static final BiFunction<BigDecimal, BigDecimal, BigDecimal> SUBTRACT = BigDecimal::subtract;
+  public static final BiFunction<BigDecimal, BigDecimal, BigDecimal> MULTIPLY = BigDecimal::multiply;
+  public static final BiFunction<BigDecimal, BigDecimal, BigDecimal> DIVIDE = BigDecimal::divide;
+
+
+  public static Number castTo(Class<?> type, Number v) {
+    if (type.isArray()) {
+      if (type == byte[].class) {
+        return v instanceof Byte ? (Byte) v : v.byteValue();
+      } else if (type == short[].class) {
+        return v instanceof Short ? (Short) v : v.shortValue();
+      } else if (type == int[].class) {
+        return v instanceof Integer ? (Integer) v : v.intValue();
+      } else if (type == long[].class) {
+        return v instanceof Long ? (Long) v : v.longValue();
+      } else if (type == float[].class) {
+        return v instanceof Float ? (Float) v : v.floatValue();
+      } else if (type == double[].class) {
+        return v instanceof Double ? (Double) v : v.doubleValue();
+      } else {
+        throw new IllegalStateException("不支持的类型: " + type);
+      }
+    } else {
+      if (type == byte.class) {
+        return v instanceof Byte ? (Byte) v : v.byteValue();
+      } else if (type == short.class) {
+        return v instanceof Short ? (Short) v : v.shortValue();
+      } else if (type == int.class) {
+        return v instanceof Integer ? (Integer) v : v.intValue();
+      } else if (type == long.class) {
+        return v instanceof Long ? (Long) v : v.longValue();
+      } else if (type == float.class) {
+        return v instanceof Float ? (Float) v : v.floatValue();
+      } else if (type == double.class) {
+        return v instanceof Double ? (Double) v : v.doubleValue();
+      } else {
+        throw new IllegalStateException("不支持的类型: " + type);
+      }
+    }
+  }
 
   /**
    * 数组转换
@@ -44,15 +86,26 @@ public class ArrayUtils {
    * @param array    数组
    * @param consumer 处理函数
    */
-  public static <T> void arrayTo(Object array, Consumer<T> consumer) {
+  public static <T> T arrayTo(Object array, Consumer<Integer> consumer) {
     if (!array.getClass().isArray()) {
       throw new IllegalStateException("仅支持数组类型!");
     }
 
     int length = Array.getLength(array);
     for (int i = 0; i < length; i++) {
-      consumer.accept((T) Array.get(array, i));
+      consumer.accept(i);
     }
+    return (T) array;
+  }
+
+  /**
+   * 数组转换
+   *
+   * @param array    数组
+   * @param consumer 处理函数
+   */
+  public static <T, U> T arrayTo(Object array, BiConsumer<Integer, U> consumer) {
+    return arrayTo(array, i -> consumer.accept(i, (U) Array.get(array, i)));
   }
 
   /**
@@ -65,7 +118,7 @@ public class ArrayUtils {
    */
   public static <T, R> List<R> arrayToList(Object array, Function<T, R> mappedFunction) {
     List<R> list = new ArrayList<>(Array.getLength(array));
-    arrayTo(array, (Consumer<T>) element -> list.add(mappedFunction.apply(element)));
+    arrayTo(array, (BiConsumer<Integer, T>) (i, element) -> list.add(mappedFunction.apply(element)));
     return list;
   }
 
@@ -125,7 +178,7 @@ public class ArrayUtils {
    * @param c 集合
    * @return 返回计算的值
    */
-  public static boolean isFloatNumber(Collection<? extends Number> c) {
+  public static boolean hasFloatNumber(Collection<? extends Number> c) {
     for (Number v : c) {
       if (v instanceof Float || v instanceof Double || v instanceof BigDecimal) {
         return true;
@@ -140,10 +193,13 @@ public class ArrayUtils {
    * @param c 集合
    * @return 返回计算的值
    */
-  public static BigDecimal calculate(Collection<? extends Number> c,
-                                     BiFunction<BigDecimal, Number, BigDecimal> handler) {
-    BigDecimal result = ofDecimal(0.0);
+  public static BigDecimal calculate(Collection<? extends Number> c, BiFunction<BigDecimal, Number, BigDecimal> handler) {
+    BigDecimal result = null;
     for (Number v : c) {
+      if (result == null) {
+        result = ofDecimal(v);
+        continue;
+      }
       result = handler.apply(result, v);
     }
     return result;
