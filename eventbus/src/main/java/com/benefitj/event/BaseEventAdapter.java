@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class BaseEventAdapter<E> implements EventAdapter<E> {
 
-  protected final Logger logger = LoggerFactory.getLogger(getClass());
+  protected final Logger log = LoggerFactory.getLogger(getClass());
 
   private final TypeParameterMatcher matcher;
 
@@ -38,7 +38,7 @@ public abstract class BaseEventAdapter<E> implements EventAdapter<E> {
         process(event);
       }
     } catch (Exception e) {
-      logger.error("throw: " + e.getMessage(), e);
+      log.error("throw: " + e.getMessage(), e);
     }
   }
 
