@@ -21,7 +21,7 @@ public class FixedList<T> extends LinkedList<T> {
       if (last) {
         removeLast();
       } else {
-        removeLast();
+        removeFirst();
       }
     }
   }

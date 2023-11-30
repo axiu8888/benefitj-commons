@@ -62,7 +62,7 @@ public class ArrayUtilsTest extends TestCase {
     for (int i = 0; i < 1_000_000; i++) {
       max = Math.max(max, ArrayUtils.mean(list).longValue());
     }
-    log.info("耗时: {}", TimeUtils.diffNow(startAt));
+    log.info("耗时: {}, {}", TimeUtils.diffNow(startAt), max);
 
   }
 
