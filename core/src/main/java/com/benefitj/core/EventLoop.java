@@ -317,6 +317,29 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
     }
   }
 
+  /**
+   * sleep
+   *
+   * @param duration 时长
+   */
+  public static void sleepSecond(long duration) {
+    sleep(duration, TimeUnit.SECONDS);
+  }
+
+  /**
+   * sleep
+   *
+   * @param duration 时长
+   * @param unit     单位
+   */
+  public static void sleep(long duration, TimeUnit unit) {
+    try {
+      Thread.sleep(unit.toMillis(duration));
+    } catch (InterruptedException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   public static ScheduledFuture<?> asyncIO(Runnable task) {
     return asyncIO(task, 0);
   }
