@@ -30,6 +30,7 @@ include ":eventbus"         // EventBus
 include ":javastruct"       // java结构体转换
 include ":jdbc"             // jdbc
 include ":jpuppeteer"       // chromium puppeteer
+include ":ini4j"            // ini 配置读取
 include ":all"              // 全部的依赖
 
 // 测试demo

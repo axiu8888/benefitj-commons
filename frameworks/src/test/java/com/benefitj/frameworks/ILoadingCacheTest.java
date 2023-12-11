@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +45,7 @@ public class ILoadingCacheTest extends BaseTest {
                 );
               }
             })
-        , new ConcurrentHashMap<>()
+        //, new ConcurrentHashMap<>()
         , (loader, key) -> {
           log.info("load: {}", key);
           return loader.map.get(key);

@@ -7,6 +7,7 @@
 
 apply plugin: 'java-library'
 apply plugin: 'java'
+apply plugin: 'idea'
 
 //beforeEvaluate { }
 
@@ -67,6 +68,33 @@ trying({
     from configurations.runtimeClasspath
     into "${buildDir}/libs/lib" // 目标位置
   }
+
+  processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    [
+        'src/main/java',
+    ].forEach {
+      from(it) {
+        exclude '**/*.java'
+        exclude '**/*.kt'
+        include '**/**'
+      }
+    }
+  }
+
+  processTestResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    [
+        'src/test/java',
+    ].forEach {
+      from(it) {
+        exclude '**/*.java'
+        exclude '**/*.kt'
+        include '**/**'
+      }
+    }
+  }
+
 })
 
 artifacts {

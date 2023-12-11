@@ -9,14 +9,12 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 
 /**
  * classpath 工具
@@ -66,6 +64,18 @@ public class ClasspathUtils {
     } catch (Exception e) {
       throw CatchUtils.throwing(e, IllegalStateException.class);
     }
+  }
+
+  public static List<String> getClasspath() {
+    return Arrays.asList(System.getProperty("java.class.path").split(";"));
+  }
+
+  public static List<File> getClasspathDirs() {
+    return getClasspath()
+        .stream()
+        .map(File::new)
+        .filter(File::isDirectory)
+        .collect(Collectors.toList());
   }
 
   /**

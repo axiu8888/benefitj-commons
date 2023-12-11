@@ -37,9 +37,14 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
     return wrap(builder.build(newMapLoader(fun)), loaderMap);
   }
 
+  static <K, V> ILoadingCache<K, V> wrap(CacheBuilder<K, V> builder,
+                                         BiFunction<MapCacheLoader<K, V>, K, V> fun) {
+    return wrap(builder.build(newMapLoader(fun)), new ConcurrentHashMap<>(20));
+  }
+
   static <K, V> ILoadingCache<K, V> wrap(LoadingCache<K, V> cache,
                                          Map<K, V> loaderMap) {
-    final Map<Class<?>, Handler> handlers = new ConcurrentHashMap<>();
+    final Map<Class<?>, Handler> handlers = new ConcurrentHashMap<>(30);
     return CGLibProxy.newProxy(null
         , new Class[]{LoadingCache.class, ILoadingCache.class}
         , (obj, method, args, proxy) -> {

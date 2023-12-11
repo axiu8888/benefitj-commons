@@ -43,6 +43,52 @@ public class ArrayUtils {
   public static final BiFunction<BigDecimal, BigDecimal, BigDecimal> MULTIPLY = BigDecimal::multiply;
   public static final BiFunction<BigDecimal, BigDecimal, BigDecimal> DIVIDE = BigDecimal::divide;
 
+  /**
+   * 创建数组
+   *
+   * @param cls 数组类型
+   * @param len 长度
+   * @param <T> 数组类型
+   * @return 返回创建的数组
+   */
+  public static <T> T newArray(Class<? extends T> cls, int len) {
+    return newArray(cls, len, null, -1, 0);
+  }
+
+  /**
+   * 创建数组
+   *
+   * @param cls  数组类型
+   * @param len  长度
+   * @param fill 填充的值
+   * @param <T>  数组类型
+   * @return 返回创建的数组
+   */
+  public static <T> T newArray(Class<? extends T> cls, int len, Object fill) {
+    return newArray(cls, len, fill, 0, len);
+  }
+
+  /**
+   * 创建数组
+   *
+   * @param cls   数组类型
+   * @param len   长度
+   * @param fill  填充的值
+   * @param start 开始的位置
+   * @param end   结束的位置
+   * @param <T>   数组类型
+   * @return 返回创建的数组
+   */
+  public static <T> T newArray(Class<? extends T> cls, int len, Object fill, int start, int end) {
+    Object array = Array.newInstance(cls.getComponentType(), len);
+    if (fill != null && start >= 0 && (end >= start)) {
+      for (int i = start; i < end; i++) {
+        Array.set(array, i, fill);
+      }
+    }
+    return (T) array;
+  }
+
 
   public static Number castTo(Class<?> type, Number v) {
     if (type.isArray()) {
