@@ -160,8 +160,6 @@ public class ApiBuilderTest {
   public void testDownloadFile2() {
     long start = TimeUtils.now();
     String url = "https://dl-tc.coolapkmarket.com/down/apk_file/2022/1104/Coolapk-12.5.2-2211031-coolapk-app-sign.apk?t=1677423508&sign=135b70037c588e76c96bb633a2bffffd";
-//    String url = "http://192.168.85.129/api/athenapdf/create?filename=&force&encodeType=&url=https://www.cnblogs.com/felixzh/p/5869212.html";
-//    String url = "http://192.168.85.129/api/athenapdf/create?filename=&force&encodeType=&url=https://xilidou.com/2022/05/09/sre6/";
     HttpHelper.get().download(url, new File("D:/tmp/"), null, false, new FileProgressListener() {
       @Override
       public void onStart(Call call) {
