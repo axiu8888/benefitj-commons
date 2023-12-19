@@ -4,10 +4,12 @@ import com.benefitj.core.functions.MultiFilter;
 import com.benefitj.core.functions.Pair;
 import com.google.common.collect.Multimap;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -15,6 +17,67 @@ import java.util.function.Function;
  * 单位
  */
 public class Utils {
+
+  /**
+   * 迭代数组
+   *
+   * @param array       数组
+   * @param consumer    处理
+   * @param obtainValue 是否获取数组的值
+   */
+  public static void arrayFor(Object array, BiConsumer<Integer, Object> consumer, boolean obtainValue) {
+    Class<?> componentType = array.getClass().getComponentType();
+    if (componentType != null && componentType.isPrimitive()) {
+      if (componentType == byte.class) {
+        byte[] tmp = ((byte[]) array);
+        for (int i = 0; i < tmp.length; i++) {
+          consumer.accept(i, obtainValue ? tmp[i] : null);
+        }
+      } else if (componentType == short.class) {
+        short[] tmp = ((short[]) array);
+        for (int i = 0; i < tmp.length; i++) {
+          consumer.accept(i, obtainValue ? tmp[i] : null);
+        }
+      } else if (componentType == int.class) {
+        int[] tmp = ((int[]) array);
+        for (int i = 0; i < tmp.length; i++) {
+          consumer.accept(i, obtainValue ? tmp[i] : null);
+        }
+      } else if (componentType == long.class) {
+        long[] tmp = ((long[]) array);
+        for (int i = 0; i < tmp.length; i++) {
+          consumer.accept(i, obtainValue ? tmp[i] : null);
+        }
+      } else if (componentType == float.class) {
+        float[] tmp = ((float[]) array);
+        for (int i = 0; i < tmp.length; i++) {
+          consumer.accept(i, obtainValue ? tmp[i] : null);
+        }
+      } else if (componentType == double.class) {
+        double[] tmp = ((double[]) array);
+        for (int i = 0; i < tmp.length; i++) {
+          consumer.accept(i, obtainValue ? tmp[i] : null);
+        }
+      } else if (componentType == boolean.class) {
+        boolean[] tmp = ((boolean[]) array);
+        for (int i = 0; i < tmp.length; i++) {
+          consumer.accept(i, obtainValue ? tmp[i] : null);
+        }
+      } else if (componentType == char.class) {
+        char[] tmp = ((char[]) array);
+        for (int i = 0; i < tmp.length; i++) {
+          consumer.accept(i, obtainValue ? tmp[i] : null);
+        }
+      }
+    } else {
+      int length = Array.getLength(array);
+      Object value;
+      for (int i = 0; i < length; i++) {
+        value = obtainValue ? Array.get(array, i) : null;
+        consumer.accept(i, value);
+      }
+    }
+  }
 
   /**
    * 转换成List

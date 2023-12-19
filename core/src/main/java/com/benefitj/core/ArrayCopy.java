@@ -170,11 +170,11 @@ public interface ArrayCopy<T> {
   }
 
   static ArrayCopy<byte[]> newByteArrayCopy() {
-    return new SimpleBufCopy<>(byte[]::new, false, 0);
+    return new SimpleBufCopy<>(byte[]::new, false, (byte) 0);
   }
 
   static ArrayCopy<short[]> newShortArrayCopy() {
-    return new SimpleBufCopy<>(short[]::new, false, 0);
+    return new SimpleBufCopy<>(short[]::new, false, (short) 0);
   }
 
   static ArrayCopy<int[]> newIntArrayCopy() {
@@ -182,15 +182,15 @@ public interface ArrayCopy<T> {
   }
 
   static ArrayCopy<long[]> newLongArrayCopy() {
-    return new SimpleBufCopy<>(long[]::new, false, 0);
+    return new SimpleBufCopy<>(long[]::new, false, 0L);
   }
 
   static ArrayCopy<float[]> newFloatArrayCopy() {
-    return new SimpleBufCopy<>(float[]::new, false, 0);
+    return new SimpleBufCopy<>(float[]::new, false, 0.0f);
   }
 
   static ArrayCopy<double[]> newDoubleArrayCopy() {
-    return new SimpleBufCopy<>(double[]::new, false, 0);
+    return new SimpleBufCopy<>(double[]::new, false, 0.0);
   }
 
   class SimpleBufCopy<T> implements ArrayCopy<T> {
@@ -224,7 +224,7 @@ public interface ArrayCopy<T> {
         buf = creator.apply(size);
       }
       if (fill) {
-        Arrays.fill((Object[]) buf, fillValue);
+        Utils.arrayFor(buf, (i, v) -> Array.set(buf, i, fillValue), false);
       }
       return buf;
     }

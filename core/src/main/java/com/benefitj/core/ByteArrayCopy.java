@@ -52,7 +52,7 @@ public interface ByteArrayCopy extends ArrayCopy<byte[]> {
    * 创建缓冲拷贝
    */
   static ByteArrayCopy newBufCopy() {
-    return new BufCopy(byte[]::new, true, 0x00);
+    return new BufCopy(byte[]::new, true, (byte) 0x00);
   }
 
   class BufCopy extends SimpleBufCopy<byte[]> implements ByteArrayCopy {
