@@ -54,7 +54,7 @@ public class CodecUtils {
    * URL转码
    */
   public static String encodeURL(String src, Charset charset) {
-    return CatchUtils.tryThrow(() -> URLEncoder.encode(src, charset.name()));
+    return CatchUtils.tryThrow(() -> URLEncoder.encode(src, charset));
   }
 
   /**
@@ -68,7 +68,7 @@ public class CodecUtils {
    * URL解码
    */
   public static String decodeURL(String src, Charset charset) {
-    return CatchUtils.tryThrow(() -> URLDecoder.decode(src, charset.name()));
+    return CatchUtils.tryThrow(() -> URLDecoder.decode(src, charset));
   }
 
   /**
