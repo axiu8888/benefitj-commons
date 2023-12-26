@@ -3,9 +3,8 @@ package com.benefitj.core;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -21,6 +20,8 @@ public class DateFmtter {
   public static final String _yMdHm_UTC = "yyyy-MM-dd'T'HH:mm'Z'";
   public static final String _yMdHms_UTC = "yyyy-MM-dd'T'HH:mm:ss'Z'";
   public static final String _yMdHmsS_UTC = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+  public static final String _yMdHmsX_UTC = "yyyy-MM-dd'T'HH:mm:ssXXX";
+  public static final String _yMdHmsSX_UTC = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'XXX";
   /**
    * 横线
    */
@@ -475,6 +476,32 @@ public class DateFmtter {
     } catch (ParseException e) {
       throw CatchUtils.throwing(e, IllegalStateException.class);
     }
+  }
+
+  public static boolean isOffsetDate(String date) {
+
+    try {
+      OffsetDateTime.parse(date, DateTimeFormatter.ofPattern(_yMdHmsX_UTC));
+      return true;
+    } catch (Exception ignored) {}
+    try {
+      OffsetDateTime.parse(date, DateTimeFormatter.ofPattern(_yMdHmsSX_UTC));
+      return true;
+    } catch (Exception ignored) {}
+    return false;
+  }
+
+  public static OffsetDateTime parseOffset(String date) {
+    return parseOffset(date, _yMdHmsX_UTC);
+  }
+
+  public static OffsetDateTime parseOffsetS(String date) {
+    return parseOffset(date, _yMdHmsSX_UTC);
+  }
+
+  public static OffsetDateTime parseOffset(String date, String pattern) {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+    return OffsetDateTime.parse(date, formatter);
   }
 
 }

@@ -32,6 +32,3 @@ include ":jdbc"             // jdbc
 include ":jpuppeteer"       // chromium puppeteer
 include ":ini4j"            // ini 配置读取
 include ":all"              // 全部的依赖
-
-// 测试demo
-include ":others"            // 其他测试
