@@ -109,20 +109,21 @@ public class DefaultPrimitiveConverter extends AbstractConverter<Object> {
       }
     } else {
       Class<?> type = field.getField().getType();
+      boolean singed = field.isSinged();
       if (type.isAssignableFrom(Number.class)) {
-        return parseNumber(field, data, position, true);
+        return parseNumber(field, data, position, singed);
       }
       // 基本数据类型
       if (type == boolean.class || type == Boolean.class) {
-        return parseShort(field, data, position, true) >= 1;
+        return parseShort(field, data, position, singed) >= 1;
       } else if (type == byte.class) {
-        return (byte) parseShort(field, data, position, true);
+        return (byte) parseShort(field, data, position, singed);
       } else if (type == short.class) {
-        return parseShort(field, data, position, true);
+        return parseShort(field, data, position, singed);
       } else if (type == int.class) {
-        return parseInt(field, data, position, true);
+        return parseInt(field, data, position, singed);
       } else if (type == long.class) {
-        return parseLong(field, data, position, true);
+        return parseLong(field, data, position, singed);
       } else if (type == String.class) {
         byte[] buf = getCache(field.getFieldSize());
         copy(data, position, buf, 0);

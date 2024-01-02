@@ -118,6 +118,10 @@ public class StructField {
     return getAnnotation().byteOrder().getOrder();
   }
 
+  public boolean isSinged() {
+    return getAnnotation().singed();
+  }
+
   /**
    * 数组长度
    */

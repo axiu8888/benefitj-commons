@@ -497,11 +497,11 @@ public abstract class AbstractConverter<T> extends BufCopyConverter<T> {
     if (field.getType() == short[].class) {
       short[] array = new short[field.getArrayLength()];
       return parseArray(field, data, start, array, (arr, index, buf)
-          -> arr[index] = getBinary().bytesToShort(buf, field.getByteOrder()));
+          -> arr[index] = getBinary().bytesToShort(buf, field.getByteOrder(), field.isSinged()));
     } else {
       Short[] array = new Short[field.getArrayLength()];
       return parseArray(field, data, start, array, (arr, index, buf)
-          -> arr[index] = getBinary().bytesToShort(buf, field.getByteOrder()));
+          -> arr[index] = getBinary().bytesToShort(buf, field.getByteOrder(), field.isSinged()));
     }
   }
 
@@ -517,11 +517,11 @@ public abstract class AbstractConverter<T> extends BufCopyConverter<T> {
     if (field.getType() == int[].class) {
       int[] array = new int[field.getArrayLength()];
       return parseArray(field, data, start, array, (arr, index, buf)
-          -> arr[index] = getBinary().bytesToInt(buf, field.getByteOrder()));
+          -> arr[index] = getBinary().bytesToInt(buf, field.getByteOrder(), field.isSinged()));
     } else {
       Integer[] array = new Integer[field.getArrayLength()];
       return parseArray(field, data, start, array, (arr, index, buf)
-          -> arr[index] = getBinary().bytesToInt(buf, field.getByteOrder()));
+          -> arr[index] = getBinary().bytesToInt(buf, field.getByteOrder(), field.isSinged()));
     }
   }
 
@@ -537,11 +537,11 @@ public abstract class AbstractConverter<T> extends BufCopyConverter<T> {
     if (field.getType() == long[].class) {
       long[] array = new long[field.getArrayLength()];
       return parseArray(field, data, start, array, (arr, index, buf)
-          -> arr[index] = getBinary().bytesToLong(buf, field.getByteOrder()));
+          -> arr[index] = getBinary().bytesToLong(buf, field.getByteOrder(), field.isSinged()));
     } else {
       Long[] array = new Long[field.getArrayLength()];
       return parseArray(field, data, start, array, (arr, index, buf)
-          -> arr[index] = getBinary().bytesToLong(buf, field.getByteOrder()));
+          -> arr[index] = getBinary().bytesToLong(buf, field.getByteOrder(), field.isSinged()));
     }
   }
 
@@ -557,11 +557,11 @@ public abstract class AbstractConverter<T> extends BufCopyConverter<T> {
     if (field.getType() == float[].class) {
       float[] array = new float[field.getArrayLength()];
       return parseArray(field, data, start, array, (arr, index, buf)
-          -> arr[index] = Float.intBitsToFloat(getBinary().bytesToInt(buf, field.getByteOrder())));
+          -> arr[index] = Float.intBitsToFloat(getBinary().bytesToInt(buf, field.getByteOrder(), field.isSinged())));
     } else {
       Float[] array = new Float[field.getArrayLength()];
       return parseArray(field, data, start, array, (arr, index, buf)
-          -> arr[index] = Float.intBitsToFloat(getBinary().bytesToInt(buf, field.getByteOrder())));
+          -> arr[index] = Float.intBitsToFloat(getBinary().bytesToInt(buf, field.getByteOrder(), field.isSinged())));
     }
   }
 
@@ -577,11 +577,11 @@ public abstract class AbstractConverter<T> extends BufCopyConverter<T> {
     if (field.getType() == double[].class) {
       double[] array = new double[field.getArrayLength()];
       return parseArray(field, data, start, array, (arr, index, buf)
-          -> arr[index] = Double.longBitsToDouble(getBinary().bytesToLong(buf, field.getByteOrder())));
+          -> arr[index] = Double.longBitsToDouble(getBinary().bytesToLong(buf, field.getByteOrder(), field.isSinged())));
     } else {
       Double[] array = new Double[field.getArrayLength()];
       return parseArray(field, data, start, array, (arr, index, buf)
-          -> arr[index] = Double.longBitsToDouble(getBinary().bytesToLong(buf, field.getByteOrder())));
+          -> arr[index] = Double.longBitsToDouble(getBinary().bytesToLong(buf, field.getByteOrder(), field.isSinged())));
     }
   }
 

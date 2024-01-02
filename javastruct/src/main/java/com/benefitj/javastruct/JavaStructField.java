@@ -31,6 +31,11 @@ public @interface JavaStructField {
   FieldByteOrder byteOrder() default FieldByteOrder.BIG_ENDIAN;
 
   /**
+   * 是否为有符号位
+   */
+  boolean singed() default false;
+
+  /**
    * 转换器
    */
   Class<? extends Converter> converter() default Converter.class;
