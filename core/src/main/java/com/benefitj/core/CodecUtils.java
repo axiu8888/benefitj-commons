@@ -1,7 +1,9 @@
 package com.benefitj.core;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteOrder;
@@ -74,10 +76,28 @@ public class CodecUtils {
   /**
    * 获取一个文件的md5值
    */
-  public static String md5(File src) {
-    try (final FileInputStream fis = new FileInputStream(src)) {
+  public static String md5(File in) {
+    try (final FileInputStream fis = new FileInputStream(in)) {
+      return md5(fis);
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * 获取一个文件的md5值
+   */
+  public static String md5(byte[] in) {
+    return md5(new ByteArrayInputStream(in));
+  }
+
+  /**
+   * 获取一个文件的md5值
+   */
+  public static String md5(InputStream in) {
+    try {
       MessageDigest md5 = MessageDigest.getInstance("MD5");
-      IOUtils.read(fis, 1024 << 4, true, (buf, len) -> md5.update(buf, 0, len));
+      IOUtils.read(in, 1024 << 4, true, (buf, len) -> md5.update(buf, 0, len));
       return HexUtils.bytesToHex(md5.digest(), true);
     } catch (Exception e) {
       throw new IllegalStateException(e);
