@@ -2,8 +2,9 @@ package com.benefitj.core.file;
 
 import com.benefitj.core.IOUtils;
 
-import java.io.File;
-import java.io.Flushable;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public interface IWriter extends AutoCloseable, Appendable, Flushable {
 
@@ -140,6 +141,26 @@ public interface IWriter extends AutoCloseable, Appendable, Flushable {
   static IWriter createWriter(File file, boolean append) {
     IOUtils.createFile(file.getAbsolutePath());
     return new FileWriterImpl(file, append);
+  }
+
+  public static BufferedOutputStream wrapOutput(File src, boolean append) {
+    try {
+      return new BufferedOutputStream(new FileOutputStream(src, append));
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static BufferedWriter wrapWriter(File src, boolean append) {
+    return wrapWriter(src, StandardCharsets.UTF_8, append);
+  }
+
+  public static BufferedWriter wrapWriter(File src, Charset charset, boolean append) {
+    try {
+      return new BufferedWriter(new FileWriter(src, charset, append));
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
 }

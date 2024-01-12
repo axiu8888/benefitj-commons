@@ -1,11 +1,19 @@
 package com.benefitj.http;
 
+import okio.ByteString;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Map;
 
 /**
  * WEB SOCKET
  */
 public interface WebSocket extends okhttp3.WebSocket {
+
+  /**
+   * 获取URL
+   */
+  String getUrl();
 
   /**
    * 获取ID
@@ -23,9 +31,14 @@ public interface WebSocket extends okhttp3.WebSocket {
   void reconnect();
 
   /**
-   * 获取URL
+   * 发送消息
+   *
+   * @param msg 字节消息
+   * @return 返回是否发送
    */
-  String getUrl();
+  default boolean send(@NotNull byte[] msg) {
+    return send(ByteString.of(msg));
+  }
 
   /**
    * 关闭

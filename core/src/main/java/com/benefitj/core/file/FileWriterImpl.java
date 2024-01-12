@@ -3,10 +3,7 @@ package com.benefitj.core.file;
 import com.benefitj.core.AttributeMap;
 import com.benefitj.core.IOUtils;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,9 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FileWriterImpl implements IWriter, AttributeMap {
 
-  private final File source;
-  private final BufferedOutputStream out;
   private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+  private final File source;
+  private OutputStream out;
   /**
    * 编码
    */
@@ -26,11 +23,7 @@ public class FileWriterImpl implements IWriter, AttributeMap {
 
   public FileWriterImpl(File source, boolean append) {
     this.source = source;
-    try {
-      this.out = new BufferedOutputStream(new FileOutputStream(source, append));
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+    this.out = IWriter.wrapOutput(source, append);
   }
 
   /**
@@ -69,8 +62,12 @@ public class FileWriterImpl implements IWriter, AttributeMap {
   /**
    * 输出流
    */
-  public BufferedOutputStream out() {
+  public OutputStream getOut() {
     return out;
+  }
+
+  public void setOut(OutputStream out) {
+    this.out = out;
   }
 
   /**
@@ -83,9 +80,9 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    */
   protected FileWriterImpl write0(byte[] buf, int offset, int len, boolean flush) {
     try {
-      out().write(buf, offset, len);
+      getOut().write(buf, offset, len);
       if (flush) {
-        out().flush();
+        getOut().flush();
       }
       return this;
     } catch (IOException e) {
@@ -104,10 +101,10 @@ public class FileWriterImpl implements IWriter, AttributeMap {
   protected FileWriterImpl write0(char[] buf, int offset, int len, boolean flush) {
     try {
       for (int i = 0; i < len; i++) {
-        out().write(buf[offset + i]);
+        getOut().write(buf[offset + i]);
       }
       if (flush) {
-        out().flush();
+        getOut().flush();
       }
       return this;
     } catch (IOException e) {
@@ -120,7 +117,7 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    */
   protected void flush0() {
     try {
-      out().flush();
+      getOut().flush();
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -273,7 +270,7 @@ public class FileWriterImpl implements IWriter, AttributeMap {
   @Override
   public void close() {
     synchronized (this) {
-      IOUtils.closeQuietly(out());
+      IOUtils.closeQuietly(getOut());
     }
   }
 

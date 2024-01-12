@@ -140,10 +140,12 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
    * @param checkSize 是否检查文件大小
    */
   protected FileSlicer<T> write0(byte[] buf, int offset, int len, boolean checkSize) {
-    boolean newFile = false;
-    T writer;
+    final T writer;
     synchronized (this) {
       writer = getWriter(true);
+    }
+    boolean newFile = false;
+    synchronized (writer) {
       writer.writeAndFlush(buf, offset, len);
       this.setLastWriteTime(System.currentTimeMillis());
       // 检查文件
