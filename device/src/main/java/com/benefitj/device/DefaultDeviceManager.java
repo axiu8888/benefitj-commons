@@ -1,6 +1,5 @@
 package com.benefitj.device;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

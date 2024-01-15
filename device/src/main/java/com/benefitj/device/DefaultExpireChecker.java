@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <T>
  */
+@Deprecated
 public class DefaultExpireChecker<Id, T extends Device<Id>> implements ExpireChecker<Id, T> {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
