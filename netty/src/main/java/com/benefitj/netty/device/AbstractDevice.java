@@ -1,4 +1,7 @@
-package com.benefitj.device;
+package com.benefitj.netty.device;
+
+import com.benefitj.core.TimeUtils;
+import com.benefitj.core.Utils;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -102,4 +105,14 @@ public abstract class AbstractDevice<Id extends Serializable> implements Device<
     this.activeTime = activeTime;
   }
 
+  @Override
+  public String toString() {
+    return String.format("%s(%s, %s, %s, %s)"
+        , getClass().getSimpleName()
+        , getId()
+        , getType()
+        , getName()
+        , Utils.fmt(TimeUtils.diffNow(getOnlineTime()) / 1000.0, ".0s")
+    );
+  }
 }

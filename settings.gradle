@@ -19,7 +19,7 @@ rootProject.name = 'benefitj-commons'
 include ":core"             // 常用工具
 include ":http"             // HTTP请求，OkHttp + Retrofit + RxJava
 include ":netty"            // netty
-include ":device"           // 设备
+//include ":device"           // 设备
 include ":extensions"       // 扩展功能
 include ":pipeline"         // pipeline
 include ":frameworks"       // 一些库的工具
@@ -32,3 +32,16 @@ include ":jdbc"             // jdbc
 include ":jpuppeteer"       // chromium puppeteer
 include ":ini4j"            // ini 配置读取
 include ":all"              // 全部的依赖
+include ":others"           // 其他
+
+(() -> {
+  def dir = project(":others").projectDir
+  def subDirs = dir.listFiles((FileFilter) { it.isDirectory() })
+  for (final def subDir in subDirs) {
+    def buildGradle = subDir.listFiles((FileFilter) { it.name.equals("build.gradle") })
+    if (buildGradle != null && buildGradle.length >= 1) {
+      include(":others:${subDir.name}")
+    }
+  }
+
+}).run()

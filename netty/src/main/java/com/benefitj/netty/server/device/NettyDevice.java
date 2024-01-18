@@ -1,6 +1,6 @@
 package com.benefitj.netty.server.device;
 
-import com.benefitj.device.Device;
+import com.benefitj.netty.device.Device;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -39,11 +39,6 @@ public interface NettyDevice extends Device<String> {
    * @param remoteAddr 远程地址
    */
   void setRemoteAddress(InetSocketAddress remoteAddr);
-
-  /**
-   * 设置当前时间为最新的接收数据包的时间
-   */
-  void setActiveTimeNow();
 
   /**
    * 通道

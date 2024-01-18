@@ -9,7 +9,7 @@ import java.util.function.Function;
 /**
  * 读取 ByteBuf
  */
-public interface ByteBufCopy extends com.benefitj.core.ByteArrayCopy {
+public interface ByteBufCopy extends ByteArrayCopy {
 
   /**
    * 读取数据

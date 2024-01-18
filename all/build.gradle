@@ -14,7 +14,7 @@ dependencies {
   [
       ":consistent-hash",
       ":core",
-      ":device",
+      //":device",
       ":eventbus",
       ":extensions",
       ":frameworks",
@@ -24,7 +24,7 @@ dependencies {
       ":mqtt",
       ":netty",
       ":pipeline",
-      ":ini4j", // ini 配置解析
+      //":ini4j", // ini 配置解析
   ].forEach {
     if (allInOne) implementation(project(it))
     else api(project(it))

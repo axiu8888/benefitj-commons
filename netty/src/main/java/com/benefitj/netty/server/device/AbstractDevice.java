@@ -1,6 +1,6 @@
 package com.benefitj.netty.server.device;
 
-import com.benefitj.device.SimpleDevice;
+import com.benefitj.netty.device.SimpleDevice;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;

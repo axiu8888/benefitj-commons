@@ -566,6 +566,46 @@ public class ApiBuilderTest {
 
   }
 
+  @Test
+  public void test_spo2_alarm() {
+    final CountDownLatch latch = new CountDownLatch(1);
+//    String url = "ws://192.168.1.194:62080/api/btgateway/sockets/spo2Alarm";
+    String url = "ws://192.168.1.194/btgateway/api/sockets/spo2Alarm";
+    EventLoop.asyncIO(() -> HttpClient.newWebSocket(url, new WebSocketListener() {
+      @Override
+      public void onOpen(WebSocket socket, okhttp3.Response response) {
+        log.info("[{}] ws open: {}", socket.getId(), response.message());
+        socket.send(new JSONObject(){{
+          put("macs", "*");
+          put("reset", true);
+        }}.toJSONString());
+      }
+
+      @Override
+      public void onMessage(WebSocket socket, String text) {
+        log.info("[{}] ws text msg: {}", socket.getId(), text);
+      }
+
+      @Override
+      public void onMessage(WebSocket socket, ByteString bytes) {
+        log.info("[{}] ws binary msg: {}", socket.getId(), new String(bytes.toByteArray()));
+      }
+
+      @Override
+      public void onClosed(WebSocket socket, int code, String reason) {
+        log.info("[{}] ws close, code: {}, reason: {}", socket.getId(), code, reason);
+        latch.countDown();
+      }
+
+      @Override
+      public void onFailure(WebSocket socket, Throwable error, okhttp3.Response response) {
+        log.info("[{}] ws close, error: {}, response: {}", socket.getId(), error.getMessage(), CatchUtils.ignore(() -> response.body().string()));
+        latch.countDown();
+      }
+    }));
+    CatchUtils.ignore(() -> latch.await());
+  }
+
   interface ServiceApi {
 
     //    String BASE_URL = "https://dss0.bdstatic.com/";

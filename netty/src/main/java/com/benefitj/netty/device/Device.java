@@ -1,4 +1,4 @@
-package com.benefitj.device;
+package com.benefitj.netty.device;
 
 import java.util.Collection;
 import java.util.Map;
@@ -81,6 +81,12 @@ public interface Device<Id> {
    */
   void setActiveTime(long activeTime);
 
+  /**
+   * 设置Active时间
+   */
+  default void setActiveTimeNow() {
+    setActiveTime(System.currentTimeMillis());
+  }
 
   /**
    * 可选属性

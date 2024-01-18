@@ -322,6 +322,15 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    *
    * @param duration 时长
    */
+  public static void sleepMillis(long duration) {
+    sleep(duration, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * sleep
+   *
+   * @param duration 时长
+   */
   public static void sleepSecond(long duration) {
     sleep(duration, TimeUnit.SECONDS);
   }

@@ -1,6 +1,6 @@
 package com.benefitj.netty.server.device;
 
-import com.benefitj.device.DeviceFactory;
+import com.benefitj.netty.device.DeviceFactory;
 import io.netty.channel.Channel;
 
 import javax.annotation.Nullable;

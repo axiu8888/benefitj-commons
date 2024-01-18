@@ -1,4 +1,4 @@
-package com.benefitj.device;
+package com.benefitj.netty.device;
 
 import com.benefitj.core.ProxyUtils;
 

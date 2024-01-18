@@ -166,25 +166,25 @@ public class JavaStructManager {
   /**
    * 解析结构体数据
    *
-   * @param type 类型
    * @param data 数据
+   * @param type 类型
    * @param <T>  对象类型
    * @return 返回解析的对象
    */
-  public <T> T parseObject(Class<T> type, byte[] data) {
-    return parseObject(type, data, 0);
+  public <T> T parseObject(byte[] data, Class<T> type) {
+    return parseObject(data, 0, type);
   }
 
   /**
    * 解析结构体数据
    *
    * @param type  类型
-   * @param data  数据
    * @param start 开始的位置
+   * @param data  数据
    * @param <T>   对象类型
    * @return 返回解析的对象
    */
-  public <T> T parseObject(Class<T> type, byte[] data, int start) {
+  public <T> T parseObject(byte[] data, int start, Class<T> type) {
     return getStructClass(type, true).parseObject(data, start);
   }
 

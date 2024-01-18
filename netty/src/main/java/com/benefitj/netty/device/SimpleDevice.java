@@ -1,4 +1,4 @@
-package com.benefitj.device;
+package com.benefitj.netty.device;
 
 /**
  * 设备
