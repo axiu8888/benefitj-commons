@@ -17,7 +17,7 @@ public interface NettyDeviceManager<T extends NettyDevice> extends DeviceManager
     if (t != null) {
       return t;
     }
-    return computeIfAbsent(key, id -> create(id, ch));
+    return create(key, ch);
   }
 
 }
