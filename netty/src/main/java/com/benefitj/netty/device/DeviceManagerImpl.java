@@ -154,8 +154,9 @@ public class DeviceManagerImpl<K, V extends Device<K>> implements DeviceManager<
     }
   }
 
-  protected EventLoop executor = EventLoop.single();
-  private final AtomicReference<ScheduledFuture<?>> checkerRef = new AtomicReference<>();
+  protected static final EventLoop singleton = EventLoop.newSingle(true);
+  protected EventLoop executor = singleton;
+  protected final AtomicReference<ScheduledFuture<?>> checkerRef = new AtomicReference<>();
 
   protected void selfCheck() {
     if (!isEmpty()) {
