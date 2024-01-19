@@ -1,5 +1,6 @@
 package com.benefitj.event;
 
+import com.benefitj.core.SingletonSupplier;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import org.slf4j.Logger;
@@ -22,15 +23,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class EventBusPoster {
 
-  private static final Logger logger = LoggerFactory.getLogger(EventBusPoster.class);
+  private static final Logger log = LoggerFactory.getLogger(EventBusPoster.class);
 
   /**
    * 实例
    */
-  private static final EventBusPoster INSTANCE = new EventBusPoster(newFixExecutor(2));
+  static final SingletonSupplier<EventBusPoster> singleton = SingletonSupplier.of(() -> new EventBusPoster(newFixExecutor(2)));
 
-  public static EventBusPoster getInstance() {
-    return EventBusPoster.INSTANCE;
+  public static EventBusPoster get() {
+    return singleton.get();
   }
 
   /**
@@ -210,7 +211,7 @@ public class EventBusPoster {
       checkAndInit();
       getEventBus().register(adapter);
       getAsyncEventBus().register(adapter);
-      logger.debug("Register event adapter class: {}", adapter.getClass());
+      log.debug("Register event adapter class: {}", adapter.getClass());
     }
   }
 
@@ -235,7 +236,7 @@ public class EventBusPoster {
       checkAndInit();
       getEventBus().unregister(adapter);
       getAsyncEventBus().unregister(adapter);
-      logger.debug("Unregister event adapter class: {}", adapter.getClass());
+      log.debug("Unregister event adapter class: {}", adapter.getClass());
     }
   }
 

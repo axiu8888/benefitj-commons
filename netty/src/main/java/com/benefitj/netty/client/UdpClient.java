@@ -74,6 +74,22 @@ public class UdpClient implements AttributeMap {
         .channel(NioDatagramChannel.class);
   }
 
+  /**
+   * 设置接收的缓冲区大小
+   */
+  public UdpClient soRcvbufSize(int soRcvbufSize) {
+    getBootstrap().option(ChannelOption.SO_RCVBUF, (1024 << 10) * soRcvbufSize);
+    return this;
+  }
+
+  /**
+   * 设置发送的缓冲区大小
+   */
+  public UdpClient soSndbufSize(int soSndbufSize) {
+    getBootstrap().option(ChannelOption.SO_SNDBUF, (1024 << 10) * soSndbufSize);
+    return this;
+  }
+
   @Override
   public Map<String, Object> attributes() {
     return attributes;

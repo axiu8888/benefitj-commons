@@ -30,9 +30,9 @@ public class UdpRelay extends UdpClient {
       ch.pipeline()
           .addLast(InboundHandler.newDatagramHandler((handler, ctx, msg) -> {
             if (getInbounds().isEmpty()) {
-              inbounds.channelRead0(handler, ctx, msg);
-            } else {
               ctx.fireChannelRead(ReferenceCountUtil.retain(msg));
+            } else {
+              inbounds.channelRead0(handler, ctx, msg);
             }
           }))
           .addLast(OutboundHandler.newDatagramHandler((handler, ctx, msg, promise) -> {

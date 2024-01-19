@@ -31,7 +31,7 @@ public class EventPostHandler<C, E extends Event> {
   /**
    * 事件发射器
    */
-  private EventBusPoster poster = EventBusPoster.getInstance();
+  private EventBusPoster poster = EventBusPoster.get();
   /**
    * 事件继续传递的处理器
    */

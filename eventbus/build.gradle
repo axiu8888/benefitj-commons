@@ -7,5 +7,6 @@ description = "EventBus"
 ext.upload = true
 
 dependencies {
+  compileOnly(project(":core"))
   api "com.google.guava:guava:${guavaVersion}"
 }
