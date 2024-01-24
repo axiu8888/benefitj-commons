@@ -58,15 +58,15 @@ public class StructClass {
   /**
    * 转换对象
    *
-   * @param o 对象
+   * @param obj 对象
    * @return 返回转换后的字节数组
    */
-  public byte[] toBytes(Object o) {
+  public byte[] toBytes(Object obj) {
     byte[] data = new byte[getSize()];
     int index = 0;
     for (StructField field : getFields()) {
-      Object value = ReflectUtils.getFieldValue(field.getField(), o);
-      byte[] bytes = field.getConverter().convert(field, value);
+      Object value = ReflectUtils.getFieldValue(field.getField(), obj);
+      byte[] bytes = field.getConverter().convert(obj, field, value);
       System.arraycopy(bytes, 0, data, index, bytes.length);
       index += field.size();
     }
@@ -88,7 +88,7 @@ public class StructClass {
     }*/
 
     // 创建对象
-    Object o = getInstantiator().create(getType());
+    Object obj = getInstantiator().create(getType());
     int index = start, startAt;
     for (StructField sf : getFields()) {
       if ((sf.size() + index) > (data.length - start)) {
@@ -97,13 +97,13 @@ public class StructClass {
       }
       startAt = sf.getAnnotation().startAt();
       startAt = startAt > -1 ? start + startAt : index;
-      Object value = sf.getConverter().parse(sf, data, startAt);
+      Object value = sf.getConverter().parse(obj, sf, data, startAt);
       if (value != null) {
-        ReflectUtils.setFieldValue(sf.getField(), o, value);
+        ReflectUtils.setFieldValue(sf.getField(), obj, value);
       }
       index += sf.size();
     }
-    return (T) o;
+    return (T) obj;
   }
 
 }

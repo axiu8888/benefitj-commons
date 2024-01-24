@@ -2,7 +2,7 @@ package com.benefitj.javastruct.entity;
 
 import com.benefitj.javastruct.JavaStructClass;
 import com.benefitj.javastruct.JavaStructField;
-import com.benefitj.javastruct.convert.HexStringConverter;
+import com.benefitj.javastruct.convert.UpperCaseHexStringConverter;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -28,7 +28,7 @@ public class Person {
   /**
    * 16进制字符串
    */
-  @JavaStructField(size = 16, converter = HexStringConverter.class)
+  @JavaStructField(size = 16, converter = UpperCaseHexStringConverter.class)
   String hex;
   /**
    * V5波形数组: 200采样率

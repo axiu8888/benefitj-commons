@@ -2,10 +2,8 @@ package com.benefitj.javastruct;
 
 
 import com.benefitj.core.BinaryHelper;
-import com.benefitj.javastruct.convert.Converter;
-import com.benefitj.javastruct.convert.DateTimeConverter;
-import com.benefitj.javastruct.convert.DefaultPrimitiveConverter;
-import com.benefitj.javastruct.convert.HexStringConverter;
+import com.benefitj.core.SingletonSupplier;
+import com.benefitj.javastruct.convert.*;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -17,7 +15,11 @@ import java.util.WeakHashMap;
  */
 public class JavaStructManager {
 
-  public static final JavaStructManager INSTANCE = new JavaStructManager();
+  static final SingletonSupplier<JavaStructManager> singleton = SingletonSupplier.of(JavaStructManager::new);
+
+  public static JavaStructManager get() {
+    return singleton.get();
+  }
 
   /**
    * 字段解析器
@@ -61,7 +63,10 @@ public class JavaStructManager {
     // 初始化解析器
     this.addConverter(new DefaultPrimitiveConverter());
     this.addConverter(new DateTimeConverter());
-    this.addConverter(new HexStringConverter());
+    this.addConverter(new StringConverter());
+    this.addConverter(new LongTimeConverter());
+    this.addConverter(new LowerCaseHexStringConverter());
+    this.addConverter(new UpperCaseHexStringConverter());
 
     // 默认的实例化器
     this.addInstantiator(Instantiator.class, new DefaultInstantiator());

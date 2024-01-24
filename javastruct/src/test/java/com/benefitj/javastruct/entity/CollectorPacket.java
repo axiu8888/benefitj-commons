@@ -2,7 +2,7 @@ package com.benefitj.javastruct.entity;
 
 import com.benefitj.javastruct.JavaStructClass;
 import com.benefitj.javastruct.JavaStructField;
-import com.benefitj.javastruct.convert.HexStringConverter;
+import com.benefitj.javastruct.convert.UpperCaseHexStringConverter;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -16,7 +16,7 @@ public class CollectorPacket {
   /**
    * head， [0, 1]
    */
-  @JavaStructField(size = 2, converter = HexStringConverter.class)
+  @JavaStructField(size = 2, converter = UpperCaseHexStringConverter.class)
   String head;
   /**
    * [2]
@@ -39,7 +39,7 @@ public class CollectorPacket {
   /**
    * 设备ID, [6, 7, 8, 9]
    */
-  @JavaStructField(size = 4, converter = HexStringConverter.class)
+  @JavaStructField(size = 4, converter = UpperCaseHexStringConverter.class)
   String deviceId;
 
   /**
@@ -175,7 +175,7 @@ public class CollectorPacket {
   /**
    * 忽略, [632, 633, 634]
    */
-  @JavaStructField(size = 3, converter = HexStringConverter.class)
+  @JavaStructField(size = 3, converter = UpperCaseHexStringConverter.class)
   String ignore1;
   /**
    * 加速度, [635]
@@ -205,7 +205,7 @@ public class CollectorPacket {
   /**
    * 忽略, [648, 649, 650]
    */
-  @JavaStructField(size = 3, converter = HexStringConverter.class)
+  @JavaStructField(size = 3, converter = UpperCaseHexStringConverter.class)
   String ignore2;
   /**
    * spo2电池电量, [651]

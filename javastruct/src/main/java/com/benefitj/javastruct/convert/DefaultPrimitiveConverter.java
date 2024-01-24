@@ -35,7 +35,7 @@ public class DefaultPrimitiveConverter extends AbstractConverter<Object> {
   }
 
   @Override
-  public byte[] convert(StructField field, Object value) {
+  public byte[] convert(Object obj, StructField field, Object value) {
     if (value == null) {
       return getCache(field.getFieldSize());
     }
@@ -87,7 +87,7 @@ public class DefaultPrimitiveConverter extends AbstractConverter<Object> {
   }
 
   @Override
-  public Object parse(StructField field, byte[] data, int position) {
+  public Object parse(Object obj, StructField field, byte[] data, int position) {
     if (field.isArray()) {
       PrimitiveType pt = field.getPrimitiveType();
       switch (pt) {

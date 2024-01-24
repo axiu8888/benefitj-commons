@@ -27,7 +27,7 @@ public class DateTimeConverter extends AbstractConverter<Object> {
   }
 
   @Override
-  public byte[] convert(StructField field, Object value) {
+  public byte[] convert(Object obj, StructField field, Object value) {
     long time;
     if (value instanceof Timestamp) {
       time = ((Timestamp) value).getTime();
@@ -55,7 +55,7 @@ public class DateTimeConverter extends AbstractConverter<Object> {
   }
 
   @Override
-  public Object parse(StructField field, byte[] data, int position) {
+  public Object parse(Object obj, StructField field, byte[] data, int position) {
     long time;
     int size = field.getFieldSize();
     if (size == 4) {

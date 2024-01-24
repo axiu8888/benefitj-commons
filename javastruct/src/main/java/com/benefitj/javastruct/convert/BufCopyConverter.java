@@ -52,12 +52,13 @@ public abstract class BufCopyConverter<T> implements Converter<T> {
   /**
    * 转换数据
    *
+   * @param obj   对象
    * @param field 类字段信息
    * @param value 字段值
    * @return 返回转换后的字节数组
    */
   @Override
-  public abstract byte[] convert(StructField field, Object value);
+  public abstract byte[] convert(Object obj, StructField field, Object value);
 
   public ByteArrayCopy getBufCopy() {
     return byteArrayCopy;

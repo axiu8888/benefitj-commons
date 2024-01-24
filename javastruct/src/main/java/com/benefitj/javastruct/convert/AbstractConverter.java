@@ -36,23 +36,25 @@ public abstract class AbstractConverter<T> extends BufCopyConverter<T> {
   /**
    * 转换数据
    *
+   * @param obj   对象
    * @param field 类字段信息
    * @param value 字段值
    * @return 返回转换后的字节数组
    */
   @Override
-  public abstract byte[] convert(StructField field, Object value);
+  public abstract byte[] convert(Object obj, StructField field, Object value);
 
   /**
    * 解析数据
    *
+   * @param obj      对象
    * @param field    字节
    * @param data     数据
    * @param position 下表位置
    * @return 返回解析后的对象
    */
   @Override
-  public abstract T parse(StructField field, byte[] data, int position);
+  public abstract T parse(Object obj, StructField field, byte[] data, int position);
 
 
   /**

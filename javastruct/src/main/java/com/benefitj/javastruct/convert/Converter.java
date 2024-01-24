@@ -26,20 +26,22 @@ public interface Converter<T> {
   /**
    * 转换数据
    *
+   * @param obj   对象
    * @param field 类字段信息
    * @param value 字段值
    * @return 返回转换后的字节数组
    */
-  byte[] convert(StructField field, Object value);
+  byte[] convert(Object obj, StructField field, Object value);
 
   /**
    * 解析数据
    *
+   * @param obj      对象
    * @param field    字节
    * @param data     数据
    * @param position 下表位置
    * @return 返回解析后的对象
    */
-  T parse(StructField field, byte[] data, int position);
+  T parse(Object obj, StructField field, byte[] data, int position);
 
 }

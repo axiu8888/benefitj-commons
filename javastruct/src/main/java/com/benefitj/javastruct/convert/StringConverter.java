@@ -1,20 +1,22 @@
 package com.benefitj.javastruct.convert;
 
+
 import com.benefitj.javastruct.JavaStructField;
 import com.benefitj.javastruct.PrimitiveType;
 import com.benefitj.javastruct.StructField;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 
 /**
- * 16进制字符串转换
+ * 字符串转换
  */
-public class HexStringConverter extends AbstractConverter<String> {
+public class StringConverter extends AbstractConverter<String> {
 
-  public HexStringConverter() {
+  public StringConverter() {
   }
 
-  public HexStringConverter(boolean local) {
+  public StringConverter(boolean local) {
     super(local);
   }
 
@@ -24,10 +26,17 @@ public class HexStringConverter extends AbstractConverter<String> {
   }
 
   @Override
-  public byte[] convert(StructField field, Object value) {
+  public byte[] convert(Object obj, StructField field, Object value) {
     int size = field.getFieldSize();
     if (value != null) {
-      byte[] bytes = getBinary().hexToBytes((String) value);
+      byte[] bytes;
+      try {
+        bytes = ((String) value).getBytes(field.getCharset());
+      } catch (UnsupportedEncodingException e) {
+        throw new IllegalStateException("不支持的字符集【"
+            + (field.getField().getDeclaringClass().getName())
+            + "." + field.getField().getName() + "】：" + field.getCharset());
+      }
       if (bytes.length == size) {
         return bytes;
       }
@@ -38,9 +47,9 @@ public class HexStringConverter extends AbstractConverter<String> {
   }
 
   @Override
-  public String parse(StructField field, byte[] data, int position) {
+  public String parse(Object obj, StructField field, byte[] data, int position) {
     byte[] buf = copy(data, position, getCache(field.getFieldSize()), 0, field.getFieldSize());
-    return getBinary().bytesToHex(buf);
+    return new String(buf).trim();
   }
 
 }
