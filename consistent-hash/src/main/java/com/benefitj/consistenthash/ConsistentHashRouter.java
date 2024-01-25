@@ -16,8 +16,6 @@
  */
 package com.benefitj.consistenthash;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -129,7 +127,7 @@ public class ConsistentHashRouter<T extends Node> {
    *
    * @param pNode
    */
-  public void removeNode(@Nonnull T pNode) {
+  public void removeNode(T pNode) {
     removeNodes(Collections.singleton(pNode));
   }
 
@@ -138,7 +136,7 @@ public class ConsistentHashRouter<T extends Node> {
    *
    * @param pNodes
    */
-  public void removeNodes(@Nonnull Collection<T> pNodes) {
+  public void removeNodes(Collection<T> pNodes) {
     lock.writeLock(() -> {
       for (T pNode : pNodes) {
         final Iterator<Long> it = ring.keySet().iterator();
@@ -159,7 +157,6 @@ public class ConsistentHashRouter<T extends Node> {
    * @param objectKey the object key to find a nearest Node
    * @return
    */
-  @Nullable
   public T routeNode(String objectKey) {
     return lock.readLock(() -> {
       if (ring.isEmpty()) {

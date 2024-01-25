@@ -14,7 +14,6 @@ dependencies {
   [
       ":consistent-hash",
       ":core",
-      //":device",
       ":eventbus",
       ":extensions",
       ":frameworks",

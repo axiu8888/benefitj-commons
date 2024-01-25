@@ -1,26 +1,28 @@
 ext {
-//  springbootVersion = "3.1.5"
-//  springDependencyManagementVersion = "1.1.3"
-//  springIntegrationVersion = "6.1.4"
-  springbootVersion = "2.7.17"
-  springDependencyManagementVersion = "1.0.15.RELEASE"
-  springIntegrationVersion = "5.5.19"
+//  springbootVersion = "2.7.17"
+//  springDependencyManagementVersion = "1.0.15.RELEASE"
+//  springIntegrationVersion = "5.5.19"
+
+  springbootVersion = "3.2.2"
+  springDependencyManagementVersion = "1.1.4"
+  springIntegrationVersion = "6.2.1"
 
   lombokVersion = "1.18.30"
-  jacksonVersion = "2.15.3"
-  guavaVersion = '32.1.3-jre'
+  jacksonVersion = "2.16.1"
+  guavaVersion = "33.0.0-jre"
   caffeineVersion = '3.1.8'
-  fastjson2Version = '2.0.42'
-  commonsIOVersion = "2.15.0"
-  commonsLang3Version = "3.13.0"
-  slf4jVersion = '2.0.9'
-  hutoolVersion = '5.8.23'
+  fastjson2Version = "2.0.45"
+  commonsIOVersion = "2.15.1"
+  commonsLang3Version = "3.14.0"
+  slf4jVersion = "2.0.11"
+  hutoolVersion = "5.8.25"
+  cglibVersion = "3.3.0"
+  nettyAllVersion = "4.1.106.Final"
 
   aspectjVersion = "1.9.20"
   swaggerVersion = "3.0.0"
   knife4jVersion = "4.3.0"
   jjwtVersion = "0.12.3"
-  nettyAllVersion = '4.1.101.Final'
   vertxVersion = "4.4.6"
 
   rxJavaVersion = '2.2.21'
@@ -33,12 +35,9 @@ ext {
   mybatisPlusVersion = "3.5.4.1"
   pagehelperVersion = "2.0.0"
 
-  useRepository = false
-
-
   try {
     def props = new Properties()
-    props.load(new FileReader("${getRootDir()}/nexus.properties"))
+    props.load(new FileReader("${rootDir}/nexus.properties"))
     props.forEach(ext::set)
   } catch (e) {
     e.printStackTrace()
@@ -49,15 +48,13 @@ ext {
 subprojects {
 
   apply plugin: 'java'
-  // 通用依赖
-//  apply from: "${scriptFile}"
 
   group = 'com.benefitj'
   version = "2.4.0-SNAPSHOT"
 
   ext {
-    compatibilityVersion = JavaVersion.VERSION_11
-    scriptFile = "${rootDir}/buildSystem/base.gradle"
+    javaVersion = JavaVersion.VERSION_17
+    scriptFile = "${rootDir}/gradleScript/base.gradle"
     //scriptFile = "https://gitee.com/axiu8888/GradleBuild/raw/main/Java/base.gradle"
 
     groupId = "$group"
@@ -72,9 +69,6 @@ subprojects {
         "home"      : "https://github.com/axiu8888/${rootProject.name}",
     ]
   }
-
-  sourceCompatibility = ext.compatibilityVersion
-  targetCompatibility = ext.compatibilityVersion
 
   dependencies {
 //		def commons = project(":commons");
