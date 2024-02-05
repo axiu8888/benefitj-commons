@@ -156,7 +156,7 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
       }
     }
     if (newFile) {
-      getFileListener().onHandle(writer, writer.getSource());
+      getFileListener().onHandle(writer, writer.source());
     }
     return this;
   }
@@ -172,7 +172,7 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
       }
     }
     if (writer != null) {
-      getFileListener().onHandle(writer, writer.getSource());
+      getFileListener().onHandle(writer, writer.source());
     }
   }
 

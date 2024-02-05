@@ -143,7 +143,7 @@ public interface IWriter extends AutoCloseable, Appendable, Flushable {
     return new FileWriterImpl(file, append);
   }
 
-  public static BufferedOutputStream wrapOutput(File src, boolean append) {
+  static BufferedOutputStream wrapOutput(File src, boolean append) {
     try {
       return new BufferedOutputStream(new FileOutputStream(src, append));
     } catch (IOException e) {
@@ -151,11 +151,11 @@ public interface IWriter extends AutoCloseable, Appendable, Flushable {
     }
   }
 
-  public static BufferedWriter wrapWriter(File src, boolean append) {
+  static BufferedWriter wrapWriter(File src, boolean append) {
     return wrapWriter(src, StandardCharsets.UTF_8, append);
   }
 
-  public static BufferedWriter wrapWriter(File src, Charset charset, boolean append) {
+  static BufferedWriter wrapWriter(File src, Charset charset, boolean append) {
     try {
       return new BufferedWriter(new FileWriter(src, charset, append));
     } catch (IOException e) {

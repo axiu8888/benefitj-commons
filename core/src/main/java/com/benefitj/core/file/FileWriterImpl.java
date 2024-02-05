@@ -34,7 +34,7 @@ public class FileWriterImpl implements IWriter, AttributeMap {
     return attributes;
   }
 
-  public File getSource() {
+  public File source() {
     return source;
   }
 
@@ -42,21 +42,21 @@ public class FileWriterImpl implements IWriter, AttributeMap {
    * 长度
    */
   public long length() {
-    return getSource().length();
+    return source().length();
   }
 
   /**
    * 路径
    */
   public String path() {
-    return getSource().getAbsolutePath();
+    return source().getAbsolutePath();
   }
 
   /**
    * 父目录
    */
   public File parent() {
-    return getSource().getParentFile();
+    return source().getParentFile();
   }
 
   /**
