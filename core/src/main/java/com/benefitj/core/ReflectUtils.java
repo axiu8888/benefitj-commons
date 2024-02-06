@@ -1,6 +1,7 @@
 package com.benefitj.core;
 
 import com.benefitj.core.executable.Instantiator;
+import com.benefitj.core.functions.IConsumer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,7 +18,6 @@ import java.util.function.Predicate;
  * 反射工具
  */
 public class ReflectUtils {
-
 
   public static final Predicate<Field> NOT_STATIC_FINAL = f ->
       !(Modifier.isStatic(f.getModifiers()) || Modifier.isFinal(f.getModifiers()));
@@ -285,6 +285,64 @@ public class ReflectUtils {
   }
 
   /**
+   * 处理字段，如果出现
+   *
+   * @param klass     类
+   * @param fieldName 字段名
+   * @param consumer  处理
+   */
+  public static void opFieldIfPresent(Class<?> klass, String fieldName, IConsumer<Field> consumer) {
+    opFieldIfPresent(klass, f -> f.getName().equalsIgnoreCase(fieldName), consumer);
+  }
+
+  /**
+   * 处理字段，如果出现
+   *
+   * @param klass    类
+   * @param matcher  匹配器
+   * @param consumer 处理
+   */
+  public static void opFieldIfPresent(Class<?> klass, Predicate<Field> matcher, IConsumer<Field> consumer) {
+    Field field = getField(klass, matcher);
+    if (field != null) {
+      try {
+        consumer.accept(field);
+      } catch (Exception e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
+
+  /**
+   * 处理方法，如果出现
+   *
+   * @param klass      类
+   * @param methodName 方法名
+   * @param consumer   处理
+   */
+  public static void opMethodIfPresent(Class<?> klass, String methodName, IConsumer<Method> consumer) {
+    opMethodIfPresent(klass, m -> m.getName().equalsIgnoreCase(methodName), consumer);
+  }
+
+  /**
+   * 处理方法，如果出现
+   *
+   * @param klass    类
+   * @param matcher  匹配器
+   * @param consumer 处理
+   */
+  public static void opMethodIfPresent(Class<?> klass, Predicate<Method> matcher, IConsumer<Method> consumer) {
+    Method m = getMethod(klass, matcher);
+    if (m != null) {
+      try {
+        consumer.accept(m);
+      } catch (Exception e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
+
+  /**
    * 迭代 field
    *
    * @param type        类
@@ -439,8 +497,25 @@ public class ReflectUtils {
    * @param value 值
    * @return 返回是否设置成功
    */
+  public static boolean setFieldValue(String field, Object obj, Object value) {
+    Class<?> klass = obj.getClass();
+    Field f = getField(klass, field);
+    if (f != null) {
+      return setFieldValue(f, obj, value);
+    }
+    return false;
+  }
+
+  /**
+   * 设置字段的值
+   *
+   * @param field 字段
+   * @param obj   对象
+   * @param value 值
+   * @return 返回是否设置成功
+   */
   public static boolean setFieldValue(Field field, Object obj, Object value) {
-    if (field != null && obj != null) {
+    if (field != null) {
       try {
         setAccessible(field, true);
         field.set(obj, value);
@@ -695,6 +770,50 @@ public class ReflectUtils {
   }
 
   /**
+   * 加载类
+   *
+   * @param className 类
+   * @param <T>       类
+   * @return 返回加载的类
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> Class<T> classForName(String className) {
+    return classForName(className, true);
+  }
+
+  /**
+   * 加载类
+   *
+   * @param className 类
+   * @param throwing  是否抛出异常
+   * @param <T>       类
+   * @return 返回加载的类
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> Class<T> classForName(String className, boolean throwing) {
+    try {
+      return (Class<T>) Class.forName(className);
+    } catch (Exception e) {
+      if (throwing) {
+        throw new IllegalStateException(e);
+      }
+      return null;
+    }
+  }
+
+  /**
+   * 创建对象实例
+   *
+   * @param klass 类
+   * @param args  参数
+   * @param <T>   类型
+   * @return 返回对象实例
+   */
+  public static <T> T newInstance(String klass, Object... args) {
+    return newInstance(classForName(klass), args);
+  }
+
+  /**
    * 创建对象实例
    *
    * @param klass 类
@@ -788,7 +907,7 @@ public class ReflectUtils {
    * 获取方法名和参数值
    *
    * @param parameters 参数
-   * @param values 值
+   * @param values     值
    * @return 返回转换的Map
    */
   public static Map<String, Object> getParameterValues(Parameter[] parameters, Object[] values) {
