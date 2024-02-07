@@ -3,7 +3,7 @@ package com.benefitj.core.executable;
 import com.benefitj.core.BaseTest;
 import com.benefitj.core.HexUtils;
 import com.benefitj.core.ReflectUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 

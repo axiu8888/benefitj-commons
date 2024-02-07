@@ -3,9 +3,9 @@ package com.benefitj.mqtt.vertx.server;
 import com.benefitj.core.EventLoop;
 import com.benefitj.mqtt.vertx.VertxHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
 
@@ -14,7 +14,7 @@ public class VertxMqttServerTest {
 
   VertxMqttServer server;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
   }
 
@@ -37,7 +37,7 @@ public class VertxMqttServerTest {
     EventLoop.await(300, TimeUnit.SECONDS);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (server != null) {
       VertxHolder.undeploy(server.deploymentID())

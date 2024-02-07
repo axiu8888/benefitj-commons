@@ -1,10 +1,9 @@
 package com.benefitj.core;
 
-import com.benefitj.core.functions.IFunction;
 import com.benefitj.core.lambda.LambdaMeta;
 import com.benefitj.core.lambda.LambdaUtils;
 import com.benefitj.core.reflection.FieldDescriptor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.*;
 import java.util.Arrays;

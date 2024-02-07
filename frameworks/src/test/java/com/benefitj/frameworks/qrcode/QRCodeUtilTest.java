@@ -2,7 +2,7 @@ package com.benefitj.frameworks.qrcode;
 
 
 import com.benefitj.frameworks.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.awt.*;
 import java.io.File;

@@ -4,9 +4,9 @@ import com.alibaba.fastjson2.JSON;
 import com.benefitj.core.AttributeMap;
 import com.benefitj.core.StackLogger;
 import com.benefitj.core.TimeUtils;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.util.Collection;
@@ -132,7 +132,7 @@ public class CGLibProxyTest {
   }
 
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
   }
 

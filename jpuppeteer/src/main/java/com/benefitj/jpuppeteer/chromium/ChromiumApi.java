@@ -1,7 +1,7 @@
 package com.benefitj.jpuppeteer.chromium;
 
-import java.lang.annotation.*;
 import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * 接口

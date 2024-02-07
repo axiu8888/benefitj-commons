@@ -1,7 +1,7 @@
 package com.benefitj.core;
 
-import org.junit.After;
 import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +14,7 @@ public abstract class BaseTest {
 		log.info("-------------  setUp   ----------------" + DateFmtter.fmtNowS());
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		log.info("------------- tearDown ----------------" + DateFmtter.fmtNowS());
 	}

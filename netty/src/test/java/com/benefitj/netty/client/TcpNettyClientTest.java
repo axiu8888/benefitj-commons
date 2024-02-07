@@ -8,9 +8,9 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.concurrent.FutureListener;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -60,7 +60,7 @@ public class TcpNettyClientTest {
     client.stop();
   }
 
-  @After
+  @AfterEach
   public void after() {
   }
 

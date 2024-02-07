@@ -1,9 +1,6 @@
 package com.benefitj.frameworks;
 
 import org.apache.commons.mail.*;
-import org.apache.commons.mail.resolver.DataSourceCompositeResolver;
-import org.apache.commons.mail.resolver.DataSourceFileResolver;
-import org.apache.commons.mail.resolver.DataSourceUrlResolver;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -1,6 +1,6 @@
 package com.benefitj.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.ByteOrder;
 import java.util.Arrays;

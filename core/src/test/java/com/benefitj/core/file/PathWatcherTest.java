@@ -2,7 +2,7 @@ package com.benefitj.core.file;
 
 import com.benefitj.core.BaseTest;
 import com.benefitj.core.DateFmtter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 

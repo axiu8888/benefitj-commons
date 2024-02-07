@@ -1,16 +1,4 @@
-pluginManagement {
-  repositories {
-    maven { url("https://maven.aliyun.com/repository/google") }
-    maven { url("https://maven.aliyun.com/repository/central") }
-    maven { url("https://maven.aliyun.com/repository/gradle-plugin") }
-    maven { url("https://maven.aliyun.com/repository/public") }
-    maven { url("https://maven.aliyun.com/repository/jcenter") }
-    maven { url 'https://repo.spring.io/milestone' }
-    maven { url 'https://repo.spring.io/release' }
-    mavenCentral()
-    gradlePluginPortal()
-  }
-}
+
 rootProject.name = 'benefitj-commons'
 
 /**
@@ -19,7 +7,6 @@ rootProject.name = 'benefitj-commons'
 include ":core"             // 常用工具
 include ":http"             // HTTP请求，OkHttp + Retrofit + RxJava
 include ":netty"            // netty
-//include ":device"           // 设备
 include ":extensions"       // 扩展功能
 include ":pipeline"         // pipeline
 include ":frameworks"       // 一些库的工具
@@ -30,7 +17,6 @@ include ":eventbus"         // EventBus
 include ":javastruct"       // java结构体转换
 include ":jdbc"             // jdbc
 include ":jpuppeteer"       // chromium puppeteer
-include ":ini4j"            // ini 配置读取
 include ":all"              // 全部的依赖
 include ":others"           // 其他
 

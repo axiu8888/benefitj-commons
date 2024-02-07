@@ -4,9 +4,9 @@ import com.benefitj.core.EventLoop;
 import com.benefitj.mqtt.vertx.VertxHolder;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +59,7 @@ public class VertxMqttClientTest {
     EventLoop.await(120, TimeUnit.SECONDS);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (client != null) {
       VertxHolder.undeploy(client.deploymentID())

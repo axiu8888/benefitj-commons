@@ -3,7 +3,7 @@ package com.benefitj.interpolator;
 import com.benefitj.core.StackLogger;
 import com.benefitj.core.TimeUtils;
 import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.util.Arrays;

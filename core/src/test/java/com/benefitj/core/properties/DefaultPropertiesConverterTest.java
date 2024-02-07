@@ -4,7 +4,7 @@ import com.benefitj.core.BaseTest;
 import com.benefitj.core.ClasspathUtils;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.SystemProperty;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 

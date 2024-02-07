@@ -19,7 +19,9 @@ import okio.ByteString;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -45,6 +47,7 @@ public class ApiBuilderTest {
 
   private ServiceApi api;
 
+  @BeforeEach
   public void setUp() throws Exception {
     this.api = ApiBuilder.createApiProxy(ServiceApi.class
         , ServiceApi.BASE_URL
@@ -52,6 +55,7 @@ public class ApiBuilderTest {
     );
   }
 
+  @AfterEach
   public void tearDown() throws Exception {
   }
 

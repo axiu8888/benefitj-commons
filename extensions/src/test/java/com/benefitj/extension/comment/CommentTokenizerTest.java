@@ -5,9 +5,9 @@ import com.alibaba.fastjson2.JSON;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.SystemProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +23,7 @@ public class CommentTokenizerTest {
   public void setUp() throws Exception {
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
   }
 

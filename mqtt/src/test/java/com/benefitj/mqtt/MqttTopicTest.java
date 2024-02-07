@@ -1,9 +1,9 @@
 package com.benefitj.mqtt;
 
 import com.benefitj.core.Slicer;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 public class MqttTopicTest {
 
@@ -59,7 +59,7 @@ public class MqttTopicTest {
     System.err.println(Slicer.slice("//", ((b, position, ch) -> ch == '/')));
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
   }
 }

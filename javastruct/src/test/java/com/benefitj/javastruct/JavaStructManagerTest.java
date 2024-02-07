@@ -8,9 +8,9 @@ import com.benefitj.core.IOUtils;
 import com.benefitj.javastruct.entity.CollectorPacket;
 import com.benefitj.javastruct.entity.LeadWave;
 import com.benefitj.javastruct.entity.Person;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Date;
@@ -18,7 +18,7 @@ import java.util.Date;
 public class JavaStructManagerTest {
 
 
-  private JavaStructManager manager = JavaStructManager.INSTANCE;
+  private JavaStructManager manager = JavaStructManager.get();
   /**
    * 二进制工具
    */
@@ -28,7 +28,7 @@ public class JavaStructManagerTest {
   public void setUp() throws Exception {
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
   }
 
@@ -90,7 +90,6 @@ public class JavaStructManagerTest {
   public void testCollector() {
     File file = ClasspathUtils.getFile("collector.hex");
     byte[] data = IOUtils.readFileAsBytes(file);
-    JavaStructManager manager = JavaStructManager.INSTANCE;
     CollectorPacket packet = manager.parseObject(HexUtils.hexToBytes(new String(data)), CollectorPacket.class);
     System.err.println(JSON.toJSONString(packet));
   }

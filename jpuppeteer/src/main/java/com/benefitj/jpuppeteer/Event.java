@@ -1,6 +1,5 @@
 package com.benefitj.jpuppeteer;
 
-import java.lang.annotation.Target;
 import java.lang.annotation.*;
 
 /**

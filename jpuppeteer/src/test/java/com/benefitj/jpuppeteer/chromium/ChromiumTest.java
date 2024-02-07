@@ -6,9 +6,9 @@ import com.alibaba.fastjson2.JSONWriter;
 import com.benefitj.core.*;
 import com.benefitj.jpuppeteer.*;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ChromiumTest {
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
   }
 
@@ -158,7 +158,7 @@ public class ChromiumTest {
     }
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
   }
 }

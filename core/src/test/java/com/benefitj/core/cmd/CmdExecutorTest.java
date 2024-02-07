@@ -3,7 +3,7 @@ package com.benefitj.core.cmd;
 import com.benefitj.core.*;
 import com.benefitj.core.file.PathWatcher;
 import com.benefitj.core.functions.IRunnable;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.File;

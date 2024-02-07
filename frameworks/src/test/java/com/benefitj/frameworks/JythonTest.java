@@ -2,7 +2,7 @@ package com.benefitj.frameworks;
 
 import com.benefitj.core.ClasspathUtils;
 import com.benefitj.core.TimeUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.python.util.PythonInterpreter;
 
 import java.io.File;

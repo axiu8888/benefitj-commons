@@ -1,7 +1,7 @@
 package com.benefitj.core.file.slicer;
 
-import com.benefitj.core.IdUtils;
 import com.benefitj.core.CatchUtils;
+import com.benefitj.core.IdUtils;
 
 import java.io.File;
 import java.io.IOException;

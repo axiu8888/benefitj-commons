@@ -1,7 +1,7 @@
 package com.benefitj.core.executable;
 
 import com.benefitj.core.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class InstantiatorTest extends BaseTest {
 

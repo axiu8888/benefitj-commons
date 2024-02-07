@@ -2,7 +2,7 @@ package com.benefitj.core.file;
 
 import com.benefitj.core.BaseTest;
 import com.benefitj.core.ClasspathUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
