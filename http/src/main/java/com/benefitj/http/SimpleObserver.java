@@ -1,6 +1,6 @@
 package com.benefitj.http;
 
-import io.reactivex.observers.DefaultObserver;
+import io.reactivex.rxjava3.observers.DefaultObserver;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;

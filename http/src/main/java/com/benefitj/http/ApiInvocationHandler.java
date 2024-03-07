@@ -1,9 +1,9 @@
 package com.benefitj.http;
 
 import com.benefitj.core.ReflectUtils;
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Scheduler;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
 
 import java.lang.reflect.Method;
 

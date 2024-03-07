@@ -1,6 +1,7 @@
 package com.benefitj.http;
 
-import io.reactivex.observers.DefaultObserver;
+
+import io.reactivex.rxjava3.observers.DefaultObserver;
 
 import javax.annotation.Nullable;
 

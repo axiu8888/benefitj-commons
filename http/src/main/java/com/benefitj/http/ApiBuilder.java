@@ -7,7 +7,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.CallAdapter;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
@@ -165,21 +165,21 @@ public interface ApiBuilder<T> {
   /**
    * 获取调用适配器工厂，如: <br/>
    * <p>
-   * {@link retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory#create()} <br/>
+   * {@link retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory#create()} <br/>
    */
   List<CallAdapter.Factory> getCallAdapterFactories();
 
   /**
    * 添加调用适配器工厂，如: <br/>
    * <p>
-   * {@link retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory#create()} <br/>
+   * {@link retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory#create()} <br/>
    */
   ApiBuilder<T> addCallAdapterFactories(CallAdapter.Factory... factories);
 
   /**
    * 添加调用适配器工厂，如: <br/>
    * <p>
-   * {@link retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory#create()} <br/>
+   * {@link retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory#create()} <br/>
    */
   ApiBuilder<T> addCallAdapterFactoryIfAbsent(CallAdapter.Factory factory);
 
@@ -187,8 +187,8 @@ public interface ApiBuilder<T> {
    * 添加默认调用适配器工厂
    */
   default ApiBuilder<T> useDefaultCallAdapterFactories() {
-    if (isClassExist("retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory")) {
-      addCallAdapterFactoryIfAbsent(RxJava2CallAdapterFactory.create());
+    if (isClassExist("retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory")) {
+      addCallAdapterFactoryIfAbsent(RxJava3CallAdapterFactory.create());
     }
     return this;
   }

@@ -8,7 +8,7 @@ import com.benefitj.core.*;
 import com.benefitj.core.file.IWriter;
 import com.benefitj.core.file.PathWatcher;
 import com.benefitj.http.*;
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Observable;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
 import okhttp3.HttpUrl;
