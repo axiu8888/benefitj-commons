@@ -20,21 +20,21 @@ public class TarUtils {
 
 
   /**
-   * TAR & gZip
+   * TAR 与 gZip
    *
    * @param src 源文件
-   * @return 返回 TAR & gZip 后的文件
+   * @return 返回 TAR 与 gZip 后的文件
    */
   public static File tarGzip(File src) {
     return tarGzip(src, CompressUtils.getFilename(src, ".tar.gz"));
   }
 
   /**
-   * TAR & gZip
+   * TAR 与 gZip
    *
    * @param src  源文件
    * @param dest 目标文件
-   * @return 返回 TAR & gZip 后的文件
+   * @return 返回 TAR 与 gZip 后的文件
    */
   public static File tarGzip(File src, File dest) {
     final File tar = tar(src, CompressUtils.getFilename(src, ".tar"));

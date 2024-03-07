@@ -270,7 +270,7 @@ public class IdUtils {
    * 获取一个 SnowflakeId
    */
   public static long snowflakeId() {
-    return SnowflakeIdWorker.getInstance().nextId();
+    return SnowflakeIdWorker.get().nextId();
   }
 
   /**

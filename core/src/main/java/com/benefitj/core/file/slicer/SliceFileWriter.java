@@ -8,7 +8,7 @@ import java.io.File;
 /**
  * 文件写入器
  */
-public class SliceFileWriter extends FileWriterImpl implements IWriter {
+public class SliceFileWriter extends FileWriterImpl implements IWriter<FileWriterImpl> {
 
   public SliceFileWriter(File file) {
     this(file, false);

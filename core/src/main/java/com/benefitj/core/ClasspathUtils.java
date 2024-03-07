@@ -162,7 +162,7 @@ public class ClasspathUtils {
   /**
    * 判断路径是否为Jar包，如果路径以{@link ClasspathUtils#JAR_SCHEME}开头，
    * 或以{@link #JAR_SUFFIX}结尾，
-   * 或者以{@link ClasspathUtils#FILE_SCHEME}开头 && 包含{@link ClasspathUtils#JAR_SUFFIX}的路径，表示是Jar包
+   * 或者以{@link ClasspathUtils#FILE_SCHEME}开头 与 包含{@link ClasspathUtils#JAR_SUFFIX}的路径，表示是Jar包
    *
    * @param path 路径
    * @return 返回判断的结果

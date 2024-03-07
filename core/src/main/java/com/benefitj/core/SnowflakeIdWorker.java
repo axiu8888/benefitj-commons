@@ -14,15 +14,10 @@ package com.benefitj.core;
  */
 public class SnowflakeIdWorker {
 
-  private static class Holder {
-    private static final SnowflakeIdWorker INSTANCE;
-    static {
-      INSTANCE = new SnowflakeIdWorker(0, 0);
-    }
-  }
+  static SingletonSupplier<SnowflakeIdWorker> singleton = SingletonSupplier.of(() -> new SnowflakeIdWorker(0, 0));
 
-  public static SnowflakeIdWorker getInstance() {
-    return Holder.INSTANCE;
+  public static SnowflakeIdWorker get() {
+    return singleton.get();
   }
 
   // ==============================Fields===========================================

@@ -10,7 +10,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RaFile implements OutputWriter<RaFile> {
+public class RaFile implements IWriter<RaFile> {
 
   public static final String[] MODES = {"r", "rw", "rws", "rwd"};
   public static final byte NL_N = '\n';
@@ -85,8 +85,12 @@ public class RaFile implements OutputWriter<RaFile> {
   }
 
   public RaFile setLength(long newLength) {
-    synchronized (this) {
-      CatchUtils.tryThrow(() -> getRaf().setLength(newLength));
+    try {
+      synchronized (this) {
+        getRaf().setLength(newLength);
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
     }
     return this;
   }
@@ -183,11 +187,10 @@ public class RaFile implements OutputWriter<RaFile> {
       return this;
     }
     if (start == 0) {
-      setLength(size);
-      return this;
+      return setLength(size);
     }
-    synchronized (this) {
-      CatchUtils.tryThrow(() -> {
+    try {
+      synchronized (this) {
         // 平移数据
         RandomAccessFile raf = this.getRaf();
         raf.seek(0);
@@ -204,7 +207,9 @@ public class RaFile implements OutputWriter<RaFile> {
           raf.seek(rpos);
         }
         raf.setLength(wpos);
-      });
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
     }
     return this;
   }
@@ -216,6 +221,11 @@ public class RaFile implements OutputWriter<RaFile> {
       CatchUtils.tryThrow(() -> getRaf().write(buf, offset, len));
     }
     return this;
+  }
+
+  @Override
+  public RaFile write(byte[] buf, int offset, int len) {
+    return null;
   }
 
   @Override

@@ -21,19 +21,19 @@ public class FileSlicerTest extends BaseTest {
 
     FileSlicer slicer = new FileSlicer();
     // 缓存目录
-    slicer.setCacheDir(new File("D:\\opt\\tmp\\"));
+    slicer.setCacheDir(new File("D:/tmp/slicer"));
     // 文件最大的长度
     slicer.setMaxSize(5 * Utils.MB);
     // 文件工厂对象
     slicer.setFileFactory(dir -> {
       String filename = IdUtils.nextLowerLetterId(DateFmtter.fmtNow("yyyyMMdd_HHmmss") + "__", ".txt", 10);
       File file = FileFactory.createFile(dir, filename);
-      log.info("创建文件: {}", file.getAbsolutePath());
+      log.info("创建文件: {}, {}", file.getAbsolutePath(), DateFmtter.fmtNowS());
       return new SliceFileWriter(file);
     });
     // 文件监听
     slicer.setFileListener((writer, file) -> {
-      log.info("处理文件: {}, {}MB", file.getAbsolutePath(), Utils.ofMB(file.length(), 2));
+      log.info("处理文件: {}, {}MB, {}", file.getAbsolutePath(), Utils.ofMB(file.length(), 2), DateFmtter.fmtNowS());
       stopFlag.incrementAndGet();
     });
 

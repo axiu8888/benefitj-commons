@@ -9,7 +9,7 @@ import java.util.Properties;
 /**
  * 文件分割器
  */
-public class FileSlicer<T extends SliceFileWriter> implements IWriter {
+public class FileSlicer<T extends SliceFileWriter> implements IWriter<FileSlicer<T>> {
 
   /**
    * 文件最大50MB
@@ -64,92 +64,14 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
   }
 
   @Override
-  public FileSlicer<T> write(String str) {
-    return writeAndFlush(str.getBytes(getCharset()));
-  }
-
-  @Override
-  public FileSlicer<T> write(String... strings) {
-    return writeAndFlush(strings);
-  }
-
-  @Override
-  public FileSlicer<T> write(byte[] buf) {
-    return writeAndFlush(buf);
-  }
-
-  @Override
-  public FileSlicer<T> write(byte[]... array) {
-    return writeAndFlush(array);
-  }
-
-  @Override
-  public FileSlicer<T> write(byte[] buf, int offset, int len) {
-    return writeAndFlush(buf, offset, len);
-  }
-
-  @Override
-  public FileSlicer<T> writeAndFlush(String str) {
-    return writeAndFlush(str.getBytes(getCharset()));
-  }
-
-  @Override
-  public FileSlicer<T> writeAndFlush(String... strings) {
-    for (int i = 0; i < strings.length; i++) {
-      byte[] buf = strings[i].getBytes(getCharset());
-      write0(buf, 0, buf.length, i == strings.length - 1);
-    }
-    return this;
-  }
-
-  @Override
-  public FileSlicer<T> writeAndFlush(byte[]... array) {
-    for (int i = 0; i < array.length; i++) {
-      write0(array[i], 0, array[i].length, i == array.length - 1);
-    }
-    return this;
-  }
-
-  @Override
-  public FileSlicer<T> writeAndFlush(byte[] buf) {
-    return write0(buf, 0, buf.length);
-  }
-
-  @Override
-  public FileSlicer<T> writeAndFlush(byte[] buf, int offset, int len) {
-    return write0(buf, offset, len);
-  }
-
-  /**
-   * 写入数据
-   *
-   * @param buf    字节缓冲
-   * @param offset 偏移量
-   * @param len    长度
-   */
-  protected FileSlicer<T> write0(byte[] buf, int offset, int len) {
-    return write0(buf, offset, len, true);
-  }
-
-  /**
-   * 写入数据
-   *
-   * @param buf       字节缓冲
-   * @param offset    偏移量
-   * @param len       长度
-   * @param checkSize 是否检查文件大小
-   */
-  protected FileSlicer<T> write0(byte[] buf, int offset, int len, boolean checkSize) {
-    final T writer;
-    synchronized (this) {
-      writer = getWriter(true);
-    }
+  public FileSlicer<T> write(byte[] buf, int offset, int len, boolean flush) {
+    final T writer = getWriter(true);
     boolean newFile = false;
     synchronized (writer) {
       writer.writeAndFlush(buf, offset, len);
       this.setLastWriteTime(System.currentTimeMillis());
       // 检查文件
-      if (checkSize && checkNewFile(writer)) {
+      if (checkNewFile(writer)) {
         this.currentWriter = null;
         writer.close();
         newFile = true;
@@ -240,8 +162,7 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
       synchronized (this) {
         if ((writer = this.currentWriter) == null) {
           // 创建新文件
-          writer = getFileFactory().create(getCacheDir());
-          this.currentWriter = writer;
+          this.currentWriter = (writer = getFileFactory().create(getCacheDir()));
         }
       }
     }
@@ -252,8 +173,8 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter {
    * 获取最后一个文件长度
    */
   public long length() {
-    T writer = this.getWriter();
-    return writer != null ? writer.length() : 0L;
+    T w = this.getWriter();
+    return w != null ? w.length() : 0L;
   }
 
   public File getCacheDir() {
