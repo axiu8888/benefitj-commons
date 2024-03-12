@@ -744,23 +744,35 @@ public class IOUtils {
   /**
    * 写入数据
    *
-   * @param is   输入流
-   * @param file 文件
+   * @param is  输入流
+   * @param out 输出到的文件
    * @return 返回写入的长度
    */
-  public static long write(InputStream is, File file, boolean close) {
-    return write(is, file, false, close);
+  public static long write(InputStream is, File out) {
+    return write(is, out, true);
   }
 
   /**
    * 写入数据
    *
-   * @param file 文件
-   * @param os   输出流
+   * @param is    输入流
+   * @param out   输出到的文件
+   * @param close 是否关闭输入流
    * @return 返回写入的长度
    */
-  public static long write(File file, OutputStream os) {
-    return write(newFIS(file), os, 1024 << 4);
+  public static long write(InputStream is, File out, boolean close) {
+    return write(is, out, false, close);
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param os  输出流
+   * @param out 输出到的文件
+   * @return 返回写入的长度
+   */
+  public static long write(OutputStream os, File out) {
+    return write(newFIS(out), os, 1024 << 4);
   }
 
   /**
@@ -783,13 +795,13 @@ public class IOUtils {
    * 写入数据
    *
    * @param is     输入流
-   * @param dest   目标文件
+   * @param out    输出的文件
    * @param append 是否为追加
    * @param close  是否关闭流
    * @return 返回写入的长度
    */
-  public static long write(InputStream is, File dest, boolean append, boolean close) {
-    final FileOutputStream fos = newFOS(dest, append);
+  public static long write(InputStream is, File out, boolean append, boolean close) {
+    final FileOutputStream fos = newFOS(out, append);
     try {
       return write(is, fos, 1024 << 4, close);
     } finally {
@@ -803,26 +815,26 @@ public class IOUtils {
   /**
    * 写入数据
    *
-   * @param src    文件
-   * @param buf    数据
+   * @param in     数据
+   * @param out    输出的文件
    * @param append 是否为追加
    */
-  public static void write(File src, byte[] buf, boolean append) {
-    write(src, buf, 0, buf.length, append);
+  public static void write(byte[] in, File out, boolean append) {
+    write(in, 0, in.length, out, append);
   }
 
   /**
    * 写入数据
    *
-   * @param src    文件
-   * @param buf    数据
+   * @param in     数据
    * @param start  开始的位置
    * @param len    长度
+   * @param out    输出的文件
    * @param append 是否追加
    */
-  public static void write(File src, byte[] buf, int start, int len, boolean append) {
-    try (final FileOutputStream fos = newFOS(src, append)) {
-      write(fos, buf, start, len);
+  public static void write(byte[] in, int start, int len, File out, boolean append) {
+    try (final FileOutputStream fos = newFOS(out, append)) {
+      write(in, start, len, fos);
     } catch (Exception e) {
       throw CatchUtils.throwing(e, IllegalStateException.class);
     }
@@ -882,49 +894,49 @@ public class IOUtils {
   /**
    * 写入数据
    *
-   * @param os    输出流
-   * @param lines 字符串数据
+   * @param in 字符串数据
+   * @param os 输出流
    */
-  public static void write(OutputStream os, String... lines) {
-    for (String line : lines) {
-      byte[] buff = line.getBytes(StandardCharsets.UTF_8);
-      write(os, buff, 0, buff.length);
+  public static void write(String[] in, OutputStream os) {
+    for (String line : in) {
+      byte[] ba = line.getBytes(StandardCharsets.UTF_8);
+      write(ba, 0, ba.length, os);
     }
   }
 
   /**
    * 写入数据
    *
-   * @param os    输出流
-   * @param array 字节缓冲数组
+   * @param in 字节缓冲数组
+   * @param os 输出流
    */
-  public static void write(OutputStream os, byte[]... array) {
-    for (byte[] bytes : array) {
-      write(os, bytes, 0, array.length);
+  public static void write(byte[][] in, OutputStream os) {
+    for (byte[] ba : in) {
+      write(ba, 0, in.length, os);
     }
   }
 
   /**
    * 写入数据
    *
-   * @param os   输出流
-   * @param buff 字节缓冲
+   * @param in 字节缓冲
+   * @param os 输出流
    */
-  public static void write(OutputStream os, byte[] buff) {
-    write(os, buff, 0, buff.length);
+  public static void write(byte[] in, OutputStream os) {
+    write(in, 0, in.length, os);
   }
 
   /**
    * 写入数据
    *
-   * @param os    输出流
-   * @param buff  字节缓冲
+   * @param in    字节缓冲
    * @param start 开始的位置
    * @param len   结束的位置
+   * @param os    输出流
    */
-  public static void write(OutputStream os, byte[] buff, int start, int len) {
+  public static void write(byte[] in, int start, int len, OutputStream os) {
     try {
-      os.write(buff, start, len);
+      os.write(in, start, len);
       os.flush();
     } catch (IOException e) {
       throw throwing(e, IllegalStateException.class);
@@ -934,33 +946,33 @@ public class IOUtils {
   /**
    * 写入数据
    *
-   * @param reader 输入流
-   * @param writer 输出流
+   * @param in  输入流
+   * @param out 输出流
    */
-  public static void writeLine(Reader reader, Writer writer) {
-    writeLine(reader, writer, true);
+  public static void writeLine(Reader in, Writer out) {
+    writeLine(in, out, true);
   }
 
   /**
    * 写入数据
    *
-   * @param reader 输入流
-   * @param writer 输出流
-   * @param close  是否要关闭流
+   * @param in    输入流
+   * @param out   输出流
+   * @param close 是否要关闭流
    */
-  public static void writeLine(Reader reader, Writer writer, boolean close) {
-    final BufferedReader bw = wrapReader(reader);
+  public static void writeLine(Reader in, Writer out, boolean close) {
+    final BufferedReader bw = wrapReader(in);
     try {
       String line;
       while ((line = bw.readLine()) != null) {
-        writer.write(line);
-        writer.flush();
+        out.write(line);
+        out.flush();
       }
     } catch (IOException e) {
       throw throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
-        closeQuietly(reader, writer);
+        closeQuietly(in, out);
       }
     }
   }
@@ -1018,7 +1030,7 @@ public class IOUtils {
    * @param closes AutoCloseable实现(InputStream、OutputStream)
    */
   public static void closeQuietly(AutoCloseable... closes) {
-    if (closes != null && closes.length > 0) {
+    if (closes != null) {
       for (AutoCloseable c : closes) {
         try {
           c.close();
@@ -1055,18 +1067,9 @@ public class IOUtils {
   public static void deleteFiles(Collection<File> fs, boolean clear) {
     if (fs != null && !fs.isEmpty()) {
       for (File f : fs) {
-        deleteFile(f, clear);
+        delete0(f, clear);
       }
     }
-  }
-
-  /**
-   * 删除文件和目录
-   *
-   * @param f 文件
-   */
-  public static void deleteFile(File f) {
-    deleteFile(f, false);
   }
 
   /**
@@ -1075,7 +1078,7 @@ public class IOUtils {
    * @param f     文件
    * @param clear 是否清空文件
    */
-  public static void deleteFile(File f, boolean clear) {
+  static void delete0(File f, boolean clear) {
     if (f != null) {
       if (f.isDirectory()) {
         deleteFiles(f.listFiles(), clear);
@@ -1130,7 +1133,7 @@ public class IOUtils {
   /**
    * 处理文件
    *
-   * @param file    文件数据
+   * @param file     文件数据
    * @param consumer 处理者
    * @param listener 进度监听
    */

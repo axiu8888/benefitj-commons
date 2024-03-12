@@ -81,7 +81,7 @@ public class CommentTokenizerTest {
     String javaCode = tokenizer.getJavaCode(IOUtils.readFileAsString(f).toCharArray());
     String javaIOTmpDir = SystemProperty.getJavaIOTmpDir();
     File tmp = IOUtils.createFile(new File(javaIOTmpDir, id + "/" + f.getName()));
-    IOUtils.write(tmp, javaCode.getBytes(StandardCharsets.UTF_8), false);
+    IOUtils.write(javaCode.getBytes(StandardCharsets.UTF_8), tmp, false);
     IOUtils.readLines(tmp, (str, index) -> counter.addAndGet(StringUtils.isNotBlank(str.trim()) ? 1 : 0));
     //tmp.delete();
     return counter.get();

@@ -20,21 +20,39 @@ public abstract class SimpleObserver<T> extends DefaultObserver<T> {
   public void onComplete() {
   }
 
-  public static <T> SimpleObserver<T> create(Consumer<T> consumer) {
-    return create(consumer, Throwable::printStackTrace);
+  public static <T> SimpleObserver<T> create(Consumer<T> onNext) {
+    return create(onNext, Throwable::printStackTrace);
   }
 
-  public static <T> SimpleObserver<T> create(Consumer<T> consumer,
-                                             Consumer<Throwable> errorConsumer) {
+  public static <T> SimpleObserver<T> create(Consumer<T> onNext,
+                                             Consumer<Throwable> onError) {
+    return create(() -> {/*^_^*/}, onNext, onError);
+  }
+
+  public static <T> SimpleObserver<T> create(Runnable onStart,
+                                             Consumer<T> onNext,
+                                             Consumer<Throwable> onError) {
     return new SimpleObserver<T>() {
       @Override
+      protected void onStart() {
+        super.onStart();
+        if (onStart != null) {
+          onStart.run();
+        }
+      }
+
+      @Override
       public void onNext(@NotNull T t) {
-        consumer.accept(t);
+        onNext.accept(t);
       }
 
       @Override
       public void onError(Throwable e) {
-        errorConsumer.accept(e);
+        if (onError != null) {
+          onError.accept(e);
+        } else {
+          e.printStackTrace();
+        }
       }
     };
   }

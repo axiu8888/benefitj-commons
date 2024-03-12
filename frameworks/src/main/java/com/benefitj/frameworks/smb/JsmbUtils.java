@@ -141,7 +141,7 @@ public class JsmbUtils {
       }
     } else {
       if (src.length() > 0) {
-        IOUtils.write(src, dest.openOutputStream());
+        IOUtils.write(src, dest.openOutputStream(), true);
         CatchUtils.ignore(() -> {
           // 修改属性
           Path srcPath = src.toPath();

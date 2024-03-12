@@ -24,7 +24,7 @@ public class DefaultPropertiesConverterTest extends BaseTest {
       System.err.println("bv ==>: " + converter.getValue("spring.influxdb.gzip").getClass());
 
     } finally {
-      IOUtils.deleteFile(dest);
+      IOUtils.deleteFiles(dest);
     }
   }
 
