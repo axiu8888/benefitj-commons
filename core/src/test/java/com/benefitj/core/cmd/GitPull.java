@@ -51,6 +51,12 @@ public class GitPull {
     tryCount = 1 + Math.max(0, tryCount);
     for (int i = 0; i < tryCount; i++) {
       CmdCall call = CmdExecutor.get().call("git pull", null, dir);
+      if (call.getExitCode() == 128) {
+        CmdCall tmpCall = CmdExecutor.get().call("git config --global --add safe.directory " + dir.getAbsolutePath().replace("\\", "/"));
+        if (tmpCall.isSuccessful()) {
+          continue;
+        }
+      }
       System.err.println(call.toPrintInfo((i > 0 ? String.format("retry-%d ", i) : "") + "git pull (" + dir.getName() + ")", dir));
       if (call.isSuccessful()) {
         return true;

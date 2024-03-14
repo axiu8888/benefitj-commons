@@ -220,7 +220,7 @@ public class CmdExecutor {
         handle(getExecutor(), process, call, cb);
         // 等待
         //int exitValue = process.waitFor();
-        call.setCode(process.exitValue());
+        call.setExitCode(process.exitValue());
         // 移除等待的缓存
         cancelTimeoutSchedule(call.getId());
         // 调用结束
@@ -426,7 +426,7 @@ public class CmdExecutor {
         call.setError(String.join(CRLF, errLines));
       }
     } catch (InterruptedException e) {
-      call.setCode(-1);
+      call.setExitCode(-1);
     } catch (IOException e) {
       call.setError(e.getMessage());
     }

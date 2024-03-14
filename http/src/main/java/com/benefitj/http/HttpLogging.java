@@ -5,6 +5,8 @@ import lombok.NonNull;
 import okhttp3.Interceptor;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -13,7 +15,9 @@ import java.io.IOException;
  */
 public class HttpLogging implements Interceptor {
 
-  private final HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+  private static final Logger log = LoggerFactory.getLogger(HttpLogging.class);
+
+  private final HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor(log::info);
 
   public HttpLogging() {
     this(HttpLoggingInterceptor.Level.NONE);

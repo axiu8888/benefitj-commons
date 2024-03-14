@@ -20,36 +20,36 @@ import java.util.concurrent.CountDownLatch;
 public class CmdExecutorTest extends BaseTest {
 
   @Test
-  public void testJavaVersion() {
+  void testJavaVersion() {
     CmdCall call = CmdExecutor.get().call("java --version");
     System.err.println(call.toPrintInfo("java version", null));
     log.info("{}", call.toPrintInfo("java version", null));
   }
 
   @Test
-  public void testProperties() {
+  void testProperties() {
     SystemProperty.getSystemProperties().forEach((key, value) -> System.err.println(key + " ==>: " + value));
   }
 
   @Test
-  public void testMonoVersion() {
+  void testMonoVersion() {
     CmdCall call = CmdExecutor.get().call("mono --version");
     System.err.println(call.toPrintInfo("mono version", null));
   }
 
   @Test
-  public void testMmhgReport() {
+  void testMmhgReport() {
     File dir = new File("D:/tmp/jdk-app/hingmed");
     CmdCall call = CmdExecutor.get().call("cmd /c commandPrintPdf.exe report.xml report.pdf 127", null, dir);
     System.err.println(call.toPrintInfo("mmhg report", null));
   }
 
   @Test
-  public void testGitPull() {
+  void testGitPull() {
     //new GitPull(new File("D:/code/github"), 5).pull();
     //new GitPull(new File("D:/code/github/java"), 5).pull();
 
-    CountDownLatch latch = new CountDownLatch(1);
+    CountDownLatch latch = new CountDownLatch(2);
     //pull("D:/code/github/frontend", latch);
     //pull("D:/code/github/java/vertx", latch);
     pull("D:/code/github/golang", latch);
@@ -64,7 +64,7 @@ public class CmdExecutorTest extends BaseTest {
   }
 
   @Test
-  public void testKeystoreFile() {
+  void testKeystoreFile() {
     String keyStorePath = "D:/tmp/test.jks";
 
     String strPublicKey = KeystoreUtils.getStrPublicKey(keyStorePath, "axiu8888", "123456");
@@ -75,7 +75,7 @@ public class CmdExecutorTest extends BaseTest {
   }
 
   @Test
-  public void testGenerateKeystore() throws Exception {
+  void testGenerateKeystore() throws Exception {
     String name = "axiu8888";
     String cmd = "keytool -genkeypair "
         + " -alias " + name
@@ -114,7 +114,7 @@ public class CmdExecutorTest extends BaseTest {
 
 
   @Test
-  public void testGenerateKeystore2() throws Exception {
+  void testGenerateKeystore2() throws Exception {
     String name = "axiu8888";
     String cmd = "keytool -genkeypair "
         + " -alias " + name

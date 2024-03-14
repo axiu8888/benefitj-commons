@@ -31,7 +31,7 @@ public class CmdCall {
   /**
    * 结果码
    */
-  private int code = -1;
+  private int exitCode = -1;
   /**
    * 结果信息
    */
@@ -88,12 +88,12 @@ public class CmdCall {
     this.process = process;
   }
 
-  public int getCode() {
-    return code;
+  public int getExitCode() {
+    return exitCode;
   }
 
-  public void setCode(int code) {
-    this.code = code;
+  public void setExitCode(int exitCode) {
+    this.exitCode = exitCode;
   }
 
   public String getMessage() {
@@ -113,7 +113,7 @@ public class CmdCall {
   }
 
   public boolean isSuccessful() {
-    return getCode() == 0 && (getError() == null || getError().trim().isEmpty());
+    return getExitCode() == 0 && (getError() == null || getError().trim().isEmpty());
   }
 
   /**
@@ -141,7 +141,7 @@ public class CmdCall {
     if (call.getEnvp() != null) {
       sb.append("\nenvp: " + String.join(", ", call.getEnvp()));
     }
-    sb.append("\nexitCode: " + call.getCode());
+    sb.append("\nexitCode: " + call.getExitCode());
     sb.append("\nsuccessful: " + call.isSuccessful());
     if (call.getMessage().endsWith("\n")) {
       call.setMessage(call.getMessage().substring(0, call.getMessage().length() - 1));
