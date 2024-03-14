@@ -1,10 +1,10 @@
 package com.benefitj.core.file.slicer;
 
-import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IdUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 /**
  * 文件工厂
@@ -14,10 +14,11 @@ public interface FileFactory<T extends SliceFileWriter> {
   /**
    * 创建新文件
    *
-   * @param dir 目录
+   * @param dir     目录
+   * @param charset 编码
    * @return 返回创建的文件
    */
-  T create(File dir);
+  T create(File dir, Charset charset);
 
 
   /**
@@ -37,9 +38,9 @@ public interface FileFactory<T extends SliceFileWriter> {
     }
 
     @Override
-    public SliceFileWriter create(File dir) {
+    public SliceFileWriter create(File dir, Charset charset) {
       File file = createFile(dir, IdUtils.uuid() + suffix);
-      return new SliceFileWriter(file);
+      return new SliceFileWriter(file, charset);
     }
   }
 
@@ -53,7 +54,7 @@ public interface FileFactory<T extends SliceFileWriter> {
       file.createNewFile();
       return file;
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw new IllegalStateException(e);
     }
   }
 

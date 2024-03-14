@@ -25,7 +25,7 @@ public class FileSlicerTest extends BaseTest {
     // 文件最大的长度
     slicer.setMaxSize(5 * Utils.MB);
     // 文件工厂对象
-    slicer.setFileFactory(dir -> {
+    slicer.setFileFactory((dir, charset) -> {
       String filename = IdUtils.nextLowerLetterId(DateFmtter.fmtNow("yyyyMMdd_HHmmss") + "__", ".txt", 10);
       File file = FileFactory.createFile(dir, filename);
       log.info("创建文件: {}, {}", file.getAbsolutePath(), DateFmtter.fmtNowS());

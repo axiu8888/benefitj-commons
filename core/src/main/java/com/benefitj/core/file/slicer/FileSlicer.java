@@ -162,7 +162,7 @@ public class FileSlicer<T extends SliceFileWriter> implements IWriter<FileSlicer
       synchronized (this) {
         if ((writer = this.currentWriter) == null) {
           // 创建新文件
-          this.currentWriter = (writer = getFileFactory().create(getCacheDir()));
+          this.currentWriter = (writer = getFileFactory().create(getCacheDir(), getCharset()));
         }
       }
     }

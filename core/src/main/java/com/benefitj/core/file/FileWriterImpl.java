@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,10 +22,19 @@ public class FileWriterImpl implements IWriter<FileWriterImpl>, AttributeMap {
   /**
    * 编码
    */
-  private Charset charset = Charset.defaultCharset();
+  private Charset charset;
+
+  public FileWriterImpl(File source) {
+    this(source, false);
+  }
 
   public FileWriterImpl(File source, boolean append) {
+    this(source, StandardCharsets.UTF_8, append);
+  }
+
+  public FileWriterImpl(File source, Charset charset, boolean append) {
     this.source = source;
+    this.charset = charset;
     this.out = IWriter.wrapOutput(source, append);
   }
 
