@@ -188,7 +188,8 @@ public interface ApiBuilder<T> {
    */
   default ApiBuilder<T> useDefaultCallAdapterFactories() {
     if (isClassExist("retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory")) {
-      addCallAdapterFactoryIfAbsent(RxJava3CallAdapterFactory.create());
+      //addCallAdapterFactoryIfAbsent(RxJava3CallAdapterFactory.create());
+      addCallAdapterFactoryIfAbsent(RxJava3CallAdapterFactory.createSynchronous());
     }
     return this;
   }
