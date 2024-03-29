@@ -98,7 +98,7 @@ public class CmdExecutorTest extends BaseTest {
 //              File file = filename.getFileName().toFile();
 //              log.info("{}, {}", filename.getFileName(), IOUtils.readFileLines(filename.getFileName().toFile()));
 //            }
-            log.info("{}, {}", filename, IOUtils.readFileLines(new File(path.toFile(), filename)));
+            log.info("{}, {}", filename, IOUtils.readLines(new File(path.toFile(), filename)));
           }
         });
     EventLoop.asyncIO(pathWatcher::start);
@@ -145,7 +145,7 @@ public class CmdExecutorTest extends BaseTest {
         .setWatchEventListener((watcher, key, path, filename, kind) -> {
           File src = new File(path.toFile(), filename);
           String type = src.getName();
-          log.info("{}  ==>: {}, {}", type, kind.name(), IOUtils.readFileAsString(src, Charset.forName(charsetName)));
+          log.info("{}  ==>: {}, {}", type, kind.name(), IOUtils.readAsString(src, Charset.forName(charsetName)));
 //          switch (filename.toFile().getName()) {
 //            case "in.txt":
 //              break;

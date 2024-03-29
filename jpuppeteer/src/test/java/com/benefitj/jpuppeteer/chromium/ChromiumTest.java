@@ -32,7 +32,7 @@ public class ChromiumTest {
 
   @Test
   public void testChromiumArgs() throws IOException {
-    JSONObject json = new JSONObject(new LinkedHashMap());
+    JSONObject json = new JSONObject(new LinkedHashMap<>());
     List<String> lines = new ArrayList<>();
     IOUtils.readLines(IOUtils.wrapReader(Files.newInputStream(Paths.get("D:/tmp/chromium_startup_args_tmp.txt")), StandardCharsets.UTF_8), (line, lineNumber) -> lines.add(line));
     List<String> nweLines = lines.stream()
@@ -47,8 +47,8 @@ public class ChromiumTest {
         .collect(Collectors.toList());
     String startupArgs = String.join("\n", nweLines);
     System.err.println(startupArgs);
-    IOUtils.write(IOUtils.newFOS(IOUtils.createFile(new File("D:/tmp/chromium_startup_args.txt"))), startupArgs);
-    IOUtils.write(IOUtils.newFOS(IOUtils.createFile(new File("D:/tmp/chromium_startup_args.json"))), json.toJSONString(JSONWriter.Feature.PrettyFormat));
+    IOUtils.write(startupArgs.getBytes(StandardCharsets.UTF_8), IOUtils.createFile("D:/tmp/chromium_startup_args.txt"), false);
+    IOUtils.write(json.toJSONString(JSONWriter.Feature.PrettyFormat).getBytes(StandardCharsets.UTF_8), IOUtils.createFile("D:/tmp/chromium_startup_args.json"), false);
   }
 
   @Test

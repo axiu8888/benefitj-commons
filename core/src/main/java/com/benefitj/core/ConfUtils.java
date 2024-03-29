@@ -29,7 +29,7 @@ public class ConfUtils {
      * @return 返回解析后的结果
      */
     public static JSONObject load(File conf) {
-      String content = IOUtils.readFileAsString(conf);
+      String content = IOUtils.readAsString(conf);
       return load(content);
     }
 
@@ -89,7 +89,7 @@ public class ConfUtils {
      * @return 返回解析后的结果
      */
     public static JSONObject load(File conf) {
-      String content = IOUtils.readFileAsString(conf);
+      String content = IOUtils.readAsString(conf);
       return load(content);
     }
 

@@ -124,7 +124,7 @@ public class TarUtils {
     try {
       return untar(tar, dest);
     } finally {
-      IOUtils.deleteFiles(tar);
+      IOUtils.delete(tar);
     }
   }
 
@@ -156,7 +156,7 @@ public class TarUtils {
       }
       return dest;
     } catch (IOException e) {
-      IOUtils.deleteFiles(dest);
+      IOUtils.delete(dest);
       throw new IllegalStateException(e);
     }
   }

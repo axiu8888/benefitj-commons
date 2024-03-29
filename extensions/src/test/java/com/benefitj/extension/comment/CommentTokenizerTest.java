@@ -31,7 +31,7 @@ public class CommentTokenizerTest {
   public void testGetJavaCode() {
     File src = new File("D:\\code\\mine\\java\\benefitj-commons\\extensions\\src\\main\\java\\com\\benefitj\\extension\\comment\\CommentTokenizer.java");
     CommentTokenizer tokenizer = new CommentTokenizer();
-    char[] chars = IOUtils.readFileAsString(src).toCharArray();
+    char[] chars = IOUtils.readAsString(src).toCharArray();
     List<Comment> comments = tokenizer.parseJavaComments(chars);
     String code = tokenizer.getCode(chars, comments);
     System.err.println(JSON.toJSONString(comments));
@@ -46,7 +46,7 @@ public class CommentTokenizerTest {
 //    File src = new File("D:\\code\\company\\Android\\znsx-android\\js-bridge\\src\\main\\assets\\WebViewJavascriptBridge.js");
     File src = new File("D:\\code\\company\\h5\\mui-h5\\libs\\h5-rpc.js");
     CommentTokenizer tokenizer = new CommentTokenizer();
-    char[] chars = IOUtils.readFileAsString(src).toCharArray();
+    char[] chars = IOUtils.readAsString(src).toCharArray();
     List<Comment> comments = tokenizer.parseJsComments(chars);
     String code = tokenizer.getCode(chars, comments);
     System.err.println(JSON.toJSONString(comments));
@@ -78,7 +78,7 @@ public class CommentTokenizerTest {
   private long getLineCount(String id, File f) {
     AtomicLong counter = new AtomicLong();
     CommentTokenizer tokenizer = CommentTokenizer.INSTANCE;
-    String javaCode = tokenizer.getJavaCode(IOUtils.readFileAsString(f).toCharArray());
+    String javaCode = tokenizer.getJavaCode(IOUtils.readAsString(f).toCharArray());
     String javaIOTmpDir = SystemProperty.getJavaIOTmpDir();
     File tmp = IOUtils.createFile(new File(javaIOTmpDir, id + "/" + f.getName()));
     IOUtils.write(javaCode.getBytes(StandardCharsets.UTF_8), tmp, false);

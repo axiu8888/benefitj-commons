@@ -8,7 +8,6 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -19,6 +18,8 @@ import java.util.stream.Stream;
  * IO工具
  */
 public class IOUtils {
+
+  static final byte[] EMPTY_BYTES = new byte[0];
 
   /**
    * 文件数组是否不为空
@@ -252,7 +253,7 @@ public class IOUtils {
         try {
           newFile.createNewFile();
         } catch (IOException e) {
-          throw throwing(e, IllegalStateException.class);
+          throw CatchUtils.throwing(e, IllegalStateException.class);
         }
       }
     }
@@ -266,7 +267,11 @@ public class IOUtils {
    * @return 返回创建的文件输入流或Null(当文件不存在时)
    */
   public static FileInputStream newFIS(File file) {
-    return CatchUtils.tryThrow(() -> new FileInputStream(file));
+    try {
+      return new FileInputStream(file);
+    } catch (IOException e) {
+      throw CatchUtils.throwing(e, IllegalStateException.class);
+    }
   }
 
   /**
@@ -286,7 +291,11 @@ public class IOUtils {
    * @return 返回创建的文件输出流或Null(当文件不存在时)
    */
   public static FileOutputStream newFOS(File file, boolean append) {
-    return tryThrow(() -> new FileOutputStream(file, append));
+    try {
+      return new FileOutputStream(file, append);
+    } catch (IOException e) {
+      throw CatchUtils.throwing(e, IllegalStateException.class);
+    }
   }
 
   /**
@@ -308,9 +317,11 @@ public class IOUtils {
    * @return 返回创建的InputStreamReader对象，或返回Null
    */
   public static InputStreamReader newISR(InputStream input, String charset) {
-    return StringUtils.isNotBlank(charset)
-        ? tryThrow(() -> new InputStreamReader(input, charset))
-        : new InputStreamReader(input);
+    try {
+      return new InputStreamReader(input, StringUtils.getIfBlank(charset, StandardCharsets.UTF_8::name));
+    } catch (UnsupportedEncodingException e) {
+      throw CatchUtils.throwing(e, IllegalStateException.class);
+    }
   }
 
   /**
@@ -321,8 +332,7 @@ public class IOUtils {
    * @return 返回创建的BufferedReader对象或Null
    */
   public static BufferedReader newBufferedReader(File file, String charset) {
-    InputStreamReader isr = newISR(file, charset);
-    return new BufferedReader(isr);
+    return new BufferedReader(newISR(file, charset));
   }
 
   /**
@@ -332,7 +342,11 @@ public class IOUtils {
    * @return 返回创建的BufferedWriter对象或Null
    */
   public static BufferedWriter newBufferedWriter(File file) {
-    return tryThrow(() -> new BufferedWriter(new FileWriter(file)));
+    try {
+      return new BufferedWriter(new FileWriter(file));
+    } catch (IOException e) {
+      throw CatchUtils.throwing(e, IllegalStateException.class);
+    }
   }
 
   /**
@@ -389,13 +403,13 @@ public class IOUtils {
    */
   public static void read(InputStream is, int size, boolean close, IBiConsumer<byte[], Integer> consumer) {
     try {
-      byte[] buff = new byte[size];
+      byte[] buf = new byte[size];
       int len;
-      while ((len = is.read(buff)) > 0) {
-        consumer.accept(buff, len);
+      while ((len = is.read(buf)) > 0) {
+        consumer.accept(buf, len);
       }
     } catch (Exception e) {
-      throw throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(is);
@@ -432,7 +446,7 @@ public class IOUtils {
     try (final RandomAccessFile raf = new RandomAccessFile(file, "r");) {
       read(raf, size, filter, consumer, interceptor);
     } catch (IOException e) {
-      throw throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -462,21 +476,21 @@ public class IOUtils {
         }
       }
     } catch (Exception e) {
-      throw throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
   /**
    * 读取数据，每次读取一行，默认关闭流
    *
-   * @param file     文件
+   * @param in     文件
    * @param consumer 处理回调
    */
-  public static void readLines(File file, IBiConsumer<String, Integer> consumer) {
-    try (final FileReader reader = new FileReader(file);) {
+  public static void readLines(File in, IBiConsumer<String, Integer> consumer) {
+    try (final FileReader reader = new FileReader(in);) {
       readLines(reader, false, consumer);
     } catch (IOException e) {
-      throw throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -507,21 +521,12 @@ public class IOUtils {
         index++;
       }
     } catch (Exception e) {
-      throw throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(br);
       }
     }
-  }
-
-  /**
-   * 读取数据，每次读取一行，默认关闭流
-   *
-   * @param input 输入
-   */
-  public static List<String> readLines(File input) {
-    return readLines(input, Charset.defaultCharset());
   }
 
   /**
@@ -573,26 +578,45 @@ public class IOUtils {
    */
   public static ByteArrayOutputStream readFully(InputStream is, boolean close) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    read(is, 1024 << 4, close, (buff, len) -> baos.write(buff, 0, len));
+    read(is, 1024 << 4, close, (buf, len) -> baos.write(buf, 0, len));
     return baos;
   }
 
   /**
-   * 读取文件, 如果文件超过一定大小就抛出异常
+   * 读取流
+   *
+   * @param in 输入流
+   * @return 返回读取的字节数组
+   */
+  public static byte[] readAsBytes(InputStream in) {
+    return readAsBytes(in, true);
+  }
+
+  /**
+   * 读取流
+   *
+   * @param in    输入流
+   * @param close 是否自动关闭
+   * @return 返回读取的字节数组
+   */
+  public static byte[] readAsBytes(InputStream in, boolean close) {
+    try {
+      return readFully(in).toByteArray();
+    } finally {
+      if (close) {
+        closeQuietly(in);
+      }
+    }
+  }
+
+  /**
+   * 读取文件
    *
    * @param file 要读取的文件
    * @return 返回读取的字节数组
    */
-  public static byte[] readFileAsBytes(File file) {
-    if (exists(file)) {
-      final FileInputStream fis = newFIS(file);
-      try {
-        return readFully(fis).toByteArray();
-      } finally {
-        closeQuietly(fis);
-      }
-    }
-    return new byte[0];
+  public static byte[] readAsBytes(File file) {
+    return file.length() > 0 ? readAsBytes(newFIS(file), true) : EMPTY_BYTES;
   }
 
   /**
@@ -601,8 +625,8 @@ public class IOUtils {
    * @param file 要读取的文件
    * @return 返回读取的字符串
    */
-  public static String readFileAsString(File file) {
-    return readFileAsString(file, StandardCharsets.UTF_8);
+  public static String readAsString(File file) {
+    return readAsString(file, StandardCharsets.UTF_8);
   }
 
   /**
@@ -612,7 +636,7 @@ public class IOUtils {
    * @param charset 字符集
    * @return 返回读取的字符串
    */
-  public static String readFileAsString(File file, Charset charset) {
+  public static String readAsString(File file, Charset charset) {
     if (exists(file)) {
       final FileInputStream fis = newFIS(file);
       try {
@@ -631,8 +655,8 @@ public class IOUtils {
    * @param file 文件
    * @return 返回数据行的集合
    */
-  public static List<String> readFileLines(File file) {
-    return readFileLines(file, s -> true, null);
+  public static List<String> readLines(File file) {
+    return readLines(file, s -> true, StandardCharsets.UTF_8.name());
   }
 
   /**
@@ -642,8 +666,8 @@ public class IOUtils {
    * @param charset 字符编码
    * @return 返回数据行的集合
    */
-  public static List<String> readFileLines(File file, String charset) {
-    return readFileLines(file, str -> true, charset);
+  public static List<String> readLines(File file, String charset) {
+    return readLines(file, str -> true, charset);
   }
 
   /**
@@ -654,7 +678,7 @@ public class IOUtils {
    * @param charset   字符编码
    * @return 返回数据行的集合
    */
-  public static List<String> readFileLines(File file, Predicate<String> predicate, String charset) {
+  public static List<String> readLines(File file, Predicate<String> predicate, String charset) {
     if (isFile(file)) {
       BufferedReader reader = newBufferedReader(file, charset);
       try {
@@ -696,7 +720,7 @@ public class IOUtils {
     try (final FileInputStream fis = newFIS(input)) {
       readBytes(fis, size, filter, consumer, intercept);
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -737,7 +761,7 @@ public class IOUtils {
         }
       }
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -767,12 +791,12 @@ public class IOUtils {
   /**
    * 写入数据
    *
-   * @param os  输出流
-   * @param out 输出到的文件
+   * @param os 输出流
+   * @param in 输出到的文件
    * @return 返回写入的长度
    */
-  public static long write(OutputStream os, File out) {
-    return write(newFIS(out), os, 1024 << 4);
+  public static long write(File in, OutputStream os) {
+    return write(newFIS(in), os, 1024 << 4);
   }
 
   /**
@@ -787,7 +811,7 @@ public class IOUtils {
     try (final FileInputStream fis = new FileInputStream(in)) {
       return write(fis, out, 1024 << 4, close);
     } catch (IOException e) {
-      throw throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -883,7 +907,7 @@ public class IOUtils {
       }
       return totalLength;
     } catch (IOException e) {
-      throw throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(is, os);
@@ -897,22 +921,20 @@ public class IOUtils {
    * @param in 字符串数据
    * @param os 输出流
    */
-  public static void write(String[] in, OutputStream os) {
-    for (String line : in) {
-      byte[] ba = line.getBytes(StandardCharsets.UTF_8);
-      write(ba, 0, ba.length, os);
-    }
+  public static void write(String in, OutputStream os) {
+    write(Collections.singletonList(in), os);
   }
 
   /**
    * 写入数据
    *
-   * @param in 字节缓冲数组
+   * @param in 字符串数据
    * @param os 输出流
    */
-  public static void write(byte[][] in, OutputStream os) {
-    for (byte[] ba : in) {
-      write(ba, 0, in.length, os);
+  public static void write(List<String> in, OutputStream os) {
+    for (String line : in) {
+      byte[] ba = line.getBytes(StandardCharsets.UTF_8);
+      write(ba, 0, ba.length, os);
     }
   }
 
@@ -939,7 +961,7 @@ public class IOUtils {
       os.write(in, start, len);
       os.flush();
     } catch (IOException e) {
-      throw throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
@@ -969,7 +991,7 @@ public class IOUtils {
         out.flush();
       }
     } catch (IOException e) {
-      throw throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
         closeQuietly(in, out);
@@ -1013,12 +1035,12 @@ public class IOUtils {
    * @param closes AutoCloseable实现(InputStream、OutputStream)
    */
   public static void close(AutoCloseable... closes) {
-    if (closes != null && closes.length > 0) {
+    if (closes != null) {
       for (AutoCloseable c : closes) {
         try {
           c.close();
         } catch (Exception e) {
-          throw throwing(e, IllegalStateException.class);
+          throw CatchUtils.throwing(e, IllegalStateException.class);
         }
       }
     }
@@ -1044,9 +1066,9 @@ public class IOUtils {
    *
    * @param fs 文件数组
    */
-  public static void deleteFiles(File... fs) {
+  public static void delete(File... fs) {
     if (fs != null && fs.length > 0) {
-      deleteFiles(fs, false);
+      delete(fs, false);
     }
   }
 
@@ -1055,8 +1077,8 @@ public class IOUtils {
    *
    * @param fs 文件数组
    */
-  public static void deleteFiles(File[] fs, boolean clear) {
-    deleteFiles(fs != null ? Arrays.asList(fs) : null, clear);
+  public static void delete(File[] fs, boolean clear) {
+    delete(fs != null ? Arrays.asList(fs) : null, clear);
   }
 
   /**
@@ -1064,7 +1086,7 @@ public class IOUtils {
    *
    * @param fs 文件数组
    */
-  public static void deleteFiles(Collection<File> fs, boolean clear) {
+  public static void delete(Collection<File> fs, boolean clear) {
     if (fs != null && !fs.isEmpty()) {
       for (File f : fs) {
         delete0(f, clear);
@@ -1081,7 +1103,7 @@ public class IOUtils {
   static void delete0(File f, boolean clear) {
     if (f != null) {
       if (f.isDirectory()) {
-        deleteFiles(f.listFiles(), clear);
+        delete(f.listFiles(), clear);
         f.delete();
       } else {
         boolean delete = f.delete();
@@ -1171,24 +1193,8 @@ public class IOUtils {
         }
       }
     } catch (Exception e) {
-      throw throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
-  }
-
-  /**
-   * try{} catch(e){}
-   */
-  @Deprecated
-  public static <T> T tryThrow(Callable<T> call) {
-    return CatchUtils.tryThrow(call);
-  }
-
-  /**
-   * try{} catch(e){}
-   */
-  @Deprecated
-  public static RuntimeException throwing(Throwable e, Class<?> type) {
-    return CatchUtils.throwing(e, type);
   }
 
   /**

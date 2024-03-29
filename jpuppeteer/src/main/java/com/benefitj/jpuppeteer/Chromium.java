@@ -208,7 +208,7 @@ public class Chromium implements Launcher {
         String url = wsEndpointRef.get();
         File txt = new File(opts.getUserDataDir(), WS_ENDPOINT_TXT);
         if (StringUtils.isBlank(url) && txt.exists() && txt.length() > 0) {
-          wsEndpointRef.set(IOUtils.readFileAsString(txt));
+          wsEndpointRef.set(IOUtils.readAsString(txt));
         }
       }
     }));

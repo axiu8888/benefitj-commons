@@ -195,15 +195,15 @@ public interface ByteBufCopy extends ByteArrayCopy {
    * @return 返回读取的字节
    */
   default byte[] copy(ByteBuf data, int size, boolean local, boolean reset) {
-    byte[] buff = getCache(size, local);
+    byte[] buf = getCache(size, local);
     if (reset) {
       data.markReaderIndex();
-      data.readBytes(buff);
+      data.readBytes(buf);
       data.resetReaderIndex();
     } else {
-      data.readBytes(buff);
+      data.readBytes(buf);
     }
-    return buff;
+    return buf;
   }
 
   /**

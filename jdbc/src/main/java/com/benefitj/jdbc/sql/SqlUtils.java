@@ -55,7 +55,7 @@ public class SqlUtils {
    * 获取 MetaData 信息
    */
   public static List<SqlMetaData> getMataDatas(ResultSetMetaData metaData) {
-    return IOUtils.tryThrow(() -> {
+    return CatchUtils.tryThrow(() -> {
       int columnCount = metaData.getColumnCount();
       List<SqlMetaData> metaDataList = new ArrayList<>(metaData.getColumnCount());
       for (int i = 1; i <= columnCount; i++) {
