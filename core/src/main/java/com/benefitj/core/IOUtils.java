@@ -19,7 +19,51 @@ import java.util.stream.Stream;
  */
 public class IOUtils {
 
-  static final byte[] EMPTY_BYTES = new byte[0];
+  public static final byte[] EMPTY = new byte[0];
+  public static final long KB = 1024L;
+  public static final long MB = 1024L * KB;
+  public static final long GB = 1024L * MB;
+  public static final long TB = 1024L * GB;
+
+  /**
+   * 计算KB大小
+   *
+   * @param len 长度
+   * @return 返回对应的KB
+   */
+  public static double ofKB(long len) {
+    return (len * 1.0) / KB;
+  }
+
+  /**
+   * 计算MB大小
+   *
+   * @param len 长度
+   * @return 返回对应的MB
+   */
+  public static double ofMB(long len) {
+    return (len * 1.0) / MB;
+  }
+
+  /**
+   * 计算GB大小
+   *
+   * @param len 长度
+   * @return 返回对应的GB
+   */
+  public static double ofGB(long len) {
+    return (len * 1.0) / GB;
+  }
+
+  /**
+   * 计算TB大小
+   *
+   * @param len 长度
+   * @return 返回对应的TB
+   */
+  public static double ofTB(long len) {
+    return (len * 1.0) / TB;
+  }
 
   /**
    * 文件数组是否不为空
@@ -305,23 +349,19 @@ public class IOUtils {
    * @param charset 字符编码
    * @return 返回创建的InputStreamReader对象，或返回Null
    */
-  public static InputStreamReader newISR(File file, String charset) {
+  public static InputStreamReader newISR(File file, Charset charset) {
     return newISR(newFIS(file), charset);
   }
 
   /**
    * 创建新的文件的InputStreamReader
    *
-   * @param input   输入流
+   * @param in      输入流
    * @param charset 字符编码
    * @return 返回创建的InputStreamReader对象，或返回Null
    */
-  public static InputStreamReader newISR(InputStream input, String charset) {
-    try {
-      return new InputStreamReader(input, StringUtils.getIfBlank(charset, StandardCharsets.UTF_8::name));
-    } catch (UnsupportedEncodingException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
-    }
+  public static InputStreamReader newISR(InputStream in, Charset charset) {
+    return new InputStreamReader(in, charset != null ? charset : StandardCharsets.UTF_8);
   }
 
   /**
@@ -331,7 +371,7 @@ public class IOUtils {
    * @param charset 字符编码
    * @return 返回创建的BufferedReader对象或Null
    */
-  public static BufferedReader newBufferedReader(File file, String charset) {
+  public static BufferedReader newBufferedReader(File file, Charset charset) {
     return new BufferedReader(newISR(file, charset));
   }
 
@@ -483,7 +523,7 @@ public class IOUtils {
   /**
    * 读取数据，每次读取一行，默认关闭流
    *
-   * @param in     文件
+   * @param in       文件
    * @param consumer 处理回调
    */
   public static void readLines(File in, IBiConsumer<String, Integer> consumer) {
@@ -527,15 +567,6 @@ public class IOUtils {
         closeQuietly(br);
       }
     }
-  }
-
-  /**
-   * 读取数据，每次读取一行，默认关闭流
-   *
-   * @param input 输入
-   */
-  public static List<String> readLines(File input, Charset charset) {
-    return readLines(wrapReader(newISR(input, charset.name())));
   }
 
   /**
@@ -612,33 +643,43 @@ public class IOUtils {
   /**
    * 读取文件
    *
-   * @param file 要读取的文件
+   * @param in 要读取的文件
    * @return 返回读取的字节数组
    */
-  public static byte[] readAsBytes(File file) {
-    return file.length() > 0 ? readAsBytes(newFIS(file), true) : EMPTY_BYTES;
+  public static byte[] readAsBytes(File in) {
+    return in.length() > 0 ? readAsBytes(newFIS(in), true) : EMPTY;
   }
 
   /**
    * 读取文件
    *
-   * @param file 要读取的文件
+   * @param in 要读取的文件
    * @return 返回读取的字符串
    */
-  public static String readAsString(File file) {
-    return readAsString(file, StandardCharsets.UTF_8);
+  public static String readAsString(InputStream in, Charset charset) {
+    return readAsString(in, StandardCharsets.UTF_8);
   }
 
   /**
    * 读取文件
    *
-   * @param file    要读取的文件
+   * @param in 要读取的文件
+   * @return 返回读取的字符串
+   */
+  public static String readAsString(File in) {
+    return readAsString(in, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * 读取文件
+   *
+   * @param in      要读取的文件
    * @param charset 字符集
    * @return 返回读取的字符串
    */
-  public static String readAsString(File file, Charset charset) {
-    if (exists(file)) {
-      final FileInputStream fis = newFIS(file);
+  public static String readAsString(File in, Charset charset) {
+    if (exists(in)) {
+      final FileInputStream fis = newFIS(in);
       try {
         ByteArrayOutputStream baos = readFully(fis);
         return new String(baos.toByteArray(), charset);
@@ -652,35 +693,35 @@ public class IOUtils {
   /**
    * 读取文件中数据的每一行
    *
-   * @param file 文件
+   * @param in 文件
    * @return 返回数据行的集合
    */
-  public static List<String> readLines(File file) {
-    return readLines(file, s -> true, StandardCharsets.UTF_8.name());
+  public static List<String> readLines(File in) {
+    return readLines(in, s -> true, StandardCharsets.UTF_8);
   }
 
   /**
    * 读取文件中数据的每一行
    *
-   * @param file    文件
+   * @param in      文件
    * @param charset 字符编码
    * @return 返回数据行的集合
    */
-  public static List<String> readLines(File file, String charset) {
-    return readLines(file, str -> true, charset);
+  public static List<String> readLines(File in, Charset charset) {
+    return readLines(in, str -> true, charset);
   }
 
   /**
    * 读取文件中数据的每一行
    *
-   * @param file      文件
+   * @param in        文件
    * @param predicate 过滤规则
    * @param charset   字符编码
    * @return 返回数据行的集合
    */
-  public static List<String> readLines(File file, Predicate<String> predicate, String charset) {
-    if (isFile(file)) {
-      BufferedReader reader = newBufferedReader(file, charset);
+  public static List<String> readLines(File in, Predicate<String> predicate, Charset charset) {
+    if (isFile(in)) {
+      BufferedReader reader = newBufferedReader(in, charset);
       try {
         return reader.lines()
             .filter(predicate)
@@ -695,29 +736,27 @@ public class IOUtils {
   /**
    * 读取文件
    *
-   * @param input    输入
+   * @param in       输入
    * @param consumer 处理
    */
-  public static void readFileBytes(File input,
-                                   int size,
-                                   BiConsumer<byte[], Integer> consumer) {
-    readFileBytes(input, size, (buf, len) -> true, consumer, (buf, len) -> false);
+  public static void readFileBytes(File in, int size, BiConsumer<byte[], Integer> consumer) {
+    readFileBytes(in, size, (buf, len) -> true, consumer, (buf, len) -> false);
   }
 
   /**
    * 读取文件
    *
-   * @param input     输入
+   * @param in        输入
    * @param filter    过滤规则
    * @param consumer  处理
    * @param intercept 拦截
    */
-  public static void readFileBytes(File input,
+  public static void readFileBytes(File in,
                                    int size,
                                    BiPredicate<byte[], Integer> filter,
                                    BiConsumer<byte[], Integer> consumer,
                                    BiPredicate<byte[], Integer> intercept) {
-    try (final FileInputStream fis = newFIS(input)) {
+    try (final FileInputStream fis = newFIS(in)) {
       readBytes(fis, size, filter, consumer, intercept);
     } catch (IOException e) {
       throw CatchUtils.throwing(e, IllegalStateException.class);
@@ -727,24 +766,22 @@ public class IOUtils {
   /**
    * 读取数据
    *
-   * @param input    输入
+   * @param in       输入
    * @param consumer 处理
    */
-  public static void readBytes(InputStream input,
-                               int size,
-                               BiConsumer<byte[], Integer> consumer) {
-    readBytes(input, size, (buf, len) -> true, consumer, (buf, len) -> false);
+  public static void readBytes(InputStream in, int size, BiConsumer<byte[], Integer> consumer) {
+    readBytes(in, size, (buf, len) -> true, consumer, (buf, len) -> false);
   }
 
   /**
    * 读取数据
    *
-   * @param input     输入
+   * @param in        输入
    * @param filter    过滤规则
    * @param consumer  处理
    * @param intercept 拦截
    */
-  public static void readBytes(InputStream input,
+  public static void readBytes(InputStream in,
                                int size,
                                BiPredicate<byte[], Integer> filter,
                                BiConsumer<byte[], Integer> consumer,
@@ -752,7 +789,7 @@ public class IOUtils {
     try {
       byte[] buf = new byte[size];
       int len;
-      while ((len = input.read(buf)) > 0) {
+      while ((len = in.read(buf)) > 0) {
         if (filter.test(buf, len)) {
           consumer.accept(buf, len);
         }
@@ -1059,6 +1096,17 @@ public class IOUtils {
         } catch (Exception e) {/* ignore */}
       }
     }
+  }
+
+
+  /**
+   * 删除文件
+   *
+   * @param f     文件
+   * @param clear 是否清空数据
+   */
+  public static void delete(File f, boolean clear) {
+    delete(new File[]{f}, clear);
   }
 
   /**
