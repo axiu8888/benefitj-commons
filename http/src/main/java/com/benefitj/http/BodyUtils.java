@@ -22,7 +22,7 @@ import java.util.stream.Stream;
  */
 public class BodyUtils {
 
-  public static final MediaType MEDIA_OCTET_STREAM = MediaType.parse("application/octet-stream;charset=UTF-8");
+  public static final MediaType MEDIA_OCTET_STREAM = MediaType.parse("application/octet-stream");
   public static final MediaType MEDIA_JSON = MediaType.parse("application/json;charset=UTF-8");
   public static final MediaType MEDIA_FORM_DATA = MediaType.parse("multipart/form-data;charset=UTF-8");
   public static final MediaType MEDIA_FORM_URLENCODED = MediaType.parse("application/x-www-form-urlencoded;charset=UTF-8");
@@ -132,6 +132,16 @@ public class BodyUtils {
    * 表单请求体
    *
    * @param parameters 参数
+   * @return 返回请求体
+   */
+  public static MultipartBody.Builder formBodyBuilder(Map<String, String> parameters) {
+    return formBodyBuilder(parameters, new File[0], "");
+  }
+
+  /**
+   * 表单请求体
+   *
+   * @param parameters 参数
    * @param files      文件
    * @param name       文件对应的参数名
    * @return 返回请求体
@@ -140,9 +150,8 @@ public class BodyUtils {
     MultipartBody.Builder builder = new MultipartBody.Builder();
     builder.setType(MultipartBody.FORM);
     parameters.forEach(builder::addFormDataPart);
-    MediaType mediaType = MediaType.parse("application/octet-stream");
     for (File file : files) {
-      builder.addFormDataPart(name, file.getName(), RequestBody.create(file, mediaType));
+      builder.addFormDataPart(name, file.getName(), RequestBody.create(file, MEDIA_OCTET_STREAM));
     }
     return builder;
   }
