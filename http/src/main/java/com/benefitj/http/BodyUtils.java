@@ -74,6 +74,17 @@ public class BodyUtils {
   /**
    * 表单请求体
    *
+   * @param file 文件
+   * @param name 文件对应的参数名
+   * @return 返回请求体
+   */
+  public static MultipartBody formBody(File file, String name) {
+    return formBody(Collections.emptyMap(), new File[]{file}, name);
+  }
+
+  /**
+   * 表单请求体
+   *
    * @param parameters 参数
    * @param file       文件
    * @param name       文件对应的参数名
@@ -92,6 +103,40 @@ public class BodyUtils {
    * @return 返回请求体
    */
   public static MultipartBody formBody(Map<String, String> parameters, File[] files, String name) {
+    return formBodyBuilder(parameters, files, name).build();
+  }
+
+  /**
+   * 表单请求体
+   *
+   * @param file 文件
+   * @param name 文件对应的参数名
+   * @return 返回请求体
+   */
+  public static MultipartBody.Builder formBodyBuilder(File file, String name) {
+    return formBodyBuilder(new File[]{file}, name);
+  }
+
+  /**
+   * 表单请求体
+   *
+   * @param files 文件
+   * @param name  文件对应的参数名
+   * @return 返回请求体
+   */
+  public static MultipartBody.Builder formBodyBuilder(File[] files, String name) {
+    return formBodyBuilder(Collections.emptyMap(), files, name);
+  }
+
+  /**
+   * 表单请求体
+   *
+   * @param parameters 参数
+   * @param files      文件
+   * @param name       文件对应的参数名
+   * @return 返回请求体
+   */
+  public static MultipartBody.Builder formBodyBuilder(Map<String, String> parameters, File[] files, String name) {
     MultipartBody.Builder builder = new MultipartBody.Builder();
     builder.setType(MultipartBody.FORM);
     parameters.forEach(builder::addFormDataPart);
@@ -99,9 +144,8 @@ public class BodyUtils {
     for (File file : files) {
       builder.addFormDataPart(name, file.getName(), RequestBody.create(file, mediaType));
     }
-    return builder.build();
+    return builder;
   }
-
 
   /**
    * 具有进度的请求体
@@ -213,7 +257,7 @@ public class BodyUtils {
       long total = contentLength > 0 ? contentLength : (Math.max(endPos, startPos) - startPos);
       AtomicLong progress = new AtomicLong();
       rw.seek(startPos);
-      byte[] buf = new byte[ 1024 << 10];
+      byte[] buf = new byte[1024 << 10];
       int len;
       while ((len = in.read(buf)) > 0) {
         progress.addAndGet(len);
