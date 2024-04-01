@@ -875,6 +875,66 @@ public class IOUtils {
   /**
    * 写入数据
    *
+   * @param in 字符串数据
+   * @param os 输出流
+   */
+  public static void write(String in, OutputStream os) {
+    write(Collections.singletonList(in), os);
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param in 字符串数据
+   * @param os 输出流
+   */
+  public static void write(List<String> in, OutputStream os) {
+    for (String line : in) {
+      byte[] ba = line.getBytes(StandardCharsets.UTF_8);
+      write(ba, 0, ba.length, os);
+    }
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param in 字节缓冲
+   * @param os 输出流
+   */
+  public static void write(byte[] in, OutputStream os) {
+    write(in, 0, in.length, os);
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param in    字节缓冲
+   * @param start 开始的位置
+   * @param len   结束的位置
+   * @param os    输出流
+   */
+  public static void write(byte[] in, int start, int len, OutputStream os) {
+    try {
+      os.write(in, start, len);
+      os.flush();
+    } catch (IOException e) {
+      throw CatchUtils.throwing(e, IllegalStateException.class);
+    }
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param in     数据
+   * @param out    输出的文件
+   */
+  public static void write(byte[] in, File out) {
+    write(in, out, false);
+  }
+
+  /**
+   * 写入数据
+   *
    * @param in     数据
    * @param out    输出的文件
    * @param append 是否为追加
@@ -948,56 +1008,6 @@ public class IOUtils {
       if (close) {
         closeQuietly(is, os);
       }
-    }
-  }
-
-  /**
-   * 写入数据
-   *
-   * @param in 字符串数据
-   * @param os 输出流
-   */
-  public static void write(String in, OutputStream os) {
-    write(Collections.singletonList(in), os);
-  }
-
-  /**
-   * 写入数据
-   *
-   * @param in 字符串数据
-   * @param os 输出流
-   */
-  public static void write(List<String> in, OutputStream os) {
-    for (String line : in) {
-      byte[] ba = line.getBytes(StandardCharsets.UTF_8);
-      write(ba, 0, ba.length, os);
-    }
-  }
-
-  /**
-   * 写入数据
-   *
-   * @param in 字节缓冲
-   * @param os 输出流
-   */
-  public static void write(byte[] in, OutputStream os) {
-    write(in, 0, in.length, os);
-  }
-
-  /**
-   * 写入数据
-   *
-   * @param in    字节缓冲
-   * @param start 开始的位置
-   * @param len   结束的位置
-   * @param os    输出流
-   */
-  public static void write(byte[] in, int start, int len, OutputStream os) {
-    try {
-      os.write(in, start, len);
-      os.flush();
-    } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 

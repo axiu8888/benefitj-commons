@@ -2,6 +2,8 @@ package com.benefitj.core;
 
 import com.alibaba.fastjson2.JSON;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -88,6 +90,8 @@ public class HexTest extends BaseTest {
     return wave;
   }
 
+  @SuperBuilder
+  @NoArgsConstructor
   @Data
   static class Packet {
     /**
@@ -115,53 +119,6 @@ public class HexTest extends BaseTest {
      */
     int[] z;
 
-    public int getPacketSn() {
-      return packetSn;
-    }
-
-    public void setPacketSn(int packetSn) {
-      this.packetSn = packetSn;
-    }
-
-    public int[] getEcg() {
-      return ecg;
-    }
-
-    public void setEcg(int[] ecg) {
-      this.ecg = ecg;
-    }
-
-    public int[] getResp() {
-      return resp;
-    }
-
-    public void setResp(int[] resp) {
-      this.resp = resp;
-    }
-
-    public int[] getX() {
-      return x;
-    }
-
-    public void setX(int[] x) {
-      this.x = x;
-    }
-
-    public int[] getY() {
-      return y;
-    }
-
-    public void setY(int[] y) {
-      this.y = y;
-    }
-
-    public int[] getZ() {
-      return z;
-    }
-
-    public void setZ(int[] z) {
-      this.z = z;
-    }
   }
 
 }
