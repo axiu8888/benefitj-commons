@@ -2,7 +2,6 @@ package com.benefitj.core.file;
 
 import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IOUtils;
-import com.sun.nio.file.SensitivityWatchEventModifier;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -14,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings("all")
 public class PathWatcher implements Cloneable {
   /**
    * 监听服务
@@ -30,7 +30,7 @@ public class PathWatcher implements Cloneable {
   /**
    * 敏感度
    */
-  private SensitivityWatchEventModifier sensitivity;
+  private WatchEvent.Modifier sensitivity;
   /**
    * 监听的类型
    */
@@ -46,10 +46,10 @@ public class PathWatcher implements Cloneable {
   private OnWatchEventListener watchEventListener;
 
   public PathWatcher(Path... paths) {
-    this(Arrays.asList(paths), SensitivityWatchEventModifier.MEDIUM);
+    this(Arrays.asList(paths), com.sun.nio.file.SensitivityWatchEventModifier.MEDIUM);
   }
 
-  public PathWatcher(List<Path> paths, SensitivityWatchEventModifier sensitivity) {
+  public PathWatcher(List<Path> paths, WatchEvent.Modifier sensitivity) {
     this.paths = Collections.unmodifiableList(paths);
     this.sensitivity = sensitivity;
     this.watchService = CatchUtils.tryThrow(() -> FileSystems.getDefault().newWatchService());
@@ -118,11 +118,11 @@ public class PathWatcher implements Cloneable {
     return paths;
   }
 
-  public SensitivityWatchEventModifier getSensitivity() {
+  public WatchEvent.Modifier getSensitivity() {
     return sensitivity;
   }
 
-  public PathWatcher setSensitivity(SensitivityWatchEventModifier sensitivity) {
+  public PathWatcher setSensitivity(WatchEvent.Modifier sensitivity) {
     this.sensitivity = sensitivity;
     return this;
   }

@@ -11,6 +11,8 @@ dependencies {
       project(":core"),
 
       'cglib:cglib:3.3.0',
+      // 缓存
+      "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}",
       // 压缩
       'org.apache.commons:commons-compress:1.21',
       'net.lingala.zip4j:zip4j:2.11.5',

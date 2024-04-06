@@ -27,11 +27,15 @@ import java.util.stream.Collectors;
 public class ChromiumTest {
 
   @BeforeEach
-  public void setUp() throws Exception {
+  void setUp() throws Exception {
+  }
+
+  @AfterEach
+  void tearDown() throws Exception {
   }
 
   @Test
-  public void testChromiumArgs() throws IOException {
+  void testChromiumArgs() throws IOException {
     JSONObject json = new JSONObject(new LinkedHashMap<>());
     List<String> lines = new ArrayList<>();
     IOUtils.readLines(IOUtils.wrapReader(Files.newInputStream(Paths.get("D:/tmp/chromium_startup_args_tmp.txt")), StandardCharsets.UTF_8), (line, lineNumber) -> lines.add(line));
@@ -52,7 +56,7 @@ public class ChromiumTest {
   }
 
   @Test
-  public void testDownloadIfNotExist() {
+  void testDownloadIfNotExist() {
     log.info("user.dir ==> {}", SystemProperty.getProperty("user.dir"));
     BrowserFetcher fetcher = BrowserFetcher.get();
     fetcher.getRevisionInfo().setFolder(new File("D:/tmp/.local-browser"));
@@ -60,8 +64,8 @@ public class ChromiumTest {
   }
 
   @Test
-  public void testLauncher() {
-    String dir = "D:/tmp/.local-browser/win64-1132420";
+  void testLauncher() {
+    String dir = "D:/tmp/.local-browser/win64-1278143";
     Chromium chromium = new Chromium();
     chromium.setOptions(new LauncherOptions()
         .setExecutablePath(new File(dir + "/chrome-win/chrome.exe"))
@@ -87,7 +91,7 @@ public class ChromiumTest {
       List<Target.TargetInfo> targetInfos = targets.getList("targetInfos", Target.TargetInfo.class);
       log.info("targets: {}", JSON.toJSONString(targetInfos));
 
-      String url = "http://research.sensecho.com/monitorReports/physical?reportZid=8146bbac1b284d31a9e683d09f75138e&loginName=haoyanli&version=undefined&extend=undefined";
+      String url = "https://pr.sensecho.com/supportReport/sleepMattress?reportId=a92e3ee865dfcb5f3914f880f3d73e98";
 
       if (!targetInfos.isEmpty()) {
         // 需要创建新页面
@@ -158,7 +162,4 @@ public class ChromiumTest {
     }
   }
 
-  @AfterEach
-  public void tearDown() throws Exception {
-  }
 }

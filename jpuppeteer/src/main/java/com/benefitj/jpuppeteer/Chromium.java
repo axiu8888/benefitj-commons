@@ -193,7 +193,7 @@ public class Chromium implements Launcher {
           if (matcher.find()) {
             wsEndpointRef.set(matcher.group(1));
             File txt = new File(opts.getUserDataDir(), WS_ENDPOINT_TXT);
-            IOUtils.write(IOUtils.createFile(txt), wsEndpointRef.get().getBytes(StandardCharsets.UTF_8), false);
+            IOUtils.write(wsEndpointRef.get().getBytes(StandardCharsets.UTF_8), IOUtils.createFile(txt), false);
             latch.countDown();
           }
           if (latch.getCount() > 0 && line.contains("正在现有的浏览器会话中打开")) {

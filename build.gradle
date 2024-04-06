@@ -10,7 +10,8 @@ ext {
   lombokVersion = "1.18.30"
   jacksonVersion = "2.16.1"
   guavaVersion = "33.0.0-jre"
-  caffeineVersion = '3.1.8'
+//  caffeineVersion = '3.1.8'
+  caffeineVersion = '3.0.0'
   fastjson2Version = "2.0.47"
   commonsIOVersion = "2.15.1"
   commonsLang3Version = "3.14.0"
@@ -51,8 +52,8 @@ subprojects {
   version = "2.4.2-SNAPSHOT"
 
   ext {
-    javaVersion = JavaVersion.VERSION_15
-    scriptFile = "${rootDir}/gradleScript/base.gradle"
+    javaVersion = JavaVersion.VERSION_18
+    scriptFile = "${rootDir}/buildScript/base.gradle"
     //scriptFile = "https://gitee.com/axiu8888/GradleBuild/raw/main/Java/base.gradle"
 
     groupId = "$group"
@@ -74,6 +75,32 @@ subprojects {
 //			compileOnly(commons)
 //			testImplementation(commons)
 //		}
+  }
+
+  repositories {
+    maven { url "https://maven.aliyun.com/repository/google" }
+    maven { url "https://maven.aliyun.com/repository/central" }
+    maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
+    maven { url "https://maven.aliyun.com/repository/public" }
+    maven { url "https://maven.aliyun.com/repository/jcenter" }
+    maven { url "https://repo.spring.io/milestone" }
+    maven { url "https://repo.spring.io/release" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    mavenCentral()
+
+    def nexusFile = file("${rootDir}/nexus.properties")
+    if (nexusFile.exists() && nexusFile.length() > 0) {
+      def props = new Properties()
+      props.load(nexusFile.newReader("UTF-8"))
+      maven {
+        url = props["repoUrl"]
+        allowInsecureProtocol = true
+        credentials {
+          username props["repoUsername"]
+          password props["repoPassword"]
+        }
+      }
+    }
   }
 
 }

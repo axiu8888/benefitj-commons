@@ -28,7 +28,7 @@ import java.util.Map;
 @Slf4j
 public class BrowserFetcher {
 
-  public static final String VERSION = "1132420"; // 浏览器版本
+  public static final String VERSION = "1278143"; // 浏览器版本
 
   static final SingletonSupplier<BrowserFetcher> singleton = SingletonSupplier.of(BrowserFetcher::new);
 
@@ -44,7 +44,7 @@ public class BrowserFetcher {
         private static final long serialVersionUID = 3441562966233820720L;
 
         {
-          put("host", "https://npm.taobao.org/mirrors");
+          put("host", "http://npm.taobao.org/mirrors");
           put("linux", "%s/chromium-browser-snapshots/Linux_x64/%s/%s.zip");
           put("mac", "%s/chromium-browser-snapshots/Mac/%s/%s.zip");
           put("win32", "%s/chromium-browser-snapshots/Win/%s/%s.zip");
@@ -110,7 +110,7 @@ public class BrowserFetcher {
       log.info("Download successfully from " + url);
       install(archive, new File(info.getFolder(), filename));
     } finally {
-      archive.delete();
+      IOUtils.delete(archive);
     }
     return revisionInfo;
   }
