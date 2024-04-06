@@ -113,6 +113,7 @@ public class ChromiumTest {
         chromium.once(new MessageListener.MatchMessageListener() {
           @Override
           public void onHandle(String method, JSONObject msg) {
+            log.info("method: {}, msg: {}", method, msg);
             //EventLoop.await(500);
             JSONObject pdf = page.printToPDF(false,
                 true,
@@ -153,7 +154,7 @@ public class ChromiumTest {
 //        log.info("targetId: {}", targetId);
       }
       log.error("start await...");
-      EventLoop.await(20, TimeUnit.SECONDS);
+      EventLoop.sleep(20, TimeUnit.SECONDS);
       log.error("end await...");
     } finally {
       log.info("关闭...");

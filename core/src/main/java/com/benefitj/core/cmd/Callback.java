@@ -80,6 +80,13 @@ public interface Callback {
     // do nothing
   }
 
+  /**
+   * 出现异常
+   */
+  default void onError(Exception e) {
+    e.printStackTrace();
+  }
+
   final Callback EMPTY_CALLBACK = new Callback() {
     // do nothing
   };

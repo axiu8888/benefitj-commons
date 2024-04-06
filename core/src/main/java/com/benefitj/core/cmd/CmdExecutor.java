@@ -228,10 +228,11 @@ public class CmdExecutor {
         return call;
       });
     } catch (Exception e) {
-      throw new IllegalStateException(e);
+      cb.onError(e);
     } finally {
       cb.onFinish(call);
     }
+    return call;
   }
 
 
