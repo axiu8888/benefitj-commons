@@ -72,19 +72,22 @@ public interface Callback {
   }
 
   /**
+   * 出现异常
+   *
+   * @param call 调用
+   * @param e    异常
+   */
+  default void onError(CmdCall call, Exception e) {
+    e.printStackTrace();
+  }
+
+  /**
    * 结束调用
    *
    * @param call 调用
    */
   default void onFinish(CmdCall call) {
     // do nothing
-  }
-
-  /**
-   * 出现异常
-   */
-  default void onError(Exception e) {
-    e.printStackTrace();
   }
 
   final Callback EMPTY_CALLBACK = new Callback() {

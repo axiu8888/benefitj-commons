@@ -218,6 +218,8 @@ public class CmdExecutor {
         cb.onWaitForBefore(process, call);
         // 处理消息
         handle(getExecutor(), process, call, cb);
+        // 等待进程结束
+        while (process.isAlive()) Thread.currentThread().join(1);
         // 等待
         //int exitValue = process.waitFor();
         call.setExitCode(process.exitValue());
@@ -228,7 +230,7 @@ public class CmdExecutor {
         return call;
       });
     } catch (Exception e) {
-      cb.onError(e);
+      cb.onError(call, e);
     } finally {
       cb.onFinish(call);
     }
