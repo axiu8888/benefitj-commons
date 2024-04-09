@@ -16,7 +16,7 @@ public class FixedList<T> extends LinkedList<T> {
     this.maxlen = maxlen;
   }
 
-  private void removeOne(boolean last) {
+  protected void removeOne(boolean last) {
     if (size() > maxlen) {
       if (last) {
         removeLast();
@@ -29,13 +29,13 @@ public class FixedList<T> extends LinkedList<T> {
   @Override
   public void addFirst(T t) {
     super.addFirst(t);
-    removeOne(true);
+    removeOne(true); // 移除最后一个
   }
 
   @Override
   public void addLast(T t) {
     super.addLast(t);
-    removeOne(false);
+    removeOne(false); // 移除第一个
   }
 
   @Override
@@ -43,7 +43,7 @@ public class FixedList<T> extends LinkedList<T> {
     try {
       return super.add(t);
     } finally {
-      removeOne(false);
+      removeOne(false); // 默认移除第一个
     }
   }
 

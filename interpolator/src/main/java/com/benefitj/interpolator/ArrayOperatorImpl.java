@@ -5,6 +5,11 @@ import com.benefitj.core.ReflectUtils;
 
 import java.lang.reflect.Array;
 
+/**
+ * 数组操作器
+ *
+ * @param <T> 数组类型
+ */
 public abstract class ArrayOperatorImpl<T> implements ArrayOperator<T> {
 
   protected Class<?> type;

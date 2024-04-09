@@ -5,6 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+/**
+ * 数组操作器
+ *
+ * @param <T> 数组类型
+ */
 public interface ArrayOperator<T> {
 
   /**
