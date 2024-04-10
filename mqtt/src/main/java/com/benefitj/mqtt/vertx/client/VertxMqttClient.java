@@ -282,7 +282,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   /**
    * 订阅主题
    *
-   * @param topics 主题 & 服务质量
+   * @param topics 主题 和 服务质量
    * @return 返回MQTT客户端
    */
   public VertxMqttClient subscribe(Map<String, Integer> topics) {
@@ -292,7 +292,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   /**
    * 订阅主题
    *
-   * @param topics               主题 & 服务质量
+   * @param topics               主题 和 服务质量
    * @param subscribeSentHandler 订阅回调
    * @return 返回MQTT客户端
    */
