@@ -1,7 +1,7 @@
 package com.benefitj.jpuppeteer.chromium;
 
 
-import cn.hutool.json.JSONArray;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -1,11 +1,11 @@
 ext {
-//  springbootVersion = "2.7.17"
-//  springDependencyManagementVersion = "1.0.15.RELEASE"
-//  springIntegrationVersion = "5.5.19"
+  springbootVersion = "2.7.17"
+  springDependencyManagementVersion = "1.0.15.RELEASE"
+  springIntegrationVersion = "5.5.19"
 
-  springbootVersion = "3.2.2"
-  springDependencyManagementVersion = "1.1.4"
-  springIntegrationVersion = "6.2.1"
+//  springbootVersion = "3.2.2"
+//  springDependencyManagementVersion = "1.1.4"
+//  springIntegrationVersion = "6.2.1"
 
   lombokVersion = "1.18.30"
   jacksonVersion = "2.16.1"

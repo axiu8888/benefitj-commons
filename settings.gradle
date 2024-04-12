@@ -1,33 +1,21 @@
-
 rootProject.name = 'benefitj-commons'
 
 /**
  * 常用工具的依赖
  */
-include ":core"             // 常用工具
-include ":http"             // HTTP请求，OkHttp + Retrofit + RxJava
-include ":netty"            // netty
-include ":extensions"       // 扩展功能
-include ":pipeline"         // pipeline
-include ":frameworks"       // 一些库的工具
-include ":mqtt"             // mqtt
-include ":consistent-hash"  // 一致性Hash
-include ":interpolator"     // 插值器
-include ":eventbus"         // EventBus
-include ":javastruct"       // java结构体转换
-include ":jdbc"             // jdbc
-include ":jpuppeteer"       // chromium puppeteer
-include ":all"              // 全部的依赖
-include ":others"           // 其他
-
-(() -> {
-  def dir = project(":others").projectDir
-  def subDirs = dir.listFiles((FileFilter) { it.isDirectory() })
-  for (final def subDir in subDirs) {
-    def buildGradle = subDir.listFiles((FileFilter) { it.name.equals("build.gradle") })
-    if (buildGradle != null && buildGradle.length >= 1) {
-      include(":others:${subDir.name}")
-    }
-  }
-
-}).run()
+include(
+    ":core",             // 常用工具
+    ":http",             // HTTP请求，OkHttp + Retrofit + RxJava
+    ":netty",            // netty
+    ":extensions",       // 扩展功能
+    ":pipeline",         // pipeline
+    ":frameworks",       // 一些库的工具
+    ":mqtt",             // mqtt
+    ":consistent-hash",  // 一致性Hash
+    ":interpolator",     // 插值器
+    ":eventbus",         // EventBus
+    ":javastruct",       // java结构体转换
+    ":jdbc",             // jdbc
+    ":jpuppeteer",       // chromium puppeteer
+    ":all",              // 全部的依赖
+)

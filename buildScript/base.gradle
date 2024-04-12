@@ -34,7 +34,9 @@ afterEvaluate {
   })
 }
 
-trying({ project.ext.springEnv = plugins.stream().anyMatch(p -> p.class.simpleName.contains("SpringBootPlugin")) })
+if (!trying({ project.ext.springEnv }, false)) {
+  trying({ project.ext.springEnv = plugins.stream().anyMatch(p -> p.class.simpleName.contains("SpringBootPlugin")) })
+}
 
 java {
   sourceCompatibility = trying({ javaVersion }, JavaVersion.VERSION_11)
@@ -132,35 +134,31 @@ configurations {
 }
 
 repositories {
-  maven { url "https://maven.aliyun.com/repository/google" }
-  maven { url "https://maven.aliyun.com/repository/central" }
-  maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
-  maven { url "https://maven.aliyun.com/repository/public" }
-  maven { url "https://maven.aliyun.com/repository/jcenter" }
-  maven { url 'https://repo.spring.io/milestone' }
-  maven { url 'https://repo.spring.io/release' }
-  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+  mavenLocal()
+  maven { url("https://maven.aliyun.com/repository/google") }
+  maven { url("https://maven.aliyun.com/repository/central") }
+  maven { url("https://maven.aliyun.com/repository/gradle-plugin") }
+  maven { url("https://maven.aliyun.com/repository/public") }
+  maven { url("https://maven.aliyun.com/repository/jcenter") }
+  maven { url('https://repo.spring.io/milestone') }
+  maven { url('https://repo.spring.io/release') }
+  maven { url('https://oss.sonatype.org/content/repositories/snapshots/') }
   mavenCentral()
 
-  def nexusFile = file("${rootDir}/nexus.properties")
-  if (nexusFile.exists() && nexusFile.length() > 0) {
-    def props = new Properties()
-    props.load(nexusFile.newReader("UTF-8"))
-    //println("props ==>: ${props}")
-    trying({
-      maven {
-        url = props["repoUrl"]
-        allowInsecureProtocol = true
-        credentials {
-          username props["repoUsername"]
-          password props["repoPassword"]
-        }
+  trying({
+    maven {
+      url = props["repoUrl"]
+      allowInsecureProtocol = true
+      credentials {
+        username props["repoUsername"]
+        password props["repoPassword"]
       }
-    })
-  }
+    }
+  })
 }
 
 dependencies {
+  compileOnly fileTree(dir: 'libs/source', include: ['*.jar'])
   def useApi = trying({ project.ext.useApi }, false)
   [
       fileTree(dir: 'libs', include: ['*.jar']),
@@ -169,28 +167,31 @@ dependencies {
     useApi ? api(it) : implementation(it)
   }
 
-  compileOnly "org.projectlombok:lombok:${lombokVersion}"
+  api "org.projectlombok:lombok:${lombokVersion}"
   annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-  testImplementation "org.projectlombok:lombok:${lombokVersion}"
   testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-
-  compileOnly("org.slf4j:slf4j-api:${slf4jVersion}")
-  testImplementation("org.slf4j:slf4j-api:${slf4jVersion}")
-  //testImplementation "org.slf4j:slf4j-log4j12:${slf4jVersion}"
-  testImplementation "org.slf4j:slf4j-simple:${slf4jVersion}"
-
   [
-      "com.google.code.findbugs:jsr305:3.0.2",
+      //"org.slf4j:slf4j-api:${slf4jVersion}",
+      //'ch.qos.logback:logback-classic:1.4.14',
+      'com.google.code.findbugs:jsr305:3.0.2',
       "commons-io:commons-io:${commonsIOVersion}",
       "org.apache.commons:commons-lang3:${commonsLang3Version}",
       "com.google.guava:guava:${guavaVersion}",
       //"com.github.ben-manes.caffeine:caffeine:${caffeineVersion}",
       "com.alibaba.fastjson2:fastjson2:${fastjson2Version}",
-      "cn.hutool:hutool-all:${hutoolVersion}",
-      "cglib:cglib:${cglibVersion}",
+      //"cn.hutool:hutool-all:${hutoolVersion}",
+      //"cglib:cglib:${cglibVersion}",
   ].forEach {
     if (!it.isBlank()) {
-      useApi ? api(it) : implementation(it)
+      if(useApi) {
+        api(it) {
+          exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        }
+      } else {
+        implementation(it) {
+          exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        }
+      }
       testImplementation(it)
     }
   }
@@ -198,13 +199,14 @@ dependencies {
   [
       "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
       "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}",
+      "org.springframework.boot:spring-boot-starter:${springbootVersion}",
   ].forEach {
     compileOnly(it)
   }
 
 
-  if (springEnv) {
-    developmentOnly "org.springframework.boot:spring-boot-devtools:${springbootVersion}"
+  if (project.ext.springEnv) {
+    //developmentOnly "org.springframework.boot:spring-boot-devtools:${springbootVersion}"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:${springbootVersion}"
     [
         "org.springframework.boot:spring-boot-starter:${springbootVersion}",
@@ -213,21 +215,23 @@ dependencies {
       testImplementation(it)
     }
     testImplementation "org.springframework.boot:spring-boot-starter-test:${springbootVersion}"
-  }
-
-  [
-      // 此依赖会导致单元测试无用执行(fix bug)
-      //"org.junit.platform:junit-platform-launcher:1.10.1",
-      //"org.junit.jupiter:junit-jupiter-engine:5.10.1",
-      //"org.junit.vintage:junit-vintage-engine:5.10.1",
-  ].forEach {
-    testImplementation(it)
+  } else {
+    [
+        // springboot下，此依赖会导致单元测试无用执行(fix bug)
+        'org.junit.jupiter:junit-jupiter-api:5.10.2',
+        "org.junit.vintage:junit-vintage-engine:5.10.2",
+        "org.junit.platform:junit-platform-launcher:1.10.2",
+    ].forEach {
+      testImplementation(it)
+    }
   }
 
 }
 
-tasks.named('test') {
-  useJUnitPlatform()
+if (project.ext.springEnv) {
+  tasks.named('test') {
+    useJUnitPlatform()
+  }
 }
 
 afterEvaluate {

@@ -49,7 +49,7 @@ public class CatchUtils {
     if (!(e instanceof RuntimeException)) {
       try {
         return mappedFunc.apply(e);
-      } catch (Exception ex) {
+      } catch (Throwable ex) {
         return new IllegalStateException(ex.getMessage(), ex);
       }
     }
@@ -66,10 +66,10 @@ public class CatchUtils {
   /**
    * try{} catch(e){}
    */
-  public static <T> T tryThrow(Callable<T> call, Function<Exception, T> mappedFunc) {
+  public static <T> T tryThrow(Callable<T> call, Function<Throwable, T> mappedFunc) {
     try {
       return call.call();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       return mappedFunc.apply(e);
     }
   }
@@ -80,7 +80,7 @@ public class CatchUtils {
   public static <T> T tryThrow(Callable<T> call, Class<? extends RuntimeException> exception) {
     try {
       return call.call();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       throw throwing(e, exception);
     }
   }
@@ -98,7 +98,7 @@ public class CatchUtils {
   public static void tryThrow(IRunnable r, Class<? extends RuntimeException> exception) {
     try {
       r.run();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       throw throwing(e, exception);
     }
   }
@@ -106,10 +106,10 @@ public class CatchUtils {
   /**
    * try{} catch(e){}
    */
-  public static void tryThrow(IRunnable r, Consumer<Exception> mappedFunc) {
+  public static void tryThrow(IRunnable r, Consumer<Throwable> mappedFunc) {
     try {
       r.run();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       mappedFunc.accept(e);
     }
   }
@@ -134,7 +134,7 @@ public class CatchUtils {
   public static <T> T ignore(Callable<T> call, T defaultValue) {
     try {
       return call.call();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       return defaultValue;
     }
   }
@@ -142,10 +142,10 @@ public class CatchUtils {
   /**
    * 忽略异常
    */
-  public static <T> T ignore(Callable<T> call, Function<Exception, T> mappedFunc) {
+  public static <T> T ignore(Callable<T> call, Function<Throwable, T> mappedFunc) {
     try {
       return call.call();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       return mappedFunc.apply(e);
     }
   }

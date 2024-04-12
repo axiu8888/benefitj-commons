@@ -25,8 +25,8 @@ public class TcpNettyClientTest {
   public void before() {
     client = new TcpNettyClient()
         .autoReconnect(true, 3, TimeUnit.SECONDS)
-        .remoteAddress(new InetSocketAddress("127.0.0.1", 63015))
-        ._self();
+        .remoteAddress(new InetSocketAddress("127.0.0.1", 62019))
+        ._self_();
   }
 
   @Test

@@ -63,7 +63,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   public AbstractNetty() {
   }
 
-  protected S _self() {
+  protected S _self_() {
     return (S) this;
   }
 
@@ -76,7 +76,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S name(String name) {
     this.name = name;
-    return _self();
+    return _self_();
   }
 
   /**
@@ -114,7 +114,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
    * 默认配置
    */
   protected S useDefaultConfig() {
-    return _self();
+    return _self_();
   }
 
   private Channel start0(GenericFutureListener<? extends Future<Void>>... listeners) {
@@ -159,7 +159,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S start(GenericFutureListener<? extends Future<Void>>... listeners) {
     start0(listeners);
-    return _self();
+    return _self_();
   }
 
   /**
@@ -196,7 +196,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
         }
       }
     }
-    return _self();
+    return _self_();
   }
 
   @Override
@@ -207,7 +207,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S setMainChannel(Channel ch) {
     this.mainChannel = ch;
-    return _self();
+    return _self_();
   }
 
   public void closeServeChannel() {
@@ -238,7 +238,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S localAddress(SocketAddress address) {
     this.bootstrap().localAddress(address);
-    return _self();
+    return _self_();
   }
 
   /**
@@ -274,7 +274,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
     if (b instanceof Bootstrap) {
       ((Bootstrap) b).remoteAddress(address);
     }
-    return _self();
+    return _self_();
   }
 
   /**
@@ -298,7 +298,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S group(EventLoopGroup group) {
     this.bootstrap().group(group);
-    return _self();
+    return _self_();
   }
 
   /**
@@ -318,7 +318,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S channelFactory(ChannelFactory<? extends Channel> channelFactory) {
     this.bootstrap().channelFactory((io.netty.bootstrap.ChannelFactory) channelFactory);
-    return _self();
+    return _self_();
   }
 
   /**
@@ -332,7 +332,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S channel(Class<? extends Channel> channelClass) {
     channelFactory(new ReflectiveChannelFactory<>(channelClass));
-    return _self();
+    return _self_();
   }
 
   /**
@@ -344,7 +344,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S handler(ChannelHandler handler) {
     this.bootstrap().handler(handler);
-    return _self();
+    return _self_();
   }
 
   /**
@@ -360,13 +360,13 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public <T> S option(ChannelOption<T> option, T value) {
     bootstrap().option(option, value);
-    return _self();
+    return _self_();
   }
 
   @Override
   public S options(Map<ChannelOption<?>, Object> options) {
     options.forEach((option, value) -> bootstrap().option((ChannelOption) option, value));
-    return _self();
+    return _self_();
   }
 
   /**
@@ -380,13 +380,13 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public <T> S attr(AttributeKey<T> key, T value) {
     bootstrap().attr(key, value);
-    return _self();
+    return _self_();
   }
 
   @Override
   public S attrs(Map<AttributeKey<?>, Object> attrs) {
     attrs.forEach((key, value) -> bootstrap().attr((AttributeKey) key, value));
-    return _self();
+    return _self_();
   }
 
   @Override
@@ -457,7 +457,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   @Override
   public S useLinuxNativeEpoll(boolean use) {
     this.useLinuxNativeEpoll = use;
-    return _self();
+    return _self_();
   }
 
   /**

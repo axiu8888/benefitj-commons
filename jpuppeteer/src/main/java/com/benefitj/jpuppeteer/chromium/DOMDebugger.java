@@ -20,9 +20,6 @@ public interface DOMDebugger {
    *                 The maximum depth at which Node children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
    * @param pierce   boolean
    *                 Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false). Reports listeners for all contexts if pierce is enabled.
-   * @return {
-   * listeners: array[ EventListener ] Array of relevant listeners.
-   * }
    */
   void getEventListeners(String objectId, Integer depth, Boolean pierce);
 

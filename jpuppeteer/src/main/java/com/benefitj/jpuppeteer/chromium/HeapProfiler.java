@@ -1,7 +1,7 @@
 package com.benefitj.jpuppeteer.chromium;
 
 
-import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.jpuppeteer.Event;
 import lombok.Data;
 

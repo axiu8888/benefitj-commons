@@ -72,7 +72,7 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
     childOptions.putAll(coMap);
     childOptions.putAll(childOptions());
     childOptions(childOptions);
-    return _self();
+    return _self_();
   }
 
   @Deprecated

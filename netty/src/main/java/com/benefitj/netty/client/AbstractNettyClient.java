@@ -97,7 +97,7 @@ public abstract class AbstractNettyClient<S extends AbstractNettyClient<S>> exte
     if (ch != null) {
       ch.writeAndFlush(msg).addListeners(listeners);
     }
-    return _self();
+    return _self_();
   }
 
 }

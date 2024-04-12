@@ -51,7 +51,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   }
 
   @Override
-  public TcpNettyClient _self() {
+  public TcpNettyClient _self_() {
     return this;
   }
 
@@ -85,7 +85,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
       super.handler(handler);
     }
 
-    return _self();
+    return _self_();
   }
 
   @Override
@@ -96,7 +96,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   @Override
   public TcpNettyClient handler(ChannelHandler handler) {
     this.handler = handler;
-    return _self();
+    return _self_();
   }
 
   @Override
@@ -121,7 +121,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
       watchdog.stopReconnectSchedule();
       return super.stop(listeners);
     }
-    return _self();
+    return _self_();
   }
 
   /**
@@ -136,7 +136,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     this.autoReconnect(autoReconnect);
     this.reconnectPeriod(reconnectDelay);
     this.reconnectPeriodUnit(unit);
-    return _self();
+    return _self_();
   }
 
   public boolean autoReconnect() {
@@ -145,7 +145,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   public TcpNettyClient autoReconnect(boolean autoReconnect) {
     this.autoReconnect = autoReconnect;
-    return _self();
+    return _self_();
   }
 
   public int reconnectPeriod() {
@@ -154,7 +154,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   public TcpNettyClient reconnectPeriod(int period) {
     this.watchdog.period = period;
-    return _self();
+    return _self_();
   }
 
   public TimeUnit reconnectPeriodUnit() {
@@ -163,7 +163,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   public TcpNettyClient reconnectPeriodUnit(TimeUnit periodUnit) {
     this.watchdog.periodUnit = periodUnit;
-    return _self();
+    return _self_();
   }
 
   public ScheduledExecutorService executor() {
@@ -172,7 +172,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   public TcpNettyClient executor(ScheduledExecutorService executor) {
     this.executor = executor;
-    return _self();
+    return _self_();
   }
 
   private boolean isRunning() {

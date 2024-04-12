@@ -1,9 +1,9 @@
 package com.benefitj.jpuppeteer.chromium;
 
-import cn.hutool.core.io.BOMInputStream;
 import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.jpuppeteer.Event;
 import lombok.Data;
+import org.apache.commons.io.input.BOMInputStream;
 
 import java.util.List;
 

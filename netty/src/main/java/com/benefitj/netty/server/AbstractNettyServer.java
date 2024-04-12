@@ -58,14 +58,14 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
     if (!isStopped()) {
       shutdownGracefully(workerGroup(), true);
     }
-    return _self();
+    return _self_();
   }
 
 
   @Override
   public S group(EventLoopGroup bossGroup, EventLoopGroup workerGroup) {
     bootstrap().group(bossGroup, workerGroup);
-    return _self();
+    return _self_();
   }
 
   @Override
@@ -81,13 +81,13 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
   @Override
   public <T> S childOption(ChannelOption<T> childOption, T value) {
     bootstrap().childOption(childOption, value);
-    return _self();
+    return _self_();
   }
 
   @Override
   public S childOptions(Map<ChannelOption<?>, Object> ops) {
     ops.forEach((option, value) -> childOption((ChannelOption) option, value));
-    return _self();
+    return _self_();
   }
 
   @Override
@@ -98,13 +98,13 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
   @Override
   public <T> S childAttr(AttributeKey<T> key, T value) {
     bootstrap().childAttr(key, value);
-    return _self();
+    return _self_();
   }
 
   @Override
   public S childAttrs(Map<AttributeKey<?>, Object> childAttrs) {
     childAttrs.forEach((key, o) -> childAttr((AttributeKey) key, o));
-    return _self();
+    return _self_();
   }
 
   @Override
@@ -120,7 +120,7 @@ public abstract class AbstractNettyServer<S extends AbstractNettyServer<S>> exte
   @Override
   public S childHandler(ChannelHandler childHandler) {
     bootstrap().childHandler(childHandler);
-    return _self();
+    return _self_();
   }
 
   @Override

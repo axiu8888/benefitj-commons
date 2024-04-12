@@ -136,9 +136,6 @@ public interface CSS {
    * Requests information about platform fonts which we used to render child TextNodes in the given node.
    *
    * @param nodeId
-   * @return {
-   * fonts:  array[ PlatformFontUsage ]  Usage statistics for every employed platform font.
-   * }
    */
   void getPlatformFontsForNode(String nodeId);
 

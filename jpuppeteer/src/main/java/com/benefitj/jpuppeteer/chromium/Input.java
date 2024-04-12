@@ -22,8 +22,6 @@ public interface Input {
    * @param type                  string
    *                              Type of the key event.
    *                              Allowed Values: keyDown, keyUp, rawKeyDown, char
-   * @param modifiers             integer
-   *                              Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
    * @param timestamp             TimeSinceEpoch
    *                              Time at which the event occurred.
    * @param text                  string

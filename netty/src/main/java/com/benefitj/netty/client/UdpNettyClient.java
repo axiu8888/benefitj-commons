@@ -41,7 +41,7 @@ public class UdpNettyClient extends AbstractNettyClient<UdpNettyClient> {
     options.putIfAbsent(ChannelOption.SO_SNDBUF, (1024 << 10) * 4);
     this.options(options);
 
-    return _self();
+    return _self_();
   }
 
   @Override

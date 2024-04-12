@@ -40,7 +40,7 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
     options.putIfAbsent(ChannelOption.SO_SNDBUF, (1024 << 10) * 4);
     this.options(options);
 
-    return _self();
+    return _self_();
   }
 
   /**
@@ -48,7 +48,7 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
    */
   public UdpNettyServer soRcvbufSize(int soRcvbufSize) {
     this.option(ChannelOption.SO_RCVBUF, (1024 << 10) * soRcvbufSize);
-    return _self();
+    return _self_();
   }
 
   /**
@@ -56,7 +56,7 @@ public class UdpNettyServer extends AbstractNettyServer<UdpNettyServer> {
    */
   public UdpNettyServer soSndbufSize(int soSndbufSize) {
     this.option(ChannelOption.SO_SNDBUF, (1024 << 10) * soSndbufSize);
-    return _self();
+    return _self_();
   }
 
 
