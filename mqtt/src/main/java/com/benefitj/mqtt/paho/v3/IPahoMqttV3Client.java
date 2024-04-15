@@ -1,8 +1,8 @@
-package com.benefitj.mqtt.paho;
+package com.benefitj.mqtt.paho.v3;
 
 import org.eclipse.paho.client.mqttv3.*;
 
-public interface IPahoMqttClient extends IMqttClient {
+public interface IPahoMqttV3Client extends IMqttClient {
 
   @Override
   void connect();

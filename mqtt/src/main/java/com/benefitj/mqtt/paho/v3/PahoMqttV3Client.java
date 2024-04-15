@@ -1,9 +1,11 @@
-package com.benefitj.mqtt.paho;
+package com.benefitj.mqtt.paho.v3;
 
 import com.benefitj.core.IdUtils;
 import com.benefitj.core.TimeUtils;
 import com.benefitj.core.functions.IConsumer;
 import com.benefitj.core.functions.IFunction;
+import com.benefitj.mqtt.paho.MqttPahoClientException;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
@@ -17,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * 简单的MQTT客户端
  */
-public class PahoMqttClient implements IPahoMqttClient {
+public class PahoMqttV3Client implements IPahoMqttV3Client {
 
   /**
    * 创建MQTT客户端
@@ -39,7 +41,7 @@ public class PahoMqttClient implements IPahoMqttClient {
    */
   public static IMqttClient provide(MqttConnectOptions options, String clientId, MqttClientPersistence persistence) {
     try {
-      clientId = clientId != null ? clientId : IdUtils.uuid();
+      clientId = StringUtils.getIfBlank(clientId, () -> "mqttv3-" + IdUtils.uuid().substring(0, 16));
       return new MqttClient(options.getServerURIs()[0], clientId, persistence);
     } catch (MqttException e) {
       throw new MqttPahoClientException(e);
@@ -78,25 +80,25 @@ public class PahoMqttClient implements IPahoMqttClient {
   /**
    * 回调
    */
-  private IMqttCallback callback = new MqttCallbackDelegate(null);
+  private PahoMqttV3Callback callback = new MqttDelegateCallback(null);
   /**
    * 调度器
    */
   private ScheduledExecutorService executor;
 
-  public PahoMqttClient(String clientId) {
+  public PahoMqttV3Client(String clientId) {
     this(new MqttConnectOptions(), clientId);
   }
 
-  public PahoMqttClient(MqttConnectOptions options, String clientId) {
+  public PahoMqttV3Client(MqttConnectOptions options, String clientId) {
     this(provide(options, clientId), options);
   }
 
-  public PahoMqttClient(IMqttClient source) {
+  public PahoMqttV3Client(IMqttClient source) {
     this(source, null);
   }
 
-  public PahoMqttClient(IMqttClient source, MqttConnectOptions options) {
+  public PahoMqttV3Client(IMqttClient source, MqttConnectOptions options) {
     this.raw = source;
     this.options = options;
     source.setCallback(listener);
@@ -149,7 +151,8 @@ public class PahoMqttClient implements IPahoMqttClient {
     if (raw.isConnected()) {
       try {
         raw.disconnectForcibly();
-      } catch (MqttException ignore) { /* ~ */ } finally {
+      } catch (MqttException ignore) { /* ~ */ }
+      finally {
         callback.onDisconnected(this, null);
       }
     }
@@ -382,10 +385,10 @@ public class PahoMqttClient implements IPahoMqttClient {
 
   @Override
   public void setCallback(MqttCallback callback) {
-    if (callback instanceof IMqttCallback) {
-      this.callback = (IMqttCallback) callback;
+    if (callback instanceof PahoMqttV3Callback) {
+      this.callback = (PahoMqttV3Callback) callback;
     } else {
-      this.callback = new MqttCallbackDelegate(callback);
+      this.callback = new MqttDelegateCallback(callback);
     }
   }
 
@@ -442,7 +445,7 @@ public class PahoMqttClient implements IPahoMqttClient {
     private final AtomicReference<ScheduledFuture<?>> reconnectTask = new AtomicReference<>();
 
     public void onConnected(boolean reconnect) {
-      callback.onConnected(PahoMqttClient.this, reconnect);
+      callback.onConnected(PahoMqttV3Client.this, reconnect);
     }
 
     @Override
@@ -459,7 +462,7 @@ public class PahoMqttClient implements IPahoMqttClient {
           reconnectTask.set(newTask);
         }
       } finally {
-        callback.onDisconnected(PahoMqttClient.this, cause);
+        callback.onDisconnected(PahoMqttV3Client.this, cause);
       }
     }
 
@@ -479,7 +482,7 @@ public class PahoMqttClient implements IPahoMqttClient {
         if (isAutoReconnect()) {
           if (getClient(true).isConnected()) {
             cancel();
-            callback.onConnected(PahoMqttClient.this, true);
+            callback.onConnected(PahoMqttV3Client.this, true);
           }
         } else {
           cancel();
@@ -500,11 +503,11 @@ public class PahoMqttClient implements IPahoMqttClient {
   }
 
 
-  static class MqttCallbackDelegate implements IMqttCallback {
+  static class MqttDelegateCallback implements PahoMqttV3Callback {
 
     private MqttCallback callback;
 
-    public MqttCallbackDelegate(MqttCallback callback) {
+    public MqttDelegateCallback(MqttCallback callback) {
       this.callback = callback;
     }
 
@@ -534,11 +537,11 @@ public class PahoMqttClient implements IPahoMqttClient {
     }
 
     @Override
-    public void onConnected(PahoMqttClient client, boolean reconnect) {
+    public void onConnected(PahoMqttV3Client client, boolean reconnect) {
     }
 
     @Override
-    public void onDisconnected(PahoMqttClient client, @Nullable Throwable cause) {
+    public void onDisconnected(PahoMqttV3Client client, @Nullable Throwable cause) {
       connectionLost(cause);
     }
   }

@@ -1,4 +1,4 @@
-package com.benefitj.mqtt.paho;
+package com.benefitj.mqtt.paho.v3;
 
 import com.benefitj.mqtt.MqttMessageDispatcherImpl;
 import com.benefitj.mqtt.TopicSubscription;
@@ -10,16 +10,16 @@ import java.util.List;
 /**
  * MQTT消息订阅与分发
  */
-public class MqttCallbackDispatcher extends MqttMessageDispatcherImpl<MqttMessage> implements IMqttCallback {
+public class PahoMqttV3Dispatcher extends MqttMessageDispatcherImpl<MqttMessage> implements PahoMqttV3Callback {
 
-  private PahoMqttClient client;
+  private PahoMqttV3Client client;
 
-  public PahoMqttClient getClient() {
+  public PahoMqttV3Client getClient() {
     return client;
   }
 
   @Override
-  public void onConnected(PahoMqttClient client, boolean reconnect) {
+  public void onConnected(PahoMqttV3Client client, boolean reconnect) {
     this.client = client;
     // 重新订阅
     String[] array = getTopicArray();
@@ -34,7 +34,7 @@ public class MqttCallbackDispatcher extends MqttMessageDispatcherImpl<MqttMessag
   }
 
   @Override
-  public void onDisconnected(PahoMqttClient client, @Nullable Throwable cause) {
+  public void onDisconnected(PahoMqttV3Client client, @Nullable Throwable cause) {
     if (cause != null) {
       cause.printStackTrace();
     }
@@ -45,7 +45,7 @@ public class MqttCallbackDispatcher extends MqttMessageDispatcherImpl<MqttMessag
                               List<String> topics,
                               List<String> uniqueTopics) {
     if (!uniqueTopics.isEmpty()) {
-      PahoMqttClient client = getClient();
+      PahoMqttV3Client client = getClient();
       if (client != null && client.isConnected()) {
         client.subscribe(uniqueTopics.toArray(new String[0]));
       }
@@ -57,7 +57,7 @@ public class MqttCallbackDispatcher extends MqttMessageDispatcherImpl<MqttMessag
                                 List<String> topics,
                                 List<String> uniqueTopics) {
     if (!uniqueTopics.isEmpty()) {
-      PahoMqttClient client = getClient();
+      PahoMqttV3Client client = getClient();
       if (client != null && client.isConnected()) {
         client.unsubscribe(uniqueTopics.toArray(new String[0]));
       }

@@ -1,4 +1,4 @@
-package com.benefitj.mqtt.paho;
+package com.benefitj.mqtt.paho.v3;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -6,7 +6,10 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import javax.annotation.Nullable;
 
-public interface IMqttCallback extends MqttCallback {
+/**
+ * 回调
+ */
+public interface PahoMqttV3Callback extends MqttCallback {
 
   /**
    * 客户端重连之后的重新订阅
@@ -14,7 +17,7 @@ public interface IMqttCallback extends MqttCallback {
    * @param client    客户端
    * @param reconnect 是否为重连
    */
-  default void onConnected(PahoMqttClient client, boolean reconnect) {
+  default void onConnected(PahoMqttV3Client client, boolean reconnect) {
     // ~
   }
 
@@ -39,7 +42,7 @@ public interface IMqttCallback extends MqttCallback {
    * @param client 客户端
    * @param cause  异常
    */
-  default void onDisconnected(PahoMqttClient client, @Nullable Throwable cause) {
+  default void onDisconnected(PahoMqttV3Client client, @Nullable Throwable cause) {
     connectionLost(cause);
   }
 
