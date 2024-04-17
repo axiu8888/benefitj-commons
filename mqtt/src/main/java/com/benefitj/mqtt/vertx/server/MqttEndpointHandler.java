@@ -1,5 +1,6 @@
 package com.benefitj.mqtt.vertx.server;
 
+import com.benefitj.core.SingletonSupplier;
 import com.benefitj.mqtt.MqttTopic;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.messages.MqttPublishMessage;
@@ -9,6 +10,12 @@ import io.vertx.mqtt.messages.MqttUnsubscribeMessage;
 import java.util.List;
 
 public interface MqttEndpointHandler {
+
+  SingletonSupplier<MqttEndpointHandler> single = SingletonSupplier.of(MqttEndpointHandlerImpl::new);
+
+  static MqttEndpointHandler get() {
+    return single.get();
+  }
 
   /**
    * 连接

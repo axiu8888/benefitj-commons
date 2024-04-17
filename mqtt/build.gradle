@@ -8,10 +8,8 @@ dependencies {
       project(":core"),
 
       "io.vertx:vertx-core:${vertxVersion}",
-      "io.vertx:vertx-unit:${vertxVersion}",
       "io.vertx:vertx-mqtt:${vertxVersion}",
       "io.vertx:vertx-codegen:${vertxVersion}",
-      'io.vertx:vertx-codetrans:4.0.3',
       'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5',
   ].forEach {
     api(it)

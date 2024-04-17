@@ -36,12 +36,14 @@ import java.util.stream.Collectors;
  */
 public class VertxMqttServer extends AbstractVerticle {
 
+  public static VerticleInitializer DISCARD = verticle -> { /* ignore */ };
+
+  public static MqttAuthenticator NONE_MQTT_AUTHENTICATOR = endpoint -> true;
+
   protected final Logger log = LoggerFactory.getLogger(getClass());
-
-  protected static VerticleInitializer DISCARD = verticle -> { /* ignore */ };
-
-  private static MqttAuthenticator NONE_MQTT_AUTHENTICATOR = endpoint -> true;
-
+  /**
+   * 配置
+   */
   private MqttServerProperty property;
   /**
    * 服务端配置
@@ -54,7 +56,7 @@ public class VertxMqttServer extends AbstractVerticle {
   /**
    * 客户端状态处理器
    */
-  private MqttEndpointHandler endpointHandler;
+  private MqttEndpointHandler endpointHandler = MqttEndpointHandler.get();
   /**
    * 认证器
    */
