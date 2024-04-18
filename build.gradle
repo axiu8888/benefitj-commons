@@ -18,7 +18,7 @@ ext {
   slf4jVersion = "2.0.11"
   hutoolVersion = "5.8.27"
   cglibVersion = "3.3.0"
-  nettyAllVersion = "4.1.106.Final"
+  nettyAllVersion = "4.1.109.Final"
 
   aspectjVersion = "1.9.20"
   swaggerVersion = "3.0.0"
@@ -78,7 +78,16 @@ subprojects {
   }
 
   repositories {
-    mavenLocal()
+    //mavenLocal()
+    maven { url "https://maven.aliyun.com/repository/google" }
+    maven { url "https://maven.aliyun.com/repository/central" }
+    maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
+    maven { url "https://maven.aliyun.com/repository/public" }
+    maven { url "https://maven.aliyun.com/repository/jcenter" }
+    maven { url "https://repo.spring.io/milestone" }
+    maven { url "https://repo.spring.io/release" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    mavenCentral()
     try {
       maven {
         url = props["repoUrl"]
@@ -89,15 +98,6 @@ subprojects {
         }
       }
     } catch(ignored) {/*^_^*/}
-    maven { url "https://maven.aliyun.com/repository/google" }
-    maven { url "https://maven.aliyun.com/repository/central" }
-    maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
-    maven { url "https://maven.aliyun.com/repository/public" }
-    maven { url "https://maven.aliyun.com/repository/jcenter" }
-    maven { url "https://repo.spring.io/milestone" }
-    maven { url "https://repo.spring.io/release" }
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-    mavenCentral()
   }
 
 }

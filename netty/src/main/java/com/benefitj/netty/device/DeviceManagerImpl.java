@@ -147,10 +147,7 @@ public class DeviceManagerImpl<K, V extends Device<K>> implements DeviceManager<
 
   public void stop() {
     synchronized (this) {
-      ScheduledFuture<?> sf = checkerRef.getAndSet(null);
-      if (sf != null) {
-        sf.cancel(true);
-      }
+      EventLoop.cancel(checkerRef.getAndSet(null));
     }
   }
 

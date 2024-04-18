@@ -259,6 +259,15 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
 
   }
 
+  /**
+   * 取消调度
+   *
+   * @param sf 调度任务
+   * @return 返回是否取消
+   */
+  public static boolean cancel(ScheduledFuture<?> sf) {
+    return sf != null && sf.cancel(true);
+  }
 
   public static String threadName() {
     return Thread.currentThread().getName();

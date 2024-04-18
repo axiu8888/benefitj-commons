@@ -43,12 +43,9 @@ public class AutoConnectTimer {
     if (isAutoConnect()) {
       synchronized (this) {
         if (timerRef.get() == null) {
-          this.timerRef.set(EventLoop.io().scheduleAtFixedRate(() -> {
+          this.timerRef.set(EventLoop.asyncIOFixedRate(() -> {
             if (client.isConnected()) {
-              ScheduledFuture<?> sf = timerRef.getAndSet(null);
-              if (sf != null) {
-                sf.cancel(true);
-              }
+              EventLoop.cancel(timerRef.getAndSet(null));
               return;
             }
             client.reconnect();
@@ -60,10 +57,7 @@ public class AutoConnectTimer {
 
   public void stop() {
     synchronized (this) {
-      ScheduledFuture<?> sf = timerRef.getAndSet(null);
-      if (sf != null) {
-        sf.cancel(true);
-      }
+      EventLoop.cancel(timerRef.getAndSet(null));
     }
   }
 

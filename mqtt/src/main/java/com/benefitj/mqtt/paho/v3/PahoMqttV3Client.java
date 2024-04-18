@@ -1,5 +1,6 @@
 package com.benefitj.mqtt.paho.v3;
 
+import com.benefitj.core.EventLoop;
 import com.benefitj.core.IdUtils;
 import com.benefitj.core.TimeUtils;
 import com.benefitj.core.functions.IConsumer;
@@ -442,7 +443,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     /**
      * 重新连接的任务
      */
-    private final AtomicReference<ScheduledFuture<?>> reconnectTask = new AtomicReference<>();
+    private final AtomicReference<ScheduledFuture<?>> autoConnectRef = new AtomicReference<>();
 
     public void onConnected(boolean reconnect) {
       callback.onConnected(PahoMqttV3Client.this, reconnect);
@@ -452,14 +453,9 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     public void connectionLost(Throwable cause) {
       try {
         if (isAutoReconnect() && !isDisconnected()) {
-          ScheduledFuture<?> oldTask = reconnectTask.get();
-          if (oldTask != null) {
-            oldTask.cancel(true);
-          }
           long delay = Math.max(Math.min(300_000, getDelay()), 1000);
-          ScheduledFuture<?> newTask = getExecutor().scheduleAtFixedRate(
-              this, Math.max(getDelay(), 100), delay, TimeUnit.MILLISECONDS);
-          reconnectTask.set(newTask);
+          EventLoop.cancel(autoConnectRef.getAndSet(getExecutor().scheduleAtFixedRate(
+              this, Math.max(getDelay(), 100), delay, TimeUnit.MILLISECONDS)));
         }
       } finally {
         callback.onDisconnected(PahoMqttV3Client.this, cause);
@@ -491,14 +487,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     }
 
     private void cancel() {
-      ScheduledFuture<?> task = reconnectTask.get();
-      if (task != null) {
-        try {
-          reconnectTask.set(null);
-        } finally {
-          task.cancel(true);
-        }
-      }
+      EventLoop.cancel(autoConnectRef.getAndSet(null));
     }
   }
 
