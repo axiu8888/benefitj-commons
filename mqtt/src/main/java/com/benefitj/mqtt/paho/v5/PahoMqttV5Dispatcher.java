@@ -1,7 +1,7 @@
 package com.benefitj.mqtt.paho.v5;
 
 
-import com.benefitj.mqtt.MqttMessageDispatcherImpl;
+import com.benefitj.mqtt.MqttMessageDispatcher;
 import com.benefitj.mqtt.TopicSubscription;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * MQTT消息订阅与分发
  */
-public class PahoMqttV5Dispatcher extends MqttMessageDispatcherImpl<MqttMessage> implements PahoMqttV5Callback {
+public class PahoMqttV5Dispatcher extends MqttMessageDispatcher.Impl<MqttMessage> implements PahoMqttV5Callback {
 
   PahoMqttV5Client client;
 

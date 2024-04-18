@@ -1,6 +1,7 @@
 package com.benefitj.mqtt;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -17,7 +18,7 @@ public interface MqttMessageDispatcher<T> {
    * @return 返回消息分发器
    */
   static <T> MqttMessageDispatcher<T> newDispatcher() {
-    return new MqttMessageDispatcherImpl<>();
+    return new Impl<>();
   }
 
   /**
@@ -237,4 +238,21 @@ public interface MqttMessageDispatcher<T> {
         .collect(Collectors.toSet());
   }
 
+
+  /**
+   * MQTT消息分发
+   *
+   * @param <T>
+   */
+  public class Impl<T> implements MqttMessageDispatcher<T> {
+    /**
+     * 订阅
+     */
+    private final Map<MqttMessageSubscriber<T>, TopicSubscription<T>> subscribers = new ConcurrentHashMap<>();
+
+    @Override
+    public Map<MqttMessageSubscriber<T>, TopicSubscription<T>> getSubscribers() {
+      return subscribers;
+    }
+  }
 }

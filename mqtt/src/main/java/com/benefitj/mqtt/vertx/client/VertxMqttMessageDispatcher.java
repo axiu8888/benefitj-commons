@@ -1,6 +1,6 @@
 package com.benefitj.mqtt.vertx.client;
 
-import com.benefitj.mqtt.MqttMessageDispatcherImpl;
+import com.benefitj.mqtt.MqttMessageDispatcher;
 import com.benefitj.mqtt.TopicSubscription;
 import io.vertx.core.AsyncResult;
 import io.vertx.mqtt.messages.MqttConnAckMessage;
@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * MQTT消息分发器
  */
-public class VertxMqttMessageDispatcher extends MqttMessageDispatcherImpl<MqttPublishMessage>
+public class VertxMqttMessageDispatcher extends MqttMessageDispatcher.Impl<MqttPublishMessage>
     implements VertxClientHandler {
   /**
    * 自动订阅
