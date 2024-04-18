@@ -393,6 +393,15 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     }
   }
 
+  public MqttCallback getCallback() {
+    return callback;
+  }
+
+  public PahoMqttV3Dispatcher getDispatcher() {
+    MqttCallback cb = getCallback();
+    return cb instanceof PahoMqttV3Dispatcher ? (PahoMqttV3Dispatcher) cb : null;
+  }
+
   @Override
   public MqttTopic getTopic(String topic) {
     return getClient().getTopic(topic);

@@ -17,12 +17,12 @@ public class PahoMqttV3Dispatcher extends MqttMessageDispatcher.Impl<MqttMessage
   public PahoMqttV3Dispatcher() {
   }
 
-  public PahoMqttV3Dispatcher(PahoMqttV3Client client) {
-    this.client = client;
-  }
-
   public PahoMqttV3Client getClient() {
     return client;
+  }
+
+  public void setClient(PahoMqttV3Client client) {
+    this.client = client;
   }
 
   @Override
