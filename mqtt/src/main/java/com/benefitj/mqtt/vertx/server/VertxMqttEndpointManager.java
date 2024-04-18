@@ -2,6 +2,9 @@ package com.benefitj.mqtt.vertx.server;
 
 import com.benefitj.core.SingletonSupplier;
 import com.benefitj.core.functions.WrappedMap;
+import com.benefitj.mqtt.MqttTopic;
+import io.netty.handler.codec.mqtt.MqttQoS;
+import io.vertx.core.buffer.Buffer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,10 +18,10 @@ import java.util.stream.Collectors;
  */
 public class VertxMqttEndpointManager implements WrappedMap<String, VertxMqttEndpoint> {
 
-  static final SingletonSupplier<VertxMqttEndpointManager> singleton = SingletonSupplier.of(VertxMqttEndpointManager::new);
+  static final SingletonSupplier<VertxMqttEndpointManager> single = SingletonSupplier.of(VertxMqttEndpointManager::new);
 
   public static VertxMqttEndpointManager get() {
-    return singleton.get();
+    return single.get();
   }
 
   final Map<String, VertxMqttEndpoint> _internal = new ConcurrentHashMap<>();
@@ -26,6 +29,45 @@ public class VertxMqttEndpointManager implements WrappedMap<String, VertxMqttEnd
   @Override
   public Map<String, VertxMqttEndpoint> map() {
     return _internal;
+  }
+
+  /**
+   * 发布消息
+   *
+   * @param topic   主题
+   * @param payload 有效载荷
+   */
+  public void publish(String topic, byte[] payload) {
+    publish(topic, payload, 0);
+  }
+
+  /**
+   * 发布消息
+   *
+   * @param topic   主题
+   * @param payload 有效载荷
+   * @param qos     服务质量
+   */
+  public void publish(String topic, byte[] payload, int qos) {
+    publish(topic, payload, MqttQoS.valueOf(qos), false, false);
+  }
+
+  /**
+   * 发布消息
+   *
+   * @param topic    主题
+   * @param payload  有效载荷
+   * @param qosLevel 服务质量
+   * @param isDup    指示消息是否是一个重复的消息
+   * @param isRetain 是否保留，以便新订阅者连接时可以接收到最新的保留消息
+   */
+  public void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain) {
+    MqttTopic mqttTopic = MqttTopic.get(topic);
+    map().forEach((id, endpoint) -> {
+      if (endpoint.hasSubscription(mqttTopic)) {
+        endpoint.publish(topic, Buffer.buffer(payload), qosLevel, isDup, isRetain);
+      }
+    });
   }
 
   /**
