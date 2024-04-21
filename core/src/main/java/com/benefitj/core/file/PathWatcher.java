@@ -46,7 +46,7 @@ public class PathWatcher implements Cloneable {
   private OnWatchEventListener watchEventListener;
 
   public PathWatcher(Path... paths) {
-    this(Arrays.asList(paths), com.sun.nio.file.SensitivityWatchEventModifier.MEDIUM);
+    this(Arrays.asList(paths), SensitivityWatchEventModifier.MEDIUM);
   }
 
   public PathWatcher(List<Path> paths, WatchEvent.Modifier sensitivity) {
