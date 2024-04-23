@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class BaseTest {
 
-  protected final Logger log = LoggerFactory.getLogger(getClass());
+  protected Logger log = LoggerFactory.getLogger(getClass());
 
   @BeforeEach
   public void setUp() throws Exception {
