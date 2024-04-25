@@ -168,14 +168,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * @return 返回结果
    */
   protected Runnable wrapped(Runnable task) {
-    return () -> {
-      try {
-        task.run();
-      } catch (Exception e) {
-        log.error(e.getMessage(), e);
-        throw e;
-      }
-    };
+    return new WrapRunnable(task);
   }
 
   /**
@@ -186,14 +179,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * @return 返回结果
    */
   protected <T> Callable<T> wrapped(Callable<T> task) {
-    return () -> {
-      try {
-        return task.call();
-      } catch (Exception e) {
-        log.error(e.getMessage(), e);
-        throw e;
-      }
-    };
+    return new WrapCallable<T>(task);
   }
 
   /**
@@ -382,4 +368,43 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
     return io().scheduleAtFixedRate(task, initialDelay, period, unit);
   }
 
+
+  public class WrapRunnable implements Runnable {
+
+    final Runnable raw;
+
+    public WrapRunnable(Runnable raw) {
+      this.raw = raw;
+    }
+
+    @Override
+    public void run() {
+      try {
+        raw.run();
+      } catch (Throwable e) {
+        log.error(e.getMessage(), e);
+        throw e;
+      }
+    }
+  }
+
+
+  public class WrapCallable<T> implements Callable<T> {
+
+    final Callable<T> raw;
+
+    public WrapCallable(Callable<T> raw) {
+      this.raw = raw;
+    }
+
+    @Override
+    public T call() throws Exception {
+      try {
+        return raw.call();
+      } catch (Throwable e) {
+        log.error(e.getMessage(), e);
+        throw e;
+      }
+    }
+  }
 }

@@ -1,0 +1,21 @@
+apply from: "${scriptFile}"
+
+// 上传到nexus/maven仓库
+ext.upload = true
+
+dependencies {
+  [
+      project(":core"),
+
+      "io.vertx:vertx-core:${vertxVersion}",
+      "io.vertx:vertx-codegen:${vertxVersion}",
+      "io.vertx:vertx-web:${vertxVersion}",
+      "io.vertx:vertx-web-client:${vertxVersion}",
+      "io.vertx:vertx-mqtt:${vertxVersion}",
+  ].forEach {
+    api(it)
+    testImplementation(it)
+  }
+
+}
+

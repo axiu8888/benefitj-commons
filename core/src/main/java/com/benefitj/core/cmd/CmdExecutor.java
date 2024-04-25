@@ -10,9 +10,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -73,7 +71,7 @@ public class CmdExecutor {
   /**
    * 等待中的执行命令
    */
-  private final Map<String, CmdCallTask> waitForFutures = new ConcurrentHashMap<>();
+  private final Map<String, CmdCallFuture> waitForFutures = new ConcurrentHashMap<>();
   /**
    * 销毁的监听
    */
@@ -116,7 +114,7 @@ public class CmdExecutor {
   /**
    * 获取等待中的进程
    */
-  protected Map<String, CmdCallTask> getWaitForFutures() {
+  protected Map<String, CmdCallFuture> getWaitForFutures() {
     return waitForFutures;
   }
 
@@ -214,22 +212,22 @@ public class CmdExecutor {
         call.setProcess(process);
         cb.onCallAfter(process, call);
         // 强制结束
-        scheduleTimeout(call, timeout - (now() - start));
+        startTimeout(call, timeout - (now() - start));
         cb.onWaitForBefore(process, call);
         // 处理消息
         handle(getExecutor(), process, call, cb);
         // 等待进程结束
-        while (process.isAlive()) Thread.currentThread().join(1);
+        while (process.isAlive()) Thread.currentThread().join(5);
         // 等待
         //int exitValue = process.waitFor();
         call.setExitCode(process.exitValue());
         // 移除等待的缓存
-        cancelTimeoutSchedule(call.getId());
+        cancelTimeout(call.getId());
         // 调用结束
         cb.onWaitForAfter(process, call);
         return call;
       });
-    } catch (Exception e) {
+    } catch (Throwable e) {
       cb.onError(call, e);
     } finally {
       cb.onFinish(call);
@@ -237,17 +235,16 @@ public class CmdExecutor {
     return call;
   }
 
-
   /**
    * 取消超时时长的调度
    *
    * @param id 进程ID
    */
-  protected void cancelTimeoutSchedule(String id) {
-    final CmdCallTask task = getWaitForFutures().remove(id);
+  protected void cancelTimeout(String id) {
+    final CmdCallFuture task = getWaitForFutures().remove(id);
     if (task != null) {
       task.cancel(true);
-      CmdCall call = task.getOriginal();
+      CmdCall call = task.getRaw();
       getDestroyListener().onCancel(call.getProcess(), call, true);
     }
   }
@@ -258,13 +255,13 @@ public class CmdExecutor {
    * @param call    CMD响应
    * @param timeout 超时时长
    */
-  protected void scheduleTimeout(CmdCall call, long timeout) {
+  protected void startTimeout(CmdCall call, long timeout) {
     timeout = timeout > 0 ? timeout : getTimeout();
-    final CmdCallTask task = new CmdCallTask(call, (id, f) -> {
+    final CmdCallFuture task = new CmdCallFuture(call, (id, cct) -> {
       getWaitForFutures().remove(id);
       // 唤醒等待的线程
       lock(Object::notify);
-      final CmdCall cr = f.getOriginal();
+      final CmdCall cr = cct.getRaw();
       final Process p = cr.getProcess();
       if (p != null) {
         p.destroyForcibly();
@@ -272,8 +269,7 @@ public class CmdExecutor {
       }
     });
     getWaitForFutures().put(call.getId(), task);
-    ScheduledFuture<?> future = schedule(task, timeout, TimeUnit.MILLISECONDS);
-    task.setFuture(future);
+    task.setSf(schedule(task, timeout, TimeUnit.MILLISECONDS));
   }
 
   /**

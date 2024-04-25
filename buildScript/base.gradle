@@ -172,7 +172,7 @@ dependencies {
   testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
   [
       "org.slf4j:slf4j-api:${slf4jVersion}",
-      //'ch.qos.logback:logback-classic:1.4.14',
+      "ch.qos.logback:logback-classic:1.5.6",
       'com.google.code.findbugs:jsr305:3.0.2',
       "commons-io:commons-io:${commonsIOVersion}",
       "org.apache.commons:commons-lang3:${commonsLang3Version}",

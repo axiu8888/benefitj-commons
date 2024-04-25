@@ -17,5 +17,6 @@ include(
     ":javastruct",       // java结构体转换
     ":jdbc",             // jdbc
     ":jpuppeteer",       // chromium puppeteer
+    ":vertx",            // vertx
     ":all",              // 全部的依赖
 )

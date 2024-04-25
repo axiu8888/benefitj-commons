@@ -11,8 +11,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 /**
  * 测试CMD命令调用
@@ -49,16 +51,22 @@ public class CmdExecutorTest extends BaseTest {
     //new GitPull(new File("D:/code/github"), 5).pull();
     //new GitPull(new File("D:/code/github/java"), 5).pull();
 
-    CountDownLatch latch = new CountDownLatch(2);
+    CountDownLatch latch = new CountDownLatch(1);
     //pull("D:/code/github/frontend", latch);
-    //pull("D:/code/github/java/vertx", latch);
+//    pull("D:/code/github/java/vertx", latch);
     pull("D:/code/github/golang", latch);
     CatchUtils.ignore((IRunnable) latch::await);
   }
 
   private void pull(String dir, CountDownLatch latch) {
     EventLoop.asyncIO(() -> {
-      new GitPull(new File(dir), 5).pull();
+      log.info("--------------->: \n");
+      List<CmdCall> calls = new GitPull(new File(dir), 5).pull();
+      String cmds = calls.stream()
+          .map(c -> "cd " + c.getCtxDir().getAbsolutePath().replace("\\", "/") + " && git pull")
+          .collect(Collectors.joining("\n"));
+      log.info(" ==>: \n{}", cmds);
+      log.info(":<---------------\n");
       latch.countDown();
     });
   }

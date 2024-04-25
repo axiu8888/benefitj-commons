@@ -20,49 +20,51 @@ public class GitPull {
     this.tryCount = tryCount;
   }
 
-  public void pull() {
-    List<File> pull = pull(dir);
-    System.err.println("\nfail:");
-    System.err.println(pull.stream()
-        .map(File::getAbsolutePath)
-        .collect(Collectors.joining("\n")));
+  public List<CmdCall> pull() {
+    return pull(dir);
   }
 
-  public List<File> pull(File dir) {
-    List<File> failList = new LinkedList<>();
+  public List<CmdCall> pull(File dir) {
+    List<CmdCall> list = new LinkedList<>();
     if (dir.isDirectory()) {
       File[] files = dir.listFiles(pathname -> pathname.isDirectory() && pathname.getName().equals(".git"));
       if (files != null && files.length > 0) {
-        if (!pullNow(dir, getTryCount())) {
-          failList.add(dir);
-        }
+        list.add(pullNow(dir));
       } else {
         for (File file : Objects.requireNonNull(dir.listFiles())) {
           if (file.isDirectory()) {
-            failList.addAll(pull(file));
+            list.addAll(pull(file));
           }
         }
       }
     }
-    return failList;
+    return list;
   }
 
-  public boolean pullNow(File dir, int tryCount) {
-    tryCount = 1 + Math.max(0, tryCount);
+  public CmdCall pullNow(File dir) {
+    return CmdExecutor.get().call("git pull", null, dir);
+  }
+
+  public boolean retry(File dir, int tryCount) {
+    tryCount = Math.min(1, tryCount);
     for (int i = 0; i < tryCount; i++) {
       CmdCall call = CmdExecutor.get().call("git pull", null, dir);
       if (call.getExitCode() == 128) {
-        CmdCall tmpCall = CmdExecutor.get().call("git config --global --add safe.directory " + dir.getAbsolutePath().replace("\\", "/"));
+        CmdCall tmpCall = gitAddSafe(dir);
         if (tmpCall.isSuccessful()) {
           continue;
         }
       }
-      System.err.println(call.toPrintInfo((i > 0 ? String.format("retry-%d ", i) : "") + "git pull (" + dir.getName() + ")", dir));
+      System.err.println(call.toPrintInfo(String.format("retry-%d ", i) + "git pull (" + dir.getName() + ")", dir));
       if (call.isSuccessful()) {
         return true;
       }
     }
     return false;
+  }
+
+  public CmdCall gitAddSafe(File dir) {
+    return CmdExecutor.get().call("git config --global --add safe.directory " + dir.getAbsolutePath().replace("\\", "/"));
   }
 
   public File getDir() {

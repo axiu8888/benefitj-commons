@@ -77,7 +77,7 @@ public interface Callback {
    * @param call 调用
    * @param e    异常
    */
-  default void onError(CmdCall call, Exception e) {
+  default void onError(CmdCall call, Throwable e) {
     e.printStackTrace();
   }
 
