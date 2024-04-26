@@ -1,12 +1,19 @@
 package com.benefit.vertx.mqtt.client;
 
 import com.benefit.vertx.log.VertxLogger;
+import com.benefitj.core.SingletonSupplier;
 import io.vertx.core.AsyncResult;
 import io.vertx.mqtt.messages.MqttConnAckMessage;
 import io.vertx.mqtt.messages.MqttPublishMessage;
 import io.vertx.mqtt.messages.MqttSubAckMessage;
 
-public class LoggingVertxClientHandler implements VertxClientHandler {
+public class VertxMqttClientHandlerImpl implements VertxMqttClientHandler {
+
+  static final SingletonSupplier<VertxMqttClientHandlerImpl> single = SingletonSupplier.of(VertxMqttClientHandlerImpl::new);
+
+  public static VertxMqttClientHandlerImpl get() {
+    return single.get();
+  }
 
   protected VertxLogger log = VertxLogger.get();
 

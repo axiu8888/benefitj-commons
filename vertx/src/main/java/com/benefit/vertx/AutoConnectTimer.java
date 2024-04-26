@@ -1,4 +1,4 @@
-package com.benefit.vertx.mqtt.client;
+package com.benefit.vertx;
 
 import com.benefitj.core.EventLoop;
 
@@ -13,6 +13,10 @@ public class AutoConnectTimer {
 
   private final AtomicReference<ScheduledFuture<?>> timerRef = new AtomicReference<>();
   /**
+   * 是否自动重连
+   */
+  private volatile boolean autoConnect = true;
+  /**
    * 尝试间隔
    */
   private int period = 10;
@@ -20,11 +24,6 @@ public class AutoConnectTimer {
    * 时间单位
    */
   private TimeUnit unit = TimeUnit.SECONDS;
-
-  /**
-   * 是否自动重连
-   */
-  private volatile boolean autoConnect = true;
 
   public AutoConnectTimer() {
     this(true);
@@ -34,22 +33,28 @@ public class AutoConnectTimer {
     this.setAutoConnect(autoConnect);
   }
 
+  public AutoConnectTimer(boolean autoConnect, int period, TimeUnit unit) {
+    this.autoConnect = autoConnect;
+    this.period = period;
+    this.unit = unit;
+  }
+
   /**
    * 重连
    *
-   * @param client 客户端
+   * @param socket 客户端
    */
-  public void start(VertxMqttClient client) {
+  public void start(IConnector socket) {
     if (isAutoConnect()) {
       synchronized (this) {
         if (timerRef.get() == null) {
           this.timerRef.set(EventLoop.asyncIOFixedRate(() -> {
-            if (client.isConnected()) {
+            if (socket.isConnected()) {
               EventLoop.cancel(timerRef.getAndSet(null));
               return;
             }
-            client.reconnect();
-          }, 1, getPeriod(), getUnit()));
+            socket.doConnect();
+          }, 0, getPeriod(), getUnit()));
         }
       }
     }
@@ -61,6 +66,15 @@ public class AutoConnectTimer {
     }
   }
 
+  public boolean isAutoConnect() {
+    return autoConnect;
+  }
+
+  public AutoConnectTimer setAutoConnect(boolean autoConnect) {
+    this.autoConnect = autoConnect;
+    return this;
+  }
+
   public int getPeriod() {
     return period;
   }
@@ -70,21 +84,16 @@ public class AutoConnectTimer {
     return this;
   }
 
+  public AutoConnectTimer setPeriod(int period, TimeUnit unit) {
+    return this.setPeriod(period).setUnit(unit);
+  }
+
   public TimeUnit getUnit() {
     return unit;
   }
 
   public AutoConnectTimer setUnit(TimeUnit unit) {
     this.unit = unit;
-    return this;
-  }
-
-  public boolean isAutoConnect() {
-    return autoConnect;
-  }
-
-  public AutoConnectTimer setAutoConnect(boolean autoConnect) {
-    this.autoConnect = autoConnect;
     return this;
   }
 

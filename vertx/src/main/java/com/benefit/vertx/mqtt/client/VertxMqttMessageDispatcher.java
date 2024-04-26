@@ -13,7 +13,7 @@ import java.util.List;
  * MQTT消息分发器
  */
 public class VertxMqttMessageDispatcher extends MqttMessageDispatcher.Impl<MqttPublishMessage>
-    implements VertxClientHandler {
+    implements VertxMqttClientHandler {
   /**
    * 自动订阅
    */

@@ -5,11 +5,9 @@ import com.benefit.vertx.log.VertxLogger;
 import com.benefit.vertx.mqtt.client.VertxMqttClient;
 import com.benefit.vertx.mqtt.client.VertxMqttMessageDispatcher;
 import com.benefit.vertx.mqtt.server.MqttServerHolder;
-import com.benefit.vertx.tcp.ClientNetListener;
 import com.benefit.vertx.tcp.VertxTcpClient;
-import com.benefitj.core.CatchUtils;
+import com.benefitj.core.DateFmtter;
 import com.benefitj.core.EventLoop;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +15,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -68,23 +65,22 @@ class VertxHolderTest {
             .setReconnectInterval(3_000) // 自动重连的间隔
             .setReconnectAttempts(1) // 尚持重连次数
     );
-
-    AtomicReference<CountDownLatch> ref = new AtomicReference<>();
-    tcp.addListener(new ClientNetListener<VertxTcpClient>() {
+    tcp.setAutoConnectTimer(new AutoConnectTimer()
+        .setAutoConnect(true)
+        .setPeriod(5, TimeUnit.SECONDS)
+    );
+    /*
+    tcp.addListener(new VertxTcpClient.Listener<VertxTcpClient>() {
       @Override
       public void onMessage(VertxTcpClient socket, Buffer buf) {
       }
-
-      @Override
-      public void onComplete(VertxTcpClient socket) {
-        ref.get().countDown();
-      }
     });
+    */
+    tcp.connect("127.0.0.1", 52014);
+
     for (int i = 0; i < 1000; i++) {
       if (!tcp.isActive()) {
-        ref.set(new CountDownLatch(1));
-        tcp.connect("127.0.0.1", 52014);
-        CatchUtils.ignore(() -> ref.get().await());
+        log.info("active: {}, {}, {}", tcp.isActive(), tcp.remoteAddress(), DateFmtter.fmtNowS());
       }
       EventLoop.sleepSecond(1);
     }

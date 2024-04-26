@@ -5,7 +5,7 @@ import io.vertx.mqtt.messages.MqttConnAckMessage;
 import io.vertx.mqtt.messages.MqttPublishMessage;
 import io.vertx.mqtt.messages.MqttSubAckMessage;
 
-public interface VertxClientHandler {
+public interface VertxMqttClientHandler {
 
   /**
    * 连接结果处理

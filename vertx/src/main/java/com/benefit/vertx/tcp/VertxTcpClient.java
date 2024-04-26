@@ -1,8 +1,12 @@
 package com.benefit.vertx.tcp;
 
+import com.benefit.vertx.AutoConnectTimer;
+import com.benefit.vertx.IConnector;
 import com.benefit.vertx.VertxHolder;
 import com.benefit.vertx.log.VertxLogger;
-import com.benefitj.core.*;
+import com.benefitj.core.CatchUtils;
+import com.benefitj.core.HexUtils;
+import com.benefitj.core.ProxyUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -13,27 +17,46 @@ import io.vertx.core.net.SocketAddress;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * TCP 客户端
+ */
 public class VertxTcpClient {
 
   protected final VertxLogger log = VertxLogger.get();
+  /**
+   * 代理监听
+   */
+  private final Listener<VertxTcpClient> proxyListener = ProxyUtils.newCopyListProxy(Listener.class);
+  /**
+   * 连接器
+   */
+  private final IConnector connector = new IConnector() {
+    @Override
+    public boolean isConnected() {
+      return _self_().isActive();
+    }
 
-  private final ClientNetListener<VertxTcpClient> proxyListener = ProxyUtils.newCopyListProxy(ClientNetListener.class);
+    @Override
+    public void doConnect() {
+      CountDownLatch latch = new CountDownLatch(1);
+      _self_().connect0(latch);
+      CatchUtils.ignore(() -> latch.await());
+    }
+  };
 
   private NetClient raw;
-  private NetClientOptions options;
   private NetSocket socket;
   /**
-   * 是否支持自动重连
+   * 配置
    */
-  private boolean autoConnect = false;
+  private NetClientOptions options;
   /**
-   * 调度器
+   * 重新连接的定时器
    */
-  private Executor executor = EventLoop.io();
+  private AutoConnectTimer autoConnectTimer = AutoConnectTimer.NONE;
   /**
    * 远程地址
    */
@@ -44,75 +67,142 @@ public class VertxTcpClient {
     this.options = options;
   }
 
-  public boolean isAutoConnect() {
-    return autoConnect;
-  }
-
-  public void setAutoConnect(boolean autoConnect) {
-    this.autoConnect = autoConnect;
+  public VertxTcpClient _self_() {
+    return this;
   }
 
   public NetClient getRaw() {
     return raw;
   }
 
-  public void setRaw(NetClient raw) {
+  public VertxTcpClient setRaw(NetClient raw) {
     this.raw = raw;
+    return _self_();
   }
 
-  public NetClientOptions getOptions() {
-    return options;
-  }
-
-  public void setOptions(NetClientOptions options) {
-    this.options = options;
-  }
-
+  /**
+   * 获取 Socket
+   */
   public NetSocket getSocket() {
     return socket;
   }
 
-  public void setSocket(NetSocket socket) {
+  /**
+   * 设置 Socket
+   *
+   * @return 返回 VertxTcpClient
+   */
+  protected VertxTcpClient setSocket(NetSocket socket) {
     this.socket = socket;
+    return _self_();
   }
 
-  public void addListener(ClientNetListener<VertxTcpClient> l) {
+  /**
+   * 获取配置
+   */
+  public NetClientOptions getOptions() {
+    return options;
+  }
+
+  /**
+   * 设置配置
+   *
+   * @return 返回 VertxTcpClient
+   */
+  public VertxTcpClient setOptions(NetClientOptions options) {
+    this.options = options;
+    return _self_();
+  }
+
+
+  public AutoConnectTimer getAutoConnectTimer() {
+    return autoConnectTimer;
+  }
+
+  public VertxTcpClient setAutoConnectTimer(AutoConnectTimer timer) {
+    this.autoConnectTimer = timer != null ? timer : AutoConnectTimer.NONE;
+    return _self_();
+  }
+
+  /**
+   * 添加监听
+   *
+   * @param l 监听
+   * @return 返回 VertxTcpClient
+   */
+  public VertxTcpClient addListener(Listener<VertxTcpClient> l) {
     if (!((List) proxyListener).contains(l)) {
       ((List) proxyListener).add(l);
     }
+    return _self_();
   }
 
-  public void removeListener(ClientNetListener<VertxTcpClient> l) {
+  /**
+   * 移除监听
+   *
+   * @param l 监听
+   * @return 返回 VertxTcpClient
+   */
+  public VertxTcpClient removeListener(Listener<VertxTcpClient> l) {
     if (l != null) {
       ((List) proxyListener).remove(l);
     }
+    return _self_();
   }
 
-  public void connect(String host, int port) {
-    connect(SocketAddress.inetSocketAddress(port, host));
+  /**
+   * 连接
+   *
+   * @param host 主机
+   * @param port 端口
+   * @return 返回 VertxTcpClient
+   */
+  public VertxTcpClient connect(String host, int port) {
+    return connect(SocketAddress.inetSocketAddress(port, host));
   }
 
-  public void connect(SocketAddress remote) {
-    if (isActive()) {
-      return;
-    }
+  /**
+   * 连接
+   *
+   * @param remote 远程地址
+   * @return 返回 VertxTcpClient
+   */
+  public VertxTcpClient connect(SocketAddress remote) {
+    if (isActive()) return _self_();
     this.remote = remote;
     this.disconnected.set(false);
     connect0(null);
+    return _self_();
   }
 
   void connect0(CountDownLatch latch) {
     if (connecting.compareAndSet(false, true)) {
       this.latch.set(latch);
+      if (remote == null)
+        throw new IllegalStateException("未设置远程连接的地址!");
       getRaw().connect(remote, rawConnectHandler);
+    } else {
+      if(latch != null)
+        latch.countDown();
     }
   }
 
-  public void disconnect() {
-    disconnect(null);
+  /**
+   * 断开
+   *
+   * @return 返回 VertxTcpClient
+   */
+  public VertxTcpClient disconnect() {
+    return disconnect(null);
   }
 
-  public void disconnect(Handler<AsyncResult<Void>> handler) {
+  /**
+   * 断开
+   *
+   * @param handler 结果处理
+   * @return 返回 VertxTcpClient
+   */
+  public VertxTcpClient disconnect(Handler<AsyncResult<Void>> handler) {
     disconnected.set(true);
     NetSocket ns = getSocket();
     if (ns != null) {
@@ -121,17 +211,27 @@ public class VertxTcpClient {
       else
         ns.close();
     }
+    return _self_();
   }
 
+  /**
+   * 是否连接
+   */
   public boolean isActive() {
     return getSocket() != null;
   }
 
+  /**
+   * 本地地址
+   */
   public SocketAddress localAddress() {
     NetSocket ns = getSocket();
     return ns != null ? ns.localAddress() : null;
   }
 
+  /**
+   * 远程地址
+   */
   public SocketAddress remoteAddress() {
     NetSocket ns = getSocket();
     return ns != null ? ns.remoteAddress() : remote;
@@ -195,8 +295,12 @@ public class VertxTcpClient {
     @Override
     public void onCloseHandle() {
       log.trace("remote[{}] close", remoteAddress());
-      setSocket(null);
-      proxyListener.onCloseHandle(VertxTcpClient.this);
+      try {
+        setSocket(null);
+        proxyListener.onCloseHandle(VertxTcpClient.this);
+      } finally {
+        getAutoConnectTimer().start(connector);
+      }
     }
 
     @Override
@@ -215,25 +319,12 @@ public class VertxTcpClient {
     @Override
     public void onFailure(Throwable e) {
       log.trace("failure: {}", e.getMessage());
-
-      if (!disconnected.get() && isAutoConnect()) {
-        // 尝试连接
-        log.trace("{} 尝试连接: ", remoteAddress());
-        executor.execute(() -> {
-          // 自动重连
-          while (!(isActive() || disconnected.get())) {
-            long startAt = TimeUtils.now(), nextAt = 0L;
-            CountDownLatch latch = new CountDownLatch(1);
-            connect0(latch);
-            CatchUtils.ignore(() -> latch.await());
-            if ((nextAt = TimeUtils.diffNow(startAt) - getOptions().getReconnectInterval()) > 0) {
-              EventLoop.sleepMillis(nextAt);
-            }
-          }
-        });
+      try {
+        proxyListener.onFailure(VertxTcpClient.this, e);
+      } finally {
+        if (!disconnected.get())
+          getAutoConnectTimer().start(connector);
       }
-
-      proxyListener.onFailure(VertxTcpClient.this, e);
     }
 
     @Override
@@ -242,4 +333,68 @@ public class VertxTcpClient {
       proxyListener.onComplete(VertxTcpClient.this);
     }
   };
+
+
+  /**
+   * 监听
+   *
+   * @param <T>
+   */
+  public interface Listener<T> {
+
+    // *********************************************************************************** //
+
+    /**
+     * 处理数据
+     */
+    void onMessage(T socket, Buffer buf);
+
+    /**
+     * 出现异常
+     *
+     * @param e 异常
+     */
+    default void onException(T socket, Throwable e) {
+      e.printStackTrace();
+    }
+
+    /**
+     *
+     */
+    default void onDrainHandle(T socket) {
+    }
+
+    /**
+     * socket被关闭
+     */
+    default void onCloseHandle(T socket) {
+    }
+
+    /**
+     * 结束
+     */
+    default void onEndHandle(T socket) {
+    }
+
+    // *********************************************************************************** //
+
+    /**
+     * 连接成功
+     *
+     * @param socket SOCKET
+     */
+    default void onSuccess(T socket) {
+    }
+
+    default void onFailure(T socket, Throwable e) {
+      e.printStackTrace();
+    }
+
+    default void onComplete(T socket) {
+    }
+
+    // *********************************************************************************** //
+
+  }
+
 }
