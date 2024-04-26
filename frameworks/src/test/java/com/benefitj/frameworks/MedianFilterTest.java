@@ -19,14 +19,6 @@ import java.util.Objects;
 
 public class MedianFilterTest extends BaseTest {
 
-  @Override
-  public void setUp() {
-  }
-
-  @Override
-  public void tearDown() {
-  }
-
   @Test
   public void test() {
     String type = "rr";

@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FileWriterImpl implements IWriter<FileWriterImpl>, AttributeMap {
 
-  private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+  private final Map<String, Object> attrs = new ConcurrentHashMap<>();
   private final File source;
   private OutputStream out;
   /**
@@ -42,8 +42,8 @@ public class FileWriterImpl implements IWriter<FileWriterImpl>, AttributeMap {
    * 附加属性的集合
    */
   @Override
-  public Map<String, Object> attributes() {
-    return attributes;
+  public Map<String, Object> attrs() {
+    return attrs;
   }
 
   public File source() {

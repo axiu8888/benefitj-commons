@@ -18,17 +18,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ILoadingCacheTest extends BaseTest {
 
-  @Override
-  public void setUp() {
-
-  }
-
-  @Override
-  public void tearDown() {
-  }
-
   @Test
-  public void test() {
+  void test() {
     ILoadingCache<String, String> cache = ILoadingCache.wrap(CacheBuilder.newBuilder()
             .initialCapacity(20)
             //.expireAfterAccess(5, TimeUnit.SECONDS)
@@ -79,8 +70,6 @@ public class ILoadingCacheTest extends BaseTest {
     });
 
     CatchUtils.ignore(() -> latch.await());
-
   }
-
 
 }

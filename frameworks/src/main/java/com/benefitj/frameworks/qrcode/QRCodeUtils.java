@@ -1,5 +1,6 @@
 package com.benefitj.frameworks.qrcode;
 
+import com.benefitj.core.IOUtils;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.BitMatrix;
@@ -27,97 +28,16 @@ public class QRCodeUtils {
     DEFAULT_DECODE_HINTS = Collections.unmodifiableMap(map);
   }
 
-  /**
-   * 创建QRCode实例
-   *
-   * @param content 二维码的文本内容
-   * @return 返回创建的QRCode
-   */
-  public static QRCodeOptions newOptions(String content) {
-    return QRCodeOptions.create(content);
+  public static QRCodeOption defaultOption(String content) {
+    return defaultOption(content, 300);
   }
 
-  /**
-   * 创建QRCode实例
-   *
-   * @param content 二维码的文本内容
-   * @param size    二维码的大小
-   * @return 返回创建的QRCode
-   */
-  public static QRCodeOptions newOptions(String content, int size) {
-    return QRCodeOptions.create(content, size);
-  }
-
-  /**
-   * 生成二维码
-   */
-  public static byte[] encodeQuietly(String content) {
-    try {
-      return encode(content);
-    } catch (WriterException | IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  /**
-   * 生成二维码
-   */
-  public static byte[] encodeQuietly(QRCodeOptions options) {
-    try {
-      return encode(options);
-    } catch (WriterException | IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  /**
-   * 生成二维码
-   */
-  public static void encodeQuietly(String content, File destFile) {
-    try {
-      encode(content, destFile);
-    } catch (WriterException | IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  /**
-   * 生成二维码
-   *
-   * @param options  可选项参数
-   * @param destFile 输出的目标文件
-   */
-  public static void encodeQuietly(QRCodeOptions options, File destFile) {
-    try {
-      encode(options, destFile);
-    } catch (WriterException | IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  /**
-   * 生成二维码
-   *
-   * @param content 二维码内容
-   * @param out     输出流
-   */
-  public static void encodeQuietly(String content, OutputStream out) {
-    try {
-      encode(content, out);
-    } catch (WriterException | IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  /**
-   * 生成二维码
-   */
-  public static void encodeQuietly(QRCodeOptions options, OutputStream out) {
-    try {
-      encode(options, out);
-    } catch (WriterException | IOException e) {
-      throw new IllegalStateException(e);
-    }
+  public static QRCodeOption defaultOption(String content, int size) {
+    return QRCodeOption.builder()
+        .content(content)
+        .width(size)
+        .height(size)
+        .build();
   }
 
   /**
@@ -126,127 +46,107 @@ public class QRCodeUtils {
    * @param content 文本内容
    * @return 返回生成的二维码字节数组
    */
-  public static byte[] encode(String content) throws WriterException, IOException {
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
-    encode(content, output);
-    return output.toByteArray();
+  public static byte[] encode(String content) {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    encode(content, out);
+    return out.toByteArray();
   }
 
   /**
    * 生成二维码
    *
-   * @param options 二维码配置
+   * @param opt 二维码配置
    * @return 返回生成的二维码字节数组
    */
-  public static byte[] encode(QRCodeOptions options) throws WriterException, IOException {
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
-    encode(options, output);
-    return output.toByteArray();
+  public static byte[] encode(QRCodeOption opt) {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    encode(opt, out);
+    return out.toByteArray();
   }
 
   /**
    * 创建二维码到指定文件
    *
-   * @param content  二维码内容
-   * @param destFile 目标文件
+   * @param content 二维码内容
+   * @param dest    目标文件
    */
-  public static void encode(String content, File destFile) throws IOException, WriterException {
-    QRCodeOptions qrCode = newOptions(content);
-    encode(qrCode, destFile);
+  public static void encode(String content, File dest) {
+    QRCodeOption opt = defaultOption(content);
+    encode(opt, dest);
   }
 
   /**
    * 创建二维码到指定文件
    *
-   * @param options  二维码配置
-   * @param destFile 目标文件
+   * @param opt  二维码配置
+   * @param dest 目标文件
    */
-  public static void encode(QRCodeOptions options, File destFile) throws IOException, WriterException {
-    BufferedImage image = bufferedImage(options);
-    // 嵌入图标
-    insetIcon(options, image);
-    if (!destFile.exists()) {
-      destFile.getParentFile().mkdirs();
-      destFile.createNewFile();
+  public static void encode(QRCodeOption opt, File dest) {
+    try {
+      BufferedImage image = bufferedImage(opt);
+      // 嵌入图标
+      insetIcon(opt, image);
+      if (!dest.exists())
+        IOUtils.mkDirs(dest.getAbsolutePath());
+      ImageIO.write(image, opt.getFormatName(), dest);
+    } catch (IOException e) {
+      throw new QRCodeException(e);
     }
-    ImageIO.write(image, options.getFormatName(), destFile);
   }
 
   /**
    * 创建二维码
    *
    * @param content 二维码内容
-   * @param os      输出流
+   * @param out     输出流
    */
-  public static void encode(String content, OutputStream os) throws WriterException, IOException {
-    QRCodeOptions qrCode = newOptions(content);
-    encode(qrCode, os);
+  public static void encode(String content, OutputStream out) {
+    encode(defaultOption(content), out);
   }
 
   /**
    * 创建二维码
    *
-   * @param options 二维码配置
-   * @param os      输出流
+   * @param opt 二维码配置
+   * @param out 输出流
    */
-  public static void encode(QRCodeOptions options, OutputStream os) throws WriterException, IOException {
-    BufferedImage image = bufferedImage(options);
-    // 嵌入图标
-    insetIcon(options, image);
-    ImageIO.write(image, options.getFormatName(), os);
-  }
-
-  /**
-   * 解码
-   *
-   * @param input 文件
-   * @return 返回解码后的文本
-   * @throws IOException       IO错误
-   * @throws NotFoundException 文件找不到
-   */
-  public static String decode(File input) throws IOException, NotFoundException {
-    BufferedImage image = ImageIO.read(input);
-    return decodeResult(image).getText();
-  }
-
-  /**
-   * 解码
-   *
-   * @param input 二维码的输入流
-   * @return 返回解码后的文本
-   * @throws IOException       IO异常
-   * @throws NotFoundException 文件找不到
-   */
-  public static String decode(InputStream input) throws IOException, NotFoundException {
-    BufferedImage image = ImageIO.read(input);
-    return decodeResult(image).getText();
-  }
-
-  /**
-   * 解码
-   *
-   * @param input 二维码的输入流
-   * @return 返回解码后的文本
-   */
-  public static String decodeQuietly(InputStream input) {
+  public static void encode(QRCodeOption opt, OutputStream out) {
     try {
-      return decode(input);
-    } catch (NotFoundException | IOException e) {
-      throw new IllegalStateException(e);
+      BufferedImage image = bufferedImage(opt);
+      // 嵌入图标
+      insetIcon(opt, image);
+      ImageIO.write(image, opt.getFormatName(), out);
+    } catch (IOException e) {
+      throw new QRCodeException(e);
     }
   }
 
   /**
    * 解码
    *
-   * @param input 二维码文件
+   * @param in 文件
    * @return 返回解码后的文本
    */
-  public static String decodeQuietly(File input) {
+  public static String decode(File in) {
     try {
-      return decode(input);
-    } catch (NotFoundException | IOException e) {
-      throw new IllegalStateException(e);
+      return decodeResult(ImageIO.read(in)).getText();
+    } catch (IOException e) {
+      throw new QRCodeException(e);
+    }
+  }
+
+  /**
+   * 解码
+   *
+   * @param input 二维码的输入流
+   * @return 返回解码后的文本
+   */
+  public static String decode(InputStream input) {
+    try {
+      BufferedImage image = ImageIO.read(input);
+      return decodeResult(image).getText();
+    } catch (IOException e) {
+      throw new QRCodeException(e);
     }
   }
 
@@ -255,9 +155,8 @@ public class QRCodeUtils {
    *
    * @param image 图片
    * @return 结果
-   * @throws NotFoundException 文件找不到
    */
-  public static Result decodeResult(BufferedImage image) throws NotFoundException {
+  static Result decodeResult(BufferedImage image) {
     return decodeResult(image, DEFAULT_DECODE_HINTS);
   }
 
@@ -267,90 +166,89 @@ public class QRCodeUtils {
    * @param image 图片
    * @param hints 解码提示
    * @return 返回解码的结果
-   * @throws NotFoundException 文件找不到
    */
-  public static Result decodeResult(BufferedImage image, Map<DecodeHintType, Object> hints) throws NotFoundException {
-    BufferedImageLuminanceSource luminanceSource = new BufferedImageLuminanceSource(image);
-    BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(luminanceSource));
-    return new MultiFormatReader().decode(bitmap, hints);
+  static Result decodeResult(BufferedImage image, Map<DecodeHintType, Object> hints) {
+    try {
+      BufferedImageLuminanceSource luminanceSource = new BufferedImageLuminanceSource(image);
+      BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(luminanceSource));
+      return new MultiFormatReader().decode(bitmap, hints);
+    } catch (NotFoundException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
-  /**
-   * @param options
-   * @return
-   * @throws WriterException
-   */
-  public static BitMatrix bitMatrix(QRCodeOptions options) throws WriterException {
-    MultiFormatWriter formatWriter = new MultiFormatWriter();
-    BarcodeFormat format = options.getBarcodeFormat();
-    Map<EncodeHintType, Object> hints = options.getHintType().getHints();
-    return formatWriter.encode(options.getContent(), format, options.getWidth(), options.getHeight(), hints);
+  static BitMatrix bitMatrix(QRCodeOption opt) {
+    try {
+      MultiFormatWriter mfw = new MultiFormatWriter();
+      BarcodeFormat format = opt.getBarcodeFormat();
+      Map<EncodeHintType, Object> hints = opt.getHintType().getHints();
+      return mfw.encode(opt.getContent(), format, opt.getWidth(), opt.getHeight(), hints);
+    } catch (WriterException e) {
+      throw new QRCodeException(e);
+    }
   }
 
-  /**
-   * 创建BufferedImage
-   */
-  public static BufferedImage bufferedImage(QRCodeOptions options, BitMatrix matrix) {
+
+  public static BufferedImage bufferedImage(QRCodeOption opt, BitMatrix matrix) {
     int width = matrix.getWidth();
     int height = matrix.getHeight();
     BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     int color;
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
-        color = matrix.get(x, y) ? options.getColor() : options.getBgColor();
+        color = matrix.get(x, y) ? opt.getColor() : opt.getBgColor();
         image.setRGB(x, y, color);
       }
     }
     return image;
   }
 
-  /**
-   * 创建BufferedImage
-   */
-  public static BufferedImage bufferedImage(QRCodeOptions options) throws WriterException {
+  public static BufferedImage bufferedImage(QRCodeOption opt) {
     // 获取图片的点图矩阵
-    BitMatrix matrix = bitMatrix(options);
-    return bufferedImage(options, matrix);
+    return bufferedImage(opt, bitMatrix(opt));
   }
 
   /**
    * 嵌入图标
    *
-   * @param options 二维码配置
-   * @param source  原图
-   * @throws IOException IO异常
+   * @param opt    二维码配置
+   * @param source 原图
    */
-  public static void insetIcon(QRCodeOptions options, BufferedImage source) throws IOException {
-    if (options.getIconInput() == null) {
-      return;
+  static void insetIcon(QRCodeOption opt, BufferedImage source) {
+    try {
+      if (opt.getIconInput() == null) {
+        return;
+      }
+
+      Image iconImage = ImageIO.read(opt.getIconInput());
+      int width = iconImage.getWidth(null);
+      int height = iconImage.getHeight(null);
+
+      // 压缩icon
+      if (opt.isCompress()) {
+        width = Math.min(width, opt.getIconWidth());
+        height = Math.min(height, opt.getIconHeight());
+
+        Image tempImage = iconImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        Graphics g = new BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB).getGraphics();
+        // 绘制缩小后的图
+        g.drawImage(tempImage, 0, 0, null);
+        g.dispose();
+        iconImage = tempImage;
+      }
+
+      // 插入图标
+      Graphics2D graph = source.createGraphics();
+      int x = (opt.getWidth() - width) / 2;
+      int y = (opt.getHeight() - height) / 2;
+      graph.drawImage(iconImage, x, y, width, height, null);
+      Shape shape = new RoundRectangle2D.Float(x, y, width, width, 6, 6);
+      graph.setStroke(new BasicStroke(3.0f));
+      graph.draw(shape);
+      graph.dispose();
+    } catch (IOException e) {
+      throw new QRCodeException(e);
     }
-
-    Image iconImage = ImageIO.read(options.getIconInput());
-    int width = iconImage.getWidth(null);
-    int height = iconImage.getHeight(null);
-
-    // 压缩icon
-    if (options.isCompress()) {
-      width = Math.min(width, options.getIconWidth());
-      height = Math.min(height, options.getIconHeight());
-
-      Image tempImage = iconImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-      Graphics g = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB).getGraphics();
-      // 绘制缩小后的图
-      g.drawImage(tempImage, 0, 0, null);
-      g.dispose();
-      iconImage = tempImage;
-    }
-
-    // 插入图标
-    Graphics2D graph = source.createGraphics();
-    int x = (options.getWidth() - width) / 2;
-    int y = (options.getHeight() - height) / 2;
-    graph.drawImage(iconImage, x, y, width, height, null);
-    Shape shape = new RoundRectangle2D.Float(x, y, width, width, 6, 6);
-    graph.setStroke(new BasicStroke(3.0f));
-    graph.draw(shape);
-    graph.dispose();
   }
 
   /**

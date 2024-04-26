@@ -56,7 +56,7 @@ public class UdpClient implements AttributeMap {
   private AtomicReference<Channel> channelRef = new AtomicReference<>();
   private AtomicReference<ChannelFuture> failureRef = new AtomicReference<>();
 
-  private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+  private final Map<String, Object> attrs = new ConcurrentHashMap<>();
 
   public UdpClient() {
     this(new NioEventLoopGroup(1));
@@ -91,8 +91,8 @@ public class UdpClient implements AttributeMap {
   }
 
   @Override
-  public Map<String, Object> attributes() {
-    return attributes;
+  public Map<String, Object> attrs() {
+    return attrs;
   }
 
   public NioEventLoopGroup getGroup() {

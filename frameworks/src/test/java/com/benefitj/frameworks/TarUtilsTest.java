@@ -8,14 +8,6 @@ import java.io.File;
 @Slf4j
 public class TarUtilsTest extends BaseTest {
 
-  @Override
-  public void setUp() {
-  }
-
-  @Override
-  public void tearDown() {
-  }
-
   @Test
   public void tarGzip() {
     File file = new File("D:/tmp/che/01001049-2023_08_11-09_57_56.CHE");

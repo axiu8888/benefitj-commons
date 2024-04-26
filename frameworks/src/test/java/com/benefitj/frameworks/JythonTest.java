@@ -9,14 +9,6 @@ import java.io.File;
 
 public class JythonTest extends BaseTest {
 
-  @Override
-  public void setUp() {
-  }
-
-  @Override
-  public void tearDown() {
-  }
-
   @Test
   public void test() {
     //运行test.py脚本
@@ -27,18 +19,18 @@ public class JythonTest extends BaseTest {
     for (int i = 0; i < 1000; i++) {
       interp1.execfile(testPy.getAbsolutePath());
     }
-    System.err.println("耗时: " + TimeUtils.diffNow(startAt));
+    log.info("耗时: " + TimeUtils.diffNow(startAt));
 //    //运行python命令
 //    PythonInterpreter interp = new PythonInterpreter();
-//    System.out.println("Hello, brave new world");
+//    log.info("Hello, brave new world");
 //    interp.exec("import sys");
 //    interp.exec("print sys");
 //    interp.set("a", new PyInteger(42));
 //    interp.exec("print a");
 //    interp.exec("x = 2+2");
 //    PyObject x = interp.get("x");
-//    System.out.println("x: " + x);
-//    System.out.println("Goodbye, cruel world");
+//    log.info("x: " + x);
+//    log.info("Goodbye, cruel world");
 
   }
 

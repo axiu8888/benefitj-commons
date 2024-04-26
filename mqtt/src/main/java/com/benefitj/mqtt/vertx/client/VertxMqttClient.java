@@ -57,15 +57,15 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   /**
    * 属性
    */
-  private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+  private final Map<String, Object> attrs = new ConcurrentHashMap<>();
   /**
    * 初始化器
    */
   private VerticleInitializer<VertxMqttClient> initializer = DISCARD;
 
   @Override
-  public Map<String, Object> attributes() {
-    return attributes;
+  public Map<String, Object> attrs() {
+    return attrs;
   }
 
   @Override

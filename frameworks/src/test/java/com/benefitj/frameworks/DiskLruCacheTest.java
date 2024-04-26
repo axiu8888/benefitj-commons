@@ -9,14 +9,6 @@ import java.io.File;
 @Slf4j
 public class DiskLruCacheTest extends BaseTest {
 
-  @Override
-  public void setUp() {
-  }
-
-  @Override
-  public void tearDown() {
-  }
-
   @Test
   public void test() {
     File dir = new File("D:/tmp/lru");

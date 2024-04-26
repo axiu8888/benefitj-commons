@@ -6,12 +6,13 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * 生成二维码需要的类型: 如编码格式、形状、辨识度、外边距等
  */
-public class QRCodeHintType {
+public class HintType {
 
   private static volatile Map<EncodeHintType, Object> DEFAULT_HINTS;
 
@@ -32,16 +33,16 @@ public class QRCodeHintType {
   /**
    * 创建QRCodeHintType对象
    */
-  public static QRCodeHintType create() {
-    return new QRCodeHintType();
+  public static HintType create() {
+    return new HintType();
   }
 
   /**
-   *
+   * 配置
    */
-  private final Map<EncodeHintType, Object> hints = new HashMap<>();
+  private final Map<EncodeHintType, Object> hints = new LinkedHashMap<>();
 
-  public QRCodeHintType() {
+  public HintType() {
     hints.putAll(DEFAULT_HINTS);
   }
 

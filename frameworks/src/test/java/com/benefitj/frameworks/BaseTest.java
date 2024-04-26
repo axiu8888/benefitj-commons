@@ -1,13 +1,21 @@
 package com.benefitj.frameworks;
 
-import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseTest {
 
-	@Before
-	public abstract void setUp();
+	protected final Logger log = LoggerFactory.getLogger(getClass());
+
+	@BeforeEach
+	public void setUp() {
+		log.info("\n--------------------------- setUp ---------------------------\n");
+	}
 	
 	@AfterEach
-	public abstract void tearDown();
+	public void tearDown() {
+		log.info("\n--------------------------- tearDown ---------------------------\n");
+	}
 }

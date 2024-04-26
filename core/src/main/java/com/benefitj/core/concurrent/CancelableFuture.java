@@ -11,48 +11,48 @@ import java.util.concurrent.*;
  *
  * @param <V>
  */
-public class CancelableScheduledFuture<V> implements ScheduledFuture<V>, AttributeMap {
+public class CancelableFuture<V> implements ScheduledFuture<V>, AttributeMap {
 
-  private final ScheduledFuture<V> original;
-  private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+  private final ScheduledFuture<V> _raw_;
+  private final Map<String, Object> _attrs_ = new ConcurrentHashMap<>();
 
-  public CancelableScheduledFuture(ScheduledFuture<V> original) {
-    this.original = original;
+  public CancelableFuture(ScheduledFuture<V> raw) {
+    this._raw_ = raw;
   }
 
-  public ScheduledFuture<V> original() {
-    return original;
+  public ScheduledFuture<V> _raw_() {
+    return _raw_;
   }
 
   @Override
   public long getDelay(TimeUnit unit) {
-    return original().getDelay(unit);
+    return _raw_().getDelay(unit);
   }
 
   @Override
   public int compareTo(Delayed o) {
-    return original().compareTo(o);
+    return _raw_().compareTo(o);
   }
 
   @Override
   public boolean cancel(boolean mayInterruptIfRunning) {
-    return original().cancel(mayInterruptIfRunning);
+    return _raw_().cancel(mayInterruptIfRunning);
   }
 
   @Override
   public boolean isCancelled() {
-    return original().isCancelled();
+    return _raw_().isCancelled();
   }
 
   @Override
   public boolean isDone() {
-    return original().isDone();
+    return _raw_().isDone();
   }
 
   @Override
   public V get() {
     try {
-      return original().get();
+      return _raw_().get();
     } catch (InterruptedException | ExecutionException e) {
       throw CatchUtils.throwing(e, IllegalStateException.class);
     }
@@ -61,14 +61,14 @@ public class CancelableScheduledFuture<V> implements ScheduledFuture<V>, Attribu
   @Override
   public V get(long timeout, TimeUnit unit) {
     try {
-      return original().get(timeout, unit);
+      return _raw_().get(timeout, unit);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
       throw CatchUtils.throwing(e, IllegalStateException.class);
     }
   }
 
   @Override
-  public Map<String, Object> attributes() {
-    return attributes;
+  public Map<String, Object> attrs() {
+    return _attrs_;
   }
 }

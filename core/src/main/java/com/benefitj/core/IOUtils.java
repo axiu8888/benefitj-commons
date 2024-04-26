@@ -203,6 +203,16 @@ public class IOUtils {
   /**
    * 创建新目录
    *
+   * @param filename 文件名
+   * @return 返回新创建的目录
+   */
+  public static File mkDirs(File filename) {
+    return createFile(filename.getAbsolutePath(), true);
+  }
+
+  /**
+   * 创建新目录
+   *
    * @param parentFile 目录
    * @param filename   文件名
    * @return 返回新创建的目录
