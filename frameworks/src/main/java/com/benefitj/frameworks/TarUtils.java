@@ -25,8 +25,8 @@ public class TarUtils {
    * @param src 源文件
    * @return 返回 TAR 与 gZip 后的文件
    */
-  public static File tarGzip(File src) {
-    return tarGzip(src, CompressUtils.getFilename(src, ".tar.gz"));
+  public static File zcvf(File src) {
+    return zcvf(src, CompressUtils.getFilename(src, ".tar.gz"));
   }
 
   /**
@@ -36,7 +36,7 @@ public class TarUtils {
    * @param dest 目标文件
    * @return 返回 TAR 与 gZip 后的文件
    */
-  public static File tarGzip(File src, File dest) {
+  public static File zcvf(File src, File dest) {
     final File tar = tar(src, CompressUtils.getFilename(src, ".tar"));
     try {
       return CompressUtils.gzip(tar, dest);
@@ -44,7 +44,6 @@ public class TarUtils {
       tar.delete();
     }
   }
-
 
   /**
    * TAR
@@ -107,8 +106,8 @@ public class TarUtils {
    * @param src 源文件
    * @return 返回解压后的目录
    */
-  public static File untarGzip(File src) {
-    return untarGzip(src, new File(src, CompressUtils.trimRight(src.getName(), ".tar.gz", "")));
+  public static File zxvf(File src) {
+    return zxvf(src, new File(src, CompressUtils.trimRight(src.getName(), ".tar.gz", "")));
   }
 
   /**
@@ -118,7 +117,7 @@ public class TarUtils {
    * @param dest 目标目录
    * @return 返回解压后的目录
    */
-  public static File untarGzip(File src, File dest) {
+  public static File zxvf(File src, File dest) {
     String filename = CompressUtils.trimRight(src.getName(), ".tar.gz", ".tar");
     File tar = CompressUtils.ungzip(src, new File(SystemProperty.getJavaIOTmpDir() + IdUtils.nextId(10), filename));
     try {

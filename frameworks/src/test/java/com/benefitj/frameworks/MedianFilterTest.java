@@ -17,10 +17,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class MedianFilterTest extends BaseTest {
+class MedianFilterTest extends BaseTest {
 
   @Test
-  public void test() {
+  void test() {
     String type = "rr";
     File src = new File("D:/tmp/influxdb/hs_darma_mattress.line");
     File dest = new File(src.getParentFile(), src.getName().replace(".line", "_" + type + ".line"));

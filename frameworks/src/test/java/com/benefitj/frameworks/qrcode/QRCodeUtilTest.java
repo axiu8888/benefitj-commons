@@ -1,13 +1,13 @@
 package com.benefitj.frameworks.qrcode;
 
 
+import com.benefitj.core.DateFmtter;
+import com.benefitj.core.IOUtils;
 import com.benefitj.frameworks.BaseTest;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 
 class QRCodeUtilTest extends BaseTest {
 
@@ -15,20 +15,20 @@ class QRCodeUtilTest extends BaseTest {
    * 测试生成二维码
    */
   @Test
-  void testCreateQRCode() throws IOException {
-    File icon = new File("D:/tmp/d412dd8d521ae3e273df22ec00d107b.jpg");
-    QRCodeOption options = QRCodeOption.builder()
+  void testCreateQRCode() {
+    File icon = new File("D:/tmp/QRCode/test.png");
+    QRCodeOptions options = QRCodeOptions.builder()
         .content("Hello World.")
-        .formatName(QRCodeOption.FORMAT_PNG)// 设置二维码格式
+        .formatName(QRCodeOptions.FORMAT_PNG)// 设置二维码格式
         .width(500)// 设置二维码的宽高，如果不相等，二维码会变小
         .height(500) // 设置二维码的宽高，如果不相等，二维码会变小
         .color(Color.BLACK.getRGB())// 设置二维码的颜色
-        .bgColor(Color.YELLOW.getRGB())// 设置二维码的背景色
-        .iconInput(new FileInputStream(icon)) // 嵌入图标
+        .bgColor(Color.WHITE.getRGB())// 设置二维码的背景色
+        .iconInput(IOUtils.newFIS(icon)) // 嵌入图标
         .iconHeight(150)
         .iconWidth(150)
         .build();
-    QRCodeUtils.encode(options, new File("D:/tmp/QRCode/" + System.currentTimeMillis() + ".png"));
+    QRCodeUtils.encode(options, new File("D:/tmp/QRCode/" + DateFmtter.fmtNow("yyyyMMddHHmmss") + ".png"));
   }
 
   /**

@@ -837,12 +837,12 @@ public class IOUtils {
   /**
    * 写入数据
    *
-   * @param os 输出流
-   * @param in 输出到的文件
+   * @param out 输出流
+   * @param in  输出到的文件
    * @return 返回写入的长度
    */
-  public static long write(File in, OutputStream os) {
-    return write(newFIS(in), os, 1024 << 4);
+  public static long write(File in, OutputStream out) {
+    return write(newFIS(in), out, 1024 << 4);
   }
 
   /**
@@ -885,58 +885,67 @@ public class IOUtils {
   /**
    * 写入数据
    *
-   * @param in 字符串数据
-   * @param os 输出流
+   * @param in  字符串数据
+   * @param out 输出流
    */
-  public static void write(String in, OutputStream os) {
-    write(Collections.singletonList(in), os);
+  public static void write(String in, OutputStream out) {
+    write(Collections.singletonList(in), out);
   }
 
   /**
    * 写入数据
    *
-   * @param in 字符串数据
-   * @param os 输出流
+   * @param in  字符串数据
+   * @param out 输出流
    */
-  public static void write(List<String> in, OutputStream os) {
+  public static void write(List<String> in, OutputStream out) {
     for (String line : in) {
       byte[] ba = line.getBytes(StandardCharsets.UTF_8);
-      write(ba, 0, ba.length, os);
+      write(ba, 0, ba.length, out, true);
     }
   }
 
   /**
    * 写入数据
    *
-   * @param in 字节缓冲
-   * @param os 输出流
+   * @param in  字节缓冲
+   * @param out 输出流
    */
-  public static void write(byte[] in, OutputStream os) {
-    write(in, 0, in.length, os);
+  public static void write(byte[] in, OutputStream out) {
+    write(in, 0, in.length, out, true);
   }
 
   /**
    * 写入数据
    *
-   * @param in    字节缓冲
-   * @param start 开始的位置
-   * @param len   结束的位置
-   * @param os    输出流
+   * @param in  字节缓冲
+   * @param out 输出流
    */
-  public static void write(byte[] in, int start, int len, OutputStream os) {
+  public static void write(byte[] in, OutputStream out, boolean close) {
+    write(in, 0, in.length, out, close);
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param in  字节缓冲
+   * @param out 输出流
+   */
+  public static void write(byte[] in, int start, int len, OutputStream out, boolean close) {
     try {
-      os.write(in, start, len);
-      os.flush();
-    } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      writeAndFlush(in, start, len, out);
+    } finally {
+      if (close) {
+        closeQuietly(out);
+      }
     }
   }
 
   /**
    * 写入数据
    *
-   * @param in     数据
-   * @param out    输出的文件
+   * @param in  数据
+   * @param out 输出的文件
    */
   public static void write(byte[] in, File out) {
     write(in, out, false);
@@ -964,7 +973,7 @@ public class IOUtils {
    */
   public static void write(byte[] in, int start, int len, File out, boolean append) {
     try (final FileOutputStream fos = newFOS(out, append)) {
-      write(in, start, len, fos);
+      writeAndFlush(in, start, len, fos);
     } catch (Exception e) {
       throw CatchUtils.throwing(e, IllegalStateException.class);
     }
@@ -973,42 +982,41 @@ public class IOUtils {
   /**
    * 写入数据
    *
-   * @param is 输入流
-   * @param os 输出流
+   * @param is  输入流
+   * @param out 输出流
    * @return 返回写入的长度
    */
-  public static long write(InputStream is, OutputStream os) {
-    return write(is, os, 1024 << 4);
+  public static long write(InputStream is, OutputStream out) {
+    return write(is, out, 1024 << 4);
   }
 
   /**
    * 写入数据
    *
    * @param is   输入流
-   * @param os   输出流
+   * @param out  输出流
    * @param size 缓存大小
    * @return 返回写入的长度
    */
-  public static long write(InputStream is, OutputStream os, int size) {
-    return write(is, os, size, true);
+  public static long write(InputStream is, OutputStream out, int size) {
+    return write(is, out, size, true);
   }
 
   /**
    * 写入数据
    *
    * @param is   输入流
-   * @param os   输出流
+   * @param out  输出流
    * @param size 缓存大小
    * @return 返回写入的长度
    */
-  public static long write(InputStream is, OutputStream os, int size, boolean close) {
+  public static long write(InputStream is, OutputStream out, int size, boolean close) {
     try {
       long totalLength = 0;
       byte[] buf = new byte[size];
       int len;
       while ((len = is.read(buf)) > 0) {
-        os.write(buf, 0, len);
-        os.flush();
+        writeAndFlush(buf, 0, len, out);
         totalLength += len;
       }
       return totalLength;
@@ -1016,8 +1024,25 @@ public class IOUtils {
       throw CatchUtils.throwing(e, IllegalStateException.class);
     } finally {
       if (close) {
-        closeQuietly(is, os);
+        closeQuietly(is, out);
       }
+    }
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param in    字节缓冲
+   * @param start 开始的位置
+   * @param len   结束的位置
+   * @param out   输出流
+   */
+  public static void writeAndFlush(byte[] in, int start, int len, OutputStream out) {
+    try {
+      out.write(in, start, len);
+      out.flush();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
     }
   }
 
@@ -1083,6 +1108,24 @@ public class IOUtils {
    */
   public static boolean exists(File f) {
     return f != null && f.exists();
+  }
+
+  /**
+   * 清空缓存区
+   */
+  public static void flush(OutputStream out) {
+    try {
+      out.flush();
+    } catch (IOException e) {/*^_^*/}
+  }
+
+  /**
+   * 清空缓存区
+   */
+  public static void flush(Writer out) {
+    try {
+      out.flush();
+    } catch (IOException e) {/*^_^*/}
   }
 
   /**

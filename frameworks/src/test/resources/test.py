@@ -1,4 +1,3 @@
-
 print "This is a Python exec"
 from java.util import Random
 rng = Random()

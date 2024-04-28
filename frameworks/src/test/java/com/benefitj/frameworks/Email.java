@@ -1,22 +1,18 @@
 package com.benefitj.frameworks;
 
 import org.apache.commons.mail.*;
+import org.junit.jupiter.api.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class Email {
-
-  public static void main(String[] args) throws EmailException {
-    sendEmail();
-  }
-
+class Email extends BaseTest {
 
   /**
-   * @throws EmailException
-   * @describe 发送包含附件的邮件（附件为本地资源）
+   * 发送包含附件的邮件（附件为本地资源）
    */
-  public static void sendEmail() throws EmailException {
+  @Test
+  void sendEmail() throws EmailException {
     SimpleEmail email = new SimpleEmail();
     email.setHostName("smtp.163.com");
     email.setAuthenticator(new DefaultAuthenticator("dafeisuowen01@163.com", "You15239333774"));
@@ -29,10 +25,10 @@ public class Email {
   }
 
   /**
-   * @throws EmailException
-   * @describe 发送包含附件的邮件（附件为本地资源）
+   * 发送包含附件的邮件（附件为本地资源）
    */
-  public static void sendEmailsWithAttachments() throws EmailException {
+  @Test
+  void sendEmailsWithAttachments() throws EmailException {
     // 创建一个attachment（附件）对象
     EmailAttachment attachment = new EmailAttachment();
     //设置上传附件的地址
@@ -58,13 +54,11 @@ public class Email {
     email.send();
   }
 
-
   /**
-   * @throws EmailException
-   * @throws MalformedURLException
-   * @describe 发送内容为HTML格式的邮件
+   * 发送内容为HTML格式的邮件
    */
-  public static void sendHTMLFormattedEmail() throws EmailException, MalformedURLException {
+  @Test
+  void sendHTMLFormattedEmail() throws EmailException, MalformedURLException {
     // 这里需要使用HtmlEmail创建一个email对象
     HtmlEmail email = new HtmlEmail();
     email.setHostName("smtp.163.com");

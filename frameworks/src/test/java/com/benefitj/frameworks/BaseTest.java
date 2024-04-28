@@ -11,11 +11,11 @@ public abstract class BaseTest {
 
 	@BeforeEach
 	public void setUp() {
-		log.info("\n--------------------------- setUp ---------------------------\n");
+		log.info("--------------------------- setUp ---------------------------");
 	}
 	
 	@AfterEach
 	public void tearDown() {
-		log.info("\n--------------------------- tearDown ---------------------------\n");
+		log.info("--------------------------- tearDown ---------------------------");
 	}
 }

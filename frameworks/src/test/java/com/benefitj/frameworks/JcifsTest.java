@@ -1,6 +1,5 @@
 package com.benefitj.frameworks;
 
-import com.benefitj.core.TimeUtils;
 import com.benefitj.frameworks.smb.Jsmb;
 import com.benefitj.frameworks.smb.JsmbFile;
 import lombok.Data;
@@ -11,18 +10,6 @@ import org.junit.jupiter.api.Test;
 import java.util.stream.Collectors;
 
 public class JcifsTest extends BaseTest {
-
-  long start;
-
-  @Override
-  public void setUp() {
-    start = TimeUtils.now();
-  }
-
-  @Override
-  public void tearDown() {
-    System.err.println("耗时: " + TimeUtils.diffNow(start));
-  }
 
   @Test
   public void testTransfer() {

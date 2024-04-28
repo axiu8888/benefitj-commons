@@ -28,12 +28,12 @@ public class QRCodeUtils {
     DEFAULT_DECODE_HINTS = Collections.unmodifiableMap(map);
   }
 
-  public static QRCodeOption defaultOption(String content) {
-    return defaultOption(content, 300);
+  public static QRCodeOptions defaultOptions(String content) {
+    return defaultOptions(content, 300);
   }
 
-  public static QRCodeOption defaultOption(String content, int size) {
-    return QRCodeOption.builder()
+  public static QRCodeOptions defaultOptions(String content, int size) {
+    return QRCodeOptions.builder()
         .content(content)
         .width(size)
         .height(size)
@@ -55,12 +55,12 @@ public class QRCodeUtils {
   /**
    * 生成二维码
    *
-   * @param opt 二维码配置
+   * @param opts 二维码配置
    * @return 返回生成的二维码字节数组
    */
-  public static byte[] encode(QRCodeOption opt) {
+  public static byte[] encode(QRCodeOptions opts) {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    encode(opt, out);
+    encode(opts, out);
     return out.toByteArray();
   }
 
@@ -71,24 +71,23 @@ public class QRCodeUtils {
    * @param dest    目标文件
    */
   public static void encode(String content, File dest) {
-    QRCodeOption opt = defaultOption(content);
-    encode(opt, dest);
+    encode(defaultOptions(content), dest);
   }
 
   /**
    * 创建二维码到指定文件
    *
-   * @param opt  二维码配置
+   * @param opts  二维码配置
    * @param dest 目标文件
    */
-  public static void encode(QRCodeOption opt, File dest) {
+  public static void encode(QRCodeOptions opts, File dest) {
     try {
-      BufferedImage image = bufferedImage(opt);
+      BufferedImage image = bufferedImage(opts);
       // 嵌入图标
-      insetIcon(opt, image);
+      insetIcon(opts, image);
       if (!dest.exists())
         IOUtils.mkDirs(dest.getAbsolutePath());
-      ImageIO.write(image, opt.getFormatName(), dest);
+      ImageIO.write(image, opts.getFormatName(), dest);
     } catch (IOException e) {
       throw new QRCodeException(e);
     }
@@ -101,21 +100,21 @@ public class QRCodeUtils {
    * @param out     输出流
    */
   public static void encode(String content, OutputStream out) {
-    encode(defaultOption(content), out);
+    encode(defaultOptions(content), out);
   }
 
   /**
    * 创建二维码
    *
-   * @param opt 二维码配置
+   * @param opts 二维码配置
    * @param out 输出流
    */
-  public static void encode(QRCodeOption opt, OutputStream out) {
+  public static void encode(QRCodeOptions opts, OutputStream out) {
     try {
-      BufferedImage image = bufferedImage(opt);
+      BufferedImage image = bufferedImage(opts);
       // 嵌入图标
-      insetIcon(opt, image);
-      ImageIO.write(image, opt.getFormatName(), out);
+      insetIcon(opts, image);
+      ImageIO.write(image, opts.getFormatName(), out);
     } catch (IOException e) {
       throw new QRCodeException(e);
     }
@@ -177,57 +176,57 @@ public class QRCodeUtils {
     }
   }
 
-  static BitMatrix bitMatrix(QRCodeOption opt) {
+  static BitMatrix bitMatrix(QRCodeOptions opts) {
     try {
       MultiFormatWriter mfw = new MultiFormatWriter();
-      BarcodeFormat format = opt.getBarcodeFormat();
-      Map<EncodeHintType, Object> hints = opt.getHintType().getHints();
-      return mfw.encode(opt.getContent(), format, opt.getWidth(), opt.getHeight(), hints);
+      BarcodeFormat format = opts.getBarcodeFormat();
+      Map<EncodeHintType, Object> hints = opts.getHintType().getHints();
+      return mfw.encode(opts.getContent(), format, opts.getWidth(), opts.getHeight(), hints);
     } catch (WriterException e) {
       throw new QRCodeException(e);
     }
   }
 
 
-  public static BufferedImage bufferedImage(QRCodeOption opt, BitMatrix matrix) {
+  public static BufferedImage bufferedImage(QRCodeOptions opts, BitMatrix matrix) {
     int width = matrix.getWidth();
     int height = matrix.getHeight();
     BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     int color;
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
-        color = matrix.get(x, y) ? opt.getColor() : opt.getBgColor();
+        color = matrix.get(x, y) ? opts.getColor() : opts.getBgColor();
         image.setRGB(x, y, color);
       }
     }
     return image;
   }
 
-  public static BufferedImage bufferedImage(QRCodeOption opt) {
+  public static BufferedImage bufferedImage(QRCodeOptions opts) {
     // 获取图片的点图矩阵
-    return bufferedImage(opt, bitMatrix(opt));
+    return bufferedImage(opts, bitMatrix(opts));
   }
 
   /**
    * 嵌入图标
    *
-   * @param opt    二维码配置
+   * @param opts    二维码配置
    * @param source 原图
    */
-  static void insetIcon(QRCodeOption opt, BufferedImage source) {
+  static void insetIcon(QRCodeOptions opts, BufferedImage source) {
     try {
-      if (opt.getIconInput() == null) {
+      if (opts.getIconInput() == null) {
         return;
       }
 
-      Image iconImage = ImageIO.read(opt.getIconInput());
+      Image iconImage = ImageIO.read(opts.getIconInput());
       int width = iconImage.getWidth(null);
       int height = iconImage.getHeight(null);
 
       // 压缩icon
-      if (opt.isCompress()) {
-        width = Math.min(width, opt.getIconWidth());
-        height = Math.min(height, opt.getIconHeight());
+      if (opts.isCompress()) {
+        width = Math.min(width, opts.getIconWidth());
+        height = Math.min(height, opts.getIconHeight());
 
         Image tempImage = iconImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         Graphics g = new BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB).getGraphics();
@@ -239,8 +238,8 @@ public class QRCodeUtils {
 
       // 插入图标
       Graphics2D graph = source.createGraphics();
-      int x = (opt.getWidth() - width) / 2;
-      int y = (opt.getHeight() - height) / 2;
+      int x = (opts.getWidth() - width) / 2;
+      int y = (opts.getHeight() - height) / 2;
       graph.drawImage(iconImage, x, y, width, height, null);
       Shape shape = new RoundRectangle2D.Float(x, y, width, width, 6, 6);
       graph.setStroke(new BasicStroke(3.0f));

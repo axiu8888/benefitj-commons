@@ -9,16 +9,16 @@ import java.io.File;
 public class TarUtilsTest extends BaseTest {
 
   @Test
-  public void tarGzip() {
+  public void zcvf() {
     File file = new File("D:/tmp/che/01001049-2023_08_11-09_57_56.CHE");
     //TarUtils.tar(file);
-    TarUtils.tarGzip(file);
+    TarUtils.zcvf(file);
   }
 
   @Test
-  public void untarGzip() {
+  public void zxvf() {
     File file = new File("D:/tmp/che/01001049-2023_08_11-09_57_56.tar.gz");
-    TarUtils.untarGzip(file, new File(file.getParentFile(), "CHE-untar"));
+    TarUtils.zxvf(file, new File(file.getParentFile(), "CHE-untar"));
   }
 
 }

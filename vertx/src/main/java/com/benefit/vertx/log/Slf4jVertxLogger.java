@@ -107,12 +107,12 @@ public class Slf4jVertxLogger implements VertxLogger {
 
       @Override
       public void trace(Logger log, String format, Object... arguments) {
-        log.trace(format, arguments);
+        log.error(format, arguments);
       }
 
       @Override
       public void trace(Logger log, String msg, Throwable t) {
-        log.trace(msg, t);
+        log.error(msg, t);
       }
     },
 

@@ -1,6 +1,8 @@
 package com.benefitj.core.executable;
 
 import javax.annotation.Nullable;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -42,8 +44,12 @@ public interface Instantiator {
             }
           }
         }
-        if (args != null && args.length != 0) {
-          throw new IllegalStateException("无法实例化\"" + type + "\"的对象，没有对应参数的构造函数!");
+        if (type.getConstructors().length == 0) {
+          throw new IllegalStateException("无法实例化\"" + type + "\"的对象，构造函数不存在!");
+        } else {
+          if (args != null && args.length != 0) {
+            throw new IllegalStateException("无法实例化\"" + type + "\"的对象，没有对应参数的构造函数!");
+          }
         }
         return type.newInstance();
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {

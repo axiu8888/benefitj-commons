@@ -7,10 +7,10 @@ import org.python.util.PythonInterpreter;
 
 import java.io.File;
 
-public class JythonTest extends BaseTest {
+class JythonTest extends BaseTest {
 
   @Test
-  public void test() {
+  void test() {
     //运行test.py脚本
     PythonInterpreter interp1 = new PythonInterpreter();
     File testPy = ClasspathUtils.getFile("test.py");

@@ -18,6 +18,14 @@ import java.util.function.Function;
  */
 public class Utils {
 
+  static final Map<Object, String> INSTANCE_NAMES = new WeakHashMap<>();
+  static final Function<Object, String> INSTANCE_NAME_MAPPED
+      = obj -> obj.getClass().getSimpleName() + "[" + Integer.toHexString(obj.hashCode()) + "]";
+
+  public static String getInstanceName(Object obj) {
+    return obj == null ? "null" : INSTANCE_NAMES.computeIfAbsent(obj, INSTANCE_NAME_MAPPED);
+  }
+
   /**
    * 迭代数组
    *

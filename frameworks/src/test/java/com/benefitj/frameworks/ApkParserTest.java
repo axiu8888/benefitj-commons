@@ -18,48 +18,39 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 @Slf4j
-public class ApkParserTest extends BaseTest {
-
-  @Override
-  public void setUp() {
-  }
-
-  @Override
-  public void tearDown() {
-  }
+class ApkParserTest extends BaseTest {
 
   @Test
-  public void testParse() throws IOException {
-    File apk = new File("D:/tmp/伤员转运-230815.apk");
-    if (apk.exists() && apk.isFile()) {
-      ApkFile apkFile = new ApkFile(apk);
+  void testParse() throws IOException {
+    File apk = new File("D:/develop/adb/aurora-slim-1.0.2.apk");
+    if (!(apk.exists() && apk.isFile())) {
+      return;
+    }
+    try(final ApkFile apkFile = new ApkFile(apk);) {
       ApkMeta apkMeta = apkFile.getApkMeta();
-
       //  拷贝出的icon文件名 根据需要可以随便改
-      System.out.println("应用名称\t: " + apkMeta.getLabel());
-      System.out.println("包名\t: " + apkMeta.getPackageName());
-      System.out.println("版本号\t: " + apkMeta.getVersionName());
-      System.out.println("图标\t: " + apkMeta.getIcon());
-      System.out.println("大小\t: " + Utils.fmtMB(apk.length(), "0.00 MB"));
-      //  System.out.println("全部       :===============================");
-      //  System.out.println(apkMeta.toString());
-
+      log.info("应用名称\t: " + apkMeta.getLabel());
+      log.info("包名\t: " + apkMeta.getPackageName());
+      log.info("版本号\t: " + apkMeta.getVersionName());
+      log.info("图标\t: " + apkMeta.getIcon());
+      log.info("大小\t: " + Utils.fmtMB(apk.length(), "0.00 MB"));
       //  拷贝图标
-      saveImages(apk, apkMeta);
+      saveImages(apk, apkMeta, IOUtils.mkDirs("D:/tmp/apk/"));
     }
   }
 
   //  拷贝图标
-  public static void saveImages(File apk, ApkMeta apkMeta) throws IOException {
+  public static void saveImages(File apk, ApkMeta apkMeta, File cacheDir) throws IOException {
     //  访问apk 里面的文件
     ZipFile zf = new ZipFile(apk);
     List<ZipEntry> entries = find(zf, entry -> !entry.isDirectory() && entry.getName().endsWith(".png"));
     entries.forEach(entry -> {
       try {
         //  拷贝出图标
-        IOUtils.write(zf.getInputStream(entry), IOUtils.createFile(apk.getParentFile(), entry.getName()), true);
+        File dest = IOUtils.createFile(cacheDir, entry.getName());
+        IOUtils.write(zf.getInputStream(entry), dest);
       } catch (Exception e) {
-        e.printStackTrace();
+        throw new IllegalStateException(e);
       }
     });
 
@@ -70,8 +61,10 @@ public class ApkParserTest extends BaseTest {
     System.err.println("icon.name: " + iconEntry.getName());
     System.err.println("icon.size: " + Utils.fmtKB(iconEntry.getSize(), "0.00 KB"));
     System.err.println("icon.time: " + DateFmtter.fmt(iconEntry.getTime()));
-    IOUtils.write(zf.getInputStream(iconEntry), IOUtils.createFile(apk.getParentFile(), iconEntry.getName()), true);
 
+    String name = iconEntry.getName();
+    name = name.substring(name.lastIndexOf("/") + 1);
+    IOUtils.write(zf.getInputStream(iconEntry), IOUtils.createFile(cacheDir, name));
     zf.close();
   }
 
@@ -85,9 +78,9 @@ public class ApkParserTest extends BaseTest {
   public static List<ZipEntry> find(ZipFile zf, Predicate<ZipEntry> filter) {
     ZipEntry ze;
     final List<ZipEntry> entries = new ArrayList<>();
-    Enumeration<? extends ZipEntry> enumeration = zf.entries();
-    while (enumeration.hasMoreElements()) {
-      ze = enumeration.nextElement();
+    Enumeration<? extends ZipEntry> em = zf.entries();
+    while (em.hasMoreElements()) {
+      ze = em.nextElement();
       if (filter.test(ze)) {
         entries.add(ze);
       }
@@ -103,7 +96,8 @@ public class ApkParserTest extends BaseTest {
    * @return 返回全部的启动图标
    */
   public static List<ZipEntry> getLauncherIcon(ApkMeta meta, ZipFile zf) {
-    String icon = meta.getIcon().substring(meta.getIcon().lastIndexOf("/"));
-    return find(zf, entry -> !entry.isDirectory() && entry.getName().endsWith(icon));
+    String icon = meta.getIcon();
+    String name = icon.substring(icon.lastIndexOf("/") + 1);
+    return find(zf, entry -> !entry.isDirectory() && entry.getName().endsWith(name));
   }
 }

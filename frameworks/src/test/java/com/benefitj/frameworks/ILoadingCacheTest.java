@@ -16,7 +16,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class ILoadingCacheTest extends BaseTest {
+class ILoadingCacheTest extends BaseTest {
 
   @Test
   void test() {

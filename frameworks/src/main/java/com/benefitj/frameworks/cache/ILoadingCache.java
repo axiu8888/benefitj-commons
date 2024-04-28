@@ -1,6 +1,7 @@
 package com.benefitj.frameworks.cache;
 
 import com.benefitj.core.CatchUtils;
+import com.benefitj.core.ProxyUtils;
 import com.benefitj.core.ReflectUtils;
 import com.benefitj.frameworks.cglib.CGLibProxy;
 import com.google.common.cache.CacheBuilder;
@@ -12,6 +13,7 @@ import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import javax.annotation.CheckForNull;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,7 +31,7 @@ import java.util.logging.Logger;
  */
 public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
 
-  Handler DEFAULT = (method, args, proxy) -> null;
+  Handler NONE = (method, args, proxy) -> null;
 
   static <K, V> ILoadingCache<K, V> wrap(CacheBuilder<K, V> builder,
                                          Map<K, V> loaderMap,
@@ -42,14 +44,65 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
     return wrap(builder.build(newMapLoader(fun)), new ConcurrentHashMap<>(20));
   }
 
-  static <K, V> ILoadingCache<K, V> wrap(LoadingCache<K, V> cache,
-                                         Map<K, V> loaderMap) {
+  static <K, V> ILoadingCache<K, V> wrap(LoadingCache<K, V> cache, Map<K, V> loaderMap) {
+    final Map<Method, Method> methods = new ConcurrentHashMap<>(30);
+    final Map<Class<?>, Handler> handlers = new ConcurrentHashMap<>(30);
+    return ProxyUtils.newProxy(ILoadingCache.class, (proxy, method, args) -> {
+      try {
+        if ("getLoaderMap".equals(method.getName()) && method.getParameterTypes().length == 0) {
+          return loaderMap;
+        }
+        Method raw = methods.get(method);
+        if (raw == null) {
+          raw = methods.computeIfAbsent(method, m -> ReflectUtils.getMethod(cache.getClass(), t -> {
+            if (!t.getName().equals(method.getName())) return false;
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            for (int i = 0; i < t.getParameterTypes().length; i++) {
+              if (t.getParameterTypes()[i] != parameterTypes[i]) {
+                return false;
+              }
+            }
+            return true;
+          }));
+        }
+        return ReflectUtils.invoke(cache, raw, args);
+      } catch (Throwable e) {
+        if (method.isAnnotationPresent(TryHandler.class)) {
+          TryHandler annotation = method.getAnnotation(TryHandler.class);
+          if (e.getClass().isAssignableFrom(annotation.exception())) {
+            Handler handler = handlers.get(annotation.handler());
+            if (handler == null) {
+              handler = handlers.computeIfAbsent(annotation.handler(), k -> CatchUtils.tryThrow(() -> ReflectUtils.newInstance(annotation.handler()), ee -> NONE));
+            }
+            final Handler h = handler;
+            return CatchUtils.ignore(() -> h.process(method, args, null));
+          }
+          return null;
+        } else {
+          throw new IllegalStateException(e);
+        }
+      }
+    });
+  }
+
+  static <K, V> ILoadingCache<K, V> wrapCGLib(CacheBuilder<K, V> builder,
+                                              Map<K, V> loaderMap,
+                                              BiFunction<MapCacheLoader<K, V>, K, V> fun) {
+    return wrapCGLib(builder.build(newMapLoader(fun)), loaderMap);
+  }
+
+  static <K, V> ILoadingCache<K, V> wrapCGLib(CacheBuilder<K, V> builder,
+                                              BiFunction<MapCacheLoader<K, V>, K, V> fun) {
+    return wrapCGLib(builder.build(newMapLoader(fun)), new ConcurrentHashMap<>(20));
+  }
+
+  static <K, V> ILoadingCache<K, V> wrapCGLib(LoadingCache<K, V> cache, Map<K, V> loaderMap) {
     final Map<Class<?>, Handler> handlers = new ConcurrentHashMap<>(30);
     return CGLibProxy.newProxy(null
         , new Class[]{LoadingCache.class, ILoadingCache.class}
         , (obj, method, args, proxy) -> {
           try {
-            if ("getLoaderMap".equals(method.getName())) {
+            if ("getLoaderMap".equals(method.getName()) && method.getParameterTypes().length == 0) {
               return loaderMap;
             }
             return proxy.invoke(cache, args);
@@ -59,7 +112,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
               if (e.getClass().isAssignableFrom(annotation.exception())) {
                 Handler handler = handlers.get(annotation.handler());
                 if (handler == null) {
-                  handlers.put(annotation.handler(), handler = CatchUtils.tryThrow(() -> ReflectUtils.newInstance(annotation.handler()), ee -> DEFAULT));
+                  handlers.put(annotation.handler(), handler = CatchUtils.tryThrow(() -> ReflectUtils.newInstance(annotation.handler()), ee -> NONE));
                 }
                 final Handler _h = handler;
                 return CatchUtils.ignore(() -> _h.process(method, args, proxy));
@@ -146,6 +199,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    *                                     value
    * @throws ExecutionError              if an error was thrown while loading the value
    */
+  @TryHandler(exception = Exception.class)
   @Override
   V get(K key);
 
@@ -174,6 +228,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    *                                     explained in the last paragraph above, this should be an unchecked exception only.)
    * @throws ExecutionError              if an error was thrown while loading the value
    */
+  @TryHandler(exception = Exception.class)
   @Override
   V getUnchecked(K key);
 
@@ -202,6 +257,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * @throws ExecutionError              if an error was thrown while loading the values
    * @since 11.0
    */
+  @TryHandler(exception = Exception.class)
   @Override
   ImmutableMap<K, V> getAll(Iterable<? extends K> keys);
 
@@ -213,6 +269,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * @deprecated Provided to satisfy the {@code Function} interface; use {@link #get} or {@link
    * #getUnchecked} instead.
    */
+  @TryHandler(exception = Exception.class)
   @Deprecated
   @Override
   V apply(K key);
@@ -236,6 +293,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * @param key
    * @since 11.0
    */
+  @TryHandler(exception = Exception.class)
   @Override
   void refresh(K key);
 
@@ -245,6 +303,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * <p><b>Note that although the view <i>is</i> modifiable, no method on the returned map will ever
    * cause entries to be automatically loaded.</b>
    */
+  @TryHandler(exception = Exception.class)
   @Override
   ConcurrentMap<K, V> asMap();
 
@@ -308,6 +367,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * @throws ExecutionError              if an error was thrown while loading the value
    * @since 11.0
    */
+  @TryHandler(exception = Exception.class)
   @Override
   V get(K key, Callable<? extends V> loader);
 
@@ -318,6 +378,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * @param keys
    * @since 11.0
    */
+  @TryHandler(exception = Exception.class)
   @Override
   ImmutableMap<K, V> getAllPresent(Iterable<?> keys);
 
@@ -332,6 +393,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * @param value
    * @since 11.0
    */
+  @TryHandler(exception = Exception.class)
   @Override
   void put(K key, V value);
 
@@ -344,6 +406,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * @param m
    * @since 12.0
    */
+  @TryHandler(exception = Exception.class)
   @Override
   void putAll(Map<? extends K, ? extends V> m);
 
@@ -352,6 +415,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    *
    * @param key
    */
+  @TryHandler(exception = Exception.class)
   @Override
   void invalidate(Object key);
 
@@ -361,18 +425,21 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * @param keys
    * @since 11.0
    */
+  @TryHandler(exception = Exception.class)
   @Override
   void invalidateAll(Iterable<?> keys);
 
   /**
    * Discards all entries in the cache.
    */
+  @TryHandler(exception = Exception.class)
   @Override
   void invalidateAll();
 
   /**
    * Returns the approximate number of entries in this cache.
    */
+  @TryHandler(exception = Exception.class)
   @Override
   long size();
 
@@ -386,6 +453,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * was called. If statistics are not being recorded, a {@code CacheStats} instance with zero for
    * all values is returned.
    */
+  @TryHandler(exception = Exception.class)
   @Override
   CacheStats stats();
 
@@ -393,6 +461,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    * Performs any pending maintenance operations needed by the cache. Exactly which activities are
    * performed -- if any -- is implementation-dependent.
    */
+  @TryHandler(exception = Exception.class)
   @Override
   void cleanUp();
 }

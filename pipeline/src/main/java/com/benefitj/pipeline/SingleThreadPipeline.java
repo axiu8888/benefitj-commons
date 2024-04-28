@@ -5,8 +5,8 @@ import com.benefitj.core.ProxyUtils;
 import com.benefitj.core.ReflectUtils;
 
 import java.lang.annotation.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 
 /**
  * 单线程的
@@ -33,20 +33,18 @@ public interface SingleThreadPipeline extends Pipeline {
   void safe(Runnable r);
 
   @SafeRun
-  <T> T safe(Callable<T> c);
+  <T, U> U safe(Function<T, U> mapped);
 
-  static Pipeline newInstance() {
+  static SingleThreadPipeline newInstance() {
     return wrap(new DefaultPipeline(), EventLoop.newSingle(true));
   }
 
-  static Pipeline wrap(Pipeline pipeline) {
+  static SingleThreadPipeline wrap(Pipeline pipeline) {
     return wrap(pipeline, EventLoop.newSingle(true));
   }
 
-  static Pipeline wrap(Pipeline pipeline, ExecutorService executor) {
-    if (pipeline instanceof SingleThreadPipeline) {
-      return pipeline;
-    }
+  static SingleThreadPipeline wrap(Pipeline pipeline, ExecutorService executor) {
+    if (pipeline instanceof SingleThreadPipeline) return (SingleThreadPipeline) pipeline;
     final Thread[] singles = new Thread[1];
     return ProxyUtils.newProxy(SingleThreadPipeline.class, (proxy, method, args) -> {
       if (method.isAnnotationPresent(SafeRun.class)) {
@@ -54,20 +52,24 @@ public interface SingleThreadPipeline extends Pipeline {
           // 调用函数
           return executor.submit(() -> {
             try {
-              return ReflectUtils.invoke(pipeline, method, args);
+              return method.isDefault()
+                  ? ReflectUtils.invokeDefault(pipeline, method, args)
+                  : ReflectUtils.invoke(pipeline, method, args);
             } finally {
               if (singles[0] == null) {
                 singles[0] = Thread.currentThread();
               } else {
                 if (singles[0] != Thread.currentThread()) {
-                  throw new IllegalStateException("线程池不为单线程: " + executor);
+                  throw new IllegalStateException("线程池不是单线程: " + executor);
                 }
               }
             }
           }).get();
         }
       }
-      return ReflectUtils.invoke(pipeline, method, args);
+      return method.isDefault()
+          ? ReflectUtils.invokeDefault(pipeline, method, args)
+          : ReflectUtils.invoke(pipeline, method, args);
     });
   }
 

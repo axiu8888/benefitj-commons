@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 @SuperBuilder
 @NoArgsConstructor
 @Data
-public class QRCodeOption {
+public class QRCodeOptions {
 
   /**
    * 图片格式: PNG

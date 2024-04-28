@@ -34,6 +34,8 @@ dependencies {
       // jython
       'org.python:jython-standalone:2.7.3',
       'net.dongliu:apk-parser:2.6.10',
+      //'com.android.tools.apkparser:apkanalyzer:31.3.2',
+      //'com.android.tools.apkparser:binary-resources:31.3.2',
   ].forEach {
     compileOnly(it)
     testImplementation(it)

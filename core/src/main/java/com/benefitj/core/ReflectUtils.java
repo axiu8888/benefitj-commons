@@ -762,11 +762,18 @@ public class ReflectUtils {
    * @return 返回返回值
    */
   public static <T> T invokeDefault(Object obj, Method method, Object... args) {
-    if (!method.isDefault()) {
-      throw new IllegalArgumentException("不是默认方法!");
+    if (!method.isDefault()) throw new IllegalArgumentException("不是默认方法!");
+    try {
+      return (T) DefaultMethods.lookupMethodHandle(method)
+          .bindTo(obj)
+          .invokeWithArguments(args);
+      //MethodHandles.Lookup lookup = newInstance(MethodHandles.Lookup.class, method.getDeclaringClass());
+      //return invokeDefault(lookup, obj, method, args);
+    } catch (Throwable e) {
+      String parameterTypes = Arrays.toString(method.getParameterTypes());
+      String className = method.getDeclaringClass().getSimpleName();
+      throw new IllegalStateException(className + "." + method.getName() + "(" + parameterTypes.substring(1, parameterTypes.length() - 2) + ") 调用失败, cause: " + e.getMessage());
     }
-    MethodHandles.Lookup lookup = newInstance(MethodHandles.Lookup.class, method.getDeclaringClass());
-    return invokeDefault(lookup, obj, method, args);
   }
 
   /**
