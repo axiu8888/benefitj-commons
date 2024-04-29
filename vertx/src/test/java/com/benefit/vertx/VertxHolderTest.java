@@ -1,19 +1,21 @@
 package com.benefit.vertx;
 
-import com.benefit.vertx.log.Slf4jVertxLogger;
-import com.benefit.vertx.log.VertxLogger;
 import com.benefit.vertx.mqtt.client.VertxMqttClient;
 import com.benefit.vertx.mqtt.client.VertxMqttMessageDispatcher;
 import com.benefit.vertx.mqtt.server.MqttServerHolder;
 import com.benefit.vertx.tcp.VertxTcpClient;
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.EventLoop;
+import com.benefitj.core.log.Slf4jLevel;
+import com.benefitj.core.log.Slf4jLogger;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +26,8 @@ class VertxHolderTest {
   @BeforeEach
   void setUp() {
     log.info("------------------- setUp -------------------");
-    VertxLogger.set(Slf4jVertxLogger.create("vertx", Slf4jVertxLogger.Level.INFO));
+    Logger log = LoggerFactory.getLogger("vertx");
+    VertxLogger.set(Slf4jLogger.newProxy(log, Slf4jLevel.INFO));
   }
 
   @AfterEach

@@ -69,10 +69,10 @@ public class JavaStructManager {
     this.addConverter(new UpperCaseHexStringConverter());
 
     // 默认的实例化器
-    this.addInstantiator(Instantiator.class, new DefaultInstantiator());
+    this.addInstantiator(Instantiator.class, Instantiator.create());
 
     if (this.structResolver == null) {
-      this.structResolver = new DefaultStructResolver();
+      this.structResolver = StructResolver.create();
     }
   }
 

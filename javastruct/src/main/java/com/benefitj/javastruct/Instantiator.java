@@ -13,4 +13,16 @@ public interface Instantiator {
    */
   Object create(Class<?> type);
 
+
+  static Instantiator create() {
+    return new Impl();
+  }
+
+
+  class Impl implements Instantiator {
+    @Override
+    public Object create(Class<?> type) {
+      return com.benefitj.core.executable.Instantiator.get().create(type);
+    }
+  }
 }

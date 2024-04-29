@@ -391,11 +391,7 @@ public class IOUtils {
    * @return 返回创建的BufferedWriter对象或Null
    */
   public static BufferedWriter newBufferedWriter(File file) {
-    try {
-      return new BufferedWriter(new FileWriter(file));
-    } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
-    }
+    return wrapWriter(newFOS(file), StandardCharsets.UTF_8);
   }
 
   /**
@@ -413,6 +409,10 @@ public class IOUtils {
     return reader instanceof BufferedReader
         ? (BufferedReader) reader
         : new BufferedReader(reader);
+  }
+
+  public static BufferedWriter wrapWriter(OutputStream out, Charset charset) {
+    return wrapWriter(new OutputStreamWriter(out, charset));
   }
 
   public static BufferedWriter wrapWriter(Writer writer) {

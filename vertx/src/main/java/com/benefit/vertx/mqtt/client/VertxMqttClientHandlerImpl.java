@@ -1,7 +1,8 @@
 package com.benefit.vertx.mqtt.client;
 
-import com.benefit.vertx.log.VertxLogger;
+import com.benefit.vertx.VertxLogger;
 import com.benefitj.core.SingletonSupplier;
+import com.benefitj.core.log.ILogger;
 import io.vertx.core.AsyncResult;
 import io.vertx.mqtt.messages.MqttConnAckMessage;
 import io.vertx.mqtt.messages.MqttPublishMessage;
@@ -15,7 +16,7 @@ public class VertxMqttClientHandlerImpl implements VertxMqttClientHandler {
     return single.get();
   }
 
-  protected VertxLogger log = VertxLogger.get();
+  protected ILogger log = VertxLogger.get();
 
   @Override
   public void onConnected(VertxMqttClient client, AsyncResult<MqttConnAckMessage> event, boolean reconnect) {

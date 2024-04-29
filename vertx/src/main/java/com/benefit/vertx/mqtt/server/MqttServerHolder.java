@@ -2,8 +2,9 @@ package com.benefit.vertx.mqtt.server;
 
 
 import com.benefit.vertx.VertxHolder;
-import com.benefit.vertx.log.VertxLogger;
+import com.benefit.vertx.VertxLogger;
 import com.benefitj.core.SingletonSupplier;
+import com.benefitj.core.log.ILogger;
 import io.vertx.mqtt.MqttServerOptions;
 
 import java.util.concurrent.CountDownLatch;
@@ -25,7 +26,7 @@ public class MqttServerHolder {
     return ws.get();
   }
 
-  final VertxLogger log = VertxLogger.get();
+  final ILogger log = VertxLogger.get();
 
   private MqttEndpointHandler handler;
   private VertxMqttEndpointManager manager;

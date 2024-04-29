@@ -7,9 +7,8 @@ public class InstantiatorTest extends BaseTest {
 
   @Test
   public void testCreate() {
-    Instantiator instantiator = Instantiator.INSTANCE;
     // 创建实例
-    TestAbc abc = instantiator.create(TestAbc.class, "abc");
+    TestAbc abc = Instantiator.get().create(TestAbc.class, "abc");
     System.err.println(abc.name);
   }
 

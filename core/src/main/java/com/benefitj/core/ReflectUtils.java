@@ -829,7 +829,7 @@ public class ReflectUtils {
    * @return 返回对象实例
    */
   public static <T> T newInstance(Class<T> klass, Object... args) {
-    return Instantiator.INSTANCE.create(klass, args);
+    return Instantiator.get().create(klass, args);
   }
 
   /**

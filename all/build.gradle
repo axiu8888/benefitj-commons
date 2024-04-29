@@ -23,6 +23,7 @@ dependencies {
       ":mqtt",
       ":netty",
       ":pipeline",
+      ":vertx",
       //":ini4j", // ini 配置解析
   ].forEach {
     if (allInOne) implementation(project(it))

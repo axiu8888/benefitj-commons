@@ -13,10 +13,6 @@ import java.util.function.Function;
  * 异常处理
  */
 public class CatchUtils {
-  /**
-   * 实例化器
-   */
-  static final Instantiator instantiator = Instantiator.INSTANCE;
 
   /**
    * 抛出异常
@@ -30,12 +26,12 @@ public class CatchUtils {
       if (e.getCause().getClass().isAssignableFrom(type)) {
         return (RuntimeException) e.getCause();
       }
-      return (RuntimeException) instantiator.create(type, e.getCause().getMessage(), e.getCause());
+      return (RuntimeException) Instantiator.get().create(type, e.getCause().getMessage(), e.getCause());
     }
     if (e.getClass().isAssignableFrom(type)) {
       return (RuntimeException) e;
     }
-    return (RuntimeException) instantiator.create(type, e.getMessage(), e);
+    return (RuntimeException) Instantiator.get().create(type, e.getMessage(), e);
   }
 
   /**

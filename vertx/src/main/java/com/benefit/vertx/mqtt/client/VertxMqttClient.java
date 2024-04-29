@@ -3,10 +3,11 @@ package com.benefit.vertx.mqtt.client;
 import com.benefit.vertx.AutoConnectTimer;
 import com.benefit.vertx.IConnector;
 import com.benefit.vertx.VerticleInitializer;
-import com.benefit.vertx.log.VertxLogger;
+import com.benefit.vertx.VertxLogger;
 import com.benefitj.core.AttributeMap;
 import com.benefitj.core.IdUtils;
 import com.benefitj.core.ProxyUtils;
+import com.benefitj.core.log.ILogger;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
@@ -32,7 +33,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
 
   private static final Handler<AsyncResult<Integer>> IGNORE_HANDLER = event -> { /* ignore */ };
 
-  protected VertxLogger log = VertxLogger.get();
+  protected ILogger log = VertxLogger.get();
   /**
    * 属性
    */

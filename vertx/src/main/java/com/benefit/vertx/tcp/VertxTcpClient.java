@@ -3,10 +3,11 @@ package com.benefit.vertx.tcp;
 import com.benefit.vertx.AutoConnectTimer;
 import com.benefit.vertx.IConnector;
 import com.benefit.vertx.VertxHolder;
-import com.benefit.vertx.log.VertxLogger;
+import com.benefit.vertx.VertxLogger;
 import com.benefitj.core.CatchUtils;
 import com.benefitj.core.HexUtils;
 import com.benefitj.core.ProxyUtils;
+import com.benefitj.core.log.ILogger;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class VertxTcpClient {
 
-  protected final VertxLogger log = VertxLogger.get();
+  protected final ILogger log = VertxLogger.get();
   /**
    * 代理监听
    */

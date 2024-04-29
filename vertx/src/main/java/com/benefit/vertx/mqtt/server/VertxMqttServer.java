@@ -17,8 +17,9 @@
 package com.benefit.vertx.mqtt.server;
 
 import com.benefit.vertx.VerticleInitializer;
-import com.benefit.vertx.log.VertxLogger;
+import com.benefit.vertx.VertxLogger;
 import com.benefit.vertx.mqtt.MqttTopic;
+import com.benefitj.core.log.ILogger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -39,7 +40,7 @@ public class VertxMqttServer extends AbstractVerticle {
 
   public static MqttAuthenticator NONE_MQTT_AUTHENTICATOR = endpoint -> true;
 
-  protected final VertxLogger log = VertxLogger.get();
+  protected final ILogger log = VertxLogger.get();
   /**
    * 配置
    */

@@ -1,8 +1,8 @@
 package com.benefitj.core.executable;
 
+import com.benefitj.core.SingletonSupplier;
+
 import javax.annotation.Nullable;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -11,10 +11,14 @@ import java.lang.reflect.InvocationTargetException;
  */
 public interface Instantiator {
 
+  SingletonSupplier<Instantiator> single = SingletonSupplier.of(Impl::new);
+
   /**
    * 实例化器对象
    */
-  Instantiator INSTANCE = new InstantiatorImpl();
+  static Instantiator get() {
+    return single.get();
+  }
 
   /**
    * 创建对象
@@ -26,11 +30,33 @@ public interface Instantiator {
    */
   <T> T create(Class<T> type, @Nullable Object... args);
 
+  /**
+   * 检查参数是否匹配
+   *
+   * @param parameterTypes 参数类型
+   * @param args           参数
+   * @return 返回校验结果
+   */
+  static boolean isParameterTypesMatch(Class<?>[] parameterTypes, @Nullable Object[] args) {
+    if (parameterTypes != null && args != null) {
+      if (parameterTypes.length != args.length) {
+        return false;
+      }
+      for (int i = 0; i < parameterTypes.length; i++) {
+        if (args[i] != null && !parameterTypes[i].isInstance(args[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return parameterTypes == null && (args == null || args.length == 0);
+  }
+
 
   /**
    * 默认的实例化器
    */
-  class InstantiatorImpl implements Instantiator {
+  class Impl implements Instantiator {
 
     @Override
     public <T> T create(Class<T> type, Object... args) {
@@ -56,29 +82,6 @@ public interface Instantiator {
         throw new IllegalStateException(e);
       }
     }
-
-  }
-
-  /**
-   * 检查参数是否匹配
-   *
-   * @param parameterTypes 参数类型
-   * @param args           参数
-   * @return 返回校验结果
-   */
-  static boolean isParameterTypesMatch(Class<?>[] parameterTypes, @Nullable Object[] args) {
-    if (parameterTypes != null && args != null) {
-      if (parameterTypes.length != args.length) {
-        return false;
-      }
-      for (int i = 0; i < parameterTypes.length; i++) {
-        if (args[i] != null && !parameterTypes[i].isInstance(args[i])) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return parameterTypes == null && (args == null || args.length == 0);
   }
 
 }

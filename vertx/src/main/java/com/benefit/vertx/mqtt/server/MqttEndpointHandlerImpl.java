@@ -1,7 +1,8 @@
 package com.benefit.vertx.mqtt.server;
 
-import com.benefit.vertx.log.VertxLogger;
+import com.benefit.vertx.VertxLogger;
 import com.benefit.vertx.mqtt.MqttTopic;
+import com.benefitj.core.log.ILogger;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttWill;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
  */
 public class MqttEndpointHandlerImpl implements MqttEndpointHandler {
 
-  private final VertxLogger log = VertxLogger.get();
+  private final ILogger log = VertxLogger.get();
 
   @Override
   public void onConnect(VertxMqttServer server, MqttEndpoint endpoint) {
