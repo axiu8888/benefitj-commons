@@ -1,6 +1,5 @@
 package com.benefitj.network;
 
-import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -206,7 +205,7 @@ public class ApiBuilderTest {
         .setWatchEventListener((watcher, key, path, filename, kind) -> {
           if (filename.equalsIgnoreCase("ws-info.txt")) {
             log.info("文件：" + ((new File(path.toFile(), filename)) + " " + PathWatcher.ofDesc(kind)) + ", 发生事件：" + kind.name() + ", " + DateFmtter.fmtNowS());
-            String wsEndpoint = FileUtil.readString(new File(path.toFile(), filename), StandardCharsets.UTF_8);
+            String wsEndpoint = IOUtils.readAsString(new File(path.toFile(), filename), StandardCharsets.UTF_8);
             log.info("wsEndpoint: {}", wsEndpoint);
             if (socketRef.get() == null) {
               EventLoop.io().execute(() -> {
