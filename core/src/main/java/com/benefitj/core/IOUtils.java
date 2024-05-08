@@ -662,11 +662,13 @@ public class IOUtils {
   /**
    * 读取文件
    *
-   * @param in 要读取的文件
+   * @param in      要读取的文件
+   * @param charset 编码类型
    * @return 返回读取的字符串
    */
   public static String readAsString(InputStream in, Charset charset) {
-    return readAsString(in, StandardCharsets.UTF_8);
+    ByteArrayOutputStream baos = readFully(in);
+    return new String(baos.toByteArray(), charset);
   }
 
   /**
