@@ -2,12 +2,13 @@ package com.benefit.vertx;
 
 import com.benefit.vertx.mqtt.client.VertxMqttClient;
 import com.benefit.vertx.mqtt.client.VertxMqttMessageDispatcher;
-import com.benefitj.core.SingletonSupplier;
+import com.benefitj.core.CatchUtils;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.*;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -16,13 +17,17 @@ public class VertxHolder {
   /**
    * singleton instance
    */
-  static final SingletonSupplier<Vertx> single = SingletonSupplier.of(Vertx::vertx);
+  static final AtomicReference<Vertx> holder = new AtomicReference<>(Vertx.vertx());
+
+  public static void setVertx(Vertx vertx) {
+    holder.set(vertx);
+  }
 
   /**
    * 获取Vertx实例
    */
-  public static Vertx get() {
-    return single.get();
+  public static Vertx getVertx() {
+    return holder.get();
   }
 
   /**
@@ -43,7 +48,7 @@ public class VertxHolder {
    * @return 返回部署结果
    */
   public static Future<String> deploy(Verticle verticle, DeploymentOptions options) {
-    return get().deployVerticle(verticle, options);
+    return getVertx().deployVerticle(verticle, options);
   }
 
   /**
@@ -63,28 +68,28 @@ public class VertxHolder {
    * @return 返回结果
    */
   public static Future<Void> undeploy(String deploymentID) {
-    return get().undeploy(deploymentID);
+    return getVertx().undeploy(deploymentID);
   }
 
   /**
    * 创建 TCP Server
    */
   public static NetServer createNetServer(NetServerOptions options) {
-    return get().createNetServer(options);
+    return getVertx().createNetServer(options);
   }
 
   /**
    * 创建 TCP client
    */
   public static NetClient createNetClient(NetClientOptions options) {
-    return get().createNetClient(options);
+    return getVertx().createNetClient(options);
   }
 
   /**
    * 创建 HTTP Server
    */
   public static HttpServer createHttpServer(HttpServerOptions options) {
-    return get().createHttpServer(options);
+    return getVertx().createHttpServer(options);
   }
 
   /**
@@ -114,11 +119,32 @@ public class VertxHolder {
     ref.set(
         new VertxMqttClient()
             .addHandler(dispatcher)
-            .setInitializer(verticle -> {})
+            .setInitializer(verticle -> {
+            })
             .setAutoConnectTimer(autoConnectTimer)
             .setRemoteAddress(remote.host(), remote.port())
     );
     deploy(ref.get());
     return ref.get();
   }
+
+  /**
+   * 部署
+   */
+  public static <T extends Verticle> T deploy(Vertx vertx, T verticle) {
+    CountDownLatch latch = new CountDownLatch(1);
+    AtomicReference<Throwable> errRef = new AtomicReference<>();
+    vertx
+        .deployVerticle(verticle)
+        .onComplete(event -> {
+          errRef.set(event.succeeded() ? null : event.cause());
+          latch.countDown();
+        });
+    CatchUtils.ignore(() -> latch.await());
+    if (errRef.get() != null) {
+      throw new IllegalStateException(errRef.get());
+    }
+    return verticle;
+  }
+
 }

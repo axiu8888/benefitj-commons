@@ -71,7 +71,7 @@ public class MqttServerHolder {
         VertxMqttServer vms = server;
         final CountDownLatch latch = new CountDownLatch(1);
         MqttServerOptions opts = vms.getOptions();
-        vms.deploy(VertxHolder.get())
+        vms.deploy(VertxHolder.getVertx())
             .onComplete(event -> {
               log.trace("Successful start mqtt[{}] port: {}"
                   , opts.isUseWebSocket() ? "ws" : "tcp"
