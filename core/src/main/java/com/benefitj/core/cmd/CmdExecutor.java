@@ -230,6 +230,7 @@ public class CmdExecutor {
         return call;
       });
     } catch (Throwable e) {
+      call.setException(e);
       cb.onError(call, e);
     } finally {
       cb.onFinish(call);

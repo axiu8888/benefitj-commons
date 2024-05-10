@@ -78,7 +78,7 @@ public interface Callback {
    * @param e    异常
    */
   default void onError(CmdCall call, Throwable e) {
-    e.printStackTrace();
+    //e.printStackTrace();
   }
 
   /**

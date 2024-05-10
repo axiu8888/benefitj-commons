@@ -1,5 +1,8 @@
 package com.benefitj.core.cmd;
 
+import com.benefitj.core.Utils;
+import org.apache.commons.lang3.StringUtils;
+
 import javax.annotation.Nullable;
 import java.io.File;
 
@@ -35,11 +38,15 @@ public class CmdCall {
   /**
    * 结果信息
    */
-  private String message;
+  private String message = "";
   /**
    * 错误信息
    */
-  private String error;
+  private String error = "";
+  /**
+   * 异常
+   */
+  private Throwable exception;
 
   public CmdCall() {
   }
@@ -112,6 +119,14 @@ public class CmdCall {
     this.error = error;
   }
 
+  public Throwable getException() {
+    return exception;
+  }
+
+  public void setException(Throwable exception) {
+    this.exception = exception;
+  }
+
   public boolean isSuccessful() {
     return getExitCode() == 0 && (getError() == null || getError().trim().isEmpty());
   }
@@ -151,6 +166,7 @@ public class CmdCall {
     }
     sb.append("\nmessage: " + call.getMessage());
     sb.append("\nerror: " + call.getError());
+    sb.append("\nexception: " + call.getException());
     sb.append("\n----------------- cmd[" + tag + "] -----------------\n\n");
     return sb.toString();
   }
