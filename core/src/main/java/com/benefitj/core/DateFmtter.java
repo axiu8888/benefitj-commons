@@ -219,6 +219,15 @@ public class DateFmtter {
     return parse(time, getDefaultSdf(pattern));
   }
 
+  /**
+   * 解析字符串类型的时间: yyyy-MM-dd
+   *
+   * @param time    时间
+   * @return 返回解析后的Date对象
+   */
+  public static Date parseDate(String time) {
+    return parse(time, _yMd);
+  }
 
   /**
    * 解析字符串类型的时间， yyyy-MM-dd HH:mm:ss

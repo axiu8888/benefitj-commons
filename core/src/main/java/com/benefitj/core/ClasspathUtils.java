@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 /**
  * classpath 工具
  */
+@Deprecated
 public class ClasspathUtils {
 
   /**

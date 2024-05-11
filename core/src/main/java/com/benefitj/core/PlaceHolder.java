@@ -2,6 +2,9 @@ package com.benefitj.core;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * 占位符替换
+ */
 public class PlaceHolder {
 
   static final SingletonSupplier<PlaceHolder> single = SingletonSupplier.of(PlaceHolder::new);

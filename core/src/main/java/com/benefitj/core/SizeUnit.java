@@ -3,7 +3,7 @@ package com.benefitj.core;
 /**
  * 长度单位
  */
-public enum LengthUnit {
+public enum SizeUnit {
 
   BIT(1),
   KB(1024L << 1),
@@ -16,7 +16,7 @@ public enum LengthUnit {
 
   private final long length;
 
-  LengthUnit(long length) {
+  SizeUnit(long length) {
     this.length = length;
   }
 
