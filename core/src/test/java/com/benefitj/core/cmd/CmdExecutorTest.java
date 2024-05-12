@@ -53,8 +53,8 @@ public class CmdExecutorTest extends BaseTest {
 
     CountDownLatch latch = new CountDownLatch(1);
     //pull("D:/code/github/frontend", latch);
-//    pull("D:/code/github/java/vertx", latch);
-    pull("D:/code/github/golang", latch);
+    pull("D:/code/github/java/vertx", latch);
+//    pull("D:/code/github/golang", latch);
     CatchUtils.ignore((IRunnable) latch::await);
   }
 
