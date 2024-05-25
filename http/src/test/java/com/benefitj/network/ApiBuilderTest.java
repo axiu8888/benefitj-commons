@@ -425,9 +425,7 @@ public class ApiBuilderTest {
 
   @Test
   public void testAppUpgrade() throws IOException {
-//    okhttp3.Response response = HttpHelper.get().get("http://192.168.1.47/api/app/version?appType=5");
     okhttp3.Response response = HttpHelper.get().get("http://free.sensecho.com/api/app/version?appType=8");
-//    okhttp3.Response response = HttpHelper.get().get("http://192.168.1.47/api/app/download?id=");
     if (response.isSuccessful()) {
       log.info("headers ==>: \n{}", response.headers());
       String body = response.body().string();
@@ -493,8 +491,6 @@ public class ApiBuilderTest {
   @Test
   public void testDownloadApk() {
     long start = TimeUtils.now();
-//    String url = "http://192.168.1.47/api/app/download?id=969f7a19751d4c0e91519e9eebfeb067";
-//    String url = "http://192.168.1.47/api/app/download?id=fad84b9e98814482b86398ee22ba8632";
     String url = "http://192.168.1.198/api/report/analysis/sleepStage?personZid=0f7c59ae2a6f4b6b99f0adc9963ef2e3&startTime=2023-09-13 21:00:00&endTime=2023-09-14 09:00:00";
     okhttp3.Response response = HttpHelper.get()
         .setLogLevel(HttpLoggingInterceptor.Level.BODY)
