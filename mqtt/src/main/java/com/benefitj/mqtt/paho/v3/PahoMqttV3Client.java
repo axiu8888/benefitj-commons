@@ -2,7 +2,6 @@ package com.benefitj.mqtt.paho.v3;
 
 import com.benefitj.core.*;
 import com.benefitj.mqtt.paho.MqttPahoClientException;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
@@ -53,9 +52,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     }
   };
 
-  static final PahoMqttV3Callback NONE = (topic, message) -> {
-  };
-  static final Supplier<PahoMqttV3Callback> SUPPLIER = () -> NONE;
+  static final PahoMqttV3Callback NONE = (topic, message) -> {};
 
   /**
    * 客户端
@@ -69,6 +66,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
    * 回调
    */
   private PahoMqttV3Callback callback;
+  private final Supplier<PahoMqttV3Callback> callbackSupplier = () -> callback != null ? callback : NONE;
 
   /**
    * 自动连接器
@@ -92,14 +90,14 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
 
     @Override
     public void onConnected(PahoMqttV3Client client) {
-      ObjectUtils.getIfNull(callback, SUPPLIER).onConnected(client);
       autoConnectTimer.stop();
+      callbackSupplier.get().onConnected(client);
     }
 
     @Override
     public void onDisconnected(PahoMqttV3Client client, @Nullable Throwable cause) {
       try {
-        ObjectUtils.getIfNull(callback, SUPPLIER).onDisconnected(client, cause);
+        callbackSupplier.get().onDisconnected(client, cause);
       } catch (Exception e) {
         e.printStackTrace();
       } finally {
@@ -110,7 +108,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     @Override
     public void connectionLost(Throwable cause) {
       try {
-        ObjectUtils.getIfNull(callback, SUPPLIER).connectionLost(cause);
+        callbackSupplier.get().connectionLost(cause);
       } catch (Exception e) {
         e.printStackTrace();
       } finally {
@@ -120,7 +118,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-      ObjectUtils.getIfNull(callback, SUPPLIER).messageArrived(topic, message);
+      callbackSupplier.get().messageArrived(topic, message);
     }
   };
 
