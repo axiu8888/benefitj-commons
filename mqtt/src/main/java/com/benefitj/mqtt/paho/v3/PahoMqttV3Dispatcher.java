@@ -26,8 +26,8 @@ public class PahoMqttV3Dispatcher extends MqttMessageDispatcher.Impl<MqttMessage
   }
 
   @Override
-  public void onConnected(PahoMqttV3Client client, boolean reconnect) {
-    this.client = client;
+  public void onConnected(PahoMqttV3Client client) {
+    this.setClient(client);
     // 重新订阅
     String[] array = getTopicArray();
     if (array != null && array.length > 0) {
@@ -52,9 +52,9 @@ public class PahoMqttV3Dispatcher extends MqttMessageDispatcher.Impl<MqttMessage
                               List<String> topics,
                               List<String> uniqueTopics) {
     if (!uniqueTopics.isEmpty()) {
-      PahoMqttV3Client client = getClient();
-      if (client != null && client.isConnected()) {
-        client.subscribe(uniqueTopics.toArray(new String[0]));
+      PahoMqttV3Client mc = getClient();
+      if (mc != null && mc.isConnected()) {
+        mc.subscribe(uniqueTopics.toArray(new String[0]));
       }
     }
   }
@@ -64,9 +64,9 @@ public class PahoMqttV3Dispatcher extends MqttMessageDispatcher.Impl<MqttMessage
                                 List<String> topics,
                                 List<String> uniqueTopics) {
     if (!uniqueTopics.isEmpty()) {
-      PahoMqttV3Client client = getClient();
-      if (client != null && client.isConnected()) {
-        client.unsubscribe(uniqueTopics.toArray(new String[0]));
+      PahoMqttV3Client mc = getClient();
+      if (mc != null && mc.isConnected()) {
+        mc.unsubscribe(uniqueTopics.toArray(new String[0]));
       }
     }
   }

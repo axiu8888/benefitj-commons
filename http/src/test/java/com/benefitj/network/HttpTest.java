@@ -1,15 +1,15 @@
 package com.benefitj.network;
 
+import com.benefitj.core.EventLoop;
+import com.benefitj.core.HexUtils;
 import com.benefitj.core.IOUtils;
-import com.benefitj.http.ApiBuilder;
-import com.benefitj.http.BodyUtils;
-import com.benefitj.http.HttpHelper;
-import com.benefitj.http.SimpleObserver;
+import com.benefitj.http.*;
 import io.reactivex.rxjava3.core.Observable;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
+import okio.ByteString;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,6 @@ import retrofit2.http.POST;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 
 @Slf4j
@@ -52,6 +51,71 @@ class HttpTest {
       String content = response.body().string();
       log.info("请求内容 ==>: \n\n{}\n", content);
     }
+  }
+
+  @Test
+  void test_ruicaho() {
+//    String url = "ws://192.168.0.33:8089";
+    String url = "ws://192.168.9.102:8089";
+//    String url = "ws://192.168.1.198/api/management/socket";
+    WebSocket socket = HttpClient.newWebSocket(url, new WebSocketListener() {
+
+      @Override
+      public void onOpen(WebSocket socket, Response response) {
+        log.info("onOpen...");
+      }
+
+      @Override
+      public void onMessage(WebSocket socket, String text) {
+//        log.info("onMessage ==>: ", text);
+        System.err.println(text);;
+
+        // 实时数据
+        //{"Type":"1058","Data":{"Index":4533.0,"Time":22.669999999999774,"Volume":2.0729549778763063,"Flow":-0.031567169205410125}}
+
+//        JSONObject json = JSON.parseObject(text);
+//        String type = json.getString("Type");
+//        switch (type) {
+//          case "102": // 病人导入CPF
+//            break;
+//          case "1058": // 实时数据
+//            break;
+//          case "1059": // 结果数据
+//            break;
+//        }
+
+      }
+
+      @Override
+      public void onMessage(WebSocket socket, ByteString bytes) {
+        log.info("onMessage, {}", HexUtils.bytesToHex(bytes.toByteArray()));
+      }
+
+      @Override
+      public void onClosing(WebSocket socket, int code, String reason) {
+        log.info("onClosing, code: {}, reason: {}", code, reason);
+      }
+
+      @Override
+      public void onClosed(WebSocket socket, int code, String reason) {
+        log.info("onClosed, code: {}, reason: {}", code, reason);
+      }
+
+      @Override
+      public void onFailure(WebSocket socket, Throwable error, Response response) {
+        log.info("onFailure, error: {}", error.getMessage());
+        error.printStackTrace();
+      }
+    });
+    EventLoop.sleepSecond(10);
+
+    for(;;) {
+      if (!socket.isOpen()) {
+        socket.reconnect();
+      }
+      EventLoop.sleepSecond(10);
+    }
+
   }
 
 

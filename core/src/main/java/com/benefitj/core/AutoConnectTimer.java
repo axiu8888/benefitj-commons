@@ -1,6 +1,4 @@
-package com.benefitj.vertx;
-
-import com.benefitj.core.EventLoop;
+package com.benefitj.core;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -10,6 +8,24 @@ import java.util.concurrent.atomic.AtomicReference;
  * 自动重连的定时器
  */
 public class AutoConnectTimer {
+
+  /**
+   * 连接器
+   */
+  public interface Connector {
+
+    /**
+     * 是否已连接
+     */
+    boolean isConnected();
+
+    /**
+     * 连接
+     */
+    void doConnect();
+  }
+
+
 
   private final AtomicReference<ScheduledFuture<?>> timerRef = new AtomicReference<>();
   /**
@@ -44,7 +60,7 @@ public class AutoConnectTimer {
    *
    * @param socket 客户端
    */
-  public void start(IConnector socket) {
+  public void start(Connector socket) {
     if (isAutoConnect()) {
       synchronized (this) {
         if (timerRef.get() == null) {

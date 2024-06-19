@@ -1,13 +1,13 @@
 package com.benefitj.core;
 
 import com.benefitj.core.executable.Instantiator;
-import com.benefitj.core.functions.IFunction;
 import com.benefitj.core.functions.IRunnable;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * 异常处理
@@ -22,34 +22,10 @@ public class CatchUtils {
    * @return 返回异常对象
    */
   public static RuntimeException throwing(Throwable e, Class<?> type) {
-    if (StringUtils.isBlank(e.getMessage()) && e.getCause() != null) {
-      if (e.getCause().getClass().isAssignableFrom(type)) {
-        return (RuntimeException) e.getCause();
-      }
-      return (RuntimeException) Instantiator.get().create(type, e.getCause().getMessage(), e.getCause());
-    }
-    if (e.getClass().isAssignableFrom(type)) {
-      return (RuntimeException) e;
-    }
-    return (RuntimeException) Instantiator.get().create(type, e.getMessage(), e);
-  }
-
-  /**
-   * 抛出异常
-   *
-   * @param e          异常
-   * @param mappedFunc 映射函数
-   * @return 返回异常对象
-   */
-  public static RuntimeException throwing(Throwable e, IFunction<Throwable, RuntimeException> mappedFunc) {
-    if (!(e instanceof RuntimeException)) {
-      try {
-        return mappedFunc.apply(e);
-      } catch (Throwable ex) {
-        return new IllegalStateException(ex.getMessage(), ex);
-      }
-    }
-    return (RuntimeException) e;
+    Throwable error = find(e, ee -> StringUtils.isNotBlank(ee.getMessage()) || ee.getCause() == null);
+    return error.getClass().isAssignableFrom(type)
+        ? (RuntimeException) e
+        : (RuntimeException) Instantiator.get().create(type, error.getMessage(), error);
   }
 
   /**
@@ -146,4 +122,16 @@ public class CatchUtils {
     }
   }
 
+  public static Throwable getParentTop(Throwable e) {
+    return find(e, ee -> ee.getCause() == null);
+  }
+
+  public static Throwable find(Throwable e, Predicate<Throwable> filter) {
+    Throwable ee = e;
+    while (true) {
+      if (filter.test(ee)) break;
+      ee = ee.getCause();
+    }
+    return ee;
+  }
 }

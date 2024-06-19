@@ -715,7 +715,7 @@ public class ReflectUtils {
       setAccessible(method, true);
       return (T) method.invoke(obj, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -748,7 +748,7 @@ public class ReflectUtils {
           .bindTo(obj)
           .invokeWithArguments(args);
     } catch (Throwable e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw new IllegalStateException(e);
     }
   }
 

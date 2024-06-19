@@ -1,7 +1,6 @@
 package com.benefitj.vertx.tcp;
 
-import com.benefitj.vertx.AutoConnectTimer;
-import com.benefitj.vertx.IConnector;
+import com.benefitj.core.AutoConnectTimer;
 import com.benefitj.vertx.VertxHolder;
 import com.benefitj.vertx.VertxLogger;
 import com.benefitj.core.CatchUtils;
@@ -34,16 +33,16 @@ public class VertxTcpClient {
   /**
    * 连接器
    */
-  private final IConnector connector = new IConnector() {
+  private final AutoConnectTimer.Connector connector = new AutoConnectTimer.Connector() {
     @Override
     public boolean isConnected() {
-      return _self_().isActive();
+      return self().isActive();
     }
 
     @Override
     public void doConnect() {
       CountDownLatch latch = new CountDownLatch(1);
-      _self_().connect0(latch);
+      self().connect0(latch);
       CatchUtils.ignore(() -> latch.await());
     }
   };
@@ -68,7 +67,7 @@ public class VertxTcpClient {
     this.options = options;
   }
 
-  public VertxTcpClient _self_() {
+  public VertxTcpClient self() {
     return this;
   }
 
@@ -78,7 +77,7 @@ public class VertxTcpClient {
 
   public VertxTcpClient setRaw(NetClient raw) {
     this.raw = raw;
-    return _self_();
+    return self();
   }
 
   /**
@@ -95,7 +94,7 @@ public class VertxTcpClient {
    */
   protected VertxTcpClient setSocket(NetSocket socket) {
     this.socket = socket;
-    return _self_();
+    return self();
   }
 
   /**
@@ -112,7 +111,7 @@ public class VertxTcpClient {
    */
   public VertxTcpClient setOptions(NetClientOptions options) {
     this.options = options;
-    return _self_();
+    return self();
   }
 
 
@@ -122,7 +121,7 @@ public class VertxTcpClient {
 
   public VertxTcpClient setAutoConnectTimer(AutoConnectTimer timer) {
     this.autoConnectTimer = timer != null ? timer : AutoConnectTimer.NONE;
-    return _self_();
+    return self();
   }
 
   /**
@@ -135,7 +134,7 @@ public class VertxTcpClient {
     if (!((List) proxyListener).contains(l)) {
       ((List) proxyListener).add(l);
     }
-    return _self_();
+    return self();
   }
 
   /**
@@ -148,7 +147,7 @@ public class VertxTcpClient {
     if (l != null) {
       ((List) proxyListener).remove(l);
     }
-    return _self_();
+    return self();
   }
 
   /**
@@ -169,11 +168,11 @@ public class VertxTcpClient {
    * @return 返回 VertxTcpClient
    */
   public VertxTcpClient connect(SocketAddress remote) {
-    if (isActive()) return _self_();
+    if (isActive()) return self();
     this.remote = remote;
     this.disconnected.set(false);
     connect0(null);
-    return _self_();
+    return self();
   }
 
   void connect0(CountDownLatch latch) {
@@ -212,7 +211,7 @@ public class VertxTcpClient {
       else
         ns.close();
     }
-    return _self_();
+    return self();
   }
 
   /**

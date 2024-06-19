@@ -1,5 +1,6 @@
 package com.benefitj.mqtt.paho.v5;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IdUtils;
 import com.benefitj.core.ProxyUtils;
 import com.benefitj.core.ReflectUtils;
@@ -9,6 +10,8 @@ import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
+
+import java.lang.reflect.Method;
 
 /**
  * MQTT客户端
@@ -34,7 +37,15 @@ public interface PahoMqttV5Client extends IMqttClient {
    * @return 返回客户端代理
    */
   static PahoMqttV5Client newProxy(MqttClient client) {
-    return ProxyUtils.newProxy(PahoMqttV5Client.class, (proxy, method, args) -> ReflectUtils.invoke(client, method, args));
+    Class<? extends MqttClient> type = client.getClass();
+    return ProxyUtils.newProxy(PahoMqttV5Client.class, (proxy, m, args) -> {
+      try {
+        Method method = ReflectUtils.getMethod(type, m.getName(), m.getParameterTypes());
+        return ReflectUtils.invoke(client, method, args);
+      } catch (Throwable e) {
+        throw CatchUtils.throwing(e.getCause() != null ? e.getCause() : e, MqttPahoClientException.class);
+      }
+    });
   }
 
   /**
@@ -48,7 +59,7 @@ public interface PahoMqttV5Client extends IMqttClient {
    */
   static MqttClient provide(MqttConnectionOptions opts, String clientId, MemoryPersistence persistence) throws MqttPahoClientException {
     try {
-      clientId = StringUtils.getIfBlank(clientId, () -> "mqttv5-" + IdUtils.uuid().substring(0, 16));
+      clientId = StringUtils.getIfBlank(clientId, () -> "mqttv5-" + IdUtils.uuid(0, 16));
       return new MqttClient(opts.getServerURIs()[0], clientId, persistence);
     } catch (MqttException e) {
       throw new MqttPahoClientException(e);

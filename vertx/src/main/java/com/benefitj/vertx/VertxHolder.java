@@ -1,5 +1,6 @@
 package com.benefitj.vertx;
 
+import com.benefitj.core.AutoConnectTimer;
 import com.benefitj.vertx.mqtt.client.VertxMqttClient;
 import com.benefitj.vertx.mqtt.client.VertxMqttMessageDispatcher;
 import com.benefitj.core.CatchUtils;
@@ -119,8 +120,7 @@ public class VertxHolder {
     ref.set(
         new VertxMqttClient()
             .addHandler(dispatcher)
-            .setInitializer(verticle -> {
-            })
+            .setInitializer(verticle -> {})
             .setAutoConnectTimer(autoConnectTimer)
             .setRemoteAddress(remote.host(), remote.port())
     );

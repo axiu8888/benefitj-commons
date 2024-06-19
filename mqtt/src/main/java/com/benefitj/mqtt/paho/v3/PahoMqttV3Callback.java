@@ -14,10 +14,9 @@ public interface PahoMqttV3Callback extends MqttCallback {
   /**
    * 客户端重连之后的重新订阅
    *
-   * @param client    客户端
-   * @param reconnect 是否为重连
+   * @param client 客户端
    */
-  default void onConnected(PahoMqttV3Client client, boolean reconnect) {
+  default void onConnected(PahoMqttV3Client client) {
     // ~
   }
 
@@ -43,7 +42,6 @@ public interface PahoMqttV3Callback extends MqttCallback {
    * @param cause  异常
    */
   default void onDisconnected(PahoMqttV3Client client, @Nullable Throwable cause) {
-    connectionLost(cause);
   }
 
 }
