@@ -22,7 +22,7 @@ public class CatchUtils {
    * @return 返回异常对象
    */
   public static RuntimeException throwing(Throwable e, Class<?> type) {
-    Throwable error = find(e, ee -> StringUtils.isNotBlank(ee.getMessage()) || ee.getCause() == null);
+    Throwable error = findTop(e);
     return error.getClass().isAssignableFrom(type)
         ? (RuntimeException) e
         : (RuntimeException) Instantiator.get().create(type, error.getMessage(), error);
@@ -122,16 +122,20 @@ public class CatchUtils {
     }
   }
 
-  public static Throwable getParentTop(Throwable e) {
-    return find(e, ee -> ee.getCause() == null);
+  /**
+   * 查找调用链的顶级异常
+   */
+  public static Throwable findTop(Throwable e) {
+    return find(e, ee -> StringUtils.isNotBlank(ee.getMessage()) || ee.getCause() == null);
   }
 
+  /**
+   * 查找调用链的异常
+   */
   public static Throwable find(Throwable e, Predicate<Throwable> filter) {
     Throwable ee = e;
-    while (true) {
-      if (filter.test(ee)) break;
-      ee = ee.getCause();
-    }
+    while (!filter.test(ee)) ee = ee.getCause();
     return ee;
   }
+
 }
