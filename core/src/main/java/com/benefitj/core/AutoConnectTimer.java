@@ -2,6 +2,7 @@ package com.benefitj.core;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -40,6 +41,10 @@ public class AutoConnectTimer {
    * 时间单位
    */
   private TimeUnit unit = TimeUnit.SECONDS;
+  /**
+   * 连接锁
+   */
+  private final AtomicBoolean connectLock = new AtomicBoolean(false);
 
   public AutoConnectTimer() {
     this(true);
@@ -65,11 +70,17 @@ public class AutoConnectTimer {
       synchronized (this) {
         if (timerRef.get() == null) {
           this.timerRef.set(EventLoop.asyncIOFixedRate(() -> {
-            if (socket.isConnected()) {
-              EventLoop.cancel(timerRef.getAndSet(null));
-              return;
+            if (connectLock.compareAndSet(false, true)) {
+              try {
+                if (socket.isConnected()) {
+                  EventLoop.cancel(timerRef.getAndSet(null));
+                  return;
+                }
+                socket.doConnect();
+              } finally {
+                connectLock.set(false);
+              }
             }
-            socket.doConnect();
           }, 0, getPeriod(), getUnit()));
         }
       }

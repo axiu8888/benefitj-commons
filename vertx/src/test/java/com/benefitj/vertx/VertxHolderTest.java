@@ -1,5 +1,6 @@
 package com.benefitj.vertx;
 
+import com.benefitj.core.AutoConnectTimer;
 import com.benefitj.vertx.mqtt.client.VertxMqttClient;
 import com.benefitj.vertx.mqtt.client.VertxMqttMessageDispatcher;
 import com.benefitj.vertx.mqtt.server.MqttServerHolder;
@@ -70,8 +71,7 @@ class VertxHolderTest {
     );
     tcp.setAutoConnectTimer(new AutoConnectTimer()
         .setAutoConnect(true)
-        .setPeriod(5, TimeUnit.SECONDS)
-    );
+        .setPeriod(5, TimeUnit.SECONDS));
     /*
     tcp.addListener(new VertxTcpClient.Listener<VertxTcpClient>() {
       @Override

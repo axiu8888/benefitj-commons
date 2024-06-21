@@ -8,7 +8,6 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -152,21 +151,15 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     return this.raw;
   }
 
-  final AtomicBoolean connectLock = new AtomicBoolean(false); // 连接锁，避免多线程调度连接时死锁
-
   boolean connect0(IPahoMqttV3Client raw,
                    MqttConnectOptions options,
                    BiConsumer<Boolean, Throwable> status) {
-    if (connectLock.compareAndSet(false, true)) {
-      try {
-        if (raw.isConnected()) return true;
-        raw.connect(options);
-        status.accept(raw.isConnected(), null);
-      } catch (Throwable e) {
-        status.accept(false, e);
-      } finally {
-        connectLock.set(false);
-      }
+    try {
+      if (raw.isConnected()) return true;
+      raw.connect(options);
+      status.accept(raw.isConnected(), null);
+    } catch (Throwable e) {
+      status.accept(false, e);
     }
     return raw.isConnected();
   }
