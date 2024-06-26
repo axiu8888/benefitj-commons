@@ -44,7 +44,7 @@ public class AutoConnectTimer {
   /**
    * 连接锁
    */
-  private final AtomicBoolean connectLock = new AtomicBoolean(false);
+  private final AtomicBoolean lock = new AtomicBoolean(false);
 
   public AutoConnectTimer() {
     this(true);
@@ -70,7 +70,7 @@ public class AutoConnectTimer {
       synchronized (this) {
         if (timerRef.get() == null) {
           this.timerRef.set(EventLoop.asyncIOFixedRate(() -> {
-            if (connectLock.compareAndSet(false, true)) {
+            if (lock.compareAndSet(false, true)) {
               try {
                 if (socket.isConnected()) {
                   EventLoop.cancel(timerRef.getAndSet(null));
@@ -78,7 +78,7 @@ public class AutoConnectTimer {
                 }
                 socket.doConnect();
               } finally {
-                connectLock.set(false);
+                lock.set(false);
               }
             }
           }, 0, getPeriod(), getUnit()));
@@ -122,6 +122,10 @@ public class AutoConnectTimer {
   public AutoConnectTimer setUnit(TimeUnit unit) {
     this.unit = unit;
     return this;
+  }
+
+  public long toMillis() {
+    return this.unit.toMillis(getPeriod());
   }
 
   public static final AutoConnectTimer NONE = new AutoConnectTimer(false) {

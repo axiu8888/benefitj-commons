@@ -156,6 +156,10 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
                    BiConsumer<Boolean, Throwable> status) {
     try {
       if (raw.isConnected()) return true;
+      if (options != null && !options.isAutomaticReconnect()) {
+        options.setAutomaticReconnect(false);
+        options.setConnectionTimeout((int) Math.min(options.getConnectionTimeout(), getAutoConnectTimer().toMillis() / 1000L));
+      }
       raw.connect(options);
       status.accept(raw.isConnected(), null);
     } catch (Throwable e) {
@@ -172,14 +176,10 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
       result.accept(true, null);
       return true;
     }
-    if (options != null) {
-      options.setAutomaticReconnect(false);
-      options.setConnectionTimeout(1);
-    }
-    return connect0(raw, options, (succeed, cause) -> {
-      if (succeed) listener.onConnected(this);  // 连接成功
+    return connect0(raw, options, (status, cause) -> {
+      if (status) listener.onConnected(this);  // 连接成功
       else listener.connectionLost(cause); // 连接失败
-      result.accept(succeed, cause);
+      result.accept(status, cause);
     });
   }
 
