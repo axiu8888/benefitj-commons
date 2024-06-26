@@ -1,6 +1,7 @@
 package com.benefitj.core;
 
 import com.benefitj.core.file.FileCopy;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.annotation.Nullable;
@@ -199,7 +200,7 @@ public class ClasspathUtils {
   public static void copy(String src, String dest, @Nullable ClassLoader loader) {
     URL url = getURL(src, loader);
     if (isJar(url.getPath())) {
-      copyFilesFromJarTo(url, src, dest);
+      copyFromJarTo(url, src, dest);
     } else {
       File rawFile = new File(url.getFile());
       FileCopy.copy(rawFile, new File(dest, rawFile.getName()));
@@ -213,18 +214,18 @@ public class ClasspathUtils {
    * @param src  源文件
    * @param dest 目标文件
    */
-  public static void copyFilesFromJarTo(URL url, String src, String dest) {
+  public static void copyFromJarTo(URL url, String src, String dest) {
     try {
       // 拷贝jar中的文件
       URLConnection conn = url.openConnection();
       if (conn instanceof JarURLConnection) {
         JarURLConnection jarConn = (JarURLConnection) url.openConnection();
         try (JarFile jarFile = jarConn.getJarFile();) {
-          copyFilesFromJarTo(jarFile, src, dest);
+          copyFromJarTo(jarFile, src, dest);
         }
       } else {
         try (JarFile jarFile = new JarFile(url.getPath());) {
-          copyFilesFromJarTo(jarFile, src, dest);
+          copyFromJarTo(jarFile, src, dest);
         }
       }
     } catch (IOException e) {
@@ -239,7 +240,7 @@ public class ClasspathUtils {
    * @param src     源文件
    * @param dest    目标文件
    */
-  public static void copyFilesFromJarTo(JarFile jarFile, String src, String dest) {
+  public static void copyFromJarTo(JarFile jarFile, String src, String dest) {
     try {
       Enumeration<JarEntry> entries = jarFile.entries();
       String stripSrc = trim(src, true, false);
@@ -263,7 +264,7 @@ public class ClasspathUtils {
             destFile.mkdirs();
           } else {
             // 拷贝文件
-            transferTo(jarFile.getInputStream(entry), destFile, true);
+            IOUtils.write(jarFile.getInputStream(entry), destFile);
           }
         }
       }
@@ -273,56 +274,10 @@ public class ClasspathUtils {
   }
 
   private static String trim(String path, boolean first, boolean last) {
-    String out = path;
-    while (first && out.startsWith("/")) {
-      out = out.substring(1);
-    }
-    while (last && out.endsWith("/")) {
-      out = out.substring(0, out.length() - 1);
-    }
+    String out = StringUtils.getIfBlank(path, () -> "").replace("\\", "/").replace("//", "/");
+    while (first && out.startsWith("/")) out = out.substring(1);
+    while (last && out.endsWith("/")) out = out.substring(0, out.length() - 1);
     return out;
-  }
-
-  /**
-   * 拷贝到文件中
-   *
-   * @param in    输入流
-   * @param dest  目标文件
-   * @param close 是否自动关闭
-   * @return 返回读取的长度
-   */
-  private static long transferTo(InputStream in, File dest, boolean close) {
-    try {
-      if (!dest.exists()) {
-        dest.getParentFile().mkdirs();
-        dest.createNewFile();
-      }
-      try (FileOutputStream out = new FileOutputStream(dest);) {
-        return transferTo(in, out, close);
-      } catch (FileNotFoundException e) {
-        if (!dest.exists()) {
-          throw new FileNotFoundException("无法找到文件: " + dest);
-        } else if (dest.isDirectory()) {
-          throw new FileNotFoundException("文件夹不可读取: " + dest);
-        } else {
-          throw e;
-        }
-      }
-    } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
-    }
-  }
-
-  /**
-   * 拷贝到某处
-   *
-   * @param in    输入流
-   * @param out   输出流
-   * @param close 是否关闭输入输出
-   * @return 返回读取的长度
-   */
-  public static long transferTo(InputStream in, OutputStream out, boolean close) {
-    return IOUtils.write(in, out, 1024 << 4, close);
   }
 
 

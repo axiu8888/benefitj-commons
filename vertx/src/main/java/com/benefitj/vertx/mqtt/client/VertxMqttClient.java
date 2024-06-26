@@ -1,12 +1,12 @@
 package com.benefitj.vertx.mqtt.client;
 
-import com.benefitj.core.AutoConnectTimer;
-import com.benefitj.vertx.VerticleInitializer;
-import com.benefitj.vertx.VertxLogger;
 import com.benefitj.core.AttributeMap;
+import com.benefitj.core.AutoConnectTimer;
 import com.benefitj.core.IdUtils;
 import com.benefitj.core.ProxyUtils;
 import com.benefitj.core.log.ILogger;
+import com.benefitj.vertx.VerticleInitializer;
+import com.benefitj.vertx.VertxLogger;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
@@ -471,7 +471,12 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
    * @return 返回MQTT客户端
    */
   public VertxMqttClient publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, Handler<AsyncResult<Integer>> publishSentHandler) {
-    getRaw().publish(topic, payload, qosLevel, isDup, isRetain, publishSentHandler);
+    MqttClient raw = getRaw();
+    if (raw != null && raw.isConnected()) {
+      raw.publish(topic, payload, qosLevel, isDup, isRetain, publishSentHandler);
+    } else {
+      throw new IllegalStateException("MQTT 未连接!");
+    }
     return self_();
   }
 
