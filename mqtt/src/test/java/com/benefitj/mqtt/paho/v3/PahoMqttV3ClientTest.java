@@ -5,7 +5,6 @@ import com.benefitj.core.DateFmtter;
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.IdUtils;
 import com.benefitj.core.functions.StreamBuilder;
-import com.benefitj.mqtt.MqttMessageSubscriber;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -13,7 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 
 @Slf4j
@@ -43,8 +42,8 @@ class PahoMqttV3ClientTest {
           client.setAutoConnectTimer(timer ->
               timer
                   .setAutoConnect(true)
-                  .setPeriod(5, TimeUnit.SECONDS)
-          );
+                  .setInterval(Duration.ofSeconds(5)
+                  ));
         })
         .set(PahoMqttV3Client::connect)
         .get();

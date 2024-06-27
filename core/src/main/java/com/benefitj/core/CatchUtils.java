@@ -15,6 +15,22 @@ import java.util.function.Predicate;
 public class CatchUtils {
 
   /**
+   * 查找调用链的根节点异常
+   */
+  public static Throwable findRoot(Throwable error) {
+    return find(error, e -> StringUtils.isNotBlank(e.getMessage()) || e.getCause() == null);
+  }
+
+  /**
+   * 查找调用链的异常
+   */
+  public static Throwable find(Throwable error, Predicate<Throwable> filter) {
+    Throwable e = error;
+    while (!filter.test(e)) e = e.getCause();
+    return e;
+  }
+
+  /**
    * 抛出异常
    *
    * @param e    异常
@@ -22,7 +38,7 @@ public class CatchUtils {
    * @return 返回异常对象
    */
   public static RuntimeException throwing(Throwable e, Class<?> type) {
-    Throwable error = findTop(e);
+    Throwable error = findRoot(e);
     return error.getClass().isAssignableFrom(type)
         ? (RuntimeException) e
         : (RuntimeException) Instantiator.get().create(type, error.getMessage(), error);
@@ -120,22 +136,6 @@ public class CatchUtils {
     } catch (Throwable e) {
       return mappedFunc.apply(e);
     }
-  }
-
-  /**
-   * 查找调用链的顶级异常
-   */
-  public static Throwable findTop(Throwable e) {
-    return find(e, ee -> StringUtils.isNotBlank(ee.getMessage()) || ee.getCause() == null);
-  }
-
-  /**
-   * 查找调用链的异常
-   */
-  public static Throwable find(Throwable e, Predicate<Throwable> filter) {
-    Throwable ee = e;
-    while (!filter.test(ee)) ee = ee.getCause();
-    return ee;
   }
 
 }

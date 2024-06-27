@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 
@@ -70,8 +71,7 @@ class VertxHolderTest {
             .setReconnectAttempts(1) // 尚持重连次数
     );
     tcp.setAutoConnectTimer(new AutoConnectTimer()
-        .setAutoConnect(true)
-        .setPeriod(5, TimeUnit.SECONDS));
+        .setAutoConnect(true, Duration.ofSeconds(5)));
     /*
     tcp.addListener(new VertxTcpClient.Listener<VertxTcpClient>() {
       @Override

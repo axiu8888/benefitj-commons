@@ -142,7 +142,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
         Method method = ReflectUtils.getMethod(type, m.getName(), m.getParameterTypes());
         return ReflectUtils.invoke(source, method, args);
       } catch (Throwable e) {
-        throw CatchUtils.throwing(e.getCause() != null ? e.getCause() : e, MqttPahoClientException.class);
+        throw CatchUtils.throwing(e, MqttPahoClientException.class);
       }
     });
   }
@@ -158,7 +158,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
       if (raw.isConnected()) return true;
       if (options != null && !options.isAutomaticReconnect()) {
         options.setAutomaticReconnect(false);
-        options.setConnectionTimeout((int) Math.min(options.getConnectionTimeout(), getAutoConnectTimer().toMillis() / 1000L));
+        options.setConnectionTimeout((int) Math.min(options.getConnectionTimeout(), getAutoConnectTimer().getInterval().toSeconds()));
       }
       raw.connect(options);
       status.accept(raw.isConnected(), null);

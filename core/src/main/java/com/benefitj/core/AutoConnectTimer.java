@@ -1,5 +1,6 @@
 package com.benefitj.core;
 
+import java.time.Duration;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,11 +37,7 @@ public class AutoConnectTimer {
   /**
    * 尝试间隔
    */
-  private int period = 10;
-  /**
-   * 时间单位
-   */
-  private TimeUnit unit = TimeUnit.SECONDS;
+  private Duration interval;
   /**
    * 连接锁
    */
@@ -51,13 +48,12 @@ public class AutoConnectTimer {
   }
 
   public AutoConnectTimer(boolean autoConnect) {
-    this.setAutoConnect(autoConnect);
+    this(autoConnect, Duration.ofSeconds(10));
   }
 
-  public AutoConnectTimer(boolean autoConnect, int period, TimeUnit unit) {
+  public AutoConnectTimer(boolean autoConnect, Duration interval) {
     this.autoConnect = autoConnect;
-    this.period = period;
-    this.unit = unit;
+    this.interval = interval;
   }
 
   /**
@@ -67,9 +63,10 @@ public class AutoConnectTimer {
    */
   public void start(Connector socket) {
     if (isAutoConnect()) {
+      if (timerRef.get() != null) return;
       synchronized (this) {
         if (timerRef.get() == null) {
-          this.timerRef.set(EventLoop.asyncIOFixedRate(() -> {
+          EventLoop.cancel(this.timerRef.getAndSet(EventLoop.asyncIOFixedRate(() -> {
             if (lock.compareAndSet(false, true)) {
               try {
                 if (socket.isConnected()) {
@@ -81,7 +78,7 @@ public class AutoConnectTimer {
                 lock.set(false);
               }
             }
-          }, 0, getPeriod(), getUnit()));
+          }, 0, getInterval().toMillis(), TimeUnit.MILLISECONDS)));
         }
       }
     }
@@ -102,30 +99,17 @@ public class AutoConnectTimer {
     return this;
   }
 
-  public int getPeriod() {
-    return period;
+  public Duration getInterval() {
+    return interval;
   }
 
-  public AutoConnectTimer setPeriod(int period) {
-    this.period = period;
+  public AutoConnectTimer setInterval(Duration interval) {
+    this.interval = interval;
     return this;
   }
 
-  public AutoConnectTimer setPeriod(int period, TimeUnit unit) {
-    return this.setPeriod(period).setUnit(unit);
-  }
-
-  public TimeUnit getUnit() {
-    return unit;
-  }
-
-  public AutoConnectTimer setUnit(TimeUnit unit) {
-    this.unit = unit;
-    return this;
-  }
-
-  public long toMillis() {
-    return this.unit.toMillis(getPeriod());
+  public AutoConnectTimer setAutoConnect(boolean autoConnect, Duration interval) {
+    return setAutoConnect(autoConnect).setInterval(interval);
   }
 
   public static final AutoConnectTimer NONE = new AutoConnectTimer(false) {
@@ -140,12 +124,7 @@ public class AutoConnectTimer {
     }
 
     @Override
-    public AutoConnectTimer setPeriod(int period) {
-      return this;
-    }
-
-    @Override
-    public AutoConnectTimer setUnit(TimeUnit unit) {
+    public AutoConnectTimer setInterval(Duration interval) {
       return this;
     }
   };

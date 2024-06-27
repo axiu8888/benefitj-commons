@@ -98,8 +98,8 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
     if (StringUtils.isBlank(getOptions().getClientId())) {
       getOptions().setClientId(IdUtils.nextLetterId("vertx-", null, 12));
     }
-    AutoConnectTimer acTimer = getAutoConnectTimer();
-    getOptions().setConnectTimeout(Math.min((int) acTimer.getUnit().toMillis(acTimer.getPeriod()), getOptions().getConnectTimeout()));
+    AutoConnectTimer act = getAutoConnectTimer();
+    getOptions().setConnectTimeout(Math.min((int) act.getInterval().toMillis(), getOptions().getConnectTimeout()));
     // 初始化
     this.getInitializer().onInitialize(this);
     // 创建客户端
