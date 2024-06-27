@@ -5,6 +5,7 @@ import com.benefitj.core.functions.IRunnable;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -100,6 +101,15 @@ public class CatchUtils {
     } catch (Throwable e) {
       mappedFunc.accept(e);
     }
+  }
+
+  /**
+   * 忽略异常
+   */
+  public static void ignore(CountDownLatch latch) {
+    try {
+      latch.await();
+    } catch (InterruptedException ignored) {}
   }
 
   /**

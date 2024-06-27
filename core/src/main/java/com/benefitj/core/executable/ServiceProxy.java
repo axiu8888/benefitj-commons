@@ -49,8 +49,7 @@ public class ServiceProxy implements InvocationHandler {
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    MethodInvoker invoker = getInvoker(proxy, method);
-    return invoker.invoke(args);
+    return getInvoker(proxy, method).invoke(args);
   }
 
   public MethodInvoker getInvoker(Object proxy, Method method) {

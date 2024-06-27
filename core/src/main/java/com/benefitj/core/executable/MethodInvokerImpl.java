@@ -13,7 +13,7 @@ public class MethodInvokerImpl implements MethodInvoker {
   /**
    * 参数查找器
    */
-  private ExecutableArgsFinder finder = ExecutableArgsFinder.INSTANCE;
+  private ExecutableArgsFinder finder = ExecutableArgsFinder.get();
 
   public MethodInvokerImpl() {
   }

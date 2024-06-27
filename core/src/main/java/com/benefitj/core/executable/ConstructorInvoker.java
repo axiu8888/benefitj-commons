@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 public class ConstructorInvoker<T> {
 
-  private ExecutableArgsFinder finder = ExecutableArgsFinder.INSTANCE;
+  private ExecutableArgsFinder finder = ExecutableArgsFinder.get();
 
   private final Class<T> klass;
 
