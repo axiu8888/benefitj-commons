@@ -1,5 +1,7 @@
 package com.benefitj.http;
 
+import com.benefitj.core.AutoConnectTimer;
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IdUtils;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -11,15 +13,17 @@ import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.net.SocketException;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /**
  * 连接的客户端
  */
-public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocket {
+public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocket, AutoConnectTimer.Connector {
 
-  private static final Logger log = LoggerFactory.getLogger(WebSocketImpl.class);
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final String id = IdUtils.uuid();
 
@@ -28,7 +32,12 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
   private okhttp3.WebSocket raw;
   private WebSocketListener listener;
 
-  private volatile boolean open = false;
+  private volatile boolean opened = false;
+  private volatile boolean closed = false;
+  /**
+   * 自动重连
+   */
+  private final AutoConnectTimer autoConnectTimer = new AutoConnectTimer(false, Duration.ofSeconds(10));
 
   public WebSocketImpl() {
   }
@@ -53,6 +62,25 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
     this.listener = listener;
   }
 
+  public AutoConnectTimer getAutoConnectTimer() {
+    return autoConnectTimer;
+  }
+
+  public WebSocketImpl getAutoConnectTimer(Consumer<AutoConnectTimer> consumer) {
+    consumer.accept(getAutoConnectTimer());
+    return this;
+  }
+
+  @Override
+  public boolean isConnected() {
+    return isOpen();
+  }
+
+  @Override
+  public void doConnect() {
+    connect(getUrl());
+  }
+
   /**
    * 重连
    */
@@ -64,9 +92,7 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
    * 重连
    */
   public void connect(String url) {
-    if (isOpen()) {
-      throw new IllegalStateException("客户端已连接!");
-    }
+    if (isOpen()) throw new IllegalStateException("客户端已连接!");
     connect0(new Request.Builder()
         .url(url)
         .get()
@@ -78,12 +104,9 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
    */
   public void reconnect() {
     okhttp3.WebSocket raw = getRaw();
-    if (raw == null) {
-      throw new IllegalStateException("还未连接过！");
-    }
-    if (isOpen()) {
-      return;
-    }
+    if (raw == null) throw new IllegalStateException("还未连接过！");
+    if (isOpen()) return;
+    this.closed = false;
     connect0(raw.request()
         .newBuilder()
         .build());
@@ -92,7 +115,8 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
   @Override
   public void onOpen(@NotNull okhttp3.WebSocket ws, @NotNull Response response) {
     log.trace("[{}] onOpen, url: {}, response.code: {}, response.message: {}", getId(), obtainUrl(ws), response.code(), response.message());
-    this.open = true;
+    this.opened = true;
+    this.closed = false;
     this.raw = ws;
     getListener().onOpen(this, response);
   }
@@ -121,13 +145,16 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
       getListener().onFailure(this, error, response);
     } finally {
       if (error instanceof EOFException || error instanceof SocketException) {
-        this.open = false;
+        this.opened = false;
         try {
           getListener().onClosed(this, 1, error.getMessage());
         } catch (Exception e) {
           log.error(e.getMessage(), e);
         }
       }
+    }
+    if (!isClosed()) {
+      autoConnectTimer.start(this); // 开始自动重连(如果需要自动重连)
     }
   }
 
@@ -141,10 +168,16 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
   @Override
   public void onClosed(@NotNull okhttp3.WebSocket ws, int code, @NotNull String reason) {
     log.trace("[{}] onClosed, url: {}, code: {}, reason: {}", getId(), obtainUrl(ws), code, reason);
-    boolean opened = this.open;
-    this.open = false;
-    if (opened) {
-      getListener().onClosed(this, code, reason);
+    try {
+      boolean _open = this.opened;
+      this.opened = false;
+      if (_open) {
+        getListener().onClosed(this, code, reason);
+      }
+    } finally {
+      if (!isClosed()) {
+        this.autoConnectTimer.start(this); // 开始自动重连(如果需要自动重连)
+      }
     }
   }
 
@@ -161,7 +194,12 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
    */
   @Override
   public boolean isOpen() {
-    return open;
+    return opened;
+  }
+
+  @Override
+  public boolean isClosed() {
+    return closed;
   }
 
   @Override
@@ -177,12 +215,21 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
 
   @Override
   public void cancel() {
-    getRaw().cancel();
+    //getRaw().cancel();
+    //throw new UnsupportedOperationException("不支持此功能!");
+    close();
   }
 
   @Override
   public boolean close(int code, @Nullable String reason) {
-    return getRaw().close(code, reason);
+    try {
+      if (!isOpen()) CatchUtils.ignore(() -> getRaw().cancel());// 取消
+      if (!isOpen() && isClosed()) return true;
+      this.closed = true;
+      return getRaw().close(code, reason);
+    } finally {
+      this.autoConnectTimer.stop();
+    }
   }
 
   @Override
@@ -208,4 +255,5 @@ public class WebSocketImpl extends okhttp3.WebSocketListener implements WebSocke
   static String obtainUrl(okhttp3.WebSocket ws) {
     return ws != null ? ws.request().url().toString() : null;
   }
+
 }

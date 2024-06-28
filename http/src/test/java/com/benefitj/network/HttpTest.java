@@ -1,8 +1,8 @@
 package com.benefitj.network;
 
-import com.benefitj.core.EventLoop;
-import com.benefitj.core.HexUtils;
-import com.benefitj.core.IOUtils;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import com.benefitj.core.*;
 import com.benefitj.http.*;
 import io.reactivex.rxjava3.core.Observable;
 import lombok.extern.slf4j.Slf4j;
@@ -56,8 +56,10 @@ class HttpTest {
   @Test
   void test_ruicaho() {
 //    String url = "ws://192.168.0.33:8089";
-    String url = "ws://192.168.9.102:8089";
+    String url = "ws://192.168.9.105:8089";
 //    String url = "ws://192.168.1.198/api/management/socket";
+//    AtomicReference<IWriter> writerRef = new AtomicReference<>(IWriter.createWriter(IOUtils.createFile("D:/tmp/cache/走-呼吸.txt"), false));
+
     WebSocket socket = HttpClient.newWebSocket(url, new WebSocketListener() {
 
       @Override
@@ -67,13 +69,19 @@ class HttpTest {
 
       @Override
       public void onMessage(WebSocket socket, String text) {
+//        System.err.println(text);
 //        log.info("onMessage ==>: ", text);
-        System.err.println(text);;
+        JSONObject json = JSON.parseObject(text);
+        json.put("date", DateFmtter.fmtNowS());
+        String out = json.toJSONString();
+        System.err.println(out);
+//        writerRef.get()
+//            .writeAndFlush(out)
+//            .writeAndFlush("\n");
 
         // 实时数据
         //{"Type":"1058","Data":{"Index":4533.0,"Time":22.669999999999774,"Volume":2.0729549778763063,"Flow":-0.031567169205410125}}
 
-//        JSONObject json = JSON.parseObject(text);
 //        String type = json.getString("Type");
 //        switch (type) {
 //          case "102": // 病人导入CPF
@@ -106,12 +114,20 @@ class HttpTest {
         log.info("onFailure, error: {}", error.getMessage());
         error.printStackTrace();
       }
-    });
-    EventLoop.sleepSecond(10);
+    }, true, 5);
+    EventLoop.sleepSecond(3);
 
+    long startAt = TimeUtils.now();
     for(;;) {
-      if (!socket.isOpen()) {
-        socket.reconnect();
+//      if (!socket.isOpen()) {
+//        socket.reconnect();
+//      }
+      if (TimeUtils.diffNow(startAt) > 30_000) {
+        if (!socket.isClosed()) {
+          socket.close();
+          System.err.println("关闭...");
+        }
+//        break;
       }
       EventLoop.sleepSecond(10);
     }

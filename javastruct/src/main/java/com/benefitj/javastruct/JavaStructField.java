@@ -16,7 +16,7 @@ import java.lang.annotation.*;
 public @interface JavaStructField {
 
   /**
-   * 开始的位置，如果指定了此参数，则使用此参数
+   * 开始的位置，如果指定了此参数，则使用此参数，没有就根据字段顺序
    */
   int startAt() default -1;
 
@@ -27,7 +27,7 @@ public @interface JavaStructField {
   int size();
 
   /**
-   * 字节顺序
+   * 字节顺序，对于一些数值类型，可能有大小端的问题
    */
   FieldByteOrder byteOrder() default FieldByteOrder.BIG_ENDIAN;
 
@@ -37,17 +37,17 @@ public @interface JavaStructField {
   boolean singed() default false;
 
   /**
-   * 转换器
+   * 指定具体的转换器(自定义的需要注册)
    */
   Class<? extends Converter> converter() default Converter.class;
 
   /**
-   * 字节编码
+   * 如果是字符串，可以指定字节编码
    */
   String charset() default "";
 
   /**
-   * 数组长度
+   * 如果是数组，可以指定数组长度
    */
   int arrayLength() default 0;
 

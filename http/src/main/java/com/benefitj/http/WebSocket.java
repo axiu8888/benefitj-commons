@@ -26,6 +26,11 @@ public interface WebSocket extends okhttp3.WebSocket {
   boolean isOpen();
 
   /**
+   * 是否已关闭(主动关闭)
+   */
+  boolean isClosed();
+
+  /**
    * 重连
    */
   void reconnect();
