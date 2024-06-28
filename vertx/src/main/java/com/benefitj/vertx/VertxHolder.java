@@ -1,9 +1,9 @@
 package com.benefitj.vertx;
 
 import com.benefitj.core.AutoConnectTimer;
+import com.benefitj.core.CatchUtils;
 import com.benefitj.vertx.mqtt.client.VertxMqttClient;
 import com.benefitj.vertx.mqtt.client.VertxMqttMessageDispatcher;
-import com.benefitj.core.CatchUtils;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -142,7 +142,7 @@ public class VertxHolder {
         });
     CatchUtils.ignore(() -> latch.await());
     if (errRef.get() != null) {
-      throw new IllegalStateException(errRef.get());
+      throw new IllegalStateException(CatchUtils.findRoot(errRef.get()));
     }
     return verticle;
   }

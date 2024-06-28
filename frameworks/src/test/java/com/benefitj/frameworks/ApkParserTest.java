@@ -1,5 +1,6 @@
 package com.benefitj.frameworks;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.Utils;
@@ -50,7 +51,7 @@ class ApkParserTest extends BaseTest {
         File dest = IOUtils.createFile(cacheDir, entry.getName());
         IOUtils.write(zf.getInputStream(entry), dest);
       } catch (Exception e) {
-        throw new IllegalStateException(e);
+        throw new IllegalStateException(CatchUtils.findRoot(e));
       }
     });
 

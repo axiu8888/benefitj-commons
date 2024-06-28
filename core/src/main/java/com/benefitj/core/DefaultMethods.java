@@ -18,15 +18,13 @@ public class DefaultMethods {
     return methodHandleLookup.lookup(method);
   }
 
-  static enum MethodHandleLookup {
+  enum MethodHandleLookup {
     OPEN {
       private final Optional<Constructor<MethodHandles.Lookup>> constructor = MethodHandleLookup.getLookupConstructor();
 
       MethodHandle lookup(Method method) throws ReflectiveOperationException {
-        Constructor<MethodHandles.Lookup> constructor = (Constructor)this.constructor.orElseThrow(() -> {
-          return new IllegalStateException("Could not obtain MethodHandles.lookup constructor");
-        });
-        return ((MethodHandles.Lookup)constructor.newInstance(method.getDeclaringClass())).unreflectSpecial(method, method.getDeclaringClass());
+        Constructor<MethodHandles.Lookup> constructor = this.constructor.orElseThrow(() -> new IllegalStateException("Could not obtain MethodHandles.lookup constructor"));
+        return (constructor.newInstance(method.getDeclaringClass())).unreflectSpecial(method, method.getDeclaringClass());
       }
 
       boolean isAvailable() {
@@ -53,7 +51,7 @@ public class DefaultMethods {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         if (this.privateLookupIn != null) {
           try {
-            return (MethodHandles.Lookup)this.privateLookupIn.invoke((Object)null, declaringClass, lookup);
+            return (MethodHandles.Lookup) this.privateLookupIn.invoke((Object) null, declaringClass, lookup);
           } catch (ReflectiveOperationException var4) {
             return lookup;
           }
@@ -93,7 +91,7 @@ public class DefaultMethods {
         if (ex.getClass().getName().equals("java.lang.reflect.InaccessibleObjectException")) {
           return Optional.empty();
         } else {
-          throw new IllegalStateException(ex);
+          throw new IllegalStateException(CatchUtils.findRoot(ex));
         }
       }
     }

@@ -79,7 +79,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
           }
           return null;
         } else {
-          throw new IllegalStateException(e);
+          throw new IllegalStateException(CatchUtils.findRoot(e));
         }
       }
     });

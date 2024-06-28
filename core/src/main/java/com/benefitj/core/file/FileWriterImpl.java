@@ -1,6 +1,7 @@
 package com.benefitj.core.file;
 
 import com.benefitj.core.AttributeMap;
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IOUtils;
 
 import java.io.File;
@@ -101,7 +102,7 @@ public class FileWriterImpl implements IWriter<FileWriterImpl>, AttributeMap {
       }
       return this;
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

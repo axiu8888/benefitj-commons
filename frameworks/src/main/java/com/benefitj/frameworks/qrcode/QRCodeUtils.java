@@ -1,5 +1,6 @@
 package com.benefitj.frameworks.qrcode;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IOUtils;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
@@ -172,7 +173,7 @@ public class QRCodeUtils {
       BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(luminanceSource));
       return new MultiFormatReader().decode(bitmap, hints);
     } catch (NotFoundException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

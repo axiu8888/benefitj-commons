@@ -81,7 +81,7 @@ public class NetworkUtils {
       socket.close();
       return port;
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

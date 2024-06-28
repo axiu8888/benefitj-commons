@@ -1,5 +1,6 @@
 package com.benefitj.core.lambda;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.ReflectUtils;
 import com.benefitj.core.functions.IFunction;
 
@@ -53,7 +54,7 @@ public class LambdaUtils {
           return new ShadowLambdaMeta((SerializedLambda) ois.readObject());
         }
       } catch (IOException | ClassNotFoundException e) {
-        throw new IllegalStateException(e);
+        throw new IllegalStateException(CatchUtils.findRoot(e));
       }
     }
   }

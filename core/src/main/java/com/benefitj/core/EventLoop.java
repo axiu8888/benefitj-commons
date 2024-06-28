@@ -308,7 +308,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
     try {
       t.join(unit.toMillis(duration));
     } catch (InterruptedException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -340,7 +340,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
     try {
       Thread.sleep(unit.toMillis(duration));
     } catch (InterruptedException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

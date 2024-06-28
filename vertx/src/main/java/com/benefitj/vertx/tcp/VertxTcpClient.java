@@ -1,12 +1,12 @@
 package com.benefitj.vertx.tcp;
 
 import com.benefitj.core.AutoConnectTimer;
-import com.benefitj.vertx.VertxHolder;
-import com.benefitj.vertx.VertxLogger;
 import com.benefitj.core.CatchUtils;
 import com.benefitj.core.HexUtils;
 import com.benefitj.core.ProxyUtils;
 import com.benefitj.core.log.ILogger;
+import com.benefitj.vertx.VertxHolder;
+import com.benefitj.vertx.VertxLogger;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;

@@ -1,5 +1,6 @@
 package com.benefitj.frameworks;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.IdUtils;
 import com.benefitj.core.SystemProperty;
@@ -74,7 +75,7 @@ public class TarUtils {
       return tar;
     } catch (IOException e) {
       tar.delete();
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -156,7 +157,7 @@ public class TarUtils {
       return dest;
     } catch (IOException e) {
       IOUtils.delete(dest);
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -187,7 +188,7 @@ public class TarUtils {
         }
       }
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -218,7 +219,7 @@ public class TarUtils {
         }
       }
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
     return destDir;
   }
@@ -235,7 +236,7 @@ public class TarUtils {
       destDir.mkdirs();
       zipFile.extractAll(destDir.getAbsolutePath());
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
     return destDir;
   }

@@ -42,7 +42,7 @@ public class CatchUtils {
     Throwable error = findRoot(e);
     return error.getClass().isAssignableFrom(type)
         ? (RuntimeException) e
-        : (RuntimeException) Instantiator.get().create(type, error.getMessage(), error);
+        : (RuntimeException) Instantiator.get().create(type, error);
   }
 
   /**

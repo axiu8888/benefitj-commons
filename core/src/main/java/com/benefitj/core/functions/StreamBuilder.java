@@ -1,5 +1,7 @@
 package com.benefitj.core.functions;
 
+import com.benefitj.core.CatchUtils;
+
 import java.util.function.Consumer;
 
 public class StreamBuilder<T> {
@@ -29,7 +31,7 @@ public class StreamBuilder<T> {
     try {
       consumer.accept(get());
     } catch (Exception e) {
-      throw new IllegalStateException(e.getMessage());
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
     return this;
   }

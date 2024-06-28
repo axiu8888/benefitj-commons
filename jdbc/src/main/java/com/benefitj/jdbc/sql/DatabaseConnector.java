@@ -1,5 +1,6 @@
 package com.benefitj.jdbc.sql;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.ShutdownHook;
 import com.benefitj.core.functions.IFunction;
 import org.apache.commons.lang3.StringUtils;
@@ -109,7 +110,7 @@ public class DatabaseConnector {
 
             ShutdownHook.register(() -> SqlUtils.tryThrow(connection::close));
           } catch (SQLException | ClassNotFoundException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(CatchUtils.findRoot(e));
           }
         }
       }

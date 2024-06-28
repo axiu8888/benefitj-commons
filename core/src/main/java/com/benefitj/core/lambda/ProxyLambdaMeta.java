@@ -1,5 +1,6 @@
 package com.benefitj.core.lambda;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.ReflectUtils;
 
 import java.lang.reflect.Field;
@@ -23,7 +24,7 @@ public class ProxyLambdaMeta implements LambdaMeta {
       FIELD_MEMBER_NAME_CLAZZ = ReflectUtils.setAccessible(classMemberName.getDeclaredField("clazz"));
       FIELD_MEMBER_NAME_NAME = ReflectUtils.setAccessible(classMemberName.getDeclaredField("name"));
     } catch (ClassNotFoundException | NoSuchFieldException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -38,7 +39,7 @@ public class ProxyLambdaMeta implements LambdaMeta {
       clazz = (Class<?>) FIELD_MEMBER_NAME_CLAZZ.get(member);
       name = (String) FIELD_MEMBER_NAME_NAME.get(member);
     } catch (IllegalAccessException | NoSuchFieldException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

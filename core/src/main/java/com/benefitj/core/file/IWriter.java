@@ -1,6 +1,7 @@
 package com.benefitj.core.file;
 
 import com.benefitj.core.ByteArrayCopy;
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IOUtils;
 
 import java.io.*;
@@ -184,7 +185,7 @@ public interface IWriter<T extends IWriter<T>> extends AutoCloseable, Appendable
     try {
       return new BufferedOutputStream(new FileOutputStream(src, append));
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -196,7 +197,7 @@ public interface IWriter<T extends IWriter<T>> extends AutoCloseable, Appendable
     try {
       return new BufferedWriter(new FileWriter(src, charset, append));
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

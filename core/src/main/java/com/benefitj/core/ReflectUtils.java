@@ -308,7 +308,7 @@ public class ReflectUtils {
       try {
         consumer.accept(field);
       } catch (Exception e) {
-        throw new IllegalStateException(e);
+        throw new IllegalStateException(CatchUtils.findRoot(e));
       }
     }
   }
@@ -337,7 +337,7 @@ public class ReflectUtils {
       try {
         consumer.accept(m);
       } catch (Exception e) {
-        throw new IllegalStateException(e);
+        throw new IllegalStateException(CatchUtils.findRoot(e));
       }
     }
   }
@@ -715,7 +715,7 @@ public class ReflectUtils {
       setAccessible(method, true);
       return (T) method.invoke(obj, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -748,7 +748,7 @@ public class ReflectUtils {
           .bindTo(obj)
           .invokeWithArguments(args);
     } catch (Throwable e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -772,7 +772,7 @@ public class ReflectUtils {
     } catch (Throwable e) {
       String parameterTypes = Arrays.toString(method.getParameterTypes());
       String className = method.getDeclaringClass().getSimpleName();
-      throw new IllegalStateException(className + "." + method.getName() + "(" + parameterTypes.substring(1, parameterTypes.length() - 2) + ") 调用失败, cause: " + e.getMessage());
+      throw new IllegalStateException(getClassMethodName(method) + "(" + parameterTypes.substring(1, parameterTypes.length() - 2) + ") 调用失败, cause: " + e.getMessage());
     }
   }
 
@@ -801,10 +801,8 @@ public class ReflectUtils {
     try {
       return (Class<T>) Class.forName(className);
     } catch (Exception e) {
-      if (throwing) {
-        throw new IllegalStateException(e);
-      }
-      return null;
+      if (throwing) throw new IllegalStateException(CatchUtils.findRoot(e));
+      else return null;
     }
   }
 
@@ -923,6 +921,10 @@ public class ReflectUtils {
       map.put(parameters[i].getName(), values[i]);
     }
     return map;
+  }
+
+  public static String getClassMethodName(Method method) {
+    return method.getDeclaringClass().getName() + "." + method.getName();
   }
 
   public interface FindMatcher {

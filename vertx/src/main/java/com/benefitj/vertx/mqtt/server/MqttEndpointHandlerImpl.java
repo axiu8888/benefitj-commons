@@ -1,8 +1,8 @@
 package com.benefitj.vertx.mqtt.server;
 
+import com.benefitj.core.log.ILogger;
 import com.benefitj.vertx.VertxLogger;
 import com.benefitj.vertx.mqtt.MqttTopic;
-import com.benefitj.core.log.ILogger;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttWill;

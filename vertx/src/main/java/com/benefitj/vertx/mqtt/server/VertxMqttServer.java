@@ -16,10 +16,10 @@
 
 package com.benefitj.vertx.mqtt.server;
 
+import com.benefitj.core.log.ILogger;
 import com.benefitj.vertx.VerticleInitializer;
 import com.benefitj.vertx.VertxLogger;
 import com.benefitj.vertx.mqtt.MqttTopic;
-import com.benefitj.core.log.ILogger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;

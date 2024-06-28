@@ -90,7 +90,7 @@ public class RaFile implements IWriter<RaFile> {
         getRaf().setLength(newLength);
       }
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
     return this;
   }
@@ -169,7 +169,7 @@ public class RaFile implements IWriter<RaFile> {
           }
         }
       } catch (IOException e) {
-        throw new IllegalStateException(e);
+        throw new IllegalStateException(CatchUtils.findRoot(e));
       }
     }
     return lines;
@@ -209,7 +209,7 @@ public class RaFile implements IWriter<RaFile> {
         raf.setLength(wpos);
       }
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
     return this;
   }

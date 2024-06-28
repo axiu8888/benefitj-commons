@@ -51,7 +51,8 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     }
   };
 
-  static final PahoMqttV3Callback NONE = (topic, message) -> {};
+  static final PahoMqttV3Callback NONE = (topic, message) -> {
+  };
 
   /**
    * 客户端
@@ -142,7 +143,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
         Method method = ReflectUtils.getMethod(type, m.getName(), m.getParameterTypes());
         return ReflectUtils.invoke(source, method, args);
       } catch (Throwable e) {
-        throw CatchUtils.throwing(e, MqttPahoClientException.class);
+        throw new MqttPahoClientException(CatchUtils.findRoot(e));
       }
     });
   }
@@ -175,12 +176,13 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     if (raw.isConnected()) {
       result.accept(true, null);
       return true;
+    } else {
+      return connect0(raw, options, (status, cause) -> {
+        if (status) listener.onConnected(this);  // 连接成功
+        else listener.connectionLost(cause); // 连接失败
+        result.accept(status, cause);
+      });
     }
-    return connect0(raw, options, (status, cause) -> {
-      if (status) listener.onConnected(this);  // 连接成功
-      else listener.connectionLost(cause); // 连接失败
-      result.accept(status, cause);
-    });
   }
 
   /**

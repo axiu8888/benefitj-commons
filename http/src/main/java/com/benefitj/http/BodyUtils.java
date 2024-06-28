@@ -1,5 +1,6 @@
 package com.benefitj.http;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.file.IWriter;
 import com.benefitj.core.functions.IBiConsumer;
@@ -210,7 +211,7 @@ public class BodyUtils {
         consumer.accept(buf, len);
       }
     } catch (Exception e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -275,7 +276,7 @@ public class BodyUtils {
       }
       progressConsumer.accept(total, progress.get());
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

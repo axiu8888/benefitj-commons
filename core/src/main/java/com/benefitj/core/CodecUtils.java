@@ -80,7 +80,7 @@ public class CodecUtils {
     try (final FileInputStream fis = new FileInputStream(in)) {
       return md5(fis);
     } catch (Exception e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -100,7 +100,7 @@ public class CodecUtils {
       IOUtils.read(in, 1024 << 4, true, (buf, len) -> md5.update(buf, 0, len));
       return HexUtils.bytesToHex(md5.digest(), true);
     } catch (Exception e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

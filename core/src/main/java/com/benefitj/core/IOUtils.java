@@ -1044,7 +1044,7 @@ public class IOUtils {
       out.write(in, start, len);
       out.flush();
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

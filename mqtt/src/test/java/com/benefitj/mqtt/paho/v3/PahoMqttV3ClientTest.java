@@ -28,10 +28,10 @@ class PahoMqttV3ClientTest {
     client = StreamBuilder.of(new PahoMqttV3Client(StreamBuilder.of(new MqttConnectOptions())
             .set(opt -> {
               opt.setServerURIs(new String[]{"tcp://192.168.1.194:2883"});
-              opt.setConnectionTimeout(1);
               opt.setUserName("admin");
               opt.setPassword("public".toCharArray());
               opt.setMaxInflight(100);
+              opt.setConnectionTimeout(1);
               opt.setAutomaticReconnect(false);
               opt.setMaxReconnectDelay(30_000);
             })
@@ -60,8 +60,13 @@ class PahoMqttV3ClientTest {
   @Test
   void test_publish() {
     for (int i = 0; i < 100; i++) {
-      CatchUtils.ignore(() -> client.publish("collector/123456", new MqttMessage((DateFmtter.fmtNow() + " test...").getBytes())));
-      EventLoop.sleepSecond(1);
+      if (client.isConnected()) {
+        CatchUtils.ignore(() -> client.publish("collector/123456", new MqttMessage((DateFmtter.fmtNow() + " test...").getBytes())));
+        EventLoop.sleepSecond(1);
+      } else {
+        while (!client.isConnected()) EventLoop.sleepSecond(1);
+        i --;
+      }
     }
   }
 

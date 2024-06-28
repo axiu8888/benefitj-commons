@@ -1,8 +1,8 @@
 package com.benefitj.vertx.mqtt.server;
 
-import com.benefitj.vertx.mqtt.MqttTopic;
 import com.benefitj.core.SingletonSupplier;
 import com.benefitj.core.functions.WrappedMap;
+import com.benefitj.vertx.mqtt.MqttTopic;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.buffer.Buffer;
 

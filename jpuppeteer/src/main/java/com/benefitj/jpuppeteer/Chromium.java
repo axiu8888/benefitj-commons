@@ -159,7 +159,7 @@ public class Chromium implements Launcher {
                 }
               });
         } catch (IOException e) {
-          throw new IllegalStateException(e);
+          throw new IllegalStateException(CatchUtils.findRoot(e));
         }
       }
     }

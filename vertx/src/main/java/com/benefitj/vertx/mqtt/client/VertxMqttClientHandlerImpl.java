@@ -1,8 +1,8 @@
 package com.benefitj.vertx.mqtt.client;
 
-import com.benefitj.vertx.VertxLogger;
 import com.benefitj.core.SingletonSupplier;
 import com.benefitj.core.log.ILogger;
+import com.benefitj.vertx.VertxLogger;
 import io.vertx.core.AsyncResult;
 import io.vertx.mqtt.messages.MqttConnAckMessage;
 import io.vertx.mqtt.messages.MqttPublishMessage;

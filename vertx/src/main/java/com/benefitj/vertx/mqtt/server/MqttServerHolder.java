@@ -1,10 +1,10 @@
 package com.benefitj.vertx.mqtt.server;
 
 
-import com.benefitj.vertx.VertxHolder;
-import com.benefitj.vertx.VertxLogger;
 import com.benefitj.core.SingletonSupplier;
 import com.benefitj.core.log.ILogger;
+import com.benefitj.vertx.VertxHolder;
+import com.benefitj.vertx.VertxLogger;
 import io.vertx.mqtt.MqttServerOptions;
 
 import java.util.concurrent.CountDownLatch;

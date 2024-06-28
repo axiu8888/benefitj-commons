@@ -1,5 +1,7 @@
 package com.benefitj.frameworks.cache;
 
+import com.benefitj.core.CatchUtils;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -350,7 +352,7 @@ public final class DiskLruCache implements Closeable {
       journalWriter = new BufferedWriter(
           new OutputStreamWriter(Util.newFOS(journalFile, true), Util.US_ASCII));
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -410,7 +412,7 @@ public final class DiskLruCache implements Closeable {
     try {
       journalWriter.append(READ + ' ' + key + '\n');
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
     if (journalRebuildRequired()) {
       executorService.submit(cleanupCallable);
@@ -541,7 +543,7 @@ public final class DiskLruCache implements Closeable {
         executorService.submit(cleanupCallable);
       }
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -626,7 +628,7 @@ public final class DiskLruCache implements Closeable {
       journalWriter.close();
       journalWriter = null;
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

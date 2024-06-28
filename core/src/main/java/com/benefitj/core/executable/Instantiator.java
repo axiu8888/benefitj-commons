@@ -1,5 +1,6 @@
 package com.benefitj.core.executable;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.SingletonSupplier;
 
 import javax.annotation.Nullable;
@@ -79,7 +80,7 @@ public interface Instantiator {
         }
         return type.newInstance();
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-        throw new IllegalStateException(e);
+        throw new IllegalStateException(CatchUtils.findRoot(e));
       }
     }
   }

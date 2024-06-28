@@ -1,14 +1,14 @@
 package com.benefitj.vertx;
 
 import com.benefitj.core.AutoConnectTimer;
-import com.benefitj.vertx.mqtt.client.VertxMqttClient;
-import com.benefitj.vertx.mqtt.client.VertxMqttMessageDispatcher;
-import com.benefitj.vertx.mqtt.server.MqttServerHolder;
-import com.benefitj.vertx.tcp.VertxTcpClient;
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.log.Slf4jLevel;
 import com.benefitj.core.log.Slf4jLogger;
+import com.benefitj.vertx.mqtt.client.VertxMqttClient;
+import com.benefitj.vertx.mqtt.client.VertxMqttMessageDispatcher;
+import com.benefitj.vertx.mqtt.server.MqttServerHolder;
+import com.benefitj.vertx.tcp.VertxTcpClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 
 @Slf4j

@@ -1,5 +1,7 @@
 package com.benefitj.core.lambda;
 
+import com.benefitj.core.CatchUtils;
+
 import java.lang.invoke.SerializedLambda;
 
 public class ShadowLambdaMeta implements LambdaMeta {
@@ -21,7 +23,7 @@ public class ShadowLambdaMeta implements LambdaMeta {
     try {
       return Class.forName(instantiatedType);
     } catch (ClassNotFoundException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

@@ -1,5 +1,6 @@
 package com.benefitj.core.lambda;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.ReflectUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +43,7 @@ public class ReflectLambdaMeta implements LambdaMeta {
     try {
       return Class.forName(instantiatedType);
     } catch (ClassNotFoundException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
@@ -54,7 +55,7 @@ public class ReflectLambdaMeta implements LambdaMeta {
     try {
       return ((Class<?>) FIELD_CAPTURING_CLASS.get(lambda)).getClassLoader();
     } catch (IllegalAccessException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

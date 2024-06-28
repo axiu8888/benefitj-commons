@@ -1,7 +1,7 @@
 package com.benefitj.vertx.mqtt.server;
 
-import com.benefitj.vertx.mqtt.MqttTopic;
 import com.benefitj.core.SingletonSupplier;
+import com.benefitj.vertx.mqtt.MqttTopic;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.messages.MqttPublishMessage;
 import io.vertx.mqtt.messages.MqttSubscribeMessage;

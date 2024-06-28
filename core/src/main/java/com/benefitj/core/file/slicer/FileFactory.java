@@ -1,5 +1,6 @@
 package com.benefitj.core.file.slicer;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IdUtils;
 
 import java.io.File;
@@ -54,7 +55,7 @@ public interface FileFactory<T extends SliceFileWriter> {
       file.createNewFile();
       return file;
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 

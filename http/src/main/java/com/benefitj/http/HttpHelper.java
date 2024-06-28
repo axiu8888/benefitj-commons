@@ -1,5 +1,6 @@
 package com.benefitj.http;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IdUtils;
 import com.benefitj.core.SingletonSupplier;
 import okhttp3.*;
@@ -241,7 +242,7 @@ public class HttpHelper {
     try {
       return newCall(request).execute();
     } catch (IOException e) {
-      throw new IllegalStateException(e.getMessage(), e);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
