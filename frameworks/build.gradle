@@ -25,6 +25,10 @@ dependencies {
       // jcifs: windows 文件分享
       'org.codelibs:jcifs:2.1.36',
 
+      // 图片处理
+      "com.benefitj.github:image4j:1.0.0-SNAPSHOT",
+      "com.benefitj.github:imgscalr:1.0.0-SNAPSHOT",
+
   ].forEach {
     api(it)
     testImplementation(it)
