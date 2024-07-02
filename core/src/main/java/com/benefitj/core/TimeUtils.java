@@ -431,6 +431,36 @@ public class TimeUtils {
   }
 
   /**
+   * 是否在范围内
+   *
+   * @param time    时间
+   * @param startAt 开始时间
+   * @param endAt   结束时间
+   * @return 返回是否在范围内
+   */
+  public static boolean isRange(long time, Date startAt, Date endAt) {
+    return isRange(time
+        , startAt != null ? startAt.getTime() : null
+        , endAt != null ? endAt.getTime() : null
+    );
+  }
+
+  /**
+   * 是否在范围内
+   *
+   * @param time    时间
+   * @param startAt 开始时间
+   * @param endAt   结束时间
+   * @return 返回是否在范围内
+   */
+  public static boolean isRange(long time, Long startAt, Long endAt) {
+    if (startAt == null && endAt == null) throw new IllegalArgumentException("时间范围不能都为null");
+    if (startAt != null && time < startAt) return false;
+    if (endAt != null && time > endAt) return false;
+    return true;
+  }
+
+  /**
    * 获取年龄
    *
    * @param birthday 出生日期
