@@ -179,12 +179,6 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
       throw new UnsupportedOperationException("不支持此操作!");
     }
 
-    public void start() {
-    }
-
-    public void stop() {
-    }
-
   }
 
   /**

@@ -116,4 +116,18 @@ public interface NettyDevice extends Device<String> {
    */
   ChannelFuture closeChannel();
 
+  /**
+   * 本地地址
+   */
+  public static InetSocketAddress ofLocal(Channel ch) {
+    return ch != null ? (InetSocketAddress) ch.localAddress() : null;
+  }
+
+  /**
+   * 远程地址
+   */
+  public static InetSocketAddress ofRemote(Channel ch) {
+    return ch != null ? (InetSocketAddress) ch.remoteAddress() : null;
+  }
+
 }
