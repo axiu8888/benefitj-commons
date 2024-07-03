@@ -14,9 +14,7 @@ public interface NettyDeviceManager<T extends NettyDevice> extends DeviceManager
 
   default T computeIfAbsent(String key, Channel ch) {
     T t = get(key);
-    if (t != null) {
-      return t;
-    }
+    if (t != null)  return t;
     return create(key, ch);
   }
 

@@ -31,12 +31,7 @@ public class NetworkUtils {
    * @return 是否可达
    */
   public static boolean isReachable(String host, Integer port, int timeout) {
-    try {
-      InetSocketAddress address = new InetSocketAddress(host, port);
-      return address.getAddress().isReachable(timeout);
-    } catch (IOException e) {
-      return false;
-    }
+    return isReachable(new InetSocketAddress(host, port), timeout);
   }
 
   /**
@@ -62,7 +57,7 @@ public class NetworkUtils {
    * @return 是否可连接
    */
   public static boolean isConnectable(InetSocketAddress address, int timeout) {
-    try (Socket sock = new Socket()) {
+    try (final Socket sock = new Socket()) {
       sock.connect(address, timeout);
       return sock.isConnected();
     } catch (IOException e) {
@@ -76,10 +71,8 @@ public class NetworkUtils {
    * @return 返回可用的端口
    */
   public static int availablePort() {
-    try (DatagramSocket socket = new DatagramSocket(0);) {
-      int port = socket.getLocalPort();
-      socket.close();
-      return port;
+    try (final DatagramSocket socket = new DatagramSocket(0);) {
+      return socket.getLocalPort();
     } catch (IOException e) {
       throw new IllegalStateException(CatchUtils.findRoot(e));
     }
@@ -186,9 +179,7 @@ public class NetworkUtils {
    */
   public static boolean isValidInterface(NetworkInterface ni) {
     return CatchUtils.ignore(() -> {
-      if (ni.isLoopback() || ni.isPointToPoint() || ni.isVirtual()) {
-        return false;
-      }
+      if (ni.isLoopback() || ni.isPointToPoint() || ni.isVirtual()) return false;
       return ni.isUp() && (ni.getName().startsWith("eth") || ni.getName().startsWith("ens"));
     });
   }

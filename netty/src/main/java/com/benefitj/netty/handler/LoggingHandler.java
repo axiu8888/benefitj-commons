@@ -1,6 +1,7 @@
 package com.benefitj.netty.handler;
 
 import com.benefitj.core.HexUtils;
+import com.benefitj.core.SingletonSupplier;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,7 +14,11 @@ import org.slf4j.LoggerFactory;
 @ChannelHandler.Sharable
 public class LoggingHandler extends SimpleCopyHandler<ByteBuf> {
 
-  public static final LoggingHandler INSTANCE = new LoggingHandler(50, true);
+  static final SingletonSupplier<LoggingHandler> singleton = SingletonSupplier.of(() -> new LoggingHandler(50, true));
+
+  public static LoggingHandler get() {
+    return singleton.get();
+  }
 
   /**
    * 读取的最大长度

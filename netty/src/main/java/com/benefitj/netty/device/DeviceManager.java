@@ -1,14 +1,12 @@
 package com.benefitj.netty.device;
 
-import com.benefitj.core.EventLoop;
 import com.benefitj.core.functions.WrappedMap;
 
+import java.time.Duration;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 
 
@@ -61,27 +59,14 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
   /**
    * 获取过期时间
    */
-  long getExpire();
+  Duration getExpire();
 
   /**
    * 设置过期时间
    *
    * @param expire 时间
    */
-  void setExpire(long expire);
-
-  /**
-   * 获取过期时间单位
-   */
-  TimeUnit getExpireUnit();
-
-  /**
-   * 设置过期时间单位
-   *
-   * @param expireUnit 单位
-   */
-  void setExpireUnit(TimeUnit expireUnit);
-
+  void setExpire(Duration expire);
 
   /**
    * 设备管理
@@ -100,11 +85,7 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
     /**
      * 过期时间
      */
-    private long expire = 30L;
-    /**
-     * 过期时间单位
-     */
-    private TimeUnit expireUnit = TimeUnit.SECONDS;
+    private Duration expire = Duration.ofSeconds(30L);
 
     public Impl() {
     }
@@ -140,30 +121,19 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
     }
 
     @Override
-    public long getExpire() {
+    public Duration getExpire() {
       return expire;
     }
 
     @Override
-    public void setExpire(long expire) {
+    public void setExpire(Duration expire) {
       this.expire = expire;
     }
 
     @Override
-    public TimeUnit getExpireUnit() {
-      return expireUnit;
-    }
-
-    @Override
-    public void setExpireUnit(TimeUnit expireUnit) {
-      this.expireUnit = expireUnit;
-    }
-
-    @Override
     public V put(K key, V value) {
-      if (value == null) {
-        throw new IllegalArgumentException("value is null: " + key);
-      }
+      if (key == null || value == null)
+        throw new IllegalArgumentException("The key or value is null: " + key + ", " + value + "]");
       V old = map().put(key, value);
       if (old != value) {
         getDeviceListener().onAddition(key, value);
@@ -210,42 +180,46 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
     }
 
     public void start() {
-      synchronized (this) {
-        if (checkerRef.get() == null) {
-          checkerRef.set(executor.scheduleAtFixedRate(this::selfCheck, 1, 1, TimeUnit.SECONDS));
-        }
-      }
     }
 
     public void stop() {
-      synchronized (this) {
-        EventLoop.cancel(checkerRef.getAndSet(null));
-      }
     }
 
-    protected EventLoop executor = EventLoop.single();
-    protected final AtomicReference<ScheduledFuture<?>> checkerRef = new AtomicReference<>();
+  }
 
-    protected void selfCheck() {
-      if (!isEmpty()) {
-        final Map<K, V> removeMap = new LinkedHashMap<>();
-        long expireMillis = getExpireUnit().toMillis(getExpire());
-        long now = System.currentTimeMillis();
-        forEach((key, value) -> {
-          if ((now - value.getActiveTime()) >= expireMillis) {
-            removeMap.put(key, value);
-          }
-        });
-        if (!removeMap.isEmpty()) {
-          removeMap.forEach(this::remove);
+  /**
+   * 移除超时过期的设备
+   *
+   * @param manager 设备管理对象
+   * @return 返回被移除的设备
+   */
+  static <K, V extends Device<K>> Map<K, V> removeInactive(DeviceManager<K, V> manager) {
+    return removeInactive(manager, true);
+  }
+
+  /**
+   * 移除超时过期的设备
+   *
+   * @param manager    设备管理对象
+   * @param autoRemove 是否自动移除
+   * @return 返回被移除的设备
+   */
+  static <K, V extends Device<K>> Map<K, V> removeInactive(DeviceManager<K, V> manager, boolean autoRemove) {
+    if (!manager.isEmpty()) {
+      final Map<K, V> removeMap = new LinkedHashMap<>();
+      long expireMillis = manager.getExpire().toMillis();
+      long now = System.currentTimeMillis();
+      manager.forEach((key, value) -> {
+        if ((now - value.getActiveTime()) >= expireMillis) {
+          removeMap.put(key, value);
         }
+      });
+      if (!removeMap.isEmpty() && autoRemove) {
+        removeMap.forEach(manager::remove);
       }
+      return removeMap;
     }
-
-    public void setExecutor(EventLoop executor) {
-      this.executor = executor;
-    }
-
+    return Collections.emptyMap();
   }
 
 }

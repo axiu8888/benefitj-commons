@@ -22,8 +22,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * TCP客户端
+ * TCP客户端，建议使用 vertx 的TCP
  */
+@Deprecated
 public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   /**

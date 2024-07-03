@@ -44,6 +44,7 @@ public interface FieldDescriptor {
   }
 
   /**
+   * 是否继承自传入的类
    */
   default boolean isAssignableFrom(Class<?> cls) {
     return getType().isAssignableFrom(cls);

@@ -7,16 +7,10 @@ import java.nio.ByteOrder;
  */
 public class HexUtils {
 
+  static final SingletonSupplier<BinaryHelper> singleton = SingletonSupplier.of(() -> new BinaryHelper(false, ByteOrder.BIG_ENDIAN));
+
   static BinaryHelper getHelper() {
-    return Holder.INSTANCE;
-  }
-
-  private static class Holder {
-    private static final BinaryHelper INSTANCE;
-
-    static {
-      INSTANCE = new BinaryHelper(false, ByteOrder.BIG_ENDIAN);
-    }
+    return singleton.get();
   }
 
   /**
