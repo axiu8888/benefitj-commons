@@ -541,7 +541,7 @@ public class HexUtils {
    * @param hex 16进制
    * @return 返回转换后的数据
    */
-  public int hexToInt(String hex) {
+  public static int hexToInt(String hex) {
     return getHelper().hexToInt(hex);
   }
 
@@ -552,7 +552,7 @@ public class HexUtils {
    * @param bigEndian 是否为大端字节顺序
    * @return 返回转换后的数据
    */
-  public int hexToInt(String hex, boolean bigEndian) {
+  public static int hexToInt(String hex, boolean bigEndian) {
     return getHelper().hexToInt(hex, bigEndian);
   }
 
