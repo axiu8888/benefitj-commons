@@ -75,6 +75,21 @@ public class IOUtils {
   }
 
   /**
+   * 获取文件的行数
+   *
+   * @param f 文件
+   * @return 返回读取的文件行数
+   */
+  public static int getLineNumber(File f) {
+    try (final LineNumberReader lnr = new LineNumberReader(new FileReader(f))) {
+      lnr.skip(Long.MAX_VALUE);
+      return lnr.getLineNumber() + 1;
+    } catch (IOException e) {
+      return -1;
+    }
+  }
+
+  /**
    * 计算文件大小
    *
    * @param file 文件
