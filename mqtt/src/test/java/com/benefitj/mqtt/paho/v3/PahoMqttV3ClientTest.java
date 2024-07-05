@@ -39,11 +39,7 @@ class PahoMqttV3ClientTest {
         .set(client -> {
           client.setManualAcks(false);
           client.setCallback(dispatcher);
-          client.setAutoConnectTimer(timer ->
-              timer
-                  .setAutoConnect(true)
-                  .setInterval(Duration.ofSeconds(5)
-                  ));
+          client.setAutoConnectTimer(timer -> timer.setAutoConnect(true, Duration.ofSeconds(5)));
         })
         .set(PahoMqttV3Client::connect)
         .get();

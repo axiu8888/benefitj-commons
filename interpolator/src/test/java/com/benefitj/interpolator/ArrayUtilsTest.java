@@ -1,17 +1,16 @@
 package com.benefitj.interpolator;
 
-import com.benefitj.core.StackLogger;
 import com.benefitj.core.TimeUtils;
 import junit.framework.TestCase;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
 
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 public class ArrayUtilsTest extends TestCase {
 
-  protected final Logger log = StackLogger.getLogger();
 
   public void setUp() throws Exception {
     super.setUp();

@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * 基础数据类型
+ */
 public enum PrimitiveType {
 
   BYTE(byte.class, Byte.class) {

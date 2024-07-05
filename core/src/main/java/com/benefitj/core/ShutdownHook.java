@@ -14,11 +14,15 @@ public class ShutdownHook extends Thread {
     return new ShutdownHook();
   }
 
-  public static final ShutdownHook INSTANCE = new ShutdownHook("globalShutdownHook");
+  static final SingletonSupplier<ShutdownHook> singleton = SingletonSupplier.of(() -> new ShutdownHook("globalShutdownHook"));
+
+  public static ShutdownHook get() {
+    return singleton.get();
+  }
 
   static {
     // 注册销毁时的回调
-    Runtime.getRuntime().addShutdownHook(INSTANCE);
+    Runtime.getRuntime().addShutdownHook(get());
   }
 
   /**
@@ -28,7 +32,7 @@ public class ShutdownHook extends Thread {
    * @return 是否注册
    */
   public static boolean register(Runnable hook) {
-    return INSTANCE.addShutdownHook(hook);
+    return get().addShutdownHook(hook);
   }
 
   /**
@@ -38,7 +42,7 @@ public class ShutdownHook extends Thread {
    * @return 是否取消注册
    */
   public static boolean unregister(Runnable hook) {
-    return INSTANCE.removeShutdownHook(hook);
+    return get().removeShutdownHook(hook);
   }
 
   private final List<Runnable> hooks = new CopyOnWriteArrayList<>();
@@ -62,10 +66,7 @@ public class ShutdownHook extends Thread {
    */
   public boolean addShutdownHook(Runnable hook) {
     final List<Runnable> hooks = getHooks();
-    if (!hooks.contains(hook)) {
-      return hooks.add(hook);
-    }
-    return false;
+    return !hooks.contains(hook) && hooks.add(hook);
   }
 
   /**

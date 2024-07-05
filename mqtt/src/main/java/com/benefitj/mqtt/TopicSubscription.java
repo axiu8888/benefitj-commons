@@ -23,7 +23,7 @@ public class TopicSubscription<T> implements WrappedSet<MqttTopic> {
   }
 
   @Override
-  public Set<MqttTopic> source() {
+  public Set<MqttTopic> set() {
     return topics;
   }
 

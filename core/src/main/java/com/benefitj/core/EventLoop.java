@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +58,9 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
     return IO_EVENT_LOOP.get();
   }
 
+  private final int corePoolSize;
   private final ScheduledExecutorService executor;
+  private final AtomicReference<Thread> singleThread = new AtomicReference<>();
 
   public EventLoop(int corePoolSize) {
     this(corePoolSize, false);
@@ -68,13 +71,24 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
   }
 
   public EventLoop(int corePoolSize, ThreadFactory threadFactory) {
+    this.corePoolSize = corePoolSize;
     this.executor = Executors.newScheduledThreadPool(corePoolSize, threadFactory);
+    if (isSingle()) {
+      this.execute(() -> singleThread.set(Thread.currentThread()));
+    }
   }
 
   protected ScheduledExecutorService getExecutor() {
     return executor;
   }
 
+  public boolean isSingle() {
+    return corePoolSize == 1;
+  }
+
+  public boolean isCurrentSingle() {
+    return isSingle() && singleThread.get() == Thread.currentThread();
+  }
 
   @Override
   public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
@@ -306,7 +320,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    */
   public static void await(Thread t, long duration, TimeUnit unit) {
     try {
-      t.join(unit.toMillis(duration));
+      t.join(unit.toNanos(duration));
     } catch (InterruptedException e) {
       throw new IllegalStateException(CatchUtils.findRoot(e));
     }
