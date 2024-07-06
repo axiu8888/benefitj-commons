@@ -1,5 +1,7 @@
 package com.benefitj.mqtt.paho.v3;
 
+import com.benefitj.core.log.ILogger;
+import com.benefitj.mqtt.MqttLogger;
 import com.benefitj.mqtt.MqttMessageDispatcher;
 import com.benefitj.mqtt.TopicSubscription;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -11,6 +13,8 @@ import java.util.List;
  * MQTT消息订阅与分发
  */
 public class PahoMqttV3Dispatcher extends MqttMessageDispatcher.Impl<MqttMessage> implements PahoMqttV3Callback {
+
+  static final ILogger log = MqttLogger.get();
 
   private PahoMqttV3Client client;
 

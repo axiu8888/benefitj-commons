@@ -1,6 +1,8 @@
 package com.benefitj.mqtt.paho.v3;
 
 import com.benefitj.core.*;
+import com.benefitj.core.log.ILogger;
+import com.benefitj.mqtt.MqttLogger;
 import com.benefitj.mqtt.paho.MqttPahoClientException;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.*;
@@ -51,8 +53,10 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     }
   };
 
-  static final PahoMqttV3Callback NONE = (topic, message) -> {
-  };
+  static final PahoMqttV3Callback NONE = (topic, message) -> {};
+
+
+  static final ILogger log = MqttLogger.get();
 
   /**
    * 客户端
@@ -90,12 +94,14 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
 
     @Override
     public void onConnected(PahoMqttV3Client client) {
+      log.debug("onConnected, clientId: {}, serverURI: {}", client.getClientId(), client.getServerURI());
       autoConnectTimer.stop();
       callbackSupplier.get().onConnected(client);
     }
 
     @Override
     public void onDisconnected(PahoMqttV3Client client, @Nullable Throwable cause) {
+      log.debug("onDisconnected, clientId: {}, serverURI: {}", client.getClientId(), client.getServerURI());
       try {
         callbackSupplier.get().onDisconnected(client, cause);
       } catch (Exception e) {
@@ -107,6 +113,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
 
     @Override
     public void connectionLost(Throwable cause) {
+      log.debug("connectionLost, cause: {}", cause.getMessage());
       try {
         callbackSupplier.get().connectionLost(cause);
       } catch (Exception e) {
@@ -161,6 +168,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
         options.setAutomaticReconnect(false);
         options.setConnectionTimeout((int) Math.min(options.getConnectionTimeout(), getAutoConnectTimer().getInterval().toSeconds()));
       }
+      log.debug("connect0, clientId: {}, serverURI: {}", raw.getClientId(), raw.getServerURI());
       raw.connect(options);
       status.accept(raw.isConnected(), null);
     } catch (Throwable e) {
@@ -191,10 +199,10 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
   protected void disconnect0() {
     if (raw.isConnected()) {
       try {
+        log.debug("disconnect0, clientId: {}, serverURI: {}", raw.getClientId(), raw.getServerURI());
         raw.disconnectForcibly();
-      } catch (MqttPahoClientException ignore) {
-        /* ^_^ */
-      } finally {
+      } catch (MqttPahoClientException ignore) {/*^_^*/}
+      finally {
         listener.onDisconnected(this, null);
         getAutoConnectTimer().stop(); // 停止自定重连
       }

@@ -5,6 +5,9 @@ import com.benefitj.core.DateFmtter;
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.IdUtils;
 import com.benefitj.core.functions.StreamBuilder;
+import com.benefitj.core.log.Slf4jLevel;
+import com.benefitj.core.log.Slf4jLogger;
+import com.benefitj.mqtt.MqttLogger;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -23,11 +26,14 @@ class PahoMqttV3ClientTest {
 
   @BeforeEach
   void setUp() {
+    MqttLogger.set(Slf4jLogger.newProxy(log, Slf4jLevel.DEBUG));
     log.info("setUp ......................");
 
     client = StreamBuilder.of(new PahoMqttV3Client(StreamBuilder.of(new MqttConnectOptions())
             .set(opt -> {
-              opt.setServerURIs(new String[]{"tcp://192.168.1.194:2883"});
+              //opt.setServerURIs(new String[]{"tcp://127.0.0.1:1883"});
+              opt.setServerURIs(new String[]{"tcp://172.28.83.171:1883"});
+              //opt.setServerURIs(new String[]{"tcp://192.168.1.194:2883"});
               opt.setUserName("admin");
               opt.setPassword("public".toCharArray());
               opt.setMaxInflight(100);
@@ -55,7 +61,7 @@ class PahoMqttV3ClientTest {
 
   @Test
   void test_publish() {
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
       if (client.isConnected()) {
         CatchUtils.ignore(() -> client.publish("collector/123456", new MqttMessage((DateFmtter.fmtNow() + " test...").getBytes())));
         EventLoop.sleepSecond(1);
