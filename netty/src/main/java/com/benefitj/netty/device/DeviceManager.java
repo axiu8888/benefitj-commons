@@ -3,11 +3,10 @@ package com.benefitj.netty.device;
 import com.benefitj.core.functions.WrappedMap;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 
 /**
@@ -31,6 +30,11 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
     put(k, device);
     return device;
   }
+
+  /**
+   * 设备
+   */
+  Map<K, V> devices();
 
   /**
    * 设置设备工程
@@ -69,6 +73,30 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
   void setExpire(Duration expire);
 
   /**
+   * 查找匹配的设备
+   *
+   * @param filter 过滤
+   * @return 返回找到的设备
+   */
+  default List<V> find(Predicate<V> filter) {
+    return find(filter, new LinkedList<>());
+  }
+
+  /**
+   * 查找匹配的设备
+   *
+   * @param filter   过滤
+   * @param findList 查找到的集合
+   * @return 返回找到的设备
+   */
+  default List<V> find(Predicate<V> filter, List<V> findList) {
+    devices().forEach((id, device) -> {
+      if (filter.test(device)) findList.add(device);
+    });
+    return findList;
+  }
+
+  /**
    * 设备管理
    */
   class Impl<K, V extends Device<K>> implements DeviceManager<K, V>, WrappedMap<K, V> {
@@ -98,6 +126,11 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
     @Override
     public Map<K, V> map() {
       return map;
+    }
+
+    @Override
+    public Map<K, V> devices() {
+      return map();
     }
 
     @Override
