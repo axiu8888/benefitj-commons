@@ -1,6 +1,8 @@
 package com.benefitj.netty.client;
 
 import com.benefitj.core.AttributeMap;
+import com.benefitj.core.log.ILogger;
+import com.benefitj.netty.NettyLogger;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -13,8 +15,6 @@ import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -33,7 +33,7 @@ public class UdpClient implements AttributeMap {
 
   static final GenericFutureListener<Future<? super Void>> _default_future_listener = f -> { /* ~ */ };
 
-  protected final Logger log = LoggerFactory.getLogger(getClass());
+  protected final ILogger log = NettyLogger.get();
   /**
    * 本地IP和端口
    */

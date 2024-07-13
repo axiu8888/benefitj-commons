@@ -2,7 +2,6 @@ package com.benefitj.core.cmd;
 
 import com.benefitj.core.*;
 import com.benefitj.core.file.PathWatcher;
-import com.benefitj.core.functions.IRunnable;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -55,7 +54,7 @@ public class CmdExecutorTest extends BaseTest {
     //pull("D:/code/github/frontend", latch);
     pull("D:/code/github/java/vertx", latch);
 //    pull("D:/code/github/golang", latch);
-    CatchUtils.ignore((IRunnable) latch::await);
+    CatchUtils.ignore(latch);
   }
 
   private void pull(String dir, CountDownLatch latch) {

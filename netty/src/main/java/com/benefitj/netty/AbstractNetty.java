@@ -1,6 +1,7 @@
 package com.benefitj.netty;
 
 import com.benefitj.core.functions.IConsumer;
+import com.benefitj.core.log.ILogger;
 import io.netty.bootstrap.AbstractBootstrap;
 import io.netty.bootstrap.AbstractBootstrapConfig;
 import io.netty.bootstrap.Bootstrap;
@@ -9,8 +10,6 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -37,7 +36,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
     return klass.getSimpleName() + "-" + NAME_GENERATOR.incrementAndGet();
   }
 
-  protected final Logger log = LoggerFactory.getLogger(getClass());
+  protected final ILogger log = NettyLogger.get();
 
   /**
    * 服务名称

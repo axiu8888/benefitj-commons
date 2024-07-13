@@ -2,11 +2,11 @@ package com.benefitj.netty.handler;
 
 import com.benefitj.core.HexUtils;
 import com.benefitj.core.SingletonSupplier;
+import com.benefitj.core.log.ILogger;
+import com.benefitj.netty.NettyLogger;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 打印日志
@@ -29,7 +29,7 @@ public class LoggingHandler extends SimpleCopyHandler<ByteBuf> {
    */
   private boolean print = false;
 
-  private final Logger log = LoggerFactory.getLogger(getClass());
+  private final ILogger log = NettyLogger.get();
 
   public LoggingHandler() {
   }

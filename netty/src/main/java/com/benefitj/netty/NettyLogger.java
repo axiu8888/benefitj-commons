@@ -1,15 +1,15 @@
-package com.benefitj.mqtt;
+package com.benefitj.netty;
 
 import com.benefitj.core.log.ILogger;
 import com.benefitj.core.log.LoggerHolder;
 import com.benefitj.core.log.Slf4jLogger;
 
-public class MqttLogger {
+public class NettyLogger {
 
   static final LoggerHolder holder = new LoggerHolder(ILogger.get());
 
   static {
-    Slf4jLogger.setIfPassable(holder, "mqtt");
+    Slf4jLogger.setIfPassable(holder, "netty");
   }
 
   public static ILogger get() {

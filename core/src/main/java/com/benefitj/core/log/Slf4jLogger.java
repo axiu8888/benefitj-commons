@@ -6,6 +6,13 @@ import org.slf4j.LoggerFactory;
 
 public class Slf4jLogger implements ILogger {
 
+  public static void setIfPassable(LoggerHolder holder, String name) {
+    try {
+      Class.forName("org.slf4j.LoggerFactory");
+      holder.setLog(create(name));
+    } catch (ClassNotFoundException ignore) {/*(0_0)*/}
+  }
+
   public static Slf4jLogger create(String name) {
     return new Slf4jLogger(LoggerFactory.getLogger(name));
   }
