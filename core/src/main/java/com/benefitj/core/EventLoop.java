@@ -1,5 +1,7 @@
 package com.benefitj.core;
 
+import com.benefitj.core.functions.IFuture;
+import com.benefitj.core.functions.IScheduledFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,21 +62,21 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
 
   private final int corePoolSize;
   private final ScheduledExecutorService executor;
-  private final AtomicReference<Thread> singleThread = new AtomicReference<>();
+  private final AtomicReference<Thread> loopSingle = new AtomicReference<>();
 
   public EventLoop(int corePoolSize) {
     this(corePoolSize, false);
   }
 
   public EventLoop(int corePoolSize, boolean daemon) {
-    this(corePoolSize, defaultThreadFactory(daemon));
+    this(corePoolSize, newThreadFactory(nextThreadNamePrefix(), daemon));
   }
 
   public EventLoop(int corePoolSize, ThreadFactory threadFactory) {
     this.corePoolSize = corePoolSize;
     this.executor = Executors.newScheduledThreadPool(corePoolSize, threadFactory);
     if (isSingle()) {
-      this.execute(() -> singleThread.set(Thread.currentThread()));
+      this.submit(() -> loopSingle.set(Thread.currentThread())).get();
     }
   }
 
@@ -86,28 +88,28 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
     return corePoolSize == 1;
   }
 
-  public boolean isCurrentSingle() {
-    return isSingle() && singleThread.get() == Thread.currentThread();
+  public boolean inLoopSingle() {
+    return isSingle() && loopSingle.get() == Thread.currentThread();
   }
 
   @Override
-  public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-    return getExecutor().schedule(wrapped(command), delay, unit);
+  public IScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+    return wrap(getExecutor().schedule(wrap(command), delay, unit));
   }
 
   @Override
   public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-    return getExecutor().schedule(wrapped(callable), delay, unit);
+    return getExecutor().schedule(wrap(callable), delay, unit);
   }
 
   @Override
-  public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
-    return getExecutor().scheduleAtFixedRate(wrapped(command), initialDelay, period, unit);
+  public IScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
+    return wrap(getExecutor().scheduleAtFixedRate(wrap(command), initialDelay, period, unit));
   }
 
   @Override
-  public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
-    return getExecutor().scheduleWithFixedDelay(wrapped(command), initialDelay, delay, unit);
+  public IScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
+    return wrap(getExecutor().scheduleWithFixedDelay(wrap(command), initialDelay, delay, unit));
   }
 
   @Override
@@ -136,43 +138,43 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
   }
 
   @Override
-  public <T> Future<T> submit(Callable<T> task) {
-    return getExecutor().submit(wrapped(task));
+  public <T> IFuture<T> submit(Callable<T> task) {
+    return wrap(getExecutor().submit(wrap(task)));
   }
 
   @Override
-  public <T> Future<T> submit(Runnable task, T result) {
-    return getExecutor().submit(wrapped(task), result);
+  public <T> IFuture<T> submit(Runnable task, T result) {
+    return wrap(getExecutor().submit(wrap(task), result));
   }
 
   @Override
-  public Future<?> submit(Runnable task) {
-    return getExecutor().submit(wrapped(task));
+  public IFuture<?> submit(Runnable task) {
+    return wrap(getExecutor().submit(wrap(task)));
   }
 
   @Override
   public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
-    return getExecutor().invokeAll(wrapped(tasks));
+    return getExecutor().invokeAll(wrap(tasks));
   }
 
   @Override
   public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
-    return getExecutor().invokeAll(wrapped(tasks), timeout, unit);
+    return getExecutor().invokeAll(wrap(tasks), timeout, unit);
   }
 
   @Override
   public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
-    return getExecutor().invokeAny(wrapped(tasks));
+    return getExecutor().invokeAny(wrap(tasks));
   }
 
   @Override
   public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-    return getExecutor().invokeAny(wrapped(tasks), timeout, unit);
+    return getExecutor().invokeAny(wrap(tasks), timeout, unit);
   }
 
   @Override
   public void execute(Runnable command) {
-    getExecutor().execute(wrapped(command));
+    getExecutor().execute(wrap(command));
   }
 
   /**
@@ -181,8 +183,15 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * @param task 任务
    * @return 返回结果
    */
-  protected Runnable wrapped(Runnable task) {
-    return new WrapRunnable(task);
+  public static Runnable wrap(Runnable task) {
+    return () -> {
+      try {
+        task.run();
+      } catch (Throwable e) {
+        log.error(e.getMessage(), e);
+        throw e;
+      }
+    };
   }
 
   /**
@@ -192,8 +201,15 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * @param <T>  返回类型
    * @return 返回结果
    */
-  protected <T> Callable<T> wrapped(Callable<T> task) {
-    return new WrapCallable<T>(task);
+  public static <T> Callable<T> wrap(Callable<T> task) {
+    return () -> {
+      try {
+        return task.call();
+      } catch (Throwable e) {
+        log.error(e.getMessage(), e);
+        throw e;
+      }
+    };
   }
 
   /**
@@ -203,10 +219,32 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * @param <T>   返回类型
    * @return 返回结果
    */
-  protected <T> Collection<? extends Callable<T>> wrapped(Collection<? extends Callable<T>> tasks) {
+  public static <T> Collection<? extends Callable<T>> wrap(Collection<? extends Callable<T>> tasks) {
     return tasks.stream()
-        .map(this::wrapped)
+        .map(EventLoop::wrap)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * 包裹 Future
+   *
+   * @param future 任务
+   * @param <V>    返回类型
+   * @return 返回结果
+   */
+  public static <V> IFuture<V> wrap(Future<V> future) {
+    return IFuture.wrap(future);
+  }
+
+  /**
+   * 包裹 ScheduledFuture
+   *
+   * @param future 任务
+   * @param <V>    返回类型
+   * @return 返回结果
+   */
+  public static <V> IScheduledFuture<V> wrap(ScheduledFuture<V> future) {
+    return IScheduledFuture.wrap(future);
   }
 
   /**
@@ -228,20 +266,26 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * 创建EventLoop
    */
   public static EventLoop newEventLoop(int corePoolSize, boolean daemon) {
-    return new EventLoop(corePoolSize, defaultThreadFactory(daemon));
+    return newEventLoop(nextThreadNamePrefix(), corePoolSize, daemon);
   }
 
-  private static final AtomicInteger ID = new AtomicInteger(0);
+  /**
+   * 创建EventLoop
+   */
+  public static EventLoop newEventLoop(String namePrefix, int corePoolSize, boolean daemon) {
+    return new EventLoop(corePoolSize, newThreadFactory(namePrefix, daemon));
+  }
 
-  private static ThreadFactory defaultThreadFactory(boolean daemon) {
-    String prefix = String.format("loop%d-", ID.incrementAndGet());
-    return new DefaultThreadFactory(prefix, "-thread-", daemon);
+  private static final AtomicInteger ID = new AtomicInteger(1);
+
+  static String nextThreadNamePrefix() {
+    return "loop" + ID.incrementAndGet() + "-thread-";
   }
 
   static final class GlobalEventLoop extends EventLoop {
 
     private GlobalEventLoop(int corePoolSize, String suffix, boolean daemon) {
-      super(corePoolSize, new DefaultThreadFactory("loop-", suffix, daemon));
+      super(corePoolSize, newThreadFactory("loop-" + ID.getAndIncrement() + suffix, daemon));
       if (!daemon) {
         ShutdownHook.register(super::shutdown);
       }
@@ -358,67 +402,63 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
     }
   }
 
-  public static ScheduledFuture<?> asyncIO(Runnable task) {
+  public static IScheduledFuture<?> asyncIO(Runnable task) {
     return asyncIO(task, 0);
   }
 
-  public static ScheduledFuture<?> asyncIO(Runnable task, long delay) {
+  public static IScheduledFuture<?> asyncIO(Runnable task, long delay) {
     return asyncIO(task, delay, TimeUnit.MILLISECONDS);
   }
 
-  public static ScheduledFuture<?> asyncIO(Runnable task, long delay, TimeUnit unit) {
+  public static IScheduledFuture<?> asyncIO(Runnable task, long delay, TimeUnit unit) {
     return io().schedule(task, delay, unit);
   }
 
-  public static ScheduledFuture<?> asyncIOFixedRate(Runnable task, long period) {
+  public static IScheduledFuture<?> asyncIOFixedRate(Runnable task, long period) {
     return asyncIOFixedRate(task, period, period);
   }
 
-  public static ScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period) {
+  public static IScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period) {
     return asyncIOFixedRate(task, initialDelay, period, TimeUnit.MILLISECONDS);
   }
 
-  public static ScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period, TimeUnit unit) {
+  public static IScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period, TimeUnit unit) {
     return io().scheduleAtFixedRate(task, initialDelay, period, unit);
   }
 
 
-  public class WrapRunnable implements Runnable {
-
-    final Runnable raw;
-
-    public WrapRunnable(Runnable raw) {
-      this.raw = raw;
-    }
-
-    @Override
-    public void run() {
-      try {
-        raw.run();
-      } catch (Throwable e) {
-        log.error(e.getMessage(), e);
-        throw e;
-      }
-    }
+  /**
+   * 创建线程池
+   *
+   * @param namePrefix 线程名称前缀
+   * @param daemon     是否为守护线程
+   * @return 返回线程工厂
+   */
+  public static ThreadFactory newThreadFactory(String namePrefix, boolean daemon) {
+    return newThreadFactory(namePrefix, daemon, Thread.NORM_PRIORITY);
   }
 
-
-  public class WrapCallable<T> implements Callable<T> {
-
-    final Callable<T> raw;
-
-    public WrapCallable(Callable<T> raw) {
-      this.raw = raw;
-    }
-
-    @Override
-    public T call() throws Exception {
-      try {
-        return raw.call();
-      } catch (Throwable e) {
-        log.error(e.getMessage(), e);
-        throw e;
-      }
-    }
+  /**
+   * 创建线程池
+   *
+   * @param namePrefix 线程名称前缀
+   * @param daemon     是否为守护线程
+   * @param priority   线程优先级
+   * @return 返回线程工厂
+   */
+  public static ThreadFactory newThreadFactory(String namePrefix, boolean daemon, int priority) {
+    final AtomicInteger threadNumber = new AtomicInteger(1);
+    final ThreadGroup group = Thread.currentThread().getThreadGroup();
+    return r -> {
+      Thread t = new Thread(group
+          , r
+          , namePrefix + threadNumber.getAndIncrement()
+          , 0
+      );
+      t.setDaemon(daemon);
+      if (t.getPriority() != priority) t.setPriority(priority);
+      return t;
+    };
   }
+
 }
