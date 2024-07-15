@@ -1,5 +1,8 @@
 package com.benefitj.core;
 
+import com.benefitj.core.local.LocalCacheFactory;
+import com.benefitj.core.local.LocalMapCache;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -217,12 +220,7 @@ public interface ArrayCopy<T> {
      */
     @Override
     public T getCache(int size, boolean local) {
-      T buf;
-      if (local) {
-        buf = bytesCache.get().computeIfAbsent(size, creator);
-      } else {
-        buf = creator.apply(size);
-      }
+      T buf = local ? bytesCache.get().computeIfAbsent(size, creator) : creator.apply(size);
       if (fill) {
         Utils.arrayFor(buf, (i, v) -> Array.set(buf, i, fillValue), false);
       }
@@ -234,5 +232,85 @@ public interface ArrayCopy<T> {
   static int len(Object src) {
     return Array.getLength(src);
   }
+
+
+//  /**
+//   * byte[] 数组拷贝
+//   */
+//  class ByteArrayCopy implements ArrayCopy<byte[]> {
+//
+//    final LocalMapCache<Integer, byte[]> cache = LocalCacheFactory.newWeakMapCache(byte[]::new);
+//
+//    @Override
+//    public byte[] getCache(int size, boolean local) {
+//      return local ? cache.get(size) : new byte[size];
+//    }
+//  }
+
+  /**
+   * short[] 数组拷贝
+   */
+  class ShortArrayCopy implements ArrayCopy<short[]> {
+
+    final LocalMapCache<Integer, short[]> cache = LocalCacheFactory.newWeakMapCache(short[]::new);
+
+    @Override
+    public short[] getCache(int size, boolean local) {
+      return local ? cache.get(size) : new short[size];
+    }
+  }
+
+  /**
+   * int[] 数组拷贝
+   */
+  class IntArrayCopy implements ArrayCopy<int[]> {
+
+    final LocalMapCache<Integer, int[]> cache = LocalCacheFactory.newWeakMapCache(int[]::new);
+
+    @Override
+    public int[] getCache(int size, boolean local) {
+      return local ? cache.get(size) : new int[size];
+    }
+  }
+
+  /**
+   * long[] 数组拷贝
+   */
+  class LongArrayCopy implements ArrayCopy<long[]> {
+
+    final LocalMapCache<Integer, long[]> cache = LocalCacheFactory.newWeakMapCache(long[]::new);
+
+    @Override
+    public long[] getCache(int size, boolean local) {
+      return local ? cache.get(size) : new long[size];
+    }
+  }
+
+  /**
+   * float[] 数组拷贝
+   */
+  class FloatArrayCopy implements ArrayCopy<float[]> {
+
+    final LocalMapCache<Integer, float[]> cache = LocalCacheFactory.newWeakMapCache(float[]::new);
+
+    @Override
+    public float[] getCache(int size, boolean local) {
+      return local ? cache.get(size) : new float[size];
+    }
+  }
+
+  /**
+   * double[] 数组拷贝
+   */
+  class DoubleArrayCopy implements ArrayCopy<double[]> {
+
+    final LocalMapCache<Integer, double[]> cache = LocalCacheFactory.newWeakMapCache(double[]::new);
+
+    @Override
+    public double[] getCache(int size, boolean local) {
+      return local ? cache.get(size) : new double[size];
+    }
+  }
+
 
 }

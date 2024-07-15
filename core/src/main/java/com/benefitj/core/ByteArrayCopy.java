@@ -1,7 +1,5 @@
 package com.benefitj.core;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -11,10 +9,10 @@ import java.util.function.Function;
  */
 public interface ByteArrayCopy extends ArrayCopy<byte[]> {
 
-  SingletonSupplier<ByteArrayCopy> single = SingletonSupplier.of(ByteArrayCopy::newBufCopy);
+  SingletonSupplier<ByteArrayCopy> singleton = SingletonSupplier.of(ByteArrayCopy::newBufCopy);
 
   static ByteArrayCopy get() {
-    return single.get();
+    return singleton.get();
   }
 
 
@@ -35,17 +33,7 @@ public interface ByteArrayCopy extends ArrayCopy<byte[]> {
    * @return 返回拼接好的数据
    */
   static byte[] concat(List<byte[]> list) {
-    int length = list.stream()
-        .mapToInt(a -> a.length)
-        .sum();
-    try (final ByteArrayOutputStream os = new ByteArrayOutputStream(length);) {
-      for (byte[] bytes : list) {
-        os.write(bytes);
-      }
-      return os.toByteArray();
-    } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
-    }
+    return ArrayCopy.concat(list);
   }
 
   /**
