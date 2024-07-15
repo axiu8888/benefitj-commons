@@ -1,5 +1,9 @@
 package com.benefitj.core.concurrent;
 
+import com.benefitj.core.AttributeMap;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +35,9 @@ public interface IScheduledFuture<V> extends ScheduledFuture<V> {
     return new Impl<>(future);
   }
 
-  class Impl<V> implements IScheduledFuture<V> {
+  class Impl<V> implements IScheduledFuture<V>, AttributeMap {
+
+    final Map<String, Object> attrs = new ConcurrentHashMap<>();
 
     ScheduledFuture<V> raw;
 
@@ -40,6 +46,11 @@ public interface IScheduledFuture<V> extends ScheduledFuture<V> {
 
     public Impl(ScheduledFuture<V> raw) {
       this.raw = raw;
+    }
+
+    @Override
+    public Map<String, Object> attrs() {
+      return attrs;
     }
 
     public ScheduledFuture<V> getRaw() {
