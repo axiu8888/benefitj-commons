@@ -1,10 +1,9 @@
-package com.benefitj.core.functions;
+package com.benefitj.core.concurrent;
 
-import java.util.concurrent.Delayed;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public interface IScheduledFuture<V> extends ScheduledFuture<V> {
+public interface IFuture<V> extends Future<V> {
 
   @Override
   boolean cancel(boolean mayInterruptIfRunning);
@@ -21,32 +20,27 @@ public interface IScheduledFuture<V> extends ScheduledFuture<V> {
   @Override
   V get(long timeout, TimeUnit unit) throws IllegalStateException;
 
-  @Override
-  long getDelay(TimeUnit unit);
 
-  @Override
-  int compareTo(Delayed o);
-
-  static <V> Impl<V> wrap(ScheduledFuture<V> future) {
+  static <V> Impl<V> wrap(Future<V> future) {
     return new Impl<>(future);
   }
 
-  class Impl<V> implements IScheduledFuture<V> {
+  class Impl<V> implements IFuture<V> {
 
-    ScheduledFuture<V> raw;
+    Future<V> raw;
 
     public Impl() {
     }
 
-    public Impl(ScheduledFuture<V> raw) {
+    public Impl(Future<V> raw) {
       this.raw = raw;
     }
 
-    public ScheduledFuture<V> getRaw() {
+    public Future<V> getRaw() {
       return raw;
     }
 
-    public void setRaw(ScheduledFuture<V> raw) {
+    public void setRaw(Future<V> raw) {
       this.raw = raw;
     }
 
@@ -81,16 +75,6 @@ public interface IScheduledFuture<V> extends ScheduledFuture<V> {
       } catch (Exception e) {
         throw new IllegalStateException(e);
       }
-    }
-
-    @Override
-    public long getDelay(TimeUnit unit) {
-      return getRaw().getDelay(unit);
-    }
-
-    @Override
-    public int compareTo(Delayed o) {
-      return getRaw().compareTo(o);
     }
   }
 

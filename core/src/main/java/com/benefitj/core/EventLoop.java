@@ -1,7 +1,7 @@
 package com.benefitj.core;
 
-import com.benefitj.core.functions.IFuture;
-import com.benefitj.core.functions.IScheduledFuture;
+import com.benefitj.core.concurrent.IFuture;
+import com.benefitj.core.concurrent.IScheduledFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
