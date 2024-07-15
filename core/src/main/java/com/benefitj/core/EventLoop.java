@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+
 /**
  * 事件循环
  */
@@ -62,7 +63,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
 
   private final int corePoolSize;
   private final ScheduledExecutorService executor;
-  private final AtomicReference<Thread> loopSingle = new AtomicReference<>();
+  private final AtomicReference<Thread> loopThread = new AtomicReference<>();
 
   public EventLoop(int corePoolSize) {
     this(corePoolSize, false);
@@ -76,7 +77,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
     this.corePoolSize = corePoolSize;
     this.executor = Executors.newScheduledThreadPool(corePoolSize, threadFactory);
     if (isSingle()) {
-      this.submit(() -> loopSingle.set(Thread.currentThread())).get();
+      this.submit(() -> loopThread.set(Thread.currentThread())).get();
     }
   }
 
@@ -88,8 +89,47 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
     return corePoolSize == 1;
   }
 
-  public boolean inLoopSingle() {
-    return isSingle() && loopSingle.get() == Thread.currentThread();
+  public boolean isInLoopSingle() {
+    return isSingle() && loopThread.get() == Thread.currentThread();
+  }
+
+  /**
+   * 在同一个线程执行
+   */
+  public IFuture<?> inLoop(Runnable task) {
+    if (isSingle()) {
+      if (isInLoopSingle()) {
+        try {
+          task.run();
+          return IFuture.nothing();
+        } catch (Throwable e) {
+          return IFuture.wrapFail(e);
+        }
+      } else {
+        return submit(task);
+      }
+    } else {
+      return submit(task);
+    }
+  }
+
+  /**
+   * 在同一个线程执行
+   */
+  public <V> IFuture<V> inLoop(Callable<V> task) {
+    if (isSingle()) {
+      if (isInLoopSingle()) {
+        try {
+          return IFuture.wrapValue(task.call());
+        } catch (Throwable e) {
+          return IFuture.wrapFail(e);
+        }
+      } else {
+        return submit(task);
+      }
+    } else {
+      return submit(task);
+    }
   }
 
   @Override
