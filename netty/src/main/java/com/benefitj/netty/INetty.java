@@ -350,16 +350,12 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
   }
 
   default ThreadFactory newBoss(String name) {
-    if (StringUtils.isBlank(name)) {
-      return null;
-    }
+    if (StringUtils.isBlank(name)) return null;
     return newThreadFactory(name + "-", "-boss-", false);
   }
 
   default ThreadFactory newWorker(String name) {
-    if (StringUtils.isBlank(name)) {
-      return null;
-    }
+    if (StringUtils.isBlank(name)) return null;
     return newThreadFactory(name + "-", "-worker-", false);
   }
 

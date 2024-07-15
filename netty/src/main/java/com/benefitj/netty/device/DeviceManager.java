@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 
@@ -25,9 +26,13 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
    * @return 返回新创建的设备
    */
   default V create(K k, Map<String, Object> attrs) {
-    V device = getDeviceFactory().create(k, attrs);
+    V device;
+    synchronized (this) {
+      if ((device = get(k)) == null) {
+        put(k, device = getDeviceFactory().create(k, attrs));
+      }
+    }
     device.setActiveTimeNow();
-    put(k, device);
     return device;
   }
 
@@ -198,17 +203,47 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
     }
 
     @Override
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+      V device = get(key);
+      if (device == null) {
+        synchronized (this) {
+          if ((device = get(key)) == null) {
+            putIfAbsent(key, device = (mappingFunction != null
+                ? mappingFunction.apply(key)
+                : create(key, Collections.emptyMap())));
+          }
+        }
+      }
+      return device;
+    }
+
+    @Deprecated
+    @Override
     public boolean replace(K key, V oldValue, V newValue) {
       throw new UnsupportedOperationException("不支持此操作!");
     }
 
+    @Deprecated
     @Override
     public V replace(K key, V value) {
       throw new UnsupportedOperationException("不支持此操作!");
     }
 
+    @Deprecated
     @Override
     public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
+      throw new UnsupportedOperationException("不支持此操作!");
+    }
+
+    @Deprecated
+    @Override
+    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+      throw new UnsupportedOperationException("不支持此操作!");
+    }
+
+    @Deprecated
+    @Override
+    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
       throw new UnsupportedOperationException("不支持此操作!");
     }
 

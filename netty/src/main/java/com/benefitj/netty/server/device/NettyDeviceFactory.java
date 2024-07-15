@@ -4,7 +4,7 @@ import com.benefitj.netty.device.DeviceFactory;
 import io.netty.channel.Channel;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -39,12 +39,11 @@ public interface NettyDeviceFactory<T extends NettyDevice> extends DeviceFactory
    */
   T create(String id, Channel channel);
 
-
   /**
    * wrapper
    */
   static Map<String, Object> wrap(Channel channel) {
-    Map<String, Object> attrs = new HashMap<>(1);
+    Map<String, Object> attrs = new LinkedHashMap<>(1);
     attrs.put(ATTRS_CHANNEL, channel);
     return attrs;
   }
