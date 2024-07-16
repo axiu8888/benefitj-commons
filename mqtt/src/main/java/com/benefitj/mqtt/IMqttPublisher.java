@@ -4,6 +4,9 @@ package com.benefitj.mqtt;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 
 /**
@@ -281,7 +284,9 @@ public interface IMqttPublisher {
    * @param topic 主题
    * @param msg   消息
    */
-  void publish(String topic, MqttMessage msg);
+  default void publish(String topic, MqttMessage msg) {
+    publish(Collections.singletonList(topic), msg);
+  }
 
   /**
    * 发送
@@ -289,7 +294,9 @@ public interface IMqttPublisher {
    * @param topic 主题
    * @param msg   消息
    */
-  void publishAsync(String topic, MqttMessage msg);
+  default void publishAsync(String topic, MqttMessage msg) {
+    publishAsync(Collections.singletonList(topic), msg);
+  }
 
   /**
    * 发送
@@ -298,9 +305,7 @@ public interface IMqttPublisher {
    * @param msg    消息
    */
   default void publish(String[] topics, MqttMessage msg) {
-    for (String topic : topics) {
-      publish(topic, msg);
-    }
+    publish(Arrays.asList(topics), msg);
   }
 
   /**
@@ -310,9 +315,24 @@ public interface IMqttPublisher {
    * @param msg    消息
    */
   default void publishAsync(String[] topics, MqttMessage msg) {
-    publish(topics, msg);
+    publishAsync(Arrays.asList(topics), msg);
   }
 
+  /**
+   * 发送
+   *
+   * @param topics 主题
+   * @param msg    消息
+   */
+  void publish(Collection<String> topics, MqttMessage msg);
+
+  /**
+   * 发送
+   *
+   * @param topics 主题
+   * @param msg    消息
+   */
+  void publishAsync(Collection<String> topics, MqttMessage msg);
 
   //===================================================================================================================
 

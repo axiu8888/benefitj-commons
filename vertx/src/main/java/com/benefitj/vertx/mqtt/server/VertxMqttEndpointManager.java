@@ -24,11 +24,11 @@ public class VertxMqttEndpointManager implements WrappedMap<String, VertxMqttEnd
     return single.get();
   }
 
-  final Map<String, VertxMqttEndpoint> _internal = new ConcurrentHashMap<>();
+  final Map<String, VertxMqttEndpoint> internal = new ConcurrentHashMap<>();
 
   @Override
   public Map<String, VertxMqttEndpoint> map() {
-    return _internal;
+    return internal;
   }
 
   /**
