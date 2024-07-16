@@ -72,20 +72,20 @@ public interface Device<Id> {
   /**
    * 获取Active时间
    */
-  long getActiveTime();
+  long getActiveAt();
 
   /**
    * 设置Active时间
    *
-   * @param activeTime
+   * @param activeAt
    */
-  void setActiveTime(long activeTime);
+  void setActiveAt(long activeAt);
 
   /**
    * 设置Active时间
    */
-  default void setActiveTimeNow() {
-    setActiveTime(System.currentTimeMillis());
+  default void setActiveAtNow() {
+    setActiveAt(System.currentTimeMillis());
   }
 
   /**

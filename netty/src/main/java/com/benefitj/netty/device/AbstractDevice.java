@@ -35,7 +35,7 @@ public abstract class AbstractDevice<Id extends Serializable> implements Device<
   /**
    * 最近一次有效时间
    */
-  private long activeTime = -1;
+  private long activeAt = -1;
 
   public AbstractDevice() {
   }
@@ -96,13 +96,13 @@ public abstract class AbstractDevice<Id extends Serializable> implements Device<
   }
 
   @Override
-  public long getActiveTime() {
-    return activeTime;
+  public long getActiveAt() {
+    return activeAt;
   }
 
   @Override
-  public void setActiveTime(long activeTime) {
-    this.activeTime = activeTime;
+  public void setActiveAt(long activeAt) {
+    this.activeAt = activeAt;
   }
 
   @Override

@@ -32,7 +32,7 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
         put(k, device = getDeviceFactory().create(k, attrs));
       }
     }
-    device.setActiveTimeNow();
+    device.setActiveAtNow();
     return device;
   }
 
@@ -272,7 +272,7 @@ public interface DeviceManager<K, V extends Device<K>> extends Map<K, V> {
       long expireMillis = manager.getExpire().toMillis();
       long now = System.currentTimeMillis();
       manager.forEach((key, value) -> {
-        if ((now - value.getActiveTime()) >= expireMillis) {
+        if ((now - value.getActiveAt()) >= expireMillis) {
           removeMap.put(key, value);
         }
       });

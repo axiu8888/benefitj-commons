@@ -68,7 +68,7 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
     this.setRemoteAddress(remoteAddr);
     // 在线时间
     this.setOnlineTime(System.currentTimeMillis());
-    this.setActiveTime(System.currentTimeMillis());
+    this.setActiveAt(System.currentTimeMillis());
   }
 
   protected AbstractDevice self() {
@@ -79,8 +79,8 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    * 设置当前时间为最新的接收数据包的时间
    */
   @Override
-  public void setActiveTimeNow() {
-    setActiveTime(System.currentTimeMillis());
+  public void setActiveAtNow() {
+    setActiveAt(System.currentTimeMillis());
   }
 
   /**
@@ -274,7 +274,7 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
         .append(getId())
         .append("#").append(remote.getHostString()).append(":").append(remote.getPort())
         .append("#online[").append(String.format("%.1fs", getDuration(getOnlineTime(), TimeUnit.SECONDS))).append("]")
-        .append("#active[").append(String.format("%.1fs", getDuration(getActiveTime(), TimeUnit.SECONDS))).append("]")
+        .append("#active[").append(String.format("%.1fs", getDuration(getActiveAt(), TimeUnit.SECONDS))).append("]")
         .append(")")
         .toString();
   }
