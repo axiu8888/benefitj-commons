@@ -14,208 +14,102 @@ import java.util.stream.Collectors;
 
 
 /**
- * 事件循环
+ * 线程池
  */
-public class EventLoop implements ExecutorService, ScheduledExecutorService {
+public interface EventLoop extends ExecutorService, ScheduledExecutorService {
 
-  private static final int PROCESSOR_SIZE = Runtime.getRuntime().availableProcessors();
-  /**
-   * 主线程
-   */
-  private static final SingletonSupplier<EventLoop> MAIN_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-main-", false));
-  private static final SingletonSupplier<EventLoop> MULTI_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(PROCESSOR_SIZE, "-multi-", true));
-  private static final SingletonSupplier<EventLoop> SINGLE_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(1, "-single-", true));
-  private static final SingletonSupplier<EventLoop> IO_EVENT_LOOP
-      = SingletonSupplier.of(() -> new GlobalEventLoop(64, "-io-", true));
+  ScheduledExecutorService executor();
 
-  private static final Logger log = LoggerFactory.getLogger(EventLoop.class);
-
-  /**
-   * 多线程事件
-   */
-  public static EventLoop main() {
-    return MAIN_EVENT_LOOP.get();
-  }
-
-  /**
-   * 多线程事件
-   */
-  public static EventLoop multi() {
-    return MULTI_EVENT_LOOP.get();
-  }
-
-  /**
-   * 单线程事件
-   */
-  public static EventLoop single() {
-    return SINGLE_EVENT_LOOP.get();
-  }
-
-  /**
-   * IO事件，128个线程
-   */
-  public static EventLoop io() {
-    return IO_EVENT_LOOP.get();
-  }
-
-  private final int corePoolSize;
-  private final ScheduledExecutorService executor;
-  private final AtomicReference<Thread> loopThread = new AtomicReference<>();
-
-  public EventLoop(int corePoolSize) {
-    this(corePoolSize, false);
-  }
-
-  public EventLoop(int corePoolSize, boolean daemon) {
-    this(corePoolSize, newThreadFactory(nextThreadNamePrefix(), daemon));
-  }
-
-  public EventLoop(int corePoolSize, ThreadFactory threadFactory) {
-    this.corePoolSize = corePoolSize;
-    this.executor = Executors.newScheduledThreadPool(corePoolSize, threadFactory);
-    if (isSingle()) {
-      this.submit(() -> loopThread.set(Thread.currentThread())).get();
-    }
-  }
-
-  protected ScheduledExecutorService getExecutor() {
-    return executor;
-  }
-
-  public boolean isSingle() {
-    return corePoolSize == 1;
-  }
-
-  public boolean isInLoopSingle() {
-    return isSingle() && loopThread.get() == Thread.currentThread();
-  }
-
-  /**
-   * 在同一个线程执行
-   */
-  public IFuture<?> inLoop(Runnable task) {
-    if (isSingle()) {
-      if (isInLoopSingle()) {
-        try {
-          task.run();
-          return IFuture.nothing();
-        } catch (Throwable e) {
-          return IFuture.wrapFail(e);
-        }
-      } else {
-        return submit(task);
-      }
-    } else {
-      return submit(task);
-    }
-  }
-
-  /**
-   * 在同一个线程执行
-   */
-  public <V> IFuture<V> inLoop(Callable<V> task) {
-    if (isSingle()) {
-      if (isInLoopSingle()) {
-        try {
-          return IFuture.wrapValue(task.call());
-        } catch (Throwable e) {
-          return IFuture.wrapFail(e);
-        }
-      } else {
-        return submit(task);
-      }
-    } else {
-      return submit(task);
-    }
+  @Override
+  default IScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+    return wrap(executor().schedule(wrap(command), delay, unit));
   }
 
   @Override
-  public IScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-    return wrap(getExecutor().schedule(wrap(command), delay, unit));
+  default <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
+    return executor().schedule(wrap(callable), delay, unit);
   }
 
   @Override
-  public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-    return getExecutor().schedule(wrap(callable), delay, unit);
+  default IScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
+    return wrap(executor().scheduleAtFixedRate(wrap(command), initialDelay, period, unit));
   }
 
   @Override
-  public IScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
-    return wrap(getExecutor().scheduleAtFixedRate(wrap(command), initialDelay, period, unit));
+  default IScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
+    return wrap(executor().scheduleWithFixedDelay(wrap(command), initialDelay, delay, unit));
   }
 
   @Override
-  public IScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
-    return wrap(getExecutor().scheduleWithFixedDelay(wrap(command), initialDelay, delay, unit));
+  default void shutdown() {
+    executor().shutdown();
   }
 
   @Override
-  public void shutdown() {
-    getExecutor().shutdown();
+  default List<Runnable> shutdownNow() {
+    return executor().shutdownNow();
   }
 
   @Override
-  public List<Runnable> shutdownNow() {
-    return getExecutor().shutdownNow();
+  default boolean isShutdown() {
+    return executor().isShutdown();
   }
 
   @Override
-  public boolean isShutdown() {
-    return getExecutor().isShutdown();
+  default boolean isTerminated() {
+    return executor().isTerminated();
   }
 
   @Override
-  public boolean isTerminated() {
-    return getExecutor().isTerminated();
+  default boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+    return executor().awaitTermination(timeout, unit);
   }
 
   @Override
-  public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-    return getExecutor().awaitTermination(timeout, unit);
+  default <T> IFuture<T> submit(Callable<T> task) {
+    return wrap(executor().submit(wrap(task)));
   }
 
   @Override
-  public <T> IFuture<T> submit(Callable<T> task) {
-    return wrap(getExecutor().submit(wrap(task)));
+  default <T> IFuture<T> submit(Runnable task, T result) {
+    return wrap(executor().submit(wrap(task), result));
   }
 
   @Override
-  public <T> IFuture<T> submit(Runnable task, T result) {
-    return wrap(getExecutor().submit(wrap(task), result));
+  default IFuture<?> submit(Runnable task) {
+    return wrap(executor().submit(wrap(task)));
   }
 
   @Override
-  public IFuture<?> submit(Runnable task) {
-    return wrap(getExecutor().submit(wrap(task)));
+  default <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
+    return executor().invokeAll(wrap(tasks));
   }
 
   @Override
-  public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
-    return getExecutor().invokeAll(wrap(tasks));
+  default <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+    return executor().invokeAll(wrap(tasks), timeout, unit);
   }
 
   @Override
-  public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
-    return getExecutor().invokeAll(wrap(tasks), timeout, unit);
+  default <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+    return executor().invokeAny(wrap(tasks));
   }
 
   @Override
-  public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
-    return getExecutor().invokeAny(wrap(tasks));
+  default <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    return executor().invokeAny(wrap(tasks), timeout, unit);
   }
 
   @Override
-  public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-    return getExecutor().invokeAny(wrap(tasks), timeout, unit);
+  default void execute(Runnable command) {
+    executor().execute(wrap(command));
   }
 
-  @Override
-  public void execute(Runnable command) {
-    getExecutor().execute(wrap(command));
-  }
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
 
   /**
    * 包裹 Runnable
@@ -223,12 +117,12 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * @param task 任务
    * @return 返回结果
    */
-  public static Runnable wrap(Runnable task) {
+  static Runnable wrap(Runnable task) {
     return () -> {
       try {
         task.run();
       } catch (Throwable e) {
-        log.error(e.getMessage(), e);
+        Global.log.error(e.getMessage(), e);
         throw e;
       }
     };
@@ -241,12 +135,12 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * @param <T>  返回类型
    * @return 返回结果
    */
-  public static <T> Callable<T> wrap(Callable<T> task) {
+  static <T> Callable<T> wrap(Callable<T> task) {
     return () -> {
       try {
         return task.call();
       } catch (Throwable e) {
-        log.error(e.getMessage(), e);
+        Global.log.error(e.getMessage(), e);
         throw e;
       }
     };
@@ -259,10 +153,8 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * @param <T>   返回类型
    * @return 返回结果
    */
-  public static <T> Collection<? extends Callable<T>> wrap(Collection<? extends Callable<T>> tasks) {
-    return tasks.stream()
-        .map(EventLoop::wrap)
-        .collect(Collectors.toList());
+  static <T> Collection<? extends Callable<T>> wrap(Collection<? extends Callable<T>> tasks) {
+    return tasks.stream().map(EventLoop::wrap).collect(Collectors.toList());
   }
 
   /**
@@ -272,7 +164,7 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * @param <V>    返回类型
    * @return 返回结果
    */
-  public static <V> IFuture<V> wrap(Future<V> future) {
+  static <V> IFuture<V> wrap(Future<V> future) {
     return IFuture.wrap(future);
   }
 
@@ -283,48 +175,172 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
    * @param <V>    返回类型
    * @return 返回结果
    */
-  public static <V> IScheduledFuture<V> wrap(ScheduledFuture<V> future) {
+  static <V> IScheduledFuture<V> wrap(ScheduledFuture<V> future) {
     return IScheduledFuture.wrap(future);
   }
 
   /**
-   * 创建单线程的EventLoop
+   * 取消调度
+   *
+   * @param sf 调度任务
+   * @return 返回是否取消
    */
-  public static EventLoop newSingle(boolean daemon) {
-    return newEventLoop(1, daemon);
+  static boolean cancel(ScheduledFuture<?> sf) {
+    return sf != null && sf.cancel(true);
+  }
+
+  /**
+   * 创建线程池
+   *
+   * @param namePrefix 线程名称前缀
+   * @param daemon     是否为守护线程
+   * @return 返回线程工厂
+   */
+  static ThreadFactory newThreadFactory(String namePrefix, boolean daemon) {
+    return newThreadFactory(namePrefix, daemon, Thread.NORM_PRIORITY);
+  }
+
+  /**
+   * 创建线程池
+   *
+   * @param namePrefix 线程名称前缀
+   * @param daemon     是否为守护线程
+   * @param priority   线程优先级
+   * @return 返回线程工厂
+   */
+  static ThreadFactory newThreadFactory(String namePrefix, boolean daemon, int priority) {
+    final AtomicInteger threadNumber = new AtomicInteger(1);
+    final ThreadGroup group = Thread.currentThread().getThreadGroup();
+    return r -> {
+      Thread t = new Thread(group
+          , r
+          , namePrefix + threadNumber.getAndIncrement()
+          , 0
+      );
+      t.setDaemon(daemon);
+      if (t.getPriority() != priority) t.setPriority(priority);
+      return t;
+    };
+  }
+
+  /**
+   * CPU数量
+   */
+  static int coreSize() {
+    return Runtime.getRuntime().availableProcessors();
+  }
+
+  /**
+   * 获取线程名
+   */
+  static String getThreadName() {
+    return Thread.currentThread().getName();
+  }
+
+  /**
+   * sleep
+   *
+   * @param duration 时长
+   */
+  static void sleepMillis(long duration) {
+    sleep(duration, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * sleep
+   *
+   * @param duration 时长
+   */
+  static void sleepSecond(long duration) {
+    sleep(duration, TimeUnit.SECONDS);
+  }
+
+  /**
+   * sleep
+   *
+   * @param duration 时长
+   * @param unit     单位
+   */
+  static void sleep(long duration, TimeUnit unit) {
+    try {
+      Thread.sleep(unit.toMillis(duration));
+    } catch (InterruptedException e) {
+      throw new IllegalStateException(CatchUtils.findRoot(e));
+    }
   }
 
   /**
    * 创建EventLoop
    */
-  public static EventLoop newCoreLoop(boolean daemon) {
-    int coreSize = Runtime.getRuntime().availableProcessors();
-    return newEventLoop(coreSize, daemon);
+  static EventLoop newCoreLoop(boolean daemon) {
+    return newEventLoop(coreSize(), daemon);
   }
 
   /**
    * 创建EventLoop
    */
-  public static EventLoop newEventLoop(int corePoolSize, boolean daemon) {
-    return newEventLoop(nextThreadNamePrefix(), corePoolSize, daemon);
+  static EventLoop newEventLoop(int corePoolSize, boolean daemon) {
+    return newEventLoop(generateNamePrefix(), corePoolSize, daemon);
   }
 
   /**
    * 创建EventLoop
    */
-  public static EventLoop newEventLoop(String namePrefix, int corePoolSize, boolean daemon) {
-    return new EventLoop(corePoolSize, newThreadFactory(namePrefix, daemon));
+  static EventLoop newEventLoop(String namePrefix, int corePoolSize, boolean daemon) {
+    return new Impl(corePoolSize, newThreadFactory(namePrefix, daemon));
   }
 
-  private static final AtomicInteger ID = new AtomicInteger(1);
 
-  static String nextThreadNamePrefix() {
-    return "loop" + ID.incrementAndGet() + "-thread-";
+  /**
+   * 默认实现
+   */
+  public class Impl implements EventLoop {
+
+    final ScheduledExecutorService executor;
+
+    public Impl(String namePrefix, int corePoolSize) {
+      this(namePrefix, corePoolSize, false);
+    }
+
+    public Impl(String namePrefix, int corePoolSize, boolean daemon) {
+      this(corePoolSize, newThreadFactory(namePrefix, daemon));
+    }
+
+    public Impl(int corePoolSize, ThreadFactory threadFactory) {
+      this(Executors.newScheduledThreadPool(corePoolSize, threadFactory));
+    }
+
+    public Impl(ScheduledExecutorService executor) {
+      this.executor = executor;
+    }
+
+    public ScheduledExecutorService executor() {
+      return executor;
+    }
+
   }
 
-  static final class GlobalEventLoop extends EventLoop {
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
 
-    private GlobalEventLoop(int corePoolSize, String suffix, boolean daemon) {
+  AtomicInteger ID = new AtomicInteger(1);
+
+  /**
+   * 生成线程名前缀
+   */
+  static String generateNamePrefix() {
+    return "loop" + ID.incrementAndGet() + "-worker-";
+  }
+
+  /**
+   * 全局线程池
+   */
+  public final class Global extends Impl {
+
+    private Global(int corePoolSize, String suffix, boolean daemon) {
       super(corePoolSize, newThreadFactory("loop-" + ID.getAndIncrement() + suffix, daemon));
       if (!daemon) {
         ShutdownHook.register(super::shutdown);
@@ -341,164 +357,150 @@ public class EventLoop implements ExecutorService, ScheduledExecutorService {
       throw new UnsupportedOperationException();
     }
 
+    static final SingletonSupplier<EventLoop> MAIN_EVENT_LOOP = SingletonSupplier.of(() -> new Global(1, "-main-", false));
+    static final SingletonSupplier<EventLoop> MULTI_EVENT_LOOP = SingletonSupplier.of(() -> new Global(coreSize(), "-multi-", true));
+    static final SingletonSupplier<EventLoop> SINGLE_EVENT_LOOP = SingletonSupplier.of(() -> new Global(1, "-single-", true));
+    static final SingletonSupplier<EventLoop> IO_EVENT_LOOP = SingletonSupplier.of(() -> new Global(64, "-io-", true));
+
+    static final Logger log = LoggerFactory.getLogger(EventLoop.class);
+
+  }
+
+
+  /**
+   * 多线程事件
+   */
+  static EventLoop main() {
+    return Global.MAIN_EVENT_LOOP.get();
   }
 
   /**
-   * 取消调度
-   *
-   * @param sf 调度任务
-   * @return 返回是否取消
+   * 多线程事件
    */
-  public static boolean cancel(ScheduledFuture<?> sf) {
-    return sf != null && sf.cancel(true);
-  }
-
-  public static String threadName() {
-    return Thread.currentThread().getName();
+  static EventLoop multi() {
+    return Global.MULTI_EVENT_LOOP.get();
   }
 
   /**
-   * 等待
-   *
-   * @param seconds 时长(秒)
+   * 单线程事件
    */
-  public static void awaitSeconds(int seconds) {
-    await(TimeUnit.SECONDS.toMillis(seconds));
+  static EventLoop single() {
+    return Global.SINGLE_EVENT_LOOP.get();
   }
 
   /**
-   * 等待
-   *
-   * @param durationMillis 时长
+   * IO事件，128个线程
    */
-  public static void await(long durationMillis) {
-    await(Thread.currentThread(), durationMillis);
+  static EventLoop io() {
+    return Global.IO_EVENT_LOOP.get();
   }
 
-  /**
-   * 等待
-   *
-   * @param t              等待的线程
-   * @param durationMillis 时长
-   */
-  public static void await(Thread t, long durationMillis) {
-    await(t, durationMillis, TimeUnit.MILLISECONDS);
-  }
-
-  /**
-   * 等待
-   *
-   * @param duration 时长
-   * @param unit     单位
-   */
-  public static void await(long duration, TimeUnit unit) {
-    await(Thread.currentThread(), duration, unit);
-  }
-
-  /**
-   * 等待
-   *
-   * @param t        等待的线程
-   * @param duration 时长
-   * @param unit     单位
-   */
-  public static void await(Thread t, long duration, TimeUnit unit) {
-    try {
-      t.join(unit.toNanos(duration));
-    } catch (InterruptedException e) {
-      throw new IllegalStateException(CatchUtils.findRoot(e));
-    }
-  }
-
-  /**
-   * sleep
-   *
-   * @param duration 时长
-   */
-  public static void sleepMillis(long duration) {
-    sleep(duration, TimeUnit.MILLISECONDS);
-  }
-
-  /**
-   * sleep
-   *
-   * @param duration 时长
-   */
-  public static void sleepSecond(long duration) {
-    sleep(duration, TimeUnit.SECONDS);
-  }
-
-  /**
-   * sleep
-   *
-   * @param duration 时长
-   * @param unit     单位
-   */
-  public static void sleep(long duration, TimeUnit unit) {
-    try {
-      Thread.sleep(unit.toMillis(duration));
-    } catch (InterruptedException e) {
-      throw new IllegalStateException(CatchUtils.findRoot(e));
-    }
-  }
-
-  public static IScheduledFuture<?> asyncIO(Runnable task) {
+  static IScheduledFuture<?> asyncIO(Runnable task) {
     return asyncIO(task, 0);
   }
 
-  public static IScheduledFuture<?> asyncIO(Runnable task, long delay) {
+  static IScheduledFuture<?> asyncIO(Runnable task, long delay) {
     return asyncIO(task, delay, TimeUnit.MILLISECONDS);
   }
 
-  public static IScheduledFuture<?> asyncIO(Runnable task, long delay, TimeUnit unit) {
+  static IScheduledFuture<?> asyncIO(Runnable task, long delay, TimeUnit unit) {
     return io().schedule(task, delay, unit);
   }
 
-  public static IScheduledFuture<?> asyncIOFixedRate(Runnable task, long period) {
+  static IScheduledFuture<?> asyncIOFixedRate(Runnable task, long period) {
     return asyncIOFixedRate(task, period, period);
   }
 
-  public static IScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period) {
+  static IScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period) {
     return asyncIOFixedRate(task, initialDelay, period, TimeUnit.MILLISECONDS);
   }
 
-  public static IScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period, TimeUnit unit) {
+  static IScheduledFuture<?> asyncIOFixedRate(Runnable task, long initialDelay, long period, TimeUnit unit) {
     return io().scheduleAtFixedRate(task, initialDelay, period, unit);
   }
 
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
 
   /**
-   * 创建线程池
-   *
-   * @param namePrefix 线程名称前缀
-   * @param daemon     是否为守护线程
-   * @return 返回线程工厂
+   * 创建单线程的EventLoop
    */
-  public static ThreadFactory newThreadFactory(String namePrefix, boolean daemon) {
-    return newThreadFactory(namePrefix, daemon, Thread.NORM_PRIORITY);
+  static Single newSingle(boolean daemon) {
+    return newSingle(generateNamePrefix(), daemon);
   }
 
   /**
-   * 创建线程池
-   *
-   * @param namePrefix 线程名称前缀
-   * @param daemon     是否为守护线程
-   * @param priority   线程优先级
-   * @return 返回线程工厂
+   * 创建单线程的EventLoop
    */
-  public static ThreadFactory newThreadFactory(String namePrefix, boolean daemon, int priority) {
-    final AtomicInteger threadNumber = new AtomicInteger(1);
-    final ThreadGroup group = Thread.currentThread().getThreadGroup();
-    return r -> {
-      Thread t = new Thread(group
-          , r
-          , namePrefix + threadNumber.getAndIncrement()
-          , 0
-      );
-      t.setDaemon(daemon);
-      if (t.getPriority() != priority) t.setPriority(priority);
-      return t;
-    };
+  static Single newSingle(String namePrefix, boolean daemon) {
+    return new Single(namePrefix, daemon);
+  }
+
+  /**
+   * 创建单线程的EventLoop
+   */
+  static Single newSingle(ThreadFactory factory) {
+    return new Single(factory);
+  }
+
+  /**
+   * 单线程调度
+   */
+  public class Single extends Impl {
+
+    final AtomicReference<Thread> threadHolder = new AtomicReference<>();
+
+    public Single(ThreadFactory factory) {
+      super(Executors.newSingleThreadScheduledExecutor(factory));
+      this.submit(() -> threadHolder.set(Thread.currentThread())).get();
+    }
+
+    public Single(String namePrefix, boolean daemon) {
+      this(newThreadFactory(namePrefix, daemon));
+    }
+
+    public Thread getThread() {
+      return threadHolder.get();
+    }
+
+    public boolean isInLoop() {
+      return threadHolder.get() == Thread.currentThread();
+    }
+
+    /**
+     * 在同一个线程执行
+     */
+    public IFuture<?> inLoop(Runnable task) {
+      if (isInLoop()) {
+        try {
+          task.run();
+          return IFuture.nothing();
+        } catch (Throwable e) {
+          return IFuture.wrapFail(e);
+        }
+      } else {
+        return submit(task);
+      }
+    }
+
+    /**
+     * 在同一个线程执行
+     */
+    public <V> IFuture<V> inLoop(Callable<V> task) {
+      if (isInLoop()) {
+        try {
+          return IFuture.wrapValue(task.call());
+        } catch (Throwable e) {
+          return IFuture.wrapFail(e);
+        }
+      } else {
+        return submit(task);
+      }
+    }
+
   }
 
 }

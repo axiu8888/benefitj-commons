@@ -73,7 +73,7 @@ public class ApiBuilderTest {
     CountDownLatch latch = new CountDownLatch(1);
     api.getImg()
         .subscribe(body -> {
-          log.info("线程: {}", EventLoop.threadName());
+          log.info("线程: {}", EventLoop.getThreadName());
           final IWriter img = IWriter.createWriter("D:/tmp/ew4nf5737jvn.jpg_760w.png", false);
           BodyUtils.progressResponseBody(body
               , (buf, len) -> img.write(buf, 0, len)
@@ -229,9 +229,9 @@ public class ApiBuilderTest {
     latch.await();
     for (int i = 0; i < 20; i++) {
       socket.send("about:blank");
-      EventLoop.await(1, TimeUnit.SECONDS);
+      EventLoop.sleep(1, TimeUnit.SECONDS);
     }
-    EventLoop.await(10, TimeUnit.SECONDS);
+    EventLoop.sleep(10, TimeUnit.SECONDS);
     socket.close(1000, "done");
   }
 
@@ -560,7 +560,7 @@ public class ApiBuilderTest {
       }
     });
 
-    EventLoop.await(120, TimeUnit.SECONDS);
+    EventLoop.sleep(120, TimeUnit.SECONDS);
     socket.close();
 
   }
