@@ -21,10 +21,16 @@ public @interface JavaStructField {
   int startAt() default -1;
 
   /**
-   * 单个元素的比例，如：
-   * int[]{20, 20, 45}，单个元素为4字节，单个长度(4) * 数组长度(3) = 总长度(12字节)
+   * 单个元素的字节数
+   * 如果是数组：int[]{20, 20, 45}，单个元素为4字节，单个长度(4) * 数组长度(3) = 总长度(12字节)
    */
   int size();
+
+  /**
+   * 如果是数组，可以指定数组长度
+   * 当配合 {@link this#size()}
+   */
+  int arrayLength() default 0;
 
   /**
    * 字节顺序，对于一些数值类型，可能有大小端的问题
@@ -45,10 +51,5 @@ public @interface JavaStructField {
    * 如果是字符串，可以指定字节编码
    */
   String charset() default "";
-
-  /**
-   * 如果是数组，可以指定数组长度
-   */
-  int arrayLength() default 0;
 
 }

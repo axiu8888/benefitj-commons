@@ -8,6 +8,7 @@ import com.benefitj.core.IOUtils;
 import com.benefitj.javastruct.entity.CollectorPacket;
 import com.benefitj.javastruct.entity.LeadWave;
 import com.benefitj.javastruct.entity.Person;
+import lombok.Data;
 import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -93,5 +94,51 @@ public class JavaStructManagerTest {
     CollectorPacket packet = manager.parseObject(HexUtils.hexToBytes(new String(data)), CollectorPacket.class);
     System.err.println(JSON.toJSONString(packet));
   }
+
+  @Test
+  public void test222() {
+    File bin = new File("D:\\tmp\\cache\\znsx\\ecg_3fd8897833d9461eb3c39865d15c0312_From20240716081757To20240716083450_12.DAT");
+    IOUtils.read(bin, (buf, lineNumber) -> {
+      Holter12 holter12 = manager.parseObject(buf, Holter12.class);
+      System.err.println(JSON.toJSONString(holter12));
+    });
+  }
+
+  @Data
+  @JavaStructClass
+  public static class Holter12 {
+    /**
+     * 包序号
+     */
+    @JavaStructField(startAt = 0, size = 4)
+    int sn;
+    // 忽略
+    @JavaStructField(startAt = 4, size = 4)
+    int skip1;
+    /**
+     * 时间
+     */
+    @JavaStructField(startAt = 8, size = 4)
+    int time;
+
+    @JavaStructField(size = 2, arrayLength = 200)
+    int[] I;
+    @JavaStructField(size = 2, arrayLength = 200)
+    int[] II;
+    @JavaStructField(size = 2, arrayLength = 200)
+    int[] V1;
+    @JavaStructField(size = 2, arrayLength = 200)
+    int[] V2;
+    @JavaStructField(size = 2, arrayLength = 200)
+    int[] V3;
+    @JavaStructField(size = 2, arrayLength = 200)
+    int[] V4;
+    @JavaStructField(size = 2, arrayLength = 200)
+    int[] V5;
+    @JavaStructField(size = 2, arrayLength = 200)
+    int[] V6;
+
+  }
+
 
 }
