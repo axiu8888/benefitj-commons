@@ -171,10 +171,11 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
       log.debug("connect0, clientId: {}, serverURI: {}", raw.getClientId(), raw.getServerURI());
       raw.connect(options);
       status.accept(raw.isConnected(), null);
+      return raw.isConnected();
     } catch (Throwable e) {
       status.accept(false, e);
+      return false;
     }
-    return raw.isConnected();
   }
 
   /**

@@ -21,7 +21,7 @@ public abstract class BufCopyConverter<T> implements Converter<T> {
   /**
    * 缓冲
    */
-  private final ByteArrayCopy byteArrayCopy = ByteArrayCopy.newBufCopy();
+  private final ByteArrayCopy copy = ByteArrayCopy.newBufCopy();
   /**
    * 是否优先使用本地缓冲
    */
@@ -61,7 +61,7 @@ public abstract class BufCopyConverter<T> implements Converter<T> {
   public abstract byte[] convert(Object obj, StructField field, Object value);
 
   public ByteArrayCopy getBufCopy() {
-    return byteArrayCopy;
+    return copy;
   }
 
   public boolean isLocal() {
@@ -77,7 +77,7 @@ public abstract class BufCopyConverter<T> implements Converter<T> {
   }
 
   public byte[] getCache(int size, boolean local) {
-    return byteArrayCopy.getCache(size, local);
+    return copy.getCache(size, local);
   }
 
   /**

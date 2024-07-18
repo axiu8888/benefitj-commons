@@ -362,7 +362,7 @@ public class Chromium implements Launcher {
           long start = System.currentTimeMillis();
           while ((System.currentTimeMillis() - start) < 2_000) {
             // 让出5毫秒，等待连接成功
-            EventLoop.sleepMillis(5);
+            EventLoop.sleep(5);
             if (socket.isOpen()) {
               break;
             }

@@ -1,5 +1,7 @@
 package com.benefitj.netty.server.device;
 
+import com.benefitj.netty.device.DeviceFactory;
+import com.benefitj.netty.device.DeviceListener;
 import com.benefitj.netty.device.DeviceManager;
 import io.netty.channel.Channel;
 
@@ -31,6 +33,17 @@ public interface NettyDeviceManager<T extends NettyDevice> extends DeviceManager
     Map<String, Object> wrap = NettyDeviceFactory.wrap(ch);
     if (attrs != null && !attrs.isEmpty()) wrap.putAll(attrs);
     return create(key, wrap);
+  }
+
+  class Impl<T extends NettyDevice> extends DeviceManager.Impl<String, T> implements NettyDeviceManager<T> {
+
+    public Impl() {
+    }
+
+    public Impl(DeviceFactory<String, T> deviceFactory,
+                DeviceListener<String, T> deviceListener) {
+      super(deviceFactory, deviceListener);
+    }
   }
 
 }

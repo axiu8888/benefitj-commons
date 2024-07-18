@@ -63,7 +63,7 @@ public class CacheTest {
         String key = String.valueOf(i % 10);
         String value = cache.getIfPresent(key);
         log.info("estimatedSize: {}, {}, {}, {}", cache.estimatedSize(), key, value, DateFmtter.fmtNowS());
-        EventLoop.sleepMillis(100);
+        EventLoop.sleep(100);
       }
       latch.countDown();
     }, 1, 1, TimeUnit.SECONDS);

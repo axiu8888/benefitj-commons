@@ -242,8 +242,8 @@ public interface EventLoop extends ExecutorService, ScheduledExecutorService {
    *
    * @param duration 时长
    */
-  static void sleepMillis(long duration) {
-    sleep(duration, TimeUnit.MILLISECONDS);
+  static void sleepSecond(long duration) {
+    sleep(duration * 1000L);
   }
 
   /**
@@ -251,8 +251,8 @@ public interface EventLoop extends ExecutorService, ScheduledExecutorService {
    *
    * @param duration 时长
    */
-  static void sleepSecond(long duration) {
-    sleep(duration, TimeUnit.SECONDS);
+  static void sleep(long duration) {
+    sleep(duration, TimeUnit.MILLISECONDS);
   }
 
   /**
