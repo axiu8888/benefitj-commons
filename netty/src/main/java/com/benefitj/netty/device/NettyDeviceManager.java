@@ -1,11 +1,12 @@
-package com.benefitj.netty.server.device;
+package com.benefitj.netty.device;
 
-import com.benefitj.netty.device.DeviceFactory;
-import com.benefitj.netty.device.DeviceListener;
-import com.benefitj.netty.device.DeviceManager;
+import com.benefitj.core.device.DeviceFactory;
+import com.benefitj.core.device.DeviceListener;
+import com.benefitj.core.device.DeviceManager;
 import io.netty.channel.Channel;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -27,10 +28,17 @@ public interface NettyDeviceManager<T extends NettyDevice> extends DeviceManager
   /**
    * 获取设备，如果不存在，则创建
    */
+  default T computeIfAbsent(String key, Map<String, Object> attrs) {
+    return computeIfAbsent(key, null, attrs);
+  }
+
+  /**
+   * 获取设备，如果不存在，则创建
+   */
   default T computeIfAbsent(String key, Channel ch, Map<String, Object> attrs) {
     T device = get(key);
     if (device != null)  return device;
-    Map<String, Object> wrap = NettyDeviceFactory.wrap(ch);
+    Map<String, Object> wrap = ch != null ? NettyDeviceFactory.wrap(ch) : new LinkedHashMap<>();
     if (attrs != null && !attrs.isEmpty()) wrap.putAll(attrs);
     return create(key, wrap);
   }

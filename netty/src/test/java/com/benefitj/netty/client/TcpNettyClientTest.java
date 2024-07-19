@@ -49,12 +49,12 @@ public class TcpNettyClientTest {
     });
     client.start(f -> log.info("client started... "));
 
-    EventLoop.awaitSeconds(1);
+    EventLoop.sleepSecond(1);
 
     for (int i = 0; i < 1000; i++) {
       client.writeAndFlush("ss " + i, (FutureListener<Void>) f -> log.info("send: " + f.isSuccess()));
       // wait
-      EventLoop.awaitSeconds(1);
+      EventLoop.sleepSecond(1);
     }
 
     client.stop();

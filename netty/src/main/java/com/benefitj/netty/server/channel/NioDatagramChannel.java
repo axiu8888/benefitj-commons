@@ -215,22 +215,22 @@ public class NioDatagramChannel extends AbstractChannel {
   protected void doWrite(ChannelOutboundBuffer in) throws Exception {
     //transfer all messages that are ready to be written to list
     final RecyclableArrayList list = RecyclableArrayList.newInstance();
-    boolean freeFlag = true;
+    boolean free = true;
     try {
-      Object current;
-      while ((current = in.current()) != null) {
-        if (current instanceof DatagramPacket) {
-          list.add(((DatagramPacket) current).retain());
-        } else if (current instanceof byte[]) {
-          list.add(new DatagramPacket(Unpooled.wrappedBuffer((byte[]) current), remoteAddress()));
+      Object cur;
+      while ((cur = in.current()) != null) {
+        if (cur instanceof DatagramPacket) {
+          list.add(((DatagramPacket) cur).retain());
+        } else if (cur instanceof byte[]) {
+          list.add(new DatagramPacket(Unpooled.wrappedBuffer((byte[]) cur), remoteAddress()));
         } else {
-          list.add(new DatagramPacket(((ByteBuf) current).retain(), remoteAddress()));
+          list.add(new DatagramPacket(((ByteBuf) cur).retain(), remoteAddress()));
         }
         in.remove();
       }
-      freeFlag = false;
+      free = false;
     } finally {
-      if (freeFlag) {
+      if (free) {
         for (Object obj : list) {
           ReferenceCountUtil.safeRelease(obj);
         }
@@ -247,8 +247,8 @@ public class NioDatagramChannel extends AbstractChannel {
   }
 
   private void doWrite0(RecyclableArrayList list) {
-    NioEventLoop loop = parent().eventLoop();
-    if (loop.inEventLoop()) {
+    NioEventLoop parentLoop = parent().eventLoop();
+    if (parentLoop.inEventLoop()) {
       try {
         Unsafe unsafe = parent().unsafe();
         for (Object buf : list) {
@@ -260,7 +260,7 @@ public class NioDatagramChannel extends AbstractChannel {
       }
     } else {
       //schedule a task that will write those entries
-      parent().eventLoop().execute(() -> doWrite0(list));
+      parentLoop.execute(() -> doWrite0(list));
     }
   }
 
@@ -273,7 +273,7 @@ public class NioDatagramChannel extends AbstractChannel {
 
     @Override
     public void connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise) {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException("不支持此操作");
     }
   }
 

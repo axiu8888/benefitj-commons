@@ -1,4 +1,4 @@
-package com.benefitj.netty.device;
+package com.benefitj.core.device;
 
 import javax.annotation.Nullable;
 import java.util.Map;

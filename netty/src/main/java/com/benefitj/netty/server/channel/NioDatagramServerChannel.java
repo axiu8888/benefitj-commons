@@ -196,25 +196,25 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
   @Override
   protected int doReadMessages(List<Object> buf) throws Exception {
     RecvByteBufAllocator.Handle allocatorHandle = unsafe().recvBufAllocHandle();
-    ByteBuf content = allocatorHandle.allocate(config().getAllocator());
-    allocatorHandle.attemptedBytesRead(content.writableBytes());
+    ByteBuf msg = allocatorHandle.allocate(config().getAllocator());
+    allocatorHandle.attemptedBytesRead(msg.writableBytes());
     boolean free = true;
     try {
       //read message
-      ByteBuffer nioBuf = content.internalNioBuffer(content.writerIndex(), content.writableBytes());
+      ByteBuffer nioBuf = msg.internalNioBuffer(msg.writerIndex(), msg.writableBytes());
       int nioPos = nioBuf.position();
       InetSocketAddress remote = (InetSocketAddress) javaChannel().receive(nioBuf);
       if (remote == null) {
         return 0;
       }
       allocatorHandle.lastBytesRead(nioBuf.position() - nioPos);
-      content.writerIndex(content.writerIndex() + allocatorHandle.lastBytesRead());
+      msg.writerIndex(msg.writerIndex() + allocatorHandle.lastBytesRead());
       //allocate new channel or use existing one and push message to it
-      DatagramPacket packet = new DatagramPacket(content, localAddress(), remote);
+      DatagramPacket packet = new DatagramPacket(msg, localAddress(), remote);
       Serializable channelKey = channelKeyFactory().getChannelKey(packet);
       NioDatagramChannel child = getChild(channelKey);
       if (child == null || !child.isOpen()) {
-        child = newChild(channelKey, remote, content);
+        child = newChild(channelKey, remote, msg);
         if (child == null) {
           return 0;
         }
@@ -234,8 +234,8 @@ public class NioDatagramServerChannel extends AbstractNioMessageChannel
       PlatformDependent.throwException(t);
       return -1;
     } finally {
-      if (free) {
-        content.release();
+      if (free && msg.refCnt() > 0) {
+        msg.release();
       }
     }
   }

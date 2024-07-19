@@ -63,8 +63,7 @@ public class NettyFactory {
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
-            final ChannelPipeline pipeline = ch.pipeline();
-            handlers.forEach(pipeline::addLast);
+            handlers.forEach(ch.pipeline()::addLast);
           }
         });
   }
@@ -78,8 +77,9 @@ public class NettyFactory {
 
 
   /**
-   * 创建TCP的客户端
+   * 创建TCP的客户端，建议使用 vertx 的TCP
    */
+  @Deprecated
   public static TcpNettyClient newTcpClient() {
     return new TcpNettyClient();
   }

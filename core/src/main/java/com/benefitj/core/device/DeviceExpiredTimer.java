@@ -1,4 +1,4 @@
-package com.benefitj.netty.device;
+package com.benefitj.core.device;
 
 
 import com.benefitj.core.EventLoop;
