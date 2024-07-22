@@ -78,7 +78,7 @@ public interface NettyDeviceFactory<T extends NettyDevice> extends DeviceFactory
 
   class Impl<T extends NettyDevice> implements NettyDeviceFactory<T> {
 
-    final Class<T> deviceType;
+    protected final Class<T> deviceType;
 
     public Impl(Class<T> deviceType) {
       this.deviceType = deviceType;
@@ -91,6 +91,5 @@ public interface NettyDeviceFactory<T extends NettyDevice> extends DeviceFactory
       InetSocketAddress remote = (InetSocketAddress) attrs.get(ATTRS_REMOTE);
       return Instantiator.get().create(deviceType, id, ch, local, remote);
     }
-
   }
 }

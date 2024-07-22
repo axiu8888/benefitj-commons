@@ -30,15 +30,15 @@ public interface DeviceFactory<K, V extends Device<K>> {
    * @param deviceType 设备类型
    * @return 返回对应设备
    */
-  static <K, V extends Device<K>> ReflectiveDeviceFactory<K, V> newFactory(Class<V> deviceType) {
-    return new ReflectiveDeviceFactory<>(deviceType);
+  static <K, V extends Device<K>> Impl<K, V> newFactory(Class<V> deviceType) {
+    return new Impl<>(deviceType);
   }
 
-  class ReflectiveDeviceFactory<K, T extends Device<K>> implements DeviceFactory<K, T> {
+  class Impl<K, T extends Device<K>> implements DeviceFactory<K, T> {
 
-    final Class<? extends T> deviceType;
+    protected final Class<? extends T> deviceType;
 
-    public ReflectiveDeviceFactory(Class<? extends T> deviceType) {
+    public Impl(Class<? extends T> deviceType) {
       this.deviceType = deviceType;
     }
 
