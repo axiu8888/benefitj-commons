@@ -66,6 +66,15 @@ public interface NettyDeviceFactory<T extends NettyDevice> extends DeviceFactory
     return attrs;
   }
 
+  static <D extends NettyDevice> D unwrap(D device, Map<String, Object> attrs) {
+    if (attrs != null && !attrs.isEmpty()) {
+      device.setChannel((Channel) attrs.get(ATTRS_CHANNEL));
+      device.setLocalAddress((InetSocketAddress) attrs.get(ATTRS_LOCAL));
+      device.setRemoteAddress((InetSocketAddress) attrs.get(ATTRS_REMOTE));
+    }
+    return device;
+  }
+
   /**
    * 创建设备工程
    *

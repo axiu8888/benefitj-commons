@@ -69,7 +69,7 @@ public class UdpDevice extends AbstractDevice {
    * @return 返回 ChannelFuture
    */
   public ChannelFuture send(DatagramPacket msg) {
-    return channel().writeAndFlush(msg);
+    return getChannel().writeAndFlush(msg);
   }
 
   @Override

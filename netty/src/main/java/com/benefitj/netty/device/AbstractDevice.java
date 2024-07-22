@@ -21,20 +21,6 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
   /**
    * 本地地址
    */
-  public static InetSocketAddress ofLocal(Channel ch) {
-    return ch != null ? (InetSocketAddress) ch.localAddress() : null;
-  }
-
-  /**
-   * 远程地址
-   */
-  public static InetSocketAddress ofRemote(Channel ch) {
-    return ch != null ? (InetSocketAddress) ch.remoteAddress() : null;
-  }
-
-  /**
-   * 本地地址
-   */
   private InetSocketAddress localAddress;
   /**
    * 远程地址
@@ -123,7 +109,7 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    * 通道
    */
   @Override
-  public Channel channel() {
+  public Channel getChannel() {
     return channel;
   }
 
@@ -133,7 +119,8 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    * @param channel 通道
    * @return 返回当前设备
    */
-  public NettyDevice channel(Channel channel) {
+  @Override
+  public NettyDevice setChannel(Channel channel) {
     this.channel = channel;
     return self();
   }
@@ -143,7 +130,7 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    */
   @Override
   public boolean isActive() {
-    Channel ch = channel();
+    Channel ch = getChannel();
     return ch != null && ch.isActive();
   }
 
@@ -155,7 +142,7 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    */
   @Override
   public ChannelFuture send(ByteBuf msg) {
-    return channel().writeAndFlush(msg);
+    return getChannel().writeAndFlush(msg);
   }
 
   /**
@@ -175,7 +162,7 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    */
   @Override
   public ChannelPipeline pipeline() {
-    return channel().pipeline();
+    return getChannel().pipeline();
   }
 
   /**
@@ -194,7 +181,7 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    */
   @Override
   public EventLoop eventLoop() {
-    return channel().eventLoop();
+    return getChannel().eventLoop();
   }
 
   /**
@@ -247,7 +234,7 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    */
   @Override
   public ChannelFuture closeChannel() {
-    return channel().close();
+    return getChannel().close();
   }
 
   @Override
@@ -256,7 +243,7 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
     if (o == null || getClass() != o.getClass()) return false;
     AbstractDevice that = (AbstractDevice) o;
     return Objects.equals(getId(), that.getId())
-        && Objects.equals(channel(), that.channel())
+        && Objects.equals(getChannel(), that.getChannel())
         && Objects.equals(getRemoteAddress(), that.getRemoteAddress());
   }
 
@@ -279,6 +266,20 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
         .toString();
   }
 
+
+  /**
+   * 本地地址
+   */
+  public static InetSocketAddress ofLocal(Channel ch) {
+    return ch != null ? (InetSocketAddress) ch.localAddress() : null;
+  }
+
+  /**
+   * 远程地址
+   */
+  public static InetSocketAddress ofRemote(Channel ch) {
+    return ch != null ? (InetSocketAddress) ch.remoteAddress() : null;
+  }
 
   protected static float getDuration(long time, TimeUnit unit) {
     long duration = System.currentTimeMillis() - time;

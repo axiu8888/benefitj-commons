@@ -35,7 +35,7 @@ public class TcpDevice extends AbstractDevice {
    */
   @Override
   public ChannelFuture send(ByteBuf msg) {
-    return channel().writeAndFlush(msg);
+    return getChannel().writeAndFlush(msg);
   }
 
   @Override

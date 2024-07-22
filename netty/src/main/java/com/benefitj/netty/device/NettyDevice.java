@@ -43,7 +43,12 @@ public interface NettyDevice extends Device<String> {
   /**
    * 通道
    */
-  Channel channel();
+  Channel getChannel();
+
+  /**
+   * 通道
+   */
+  NettyDevice setChannel(Channel ch);
 
   /**
    * 发送消息
