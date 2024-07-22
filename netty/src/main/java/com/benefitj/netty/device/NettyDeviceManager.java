@@ -5,6 +5,7 @@ import com.benefitj.core.device.DeviceListener;
 import com.benefitj.core.device.DeviceManager;
 import io.netty.channel.Channel;
 
+import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,6 +17,10 @@ public interface NettyDeviceManager<T extends NettyDevice> extends DeviceManager
 
   default T create(String id, Channel ch) {
     return create(id, NettyDeviceFactory.wrap(ch));
+  }
+
+  default T create(String id, Channel ch, InetSocketAddress local, InetSocketAddress remote) {
+    return create(id, NettyDeviceFactory.wrap(ch, local, remote));
   }
 
   /**

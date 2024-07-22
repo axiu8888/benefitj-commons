@@ -1,9 +1,12 @@
 package com.benefitj.netty.device;
 
 import com.benefitj.core.device.DeviceFactory;
+import com.benefitj.core.executable.Instantiator;
 import io.netty.channel.Channel;
 
 import javax.annotation.Nullable;
+import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -14,20 +17,23 @@ import java.util.Map;
  */
 public interface NettyDeviceFactory<T extends NettyDevice> extends DeviceFactory<String, T> {
 
+  String ATTRS_TYPE = "type";
   String ATTRS_CHANNEL = "channel";
+  String ATTRS_LOCAL = "local";
+  String ATTRS_REMOTE = "remote";
 
   @Override
-  default T create(String id, @Nullable Map<String, Object> attrs) {
-    Channel ch = null;
-    if (attrs != null && !attrs.isEmpty()) {
-      ch = (Channel) attrs.get(ATTRS_CHANNEL);
-      attrs.remove(ATTRS_CHANNEL);
-    }
-    T device = create(id, ch);
-    if (attrs != null && !attrs.isEmpty()) {
-      attrs.forEach(device::setAttr);
-    }
-    return device;
+  T create(String id, @Nullable Map<String, Object> attrs);
+
+  /**
+   * 创建设备
+   *
+   * @param id      设备ID
+   * @param channel 通道
+   * @return 返回创建的设备
+   */
+  default T create(String id, Channel channel) {
+    return create(id, wrap(channel));
   }
 
   /**
@@ -37,15 +43,54 @@ public interface NettyDeviceFactory<T extends NettyDevice> extends DeviceFactory
    * @param channel 通道
    * @return 返回创建的设备
    */
-  T create(String id, Channel channel);
+  default T create(String id, Channel channel, InetSocketAddress local, InetSocketAddress remote) {
+    return create(id, wrap(channel, local, remote));
+  }
 
   /**
    * wrapper
    */
-  static Map<String, Object> wrap(Channel channel) {
-    Map<String, Object> attrs = new LinkedHashMap<>(1);
-    attrs.put(ATTRS_CHANNEL, channel);
+  static Map<String, Object> wrap(Channel ch) {
+    return wrap(ch, AbstractDevice.ofLocal(ch), AbstractDevice.ofRemote(ch));
+  }
+
+  /**
+   * wrapper
+   */
+  static Map<String, Object> wrap(Channel ch, InetSocketAddress local, InetSocketAddress remote) {
+    if (ch == null && local == null && remote == null) return Collections.emptyMap();
+    Map<String, Object> attrs = new LinkedHashMap<>(3);
+    attrs.put(ATTRS_CHANNEL, ch);
+    attrs.put(ATTRS_LOCAL, local);
+    attrs.put(ATTRS_REMOTE, remote);
     return attrs;
   }
 
+  /**
+   * 创建设备工程
+   *
+   * @param deviceType 设备类型
+   * @return 返回设备工厂
+   */
+  static <T extends NettyDevice> Impl<T> newFactory(Class<T> deviceType) {
+    return new Impl<>(deviceType);
+  }
+
+  class Impl<T extends NettyDevice> implements NettyDeviceFactory<T> {
+
+    final Class<T> deviceType;
+
+    public Impl(Class<T> deviceType) {
+      this.deviceType = deviceType;
+    }
+
+    @Override
+    public T create(String id, @Nullable Map<String, Object> attrs) {
+      Channel ch = (Channel) attrs.get(ATTRS_CHANNEL);
+      InetSocketAddress local = (InetSocketAddress) attrs.get(ATTRS_LOCAL);
+      InetSocketAddress remote = (InetSocketAddress) attrs.get(ATTRS_REMOTE);
+      return Instantiator.get().create(deviceType, id, ch, local, remote);
+    }
+
+  }
 }
