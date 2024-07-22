@@ -74,6 +74,16 @@ public abstract class InboundHandler<I> extends SimpleCopyHandler<I> {
    * @param consumer 消费者
    * @return 返回创建的Handler
    */
+  public static InboundHandler<byte[]> newBytesHandler(InboundConsumer<byte[]> consumer) {
+    return newHandler(byte[].class, consumer);
+  }
+
+  /**
+   * 创建Handler
+   *
+   * @param consumer 消费者
+   * @return 返回创建的Handler
+   */
   public static InboundHandler<ByteBuf> newByteBufHandler(InboundConsumer<ByteBuf> consumer) {
     return newHandler(ByteBuf.class, consumer);
   }
