@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 /**
  * 简单方法调用器
  */
-public class SimpleMethodInvoker extends MethodInvokerImpl {
+public class SimpleMethodInvoker extends MethodInvoker.Impl {
 
   /**
    * 对象
