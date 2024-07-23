@@ -79,7 +79,7 @@ public class EventLoopBinder<K> {
 
   private void releaseLoop() {
     Set<Holder> set = loops;
-    if (set.size() > getCacheSize()) return;
+    if (set.size() <= getCacheSize()) return;
     final long expiredMillis = getExpired().toMillis();
     final List<Holder> removed = new LinkedList<>();
     set.forEach(h -> {
