@@ -3,6 +3,7 @@ package com.benefitj.network;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.core.*;
+import com.benefitj.core.file.IWriter;
 import com.benefitj.http.*;
 import io.reactivex.rxjava3.core.Observable;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,9 @@ import retrofit2.http.POST;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 @Slf4j
@@ -56,10 +60,12 @@ class HttpTest {
   @Test
   void test_ruicaho() {
 //    String url = "ws://192.168.0.33:8089";
-    String url = "ws://192.168.9.105:8089";
+    String url = "ws://192.168.9.104:8089";
 //    String url = "ws://192.168.1.198/api/management/socket";
-//    AtomicReference<IWriter> writerRef = new AtomicReference<>(IWriter.createWriter(IOUtils.createFile("D:/tmp/cache/走-呼吸.txt"), false));
-
+//    File destFile = IOUtils.createFile("D:/tmp/cache/瑞超小肺/走-呼吸.txt");
+//    File destFile = IOUtils.createFile("D:/tmp/cache/瑞超小肺/深-呼吸.txt");
+    File destFile = IOUtils.createFile("D:/tmp/cache/瑞超小肺/平静-呼吸__"+ DateFmtter.fmtNow("yyyyMMdd_HHmm") +".txt");
+    AtomicReference<IWriter> writerRef = new AtomicReference<>(IWriter.createWriter(destFile, false));
     WebSocket socket = HttpClient.newWebSocket(url, new WebSocketListener() {
 
       @Override
@@ -73,11 +79,10 @@ class HttpTest {
 //        log.info("onMessage ==>: ", text);
         JSONObject json = JSON.parseObject(text);
         json.put("date", DateFmtter.fmtNowS());
+        json.put("timestamp", DateFmtter.now());
         String out = json.toJSONString();
         System.err.println(out);
-//        writerRef.get()
-//            .writeAndFlush(out)
-//            .writeAndFlush("\n");
+        writerRef.get().writeAndFlush(out).writeAndFlush("\n");
 
         // 实时数据
         //{"Type":"1058","Data":{"Index":4533.0,"Time":22.669999999999774,"Volume":2.0729549778763063,"Flow":-0.031567169205410125}}
@@ -117,21 +122,43 @@ class HttpTest {
     }, true, 5);
     EventLoop.sleepSecond(3);
 
-    long startAt = TimeUtils.now();
     for(;;) {
-//      if (!socket.isOpen()) {
-//        socket.reconnect();
-//      }
-      if (TimeUtils.diffNow(startAt) > 30_000) {
-        if (!socket.isClosed()) {
-          socket.close();
-          System.err.println("关闭...");
-        }
-//        break;
+      if (!socket.isOpen()) {
+        socket.reconnect();
       }
       EventLoop.sleepSecond(10);
     }
 
+  }
+
+
+  @Test
+  void test_ruichao22() {
+    File lp = new File("D:\\code\\company\\python\\report-export\\report\\tmp\\smwt__3fd8897833d9461eb3c39865d15c0312");
+    File txt = new File("D:\\tmp\\cache\\瑞超小肺\\平静-呼吸.txt");
+    IWriter writer = IWriter.createWriter(IOUtils.createFile(txt.getParentFile(), "new__" + txt.getName()), false);
+    LinkedList<JSONObject> buf = new LinkedList<>();
+    AtomicLong startAt = new AtomicLong(-1);
+    IOUtils.readLines(txt, (line, index) -> {
+      JSONObject lineJson = JSON.parseObject(line);
+      if (lineJson.getIntValue("Type") != 1058) return;
+      buf.add(lineJson);
+      if (buf.size() >= 200) {
+        if (startAt.get() <= 0) startAt.set(DateFmtter.parseToLong(buf.get(0).getString("date")));
+        try {
+          JSONObject json = new JSONObject();
+          json.put("time", startAt.getAndAdd(1000));
+          json.put("Index", buf.stream().map(j -> j.getJSONObject("Data")).mapToDouble(j -> j.getDouble("Index")).mapToInt(v -> (int)v).toArray());
+          json.put("Volume", buf.stream().map(j -> j.getJSONObject("Data")).mapToDouble(j -> j.getDouble("Volume")).toArray());
+          json.put("Flow", buf.stream().map(j -> j.getJSONObject("Data")).mapToDouble(j -> j.getDouble("Flow")).toArray());
+          buf.clear();
+          writer.writeAndFlush(JSON.toJSONBytes(json)).writeAndFlush("\n");
+        } catch (Exception e) {
+          throw new IllegalStateException(e);
+        }
+      }
+    });
+    writer.close();
   }
 
 
