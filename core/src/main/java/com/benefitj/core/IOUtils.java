@@ -1098,6 +1098,47 @@ public class IOUtils {
   }
 
   /**
+   * 将多个文件写入到一个文件
+   *
+   * @param src    源文件
+   * @param dest   目标文件
+   * @param delete 是否删除
+   * @return 返回目标文件
+   */
+  public static File aio(File[] src, File dest, boolean delete) {
+    return aio(src, dest, delete, NOTHING);
+  }
+
+  /**
+   * 将多个文件写入到一个文件
+   *
+   * @param src      源文件
+   * @param dest     目标文件
+   * @param delete   是否删除
+   * @param progress 进度监听
+   * @return 返回目标文件
+   */
+  public static File aio(File[] src, File dest, boolean delete, ProgressConsumer progress) {
+    try (final FileOutputStream out = new FileOutputStream(dest, true);) {
+      byte[] buf = new byte[1024 << 4];
+      int len;
+      for (File f : src) {
+        try (final FileInputStream fis = new FileInputStream(f)) {
+          while ((len = fis.read(buf)) > 0) {
+            out.write(buf, 0, len);
+            progress.accept(f, buf, len);
+          }
+          out.flush();
+        }
+      }
+      if (delete) delete(src); // 删除
+      return dest;
+    } catch (Exception e) {
+      throw CatchUtils.throwing(e, IllegalStateException.class);
+    }
+  }
+
+  /**
    * 是否为文件
    *
    * @param f 文件
@@ -1355,5 +1396,7 @@ public class IOUtils {
     void accept(File source, byte[] buf, int len) throws Exception;
 
   }
+
+  static final ProgressConsumer NOTHING = (source, buf, len) -> {/*^_^*/};
 
 }
