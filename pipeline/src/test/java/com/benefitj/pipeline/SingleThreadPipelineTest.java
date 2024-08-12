@@ -24,28 +24,29 @@ class SingleThreadPipelineTest {
   }
 
   @Test
-  void test() {
+  void test_SingleThreadPipeline() {
     log.info("test...");
-    SingleThreadPipeline pipeline = SingleThreadPipeline.wrap(new DefaultPipeline(), EventLoop.single());
-    pipeline.addAfter("test2223", new UnboundHandlerAdapter<Object>() {
+    SingleThreadPipeline pipeline = SingleThreadPipeline.create();
+    pipeline.addLast("test2223", new UnboundHandlerAdapter<Object>() {
       @Override
       protected void processPrev0(HandlerContext ctx, Object msg) {
-        log.info("{}, {}.processPrev0, msg ==>: {}", EventLoop.threadName(), Utils.getInstanceName(this), msg);
+        log.info("{}, {}.processPrev0, msg ==>: {}", EventLoop.getThreadName(), Utils.getInstanceName(this), msg);
         ctx.firePrev(msg);
       }
 
       @Override
       protected void processNext0(HandlerContext ctx, Object msg) {
-        log.info("{}, {}.processNext0, msg ==>: {}", EventLoop.threadName(), Utils.getInstanceName(this), msg);
+        log.info("{}, {}.processNext0, msg ==>: {}", EventLoop.getThreadName(), Utils.getInstanceName(this), msg);
         ctx.fireNext(msg);
       }
     });
 
-    pipeline.fireNext("hello world !");
-
-    log.info("current ==>: {}", EventLoop.threadName());
-
-    EventLoop.sleepSecond(5);
+    for (int i = 0; i < 100; i++) {
+      log.info("current ==>: {}", EventLoop.getThreadName());
+      pipeline.firePrev("prev ==>: hello world");
+      pipeline.fireNext("next ==>: hello world");
+      EventLoop.sleepSecond(1);
+    }
 
   }
 }

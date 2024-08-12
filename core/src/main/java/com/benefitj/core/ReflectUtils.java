@@ -771,7 +771,6 @@ public class ReflectUtils {
       //return invokeDefault(lookup, obj, method, args);
     } catch (Throwable e) {
       String parameterTypes = Arrays.toString(method.getParameterTypes());
-      String className = method.getDeclaringClass().getSimpleName();
       throw new IllegalStateException(getClassMethodName(method) + "(" + parameterTypes.substring(1, parameterTypes.length() - 2) + ") 调用失败, cause: " + e.getMessage());
     }
   }
