@@ -22,18 +22,19 @@ public class TcpNettyClientTest {
     TcpNettyClient client = new TcpNettyClient()
         .setRemoteAddress(new InetSocketAddress("127.0.0.1", 62014))
         .autoReconnect(true, Duration.ofSeconds(5))
+        .setSoSndBuf(8 * (1024 << 10))
+        .setSoRcvBuf(8 * (1024 << 10))
         .handler(new ChannelInitializer<Channel>() {
           @Override
           protected void initChannel(Channel ch) throws Exception {
             ch.pipeline()
                 .addLast(new StringDecoder(StandardCharsets.UTF_8))
                 .addLast(new StringEncoder(StandardCharsets.UTF_8))
-                .addLast(InboundHandler.newByteBufHandler((handler, ctx, msg) -> {
-                  byte[] data = handler.copy(msg);
+                .addLast(InboundHandler.newHandler(String.class, (handler, ctx, msg) -> {
                   log.info("receive[{}], remote: {}, data: {}"
                       , ctx.channel().id().asShortText()
                       , ctx.channel().remoteAddress()
-                      , new String(data, StandardCharsets.US_ASCII)
+                      , msg
                   );
                 }));
           }

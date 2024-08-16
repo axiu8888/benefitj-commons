@@ -101,6 +101,16 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     return _self_();
   }
 
+  public TcpNettyClient setSoRcvBuf(int size) {
+    bootstrap().option(ChannelOption.SO_RCVBUF, size);
+    return _self_();
+  }
+
+  public TcpNettyClient setSoSndBuf(int size) {
+    bootstrap().option(ChannelOption.SO_SNDBUF, size);
+    return _self_();
+  }
+
   @Override
   public ChannelHandler handler() {
     return handler;
