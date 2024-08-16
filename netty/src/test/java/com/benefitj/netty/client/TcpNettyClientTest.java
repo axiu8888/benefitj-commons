@@ -6,15 +6,14 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import io.netty.util.concurrent.FutureListener;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 @Slf4j
 public class TcpNettyClientTest {
@@ -24,8 +23,8 @@ public class TcpNettyClientTest {
   @Before
   public void before() {
     client = new TcpNettyClient()
-        .autoReconnect(true, 3, TimeUnit.SECONDS)
-        .remoteAddress(new InetSocketAddress("127.0.0.1", 62019))
+        .autoReconnect(true, Duration.ofSeconds(5))
+        .remoteAddress(new InetSocketAddress("127.0.0.1", 62014))
         ._self_();
   }
 
@@ -52,7 +51,7 @@ public class TcpNettyClientTest {
     EventLoop.sleepSecond(1);
 
     for (int i = 0; i < 1000; i++) {
-      client.writeAndFlush("ss " + i, (FutureListener<Void>) f -> log.info("send: " + f.isSuccess()));
+      client.writeAndFlush("send ==>: " + i, f -> log.info("send: " + f.isSuccess()));
       // wait
       EventLoop.sleepSecond(1);
     }
@@ -60,7 +59,7 @@ public class TcpNettyClientTest {
     client.stop();
   }
 
-  @AfterEach
+  @After
   public void after() {
   }
 

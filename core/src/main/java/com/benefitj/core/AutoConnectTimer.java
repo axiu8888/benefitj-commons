@@ -69,7 +69,7 @@ public class AutoConnectTimer {
           EventLoop.cancel(this.timerRef.getAndSet(EventLoop.asyncIOFixedRate(() -> {
             if (lock.compareAndSet(false, true)) {
               try {
-                if (socket.isConnected()) {
+                if (!isAutoConnect() || socket.isConnected()) {//不需要重连或已经连接了
                   EventLoop.cancel(timerRef.getAndSet(null));
                   return;
                 }

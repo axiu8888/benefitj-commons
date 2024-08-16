@@ -1,7 +1,6 @@
 package com.benefitj.netty.client;
 
-import com.benefitj.core.CatchUtils;
-import com.benefitj.core.EventLoop;
+import com.benefitj.core.AutoConnectTimer;
 import com.benefitj.netty.handler.ActiveHandler;
 import com.benefitj.netty.handler.ShutdownEventHandler;
 import io.netty.bootstrap.Bootstrap;
@@ -14,17 +13,14 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+
 
 /**
- * TCP客户端，建议使用 vertx 的TCP
+ * TCP客户端
  */
-@Deprecated
 public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   /**
@@ -39,14 +35,6 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
    * handler
    */
   private ChannelHandler handler;
-  /**
-   * 线程调度
-   */
-  private ScheduledExecutorService executor = EventLoop.io();
-  /**
-   * 执行状态
-   */
-  private final AtomicBoolean running = new AtomicBoolean(true);
 
   public TcpNettyClient() {
   }
@@ -102,41 +90,30 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   @Override
   protected ChannelFuture startOnly(Bootstrap bootstrap, GenericFutureListener<? extends Future<Void>>... listeners) {
-    if (!isRunning()) {
-      throw new IllegalStateException("yet stopped !");
-    }
-    return bootstrap.connect().addListeners(
-        copyListeners(f -> {
-          if (autoReconnect() && !f.isSuccess()) {
-            // 注册启动时的监听
-            watchdog.startReconnectSchedule();
-          }
-        }, listeners));
+    return connect(bootstrap, listeners);
+  }
+
+  @Override
+  public TcpNettyClient stop() {
+    return this.stop(EMPTY_LISTENER);
   }
 
   @Override
   public TcpNettyClient stop(GenericFutureListener<? extends Future<Void>>... listeners) {
-    if (isRunning()) {
-      running.set(false);
-      // 注册停止时的监听
-      watchdog.stopReconnectSchedule();
-      return super.stop(listeners);
-    }
-    return _self_();
+    autoConnectTimer.setAutoConnect(false);
+    return super.stop(listeners);
   }
 
   /**
    * 设置自动重连
    *
-   * @param autoReconnect  是否自动重连
-   * @param reconnectDelay 重连的间隔
-   * @param unit           间隔的时间单位
+   * @param autoReconnect     是否自动重连
+   * @param reconnectInterval 重连的间隔
    * @return 返回TCP客户端
    */
-  public TcpNettyClient autoReconnect(boolean autoReconnect, int reconnectDelay, TimeUnit unit) {
+  public TcpNettyClient autoReconnect(boolean autoReconnect, Duration reconnectInterval) {
     this.autoReconnect(autoReconnect);
-    this.reconnectPeriod(reconnectDelay);
-    this.reconnectPeriodUnit(unit);
+    this.reconnectInterval(reconnectInterval);
     return _self_();
   }
 
@@ -146,57 +123,56 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   public TcpNettyClient autoReconnect(boolean autoReconnect) {
     this.autoReconnect = autoReconnect;
+    this.autoConnectTimer.setAutoConnect(autoReconnect);
     return _self_();
   }
 
-  public int reconnectPeriod() {
-    return watchdog.period;
+  public Duration reconnectInterval() {
+    return autoConnectTimer.getInterval();
   }
 
-  public TcpNettyClient reconnectPeriod(int period) {
-    this.watchdog.period = period;
+  public TcpNettyClient reconnectInterval(Duration interval) {
+    this.autoConnectTimer.setInterval(interval);
     return _self_();
   }
 
-  public TimeUnit reconnectPeriodUnit() {
-    return watchdog.periodUnit;
+  ChannelFuture connect(Bootstrap bootstrap, GenericFutureListener<? extends Future<Void>> ...listeners) {
+    try {
+      autoConnectTimer.setAutoConnect(autoReconnect);
+      ChannelFuture channelFuture = bootstrap.connect().addListener(f -> autoConnectTimer.start(connector)).sync().addListeners(listeners);
+      if (channelFuture.isSuccess()) {
+        setMainChannel(channelFuture.channel());
+      }
+      return channelFuture;
+    } catch (Exception e) {
+      log.error("Failed to connect to TcpNettyClient: " + e.getMessage(), e);
+    }
+    return null;
   }
 
-  public TcpNettyClient reconnectPeriodUnit(TimeUnit periodUnit) {
-    this.watchdog.periodUnit = periodUnit;
-    return _self_();
-  }
+  /**
+   * 自动重连器
+   */
+  private final AutoConnectTimer autoConnectTimer = new AutoConnectTimer();
+  private final AutoConnectTimer.Connector connector = new AutoConnectTimer.Connector() {
 
-  public ScheduledExecutorService executor() {
-    return executor;
-  }
+    @Override
+    public boolean isConnected() {
+      return TcpNettyClient.this.isConnected();
+    }
 
-  public TcpNettyClient executor(ScheduledExecutorService executor) {
-    this.executor = executor;
-    return _self_();
-  }
-
-  private boolean isRunning() {
-    return this.running.get();
-  }
+    @Override
+    public void doConnect() {
+      connect(bootstrap(), f -> {
+        log.info("Connected to TcpNettyClient: {}, {}", remoteAddress(), f.isSuccess());
+      });
+    }
+  };
 
   /**
    * 自动重连的初始化程序
    */
   final class Watchdog extends ChannelInitializer<Channel> implements ActiveHandler.ActiveStateListener {
-
-    /**
-     * 客户端连接的时间
-     */
-    private int period = 30;
-    /**
-     * 客户端连接的时间单位
-     */
-    private TimeUnit periodUnit = TimeUnit.SECONDS;
-    /**
-     * 定时器，每隔固定时间检查客户端状态
-     */
-    private ScheduledFuture<?> timer;
 
     public Watchdog() {
     }
@@ -209,64 +185,16 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
           .addLast(handler);
     }
 
-    /**
-     * 开始重连
-     */
-    void startReconnectSchedule() {
-      synchronized (this) {
-        ScheduledFuture<?> t = this.timer;
-        if (t == null || t.isCancelled()) {
-          // 开始调度
-          this.timer = executor().scheduleAtFixedRate(this::reconnect, period, period, periodUnit);
-        }
-      }
-    }
-
-    /**
-     * 停止重连
-     */
-    void stopReconnectSchedule() {
-      synchronized (this) {
-        ScheduledFuture<?> t = this.timer;
-        if (t != null) {
-          t.cancel(true);
-          this.timer = null;
-        }
-        CatchUtils.ignore(() -> executor().shutdownNow());
-      }
-    }
-
-    /**
-     * 开始重连任务
-     */
-    void reconnect() {
-      synchronized (this) {
-        if (!isConnected()) {
-          stateHolder().set(Thread.State.NEW);
-          start();
-        }
-      }
-    }
-
     @Override
     public void onChanged(ActiveHandler handler, ChannelHandlerContext ctx, ActiveHandler.State state) {
       // 立刻重新尝试开启一个新的连接
       if (state == ActiveHandler.State.INACTIVE) {
-        if (!executor().isShutdown() && autoReconnect()) {
-          ScheduledFuture<?> t = this.timer;
-          if (t == null) {
-            executor().schedule(this::reconnect, period, TimeUnit.MILLISECONDS);
-          }
-        }
+        autoConnectTimer.start(connector);
       } else {
-        ScheduledFuture<?> t = this.timer;
-        if (t != null) {
-          t.cancel(true);
-          this.timer = null;
-        }
+        autoConnectTimer.stop();
       }
     }
-  }
 
+  }
 
 }

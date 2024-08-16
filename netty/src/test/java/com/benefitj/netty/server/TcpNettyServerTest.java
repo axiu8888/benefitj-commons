@@ -8,9 +8,9 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
@@ -60,11 +60,11 @@ public class TcpNettyServerTest {
         })
         .localAddress(8080)
         .start(f -> log.info("start http server"));
-    EventLoop.await(30, TimeUnit.SECONDS);
-    server.stop(f -> log.info("stop http server, {}", EventLoop.threadName()));
+    EventLoop.sleep(300, TimeUnit.SECONDS);
+    server.stop(f -> log.info("stop http server, {}", EventLoop.getThreadName()));
   }
 
-  @AfterEach
+  @After
   public void tearDown() throws Exception {
   }
 

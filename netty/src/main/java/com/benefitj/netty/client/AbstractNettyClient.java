@@ -54,7 +54,9 @@ public abstract class AbstractNettyClient<S extends AbstractNettyClient<S>> exte
         log.debug("Netty client start failed at localAddress: " + localAddress + ", remoteAddress: " + remoteAddress);
       }
     });
-    setMainChannel(cf.channel());
+    if (cf != null) {
+      setMainChannel(cf.channel());
+    }
     return cf;
   }
 

@@ -243,12 +243,20 @@ public interface INetty<B extends AbstractBootstrap<B, ? extends Channel>, S ext
   S setMainChannel(Channel serverChannel);
 
   /**
+   * 是否已连接
+   */
+  default boolean isActive() {
+    Channel ch = getMainChannel();
+    return ch != null && ch.isActive();
+  }
+
+  /**
    * 使用主通道
    *
    * @param c 消费者回调
    * @return 返回是否使用了通道
    */
-  boolean useServeChannel(IConsumer<Channel> c);
+  boolean useChannel(IConsumer<Channel> c);
 
   /**
    * 是否已启动

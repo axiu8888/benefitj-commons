@@ -122,8 +122,11 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
       useDefaultConfig();
       // 使用默认端口
       whenNotNull(localAddress(), () -> localAddress(checkAndResetPort(localAddress())));
-      ChannelFuture future = startOnly(b).addListeners(listeners);
-      whenNull(getMainChannel(), () -> setMainChannel(future.channel()));
+      ChannelFuture cf = startOnly(b);
+      if (cf != null) {
+        cf.addListeners(listeners);
+        setMainChannel(cf.channel());
+      }
     } else {
       final Channel ch = getMainChannel();
       if (ch != null) {
@@ -209,7 +212,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
     return _self_();
   }
 
-  public void closeServeChannel() {
+  public void closeMainChannel() {
     Channel ch = getMainChannel();
     if (ch != null && ch.isActive()) {
       ch.close();
@@ -394,7 +397,7 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
   }
 
   @Override
-  public boolean useServeChannel(IConsumer<Channel> c) {
+  public boolean useChannel(IConsumer<Channel> c) {
     final Channel channel = getMainChannel();
     if (channel != null) {
       try {
