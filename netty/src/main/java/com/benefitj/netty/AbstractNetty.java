@@ -275,6 +275,8 @@ public abstract class AbstractNetty<B extends AbstractBootstrap<B, ? extends Cha
     final B b = this.bootstrap();
     if (b instanceof Bootstrap) {
       ((Bootstrap) b).remoteAddress(address);
+    } else {
+      throw new UnsupportedOperationException("不支持的操作");
     }
     return _self_();
   }

@@ -7,7 +7,6 @@ import com.benefitj.netty.server.UdpNettyServer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
 import java.util.Arrays;
@@ -79,7 +78,6 @@ public class NettyFactory {
   /**
    * 创建TCP的客户端，建议使用 vertx 的TCP
    */
-  @Deprecated
   public static TcpNettyClient newTcpClient() {
     return new TcpNettyClient();
   }

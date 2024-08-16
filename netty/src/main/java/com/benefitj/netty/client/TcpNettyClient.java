@@ -1,6 +1,7 @@
 package com.benefitj.netty.client;
 
 import com.benefitj.core.AutoConnectTimer;
+import com.benefitj.core.NetworkUtils;
 import com.benefitj.netty.handler.ActiveHandler;
 import com.benefitj.netty.handler.ShutdownEventHandler;
 import io.netty.bootstrap.Bootstrap;
@@ -13,6 +14,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
+import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,19 +26,41 @@ import java.util.Map;
 public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   /**
+   * 远程服务器
+   */
+  private InetSocketAddress remoteAddress;
+  /**
    * 是否自动重连
    */
   private boolean autoReconnect = false;
   /**
    * watchdog
    */
-  private Watchdog watchdog = new Watchdog();
+  private final Watchdog watchdog = new Watchdog();
   /**
    * handler
    */
   private ChannelHandler handler;
 
   public TcpNettyClient() {
+  }
+
+  public TcpNettyClient(InetSocketAddress remoteAddress) {
+    this.remoteAddress = remoteAddress;
+  }
+
+  public TcpNettyClient(InetSocketAddress remoteAddress, boolean autoReconnect) {
+    this.remoteAddress = remoteAddress;
+    this.autoReconnect = autoReconnect;
+  }
+
+  public InetSocketAddress getRemoteAddress() {
+    return remoteAddress;
+  }
+
+  public TcpNettyClient setRemoteAddress(InetSocketAddress remoteAddress) {
+    this.remoteAddress = remoteAddress;
+    return _self_();
   }
 
   @Override
@@ -101,6 +125,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   @Override
   public TcpNettyClient stop(GenericFutureListener<? extends Future<Void>>... listeners) {
     autoConnectTimer.setAutoConnect(false);
+    autoConnectTimer.stop();
     return super.stop(listeners);
   }
 
@@ -137,15 +162,18 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   }
 
   ChannelFuture connect(Bootstrap bootstrap, GenericFutureListener<? extends Future<Void>> ...listeners) {
-    try {
-      autoConnectTimer.setAutoConnect(autoReconnect);
-      ChannelFuture channelFuture = bootstrap.connect().addListener(f -> autoConnectTimer.start(connector)).sync().addListeners(listeners);
-      if (channelFuture.isSuccess()) {
-        setMainChannel(channelFuture.channel());
+    if (NetworkUtils.isConnectable(getRemoteAddress(), 500)) {
+      try {
+        autoConnectTimer.setAutoConnect(autoReconnect);
+        ChannelFuture future = bootstrap.connect(getRemoteAddress());
+        future.addListener(f -> autoConnectTimer.start(connector)).sync().addListeners(listeners);
+        if (future.isSuccess()) {
+          setMainChannel(future.channel());
+        }
+        return future;
+      } catch (Exception e) {
+        log.error("Failed to connect to TcpNettyClient: " + e.getMessage(), e);
       }
-      return channelFuture;
-    } catch (Exception e) {
-      log.error("Failed to connect to TcpNettyClient: " + e.getMessage(), e);
     }
     return null;
   }
