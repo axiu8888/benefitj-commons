@@ -1,11 +1,9 @@
 package com.benefitj.netty.device;
 
 import com.benefitj.core.device.Device;
+import com.benefitj.core.device.MessageSender;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoop;
+import io.netty.channel.*;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ScheduledFuture;
@@ -53,18 +51,39 @@ public interface NettyDevice extends Device<String> {
   /**
    * 发送消息
    *
-   * @param msg 消息
-   * @return 返回 ChannelFuture
+   * @param msg       消息
+   * @param listeners 监听
    */
-  ChannelFuture send(ByteBuf msg);
+  void send(byte[] msg, ChannelFutureListener... listeners);
 
   /**
    * 发送消息
    *
-   * @param msg 消息
-   * @return 返回 ChannelFuture
+   * @param msg       消息
+   * @param listeners 监听
    */
-  ChannelFuture send(byte[] msg);
+  void send(ByteBuf msg, ChannelFutureListener... listeners);
+
+  /**
+   * 发送消息
+   *
+   * @param msg       消息
+   * @param listeners 监听
+   */
+  default void sendAny(Object msg, ChannelFutureListener... listeners) {
+    MessageSender sender = getMessageSender();
+    if (sender != null) {
+      sender.send(this, msg, (result, e) -> {
+        if (e != null) {
+          e.printStackTrace();
+        } else {
+          ((ChannelFuture) result).addListeners(listeners);
+        }
+      });
+    } else {
+      getChannel().writeAndFlush(msg).addListeners(listeners);
+    }
+  }
 
   /**
    * 获取pipeline

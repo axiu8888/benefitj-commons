@@ -31,8 +31,8 @@ public class TcpNettyServer extends AbstractNettyServer<TcpNettyServer> {
     // childOptions
     Map<ChannelOption<?>, Object> childOptionMap = new HashMap<>();
     childOptionMap.put(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-    childOptionMap.put(ChannelOption.SO_RCVBUF, 2 * (1024 << 4));
-    childOptionMap.put(ChannelOption.SO_SNDBUF, 2 * (1024 << 4));
+    childOptionMap.put(ChannelOption.SO_RCVBUF, 4 * (1024 << 4));
+    childOptionMap.put(ChannelOption.SO_SNDBUF, 4 * (1024 << 4));
     childOptionMap.put(ChannelOption.TCP_NODELAY, true);
     childOptionMap.put(ChannelOption.SO_KEEPALIVE, true);
     childOptionMap.put(ChannelOption.AUTO_READ, true);

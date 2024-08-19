@@ -3,7 +3,7 @@ package com.benefitj.netty.device;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.socket.DatagramPacket;
 
 import java.net.InetSocketAddress;
@@ -11,7 +11,7 @@ import java.net.InetSocketAddress;
 /**
  * UDP 设备
  */
-public class UdpDevice extends AbstractDevice {
+public class UdpDevice extends AbstractNettyDevice {
 
   public UdpDevice(Channel channel) {
     super(channel);
@@ -29,26 +29,14 @@ public class UdpDevice extends AbstractDevice {
     super(id, channel, localAddr, remoteAddr);
   }
 
-  /**
-   * 发送消息
-   *
-   * @param msg    消息
-   * @param remote 远程地址
-   * @return 返回 ChannelFuture
-   */
-  public ChannelFuture send(byte[] msg, InetSocketAddress remote) {
-    return send(Unpooled.wrappedBuffer(msg), remote);
+  @Override
+  public void send(byte[] msg, ChannelFutureListener... listeners) {
+    send(msg, getRemoteAddress(), listeners);
   }
 
-  /**
-   * 发送消息
-   *
-   * @param msg 消息
-   * @return 返回 ChannelFuture
-   */
   @Override
-  public ChannelFuture send(ByteBuf msg) {
-    return send(msg, getRemoteAddress());
+  public void send(ByteBuf msg, ChannelFutureListener... listeners) {
+    send(msg, getRemoteAddress(), listeners);
   }
 
   /**
@@ -56,30 +44,29 @@ public class UdpDevice extends AbstractDevice {
    *
    * @param msg    消息
    * @param remote 远程地址
-   * @return 返回 ChannelFuture
    */
-  public ChannelFuture send(ByteBuf msg, InetSocketAddress remote) {
-    return send(new DatagramPacket(msg, remote));
+  public void send(byte[] msg, InetSocketAddress remote, ChannelFutureListener... listeners) {
+    send(Unpooled.wrappedBuffer(msg), remote, listeners);
+  }
+
+  /**
+   * 发送消息
+   *
+   * @param msg    消息
+   * @param remote 远程地址
+   */
+  public void send(ByteBuf msg, InetSocketAddress remote, ChannelFutureListener... listeners) {
+    if (remote == null) throw new IllegalArgumentException("msg的远程地址不能为空!");
+    send(new DatagramPacket(msg, remote), listeners);
   }
 
   /**
    * 发送消息
    *
    * @param msg 消息
-   * @return 返回 ChannelFuture
    */
-  public ChannelFuture send(DatagramPacket msg) {
-    return getChannel().writeAndFlush(msg);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    return super.equals(o);
-  }
-
-  @Override
-  public int hashCode() {
-    return super.hashCode();
+  public void send(DatagramPacket msg, ChannelFutureListener... listeners) {
+    sendAny(msg, listeners);
   }
 
 }

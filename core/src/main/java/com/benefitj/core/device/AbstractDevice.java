@@ -7,6 +7,11 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 设备
+ *
+ * @param <Id>
+ */
 public abstract class AbstractDevice<Id extends Serializable> implements Device<Id> {
   /**
    * ID
@@ -36,6 +41,10 @@ public abstract class AbstractDevice<Id extends Serializable> implements Device<
    * 最近一次有效时间
    */
   private long activeAt = -1;
+  /**
+   * 消息发送器
+   */
+  private MessageSender messageSender;
 
   public AbstractDevice() {
   }
@@ -103,6 +112,16 @@ public abstract class AbstractDevice<Id extends Serializable> implements Device<
   @Override
   public void setActiveAt(long activeAt) {
     this.activeAt = activeAt;
+  }
+
+  @Override
+  public MessageSender getMessageSender() {
+    return messageSender;
+  }
+
+  @Override
+  public void setMessageSender(MessageSender messageSender) {
+    this.messageSender = messageSender;
   }
 
   @Override

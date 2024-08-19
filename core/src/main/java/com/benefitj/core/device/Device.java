@@ -89,6 +89,19 @@ public interface Device<Id> {
   }
 
   /**
+   * 获取消息发送器
+   */
+  MessageSender getMessageSender();
+
+  /**
+   * 设置消息发送器
+   *
+   * @param messageSender 消息发送器
+   */
+  void setMessageSender(MessageSender messageSender);
+
+
+  /**
    * 可选属性
    */
   Map<String, Object> attrs();

@@ -1,8 +1,6 @@
 package com.benefitj.netty.device;
 
 import com.benefitj.core.device.SimpleDevice;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPipeline;
@@ -16,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 抽象的设备基类
  */
-public abstract class AbstractDevice extends SimpleDevice implements NettyDevice {
+public abstract class AbstractNettyDevice extends SimpleDevice implements NettyDevice {
 
   /**
    * 本地地址
@@ -31,23 +29,23 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    */
   private Channel channel;
 
-  public AbstractDevice(String id) {
+  public AbstractNettyDevice(String id) {
     super(id);
   }
 
-  public AbstractDevice(Channel channel) {
+  public AbstractNettyDevice(Channel channel) {
     this(null, channel);
   }
 
-  public AbstractDevice(String id, Channel channel) {
+  public AbstractNettyDevice(String id, Channel channel) {
     this(id, channel, ofLocal(channel), ofRemote(channel));
   }
 
-  public AbstractDevice(String id, Channel channel, InetSocketAddress remoteAddr) {
+  public AbstractNettyDevice(String id, Channel channel, InetSocketAddress remoteAddr) {
     this(id, channel, ofLocal(channel), remoteAddr);
   }
 
-  public AbstractDevice(String id, Channel channel, InetSocketAddress localAddr, InetSocketAddress remoteAddr) {
+  public AbstractNettyDevice(String id, Channel channel, InetSocketAddress localAddr, InetSocketAddress remoteAddr) {
     this(id);
     this.channel = channel;
     this.setLocalAddress(localAddr);
@@ -57,16 +55,8 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
     this.setActiveAt(System.currentTimeMillis());
   }
 
-  protected AbstractDevice self() {
+  protected AbstractNettyDevice self() {
     return this;
-  }
-
-  /**
-   * 设置当前时间为最新的接收数据包的时间
-   */
-  @Override
-  public void setActiveAtNow() {
-    setActiveAt(System.currentTimeMillis());
   }
 
   /**
@@ -132,29 +122,6 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
   public boolean isActive() {
     Channel ch = getChannel();
     return ch != null && ch.isActive();
-  }
-
-  /**
-   * 发送消息
-   *
-   * @param msg 消息
-   * @return 返回 ChannelFuture
-   */
-  @Override
-  public ChannelFuture send(ByteBuf msg) {
-    return getChannel().writeAndFlush(msg);
-  }
-
-  /**
-   * 发送消息
-   *
-   * @param msg 消息
-   * @return 返回 ChannelFuture
-   */
-
-  @Override
-  public ChannelFuture send(byte[] msg) {
-    return send(Unpooled.wrappedBuffer(msg));
   }
 
   /**
@@ -234,14 +201,15 @@ public abstract class AbstractDevice extends SimpleDevice implements NettyDevice
    */
   @Override
   public ChannelFuture closeChannel() {
-    return getChannel().close();
+    Channel ch = getChannel();
+    return ch != null ? ch.close() : null;
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    AbstractDevice that = (AbstractDevice) o;
+    AbstractNettyDevice that = (AbstractNettyDevice) o;
     return Objects.equals(getId(), that.getId())
         && Objects.equals(getChannel(), that.getChannel())
         && Objects.equals(getRemoteAddress(), that.getRemoteAddress());

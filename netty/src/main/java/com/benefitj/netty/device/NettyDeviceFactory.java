@@ -51,7 +51,7 @@ public interface NettyDeviceFactory<T extends NettyDevice> extends DeviceFactory
    * wrapper
    */
   static Map<String, Object> wrap(Channel ch) {
-    return wrap(ch, AbstractDevice.ofLocal(ch), AbstractDevice.ofRemote(ch));
+    return wrap(ch, AbstractNettyDevice.ofLocal(ch), AbstractNettyDevice.ofRemote(ch));
   }
 
   /**

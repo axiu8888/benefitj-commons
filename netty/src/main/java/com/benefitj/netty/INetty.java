@@ -1,5 +1,6 @@
 package com.benefitj.netty;
 
+import com.benefitj.core.DefaultThreadFactory;
 import com.benefitj.core.functions.IConsumer;
 import io.netty.bootstrap.AbstractBootstrap;
 import io.netty.bootstrap.AbstractBootstrapConfig;

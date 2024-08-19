@@ -1,6 +1,7 @@
-package com.benefitj.core.functions.promise;
+package com.benefitj.core.functions;
 
 import java.util.function.Consumer;
+
 
 public interface Promise<T> {
 
@@ -25,7 +26,7 @@ public interface Promise<T> {
   }
 
 
-  abstract class SimplePromise<T> implements Promise<T> {
+  abstract class Impl<T> implements Promise<T> {
 
     @Override
     public void onError(Throwable e) {
@@ -33,7 +34,7 @@ public interface Promise<T> {
     }
   }
 
-  class DelegatePromise<T> extends SimplePromise<T> {
+  class DelegatePromise<T> extends Impl<T> {
 
     private Consumer<T> next;
     private Consumer<Throwable> error;

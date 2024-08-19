@@ -1,15 +1,16 @@
 package com.benefitj.netty.device;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 
 import java.net.InetSocketAddress;
 
 /**
  * TCP 设备
  */
-public class TcpDevice extends AbstractDevice {
+public class TcpDevice extends AbstractNettyDevice {
 
   public TcpDevice(Channel channel) {
     super(channel);
@@ -27,24 +28,14 @@ public class TcpDevice extends AbstractDevice {
     super(id, channel, localAddr, remoteAddr);
   }
 
-  /**
-   * 发送消息
-   *
-   * @param msg 消息
-   * @return 返回 ChannelFuture
-   */
   @Override
-  public ChannelFuture send(ByteBuf msg) {
-    return getChannel().writeAndFlush(msg);
+  public void send(byte[] msg, ChannelFutureListener... listeners) {
+    send(Unpooled.wrappedBuffer(msg), listeners);
   }
 
   @Override
-  public boolean equals(Object o) {
-    return super.equals(o);
+  public void send(ByteBuf msg, ChannelFutureListener... listeners) {
+    getChannel().writeAndFlush(msg).addListeners(listeners);
   }
 
-  @Override
-  public int hashCode() {
-    return super.hashCode();
-  }
 }

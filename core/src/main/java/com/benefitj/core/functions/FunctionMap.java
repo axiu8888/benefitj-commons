@@ -90,19 +90,19 @@ public interface FunctionMap<K, V> extends WrappedMap<K, V> {
 
   class FunctionMapImpl<K, V> implements FunctionMap<K, V> {
 
-    private final Map<K, V> _map;
+    private final Map<K, V> map;
 
     private Function<? super K, ? extends V> absentFunction;
     private BiFunction<? super K, ? super V, ? extends V> presentFunction;
     private BiFunction<? super K, ? super V, ? extends V> computeFunction;
 
     public FunctionMapImpl(Map<K, V> map) {
-      this._map = map;
+      this.map = map;
     }
 
     @Override
     public Map<K, V> map() {
-      return _map;
+      return map;
     }
 
     @Override
