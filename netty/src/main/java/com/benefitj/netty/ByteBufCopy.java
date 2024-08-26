@@ -209,13 +209,24 @@ public interface ByteBufCopy extends ByteArrayCopy {
   /**
    * 创建字节缓冲拷贝
    */
-  static ByteBufCopy newByteBufCopy() {
-    return new Copy(byte[]::new, false, 0x00);
+  static ByteBufCopy newBufCopy() {
+    return newBufCopy(false, (byte) 0x00);
   }
 
-  class Copy extends ByteArrayCopy.BufCopy implements ByteBufCopy {
+  /**
+   * 创建字节缓冲拷贝
+   */
+  static ByteBufCopy newBufCopy(boolean fill, byte fillValue) {
+    return new SimpleBufCopy(byte[]::new, fill, fillValue);
+  }
 
-    public Copy(Function<Integer, byte[]> creator, boolean fill, Object fillValue) {
+  class SimpleBufCopy extends ByteArrayCopy.SimpleBufCopy implements ByteBufCopy {
+
+    public SimpleBufCopy(boolean fill, Object fillValue) {
+      this(byte[]::new, fill, fillValue);
+    }
+
+    public SimpleBufCopy(Function<Integer, byte[]> creator, boolean fill, Object fillValue) {
       super(creator, fill, fillValue);
     }
 

@@ -15,7 +15,7 @@ import io.netty.util.internal.TypeParameterMatcher;
  */
 public abstract class AbstractCopyHandler<I> extends ChannelDuplexHandler implements ByteBufCopy {
 
-  private final ByteBufCopy cache = ByteBufCopy.newByteBufCopy();
+  private final ByteBufCopy cache = ByteBufCopy.newBufCopy();
 
   private final TypeParameterMatcher matcher;
   private final boolean autoRelease;

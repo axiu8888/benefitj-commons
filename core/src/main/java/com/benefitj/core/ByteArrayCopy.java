@@ -37,15 +37,26 @@ public interface ByteArrayCopy extends ArrayCopy<byte[]> {
   }
 
   /**
-   * 创建缓冲拷贝
+   * 创建字节缓冲拷贝
    */
   static ByteArrayCopy newBufCopy() {
-    return new BufCopy(byte[]::new, true, (byte) 0x00);
+    return newBufCopy(false, (byte) 0x00);
   }
 
-  class BufCopy extends SimpleBufCopy<byte[]> implements ByteArrayCopy {
+  /**
+   * 创建缓冲拷贝
+   */
+  static ByteArrayCopy newBufCopy(boolean fill, byte fillValue) {
+    return new SimpleBufCopy(byte[]::new, fill, fillValue);
+  }
 
-    public BufCopy(Function<Integer, byte[]> creator, boolean fill, Object fillValue) {
+  class SimpleBufCopy extends ArrayCopy.SimpleBufCopy<byte[]> implements ByteArrayCopy {
+
+    public SimpleBufCopy(boolean fill, Object fillValue) {
+      this(byte[]::new, fill, fillValue);
+    }
+
+    public SimpleBufCopy(Function<Integer, byte[]> creator, boolean fill, Object fillValue) {
       super(creator, fill, fillValue);
     }
   }

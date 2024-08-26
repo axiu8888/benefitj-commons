@@ -220,13 +220,36 @@ public interface ArrayCopy<T> {
      */
     @Override
     public T getCache(int size, boolean local) {
-      T buf = local ? bytesCache.get().computeIfAbsent(size, creator) : creator.apply(size);
-      if (fill) {
-        Utils.arrayFor(buf, (i, v) -> Array.set(buf, i, fillValue), false);
+      T buf = local ? bytesCache.get().computeIfAbsent(size, getCreator()) : getCreator().apply(size);
+      if (isFill()) {
+        Utils.arrayFor(buf, (i, v) -> Array.set(buf, i, getFillValue()), false);
       }
       return buf;
     }
 
+    public Function<Integer, T> getCreator() {
+      return creator;
+    }
+
+    public void setCreator(Function<Integer, T> creator) {
+      this.creator = creator;
+    }
+
+    public boolean isFill() {
+      return fill;
+    }
+
+    public void setFill(boolean fill) {
+      this.fill = fill;
+    }
+
+    public Object getFillValue() {
+      return fillValue;
+    }
+
+    public void setFillValue(Object fillValue) {
+      this.fillValue = fillValue;
+    }
   }
 
   static int len(Object src) {

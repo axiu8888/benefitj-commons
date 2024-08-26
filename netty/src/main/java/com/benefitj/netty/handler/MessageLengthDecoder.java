@@ -21,7 +21,7 @@ public class MessageLengthDecoder extends ByteToMessageDecoder implements ByteBu
   public static final byte[] HEAD = new byte[0];
   public static final LengthFunction LENGTH_FUNCTION = (ctx, in, segment) -> in.readableBytes();
 
-  private final ByteBufCopy copy = ByteBufCopy.newByteBufCopy();
+  private final ByteBufCopy copy = ByteBufCopy.newBufCopy();
   /**
    * 获取最小读取长度
    */
