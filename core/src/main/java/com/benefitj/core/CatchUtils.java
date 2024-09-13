@@ -39,10 +39,10 @@ public class CatchUtils {
    * @return 返回异常对象
    */
   public static RuntimeException throwing(Throwable e, Class<?> type) {
-    Throwable error = findRoot(e);
-    return error.getClass().isAssignableFrom(type)
-        ? (RuntimeException) e
-        : (RuntimeException) Instantiator.get().create(type, error);
+    Throwable root = findRoot(e);
+    return root.getClass().isAssignableFrom(type)
+        ? (RuntimeException) root
+        : (RuntimeException) Instantiator.get().create(type, root);
   }
 
   /**
