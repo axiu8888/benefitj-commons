@@ -47,6 +47,14 @@ public class JarFileCopy {
    */
   public static void copy(URL url, String src, String dest) {
     try {
+      if (!isJar(url.getPath())) {
+        if (new File(url.getPath()).exists()) {
+          FileCopy.copy(new File(url.getPath()), new File(dest));
+          return;
+        } else {
+          throw new IllegalStateException("不支持的URL: " + url);
+        }
+      }
       // 拷贝jar中的文件
       URLConnection conn = url.openConnection();
       if (conn instanceof JarURLConnection) {

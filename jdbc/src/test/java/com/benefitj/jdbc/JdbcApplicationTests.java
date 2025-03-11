@@ -8,7 +8,7 @@ import com.benefitj.jdbc.sql.EnhanceStatement;
 import com.benefitj.jdbc.sql.TableDDL;
 import com.mysql.cj.jdbc.Driver;
 import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
