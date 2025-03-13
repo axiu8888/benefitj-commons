@@ -228,7 +228,7 @@ public class ReflectUtils {
                               final Predicate<T> filter,
                               final Consumer<T> consumer,
                               final Predicate<T> interceptor) {
-    find(type, call, filter, consumer, interceptor, true, false);
+    find(type, call, filter, consumer, interceptor, true, true);
   }
 
   /**
