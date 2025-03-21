@@ -406,7 +406,17 @@ public class IOUtils {
    * @return 返回创建的BufferedWriter对象或Null
    */
   public static BufferedWriter newBufferedWriter(File file) {
-    return wrapWriter(newFOS(file), StandardCharsets.UTF_8);
+    return newBufferedWriter(file, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * 创建新的BufferedWriter对象
+   *
+   * @param file 文件
+   * @return 返回创建的BufferedWriter对象或Null
+   */
+  public static BufferedWriter newBufferedWriter(File file, Charset charset) {
+    return wrapWriter(newFOS(file), charset);
   }
 
   /**
@@ -551,7 +561,18 @@ public class IOUtils {
    * @param consumer 处理回调
    */
   public static void readLines(File in, IBiConsumer<String, Integer> consumer) {
-    try (final FileReader reader = new FileReader(in);) {
+    readLines(in, Charset.defaultCharset(), consumer);
+  }
+
+  /**
+   * 读取数据，每次读取一行，默认关闭流
+   *
+   * @param in       文件
+   * @param charset  编码
+   * @param consumer 处理回调
+   */
+  public static void readLines(File in, Charset charset, IBiConsumer<String, Integer> consumer) {
+    try (final Reader reader = new InputStreamReader(new FileInputStream(in), charset);) {
       readLines(reader, false, consumer);
     } catch (IOException e) {
       throw CatchUtils.throwing(e, IllegalStateException.class);
@@ -599,8 +620,21 @@ public class IOUtils {
    * @param reader 输入
    */
   public static List<String> readLines(Reader reader) {
+    return readLines(reader, (line, lineNumber) -> true);
+  }
+
+
+  /**
+   * 读取数据，每次读取一行，默认关闭流
+   *
+   * @param reader 输入
+   */
+  public static List<String> readLines(Reader reader, BiPredicate<String, Integer> filter) {
     List<String> lines = new LinkedList<>();
-    readLines(reader, (str, num) -> lines.add(str));
+    readLines(reader, (line, lineNumber) -> {
+      if(filter.test(line, lineNumber))
+        lines.add(line);
+    });
     return lines;
   }
 
