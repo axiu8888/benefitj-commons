@@ -939,6 +939,16 @@ public class IOUtils {
    * @param in  字符串数据
    * @param out 输出流
    */
+  public static void write(String in, File out) {
+    write(in.getBytes(StandardCharsets.UTF_8), out);
+  }
+
+  /**
+   * 写入数据
+   *
+   * @param in  字符串数据
+   * @param out 输出流
+   */
   public static void write(String in, OutputStream out) {
     write(Collections.singletonList(in), out);
   }
@@ -950,9 +960,10 @@ public class IOUtils {
    * @param out 输出流
    */
   public static void write(List<String> in, OutputStream out) {
-    for (String line : in) {
+    for (int i = 0; i < in.size(); i++) {
+      String line = in.get(i);
       byte[] ba = line.getBytes(StandardCharsets.UTF_8);
-      write(ba, 0, ba.length, out, true);
+      write(ba, 0, ba.length, out, in.size() - 1 == i);
     }
   }
 
