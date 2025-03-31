@@ -10,11 +10,13 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * jar包文件拷贝
+ * jar包资源拷贝
  */
 public class JarFileCopy {
   // Jar包的协议
@@ -41,30 +43,57 @@ public class JarFileCopy {
   /**
    * 从jar包中拷贝
    *
-   * @param url  JAR包中资源的路径，如: new ClassPathResource("application.properties").getURL()
+   * @param url JAR包中资源的路径, 如: new ClassPathResource("application.properties").getURL()
+   * @param src 源文件
+   * @return 返回读取到的文件或子文件
+   */
+  public static List<String> list(URL url, String src) {
+    List<String> files = new LinkedList<>();
+    readJar(url, src, "", (jar, entry, newDest) -> files.add(newDest));
+    return files;
+  }
+
+  /**
+   * 从jar包中拷贝
+   *
+   * @param url  JAR包中资源的路径, 如: new ClassPathResource("application.properties").getURL()
    * @param src  源文件
    * @param dest 目标文件
    */
   public static void copy(URL url, String src, String dest) {
-    try {
-      if (!isJar(url.getPath())) {
-        if (new File(url.getPath()).exists()) {
-          FileCopy.copy(new File(url.getPath()), new File(dest));
-          return;
-        } else {
-          throw new IllegalStateException("不支持的URL: " + url);
-        }
+    if (isJar(url.getPath())) {
+      readJar(url, src, dest, JarFileCopy::transferTo);
+    } else {
+      if (new File(url.getPath()).exists()) {
+        FileCopy.copy(new File(url.getPath()), new File(dest));
+      } else {
+        throw new IllegalStateException("不支持的URL: " + url);
       }
+    }
+  }
+
+  /**
+   * 从jar包中读取
+   *
+   * @param url  JAR包中资源的路径, 如: new ClassPathResource("application.properties").getURL()
+   * @param src  源文件
+   * @param dest 目标文件
+   */
+  public static void readJar(URL url, String src, String dest, Handler handler) {
+    if (!isJar(url.getPath())) {
+      throw new IllegalStateException("不支持的URL类型: " + url);
+    }
+    try {
       // 拷贝jar中的文件
       URLConnection conn = url.openConnection();
       if (conn instanceof JarURLConnection) {
         JarURLConnection jarConn = (JarURLConnection) url.openConnection();
-        try (JarFile jf = jarConn.getJarFile();) {
-          copy(jf, src, dest);
+        try (final JarFile jar = jarConn.getJarFile();) {
+          readJar(jar, src, dest, handler);
         }
       } else {
-        try (JarFile jf = new JarFile(url.getPath());) {
-          copy(jf, src, dest);
+        try (final JarFile jar = new JarFile(url.getPath());) {
+          readJar(jar, src, dest, handler);
         }
       }
     } catch (IOException e) {
@@ -75,50 +104,69 @@ public class JarFileCopy {
   /**
    * 从jar包中拷贝
    *
-   * @param jarFile JAR包，如: new ClassPathResource("application.properties").getURL()
+   * @param jarFile JAR包, 如: new ClassPathResource("application.properties").getURL()
    * @param src     源文件
    * @param dest    目标文件
+   * @param handler 处理
    */
-  public static void copy(JarFile jarFile, String src, String dest) {
+  public static void readJar(JarFile jarFile, String src, String dest, Handler handler) {
+    Enumeration<JarEntry> entries = jarFile.entries();
+    String stripSrc = replace(trim(src, true, false));
+    String stripDest = replace(trim(dest, false, true));
+    while (entries.hasMoreElements()) {
+      JarEntry entry = entries.nextElement();
+      if (entry.getName().startsWith(stripSrc)) {
+        String name = (replace(entry.getName())).substring(stripSrc.length());
+        String newDest = stripDest + "/" + trim(name, true, true);
+        handler.handle(jarFile, entry, newDest);
+      }
+    }
+  }
+
+  /**
+   * 传输数据
+   *
+   * @param jar     JAR
+   * @param entry   JAR条目
+   * @param newDest 新地址
+   */
+  public static void transferTo(JarFile jar, JarEntry entry, String newDest) {
     try {
-      Enumeration<JarEntry> entries = jarFile.entries();
-      String stripSrc = trim(src, true, false);
-      String stripDest = trim(dest, false, true);
-      while (entries.hasMoreElements()) {
-        JarEntry entry = entries.nextElement();
-        if (entry.getName().startsWith(stripSrc)) {
-          String name;
-          if (entry.isDirectory()) {
-            name = entry.getName().substring(stripSrc.length());
-          } else {
-            if (entry.getName().endsWith(stripSrc)) {
-              name = trim(entry.getName(), false, true);
-              name = name.substring(Math.max(name.lastIndexOf("/") + 1, 0));
-            } else {
-              name = entry.getName();
-            }
-          }
-          File destFile = new File(stripDest, name);
-          if (entry.isDirectory()) {
-            destFile.mkdirs();
-          } else {
-            // 拷贝文件
-            IOUtils.write(jarFile.getInputStream(entry), IOUtils.createFile(destFile));
-          }
-        }
+      File destFile = new File(newDest);
+      if (entry.isDirectory()) {
+        destFile.mkdirs();
+      } else {
+        // 拷贝文件
+        IOUtils.write(jar.getInputStream(entry), IOUtils.createFile(destFile));
       }
     } catch (IOException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw new IllegalStateException(CatchUtils.findRoot(e));
     }
   }
 
   private static String trim(String path, boolean first, boolean last) {
-    String out = StringUtils.getIfBlank(path, () -> "")
-        .replace("\\", "/")
-        .replace("//", "/");
+    String out = StringUtils.getIfBlank(path, () -> "").replace("\\", "/").replace("//", "/");
     while (first && out.startsWith("/")) out = out.substring(1);
     while (last && out.endsWith("/")) out = out.substring(0, out.length() - 1);
     return out;
+  }
+
+  static String replace(String v) {
+    return v != null ? v.replace("\\", "/").replace("//", "/") : v;
+  }
+
+
+  public interface Handler {
+
+    /**
+     * 处理
+     *
+     * @param jar     JAR
+     * @param entry   JAR条目
+     * @param newDest 新地址
+     */
+    void handle(JarFile jar, JarEntry entry, String newDest);
+
   }
 
 }
