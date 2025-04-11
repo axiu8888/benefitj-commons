@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd">
+
+    <!-- 磁盘缓存位置 -->
+    <diskStore path="java.io.tmpdir/ehcache"/>
+
+    <!--
+    name：缓存的唯一标识名称。
+    maxElementsInMemory：内存中缓存的最大对象数。
+    overflowToDisk：当内存中的缓存对象数量达到 maxElementsInMemory 限制时，是否将溢出的对象写入磁盘。
+    eternal：设置缓存中的对象是否永久有效。如果为 true，则缓存数据不会过期，timeToIdleSeconds 和 timeToLiveSeconds 设置将被忽略。
+    timeToIdleSeconds：对象在失效前的允许闲置时间（单位：秒）。仅当 eternal 为 false 时有效。
+    timeToLiveSeconds：对象在失效前的存活时间（单位：秒），从创建时间开始计算。仅当 eternal 为 false 时有效。
+    diskPersistent：是否在虚拟机重启期间持久化磁盘存储。默认值为 false。
+    diskSpoolBufferSizeMB：设置磁盘缓存的缓冲区大小，默认是 30 MB。
+    diskExpiryThreadIntervalSeconds：磁盘失效线程运行的时间间隔，默认是 120 秒。
+    memoryStoreEvictionPolicy：当内存缓存达到最大限制时，所采用的清理策略。可选值包括：
+        LRU（最近最少使用，默认策略）
+        FIFO（先进先出）
+        LFU（最少使用）
+    -->
+
+    <!-- 默认缓存策略 -->
+    <defaultCache
+            maxEntriesLocalHeap="10000"
+            eternal="false"
+            timeToIdleSeconds="3600"
+            timeToLiveSeconds="3600"
+            maxEntriesLocalDisk="10000000"
+            diskExpiryThreadIntervalSeconds="120"
+            memoryStoreEvictionPolicy="LRU"
+            overflowToDisk="true"
+            diskPersistent="true"/>
+
+    <!-- 自定义缓存策略 -->
+    <cache name="jsonCache"
+           maxEntriesLocalHeap="5000"
+           maxEntriesLocalDisk="1000000"
+           eternal="false"
+           timeToIdleSeconds="600"
+           timeToLiveSeconds="1200"
+           memoryStoreEvictionPolicy="LFU"
+           overflowToDisk="true"
+           diskPersistent="true"
+           diskExpiryThreadIntervalSeconds="120"/>
+</ehcache>

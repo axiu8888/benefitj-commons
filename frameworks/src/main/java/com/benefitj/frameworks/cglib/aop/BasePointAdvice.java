@@ -1,6 +1,6 @@
 package com.benefitj.frameworks.cglib.aop;
 
-public abstract class SimplePointAdvice implements PointAdvice {
+public abstract class BasePointAdvice implements PointAdvice {
 
   @Override
   public void doBefore(AopPointJoint joint) {
