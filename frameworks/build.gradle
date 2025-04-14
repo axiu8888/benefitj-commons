@@ -14,7 +14,7 @@ dependencies {
       // 缓存
       "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}",
       //"org.springframework.boot:spring-boot-starter-cache:${springbootVersion}", //缓存
-      "org.ehcache:ehcache:3.10.8",
+      "org.ehcache:ehcache:${ehcacheVersion}",
       // 压缩
       'org.apache.commons:commons-compress:1.26.1',
       'net.lingala.zip4j:zip4j:2.11.5',

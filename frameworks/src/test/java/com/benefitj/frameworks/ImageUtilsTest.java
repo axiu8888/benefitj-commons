@@ -9,7 +9,7 @@ public class ImageUtilsTest extends BaseTest {
 
   @Test
   public void test_resize() {
-    File src = new File("D:/tmp/cache/icon.png");
+    File src = new File("D:/cache/.tmp/icon.png");
     File dest = new File(src.getParentFile(), "favorite.png");
     ImageUtils.resize(src, dest, 256);
   }
@@ -17,7 +17,7 @@ public class ImageUtilsTest extends BaseTest {
 
   @Test
   public void test_imgToIco() {
-    File src = new File("D:/tmp/cache/icon.png");
+    File src = new File("D:/cache/.tmp/icon.png");
     File dest = new File(src.getParentFile(), "favorite.ico");
     ImageUtils.imgToIco(src, dest, 256);
   }

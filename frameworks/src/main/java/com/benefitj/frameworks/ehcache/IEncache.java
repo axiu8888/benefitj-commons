@@ -1,22 +1,21 @@
 package com.benefitj.frameworks.ehcache;
 
-import com.benefitj.core.ShutdownHook;
+
 import com.benefitj.core.SingletonSupplier;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.config.units.MemoryUnit;
-import org.ehcache.expiry.Duration;
-import org.ehcache.expiry.Expirations;
 
 import java.io.File;
 import java.lang.reflect.Proxy;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -60,7 +59,7 @@ public interface IEncache<K, V> extends Cache<K, V> {
    * @param valueType 值类型
    * @return 返回代理
    */
-  public static <K, V> IEncache<K, V> newProxy(Cache<K, V> cache, String name, Class<K> keyType, Class<V> valueType) {
+  public static <K, V> IEncache<K, V> wrap(Cache<K, V> cache, String name, Class<K> keyType, Class<V> valueType) {
     MethodReturn.Handler handler = new MethodReturn.DefaultHandler(new HashMap<String, Object>() {{
       put("cache", cache);
       put("name", name);
@@ -78,7 +77,7 @@ public interface IEncache<K, V> extends Cache<K, V> {
   /**
    * 缓存配置
    */
-  static <K, V> CacheConfigurationBuilder cacheConfigurationBuilder(Class<K> keyType, Class<V> valueType) {
+  static <K, V> CacheConfigurationBuilder defaultCacheConfigurationBuilder(Class<K> keyType, Class<V> valueType) {
     return CacheConfigurationBuilder.newCacheConfigurationBuilder(keyType, valueType
             , ResourcePoolsBuilder.newResourcePoolsBuilder()
                 .heap(10, MemoryUnit.MB)
@@ -88,7 +87,8 @@ public interface IEncache<K, V> extends Cache<K, V> {
         )
         .withKeySerializer(new JsonValueSerializer<>(keyType))
         .withValueSerializer(new JsonValueSerializer<>(valueType))
-        .withExpiry(Expirations.timeToLiveExpiration(Duration.of(6, TimeUnit.HOURS)));
+        .withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(Duration.ofDays(1)))//过期时间1天
+        .withDefaultDiskStoreThreadPool();
   }
 
   /**
@@ -102,7 +102,7 @@ public interface IEncache<K, V> extends Cache<K, V> {
      * @param valueType 值类型
      * @return 返回配置
      */
-    <K, V> CacheConfigurationBuilder<K, V> build(Class<K> keyType, Class<V> valueType);
+    <K, V> CacheConfigurationBuilder<K, V> create(Class<K> keyType, Class<V> valueType);
 
   }
 
@@ -124,7 +124,7 @@ public interface IEncache<K, V> extends Cache<K, V> {
     private CacheConfigurationBuilderFactory cacheConfigurationBuilderFactory;
 
     public Factory(File cacheDir) {
-      this(cacheDir, IEncache::cacheConfigurationBuilder);
+      this(cacheDir, IEncache::defaultCacheConfigurationBuilder);
     }
 
     public Factory(File cacheDir, CacheConfigurationBuilderFactory cacheConfigurationBuilderFactory) {
@@ -132,9 +132,6 @@ public interface IEncache<K, V> extends Cache<K, V> {
               .with(CacheManagerBuilder.persistence(cacheDir))
               .build(true)
           , cacheConfigurationBuilderFactory);
-
-      // 关闭
-      ShutdownHook.register(cacheManager::close);
     }
 
     public Factory(CacheManager cacheManager, CacheConfigurationBuilderFactory cacheConfigurationBuilderFactory) {
@@ -168,9 +165,9 @@ public interface IEncache<K, V> extends Cache<K, V> {
       return cacheMap.computeIfAbsent(name, k -> {
         Cache<K, V> cache = getCache(name, keyType, valueType);
         if (cache == null) {
-          cache = getCacheManager().createCache(name, cacheConfigurationBuilderFactory.build(keyType, valueType));
+          cache = getCacheManager().createCache(name, cacheConfigurationBuilderFactory.create(keyType, valueType));
         }
-        return newProxy(cache, name, keyType, valueType);
+        return wrap(cache, name, keyType, valueType);
       });
     }
 

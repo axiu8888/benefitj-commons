@@ -62,9 +62,9 @@ class HttpTest {
 //    String url = "ws://192.168.0.33:8089";
     String url = "ws://192.168.9.104:8089";
 //    String url = "ws://192.168.1.198/api/management/socket";
-//    File destFile = IOUtils.createFile("D:/tmp/cache/瑞超小肺/走-呼吸.txt");
-//    File destFile = IOUtils.createFile("D:/tmp/cache/瑞超小肺/深-呼吸.txt");
-    File destFile = IOUtils.createFile("D:/tmp/cache/瑞超小肺/平静-呼吸__"+ DateFmtter.fmtNow("yyyyMMdd_HHmm") +".txt");
+//    File destFile = IOUtils.createFile("D:/cache/.tmp/瑞超小肺/走-呼吸.txt");
+//    File destFile = IOUtils.createFile("D:/cache/.tmp/瑞超小肺/深-呼吸.txt");
+    File destFile = IOUtils.createFile("D:/cache/.tmp/瑞超小肺/平静-呼吸__"+ DateFmtter.fmtNow("yyyyMMdd_HHmm") +".txt");
     AtomicReference<IWriter> writerRef = new AtomicReference<>(IWriter.createWriter(destFile, false));
     WebSocket socket = HttpClient.newWebSocket(url, new WebSocketListener() {
 
