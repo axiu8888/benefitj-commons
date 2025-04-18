@@ -51,6 +51,7 @@ class CacheTest {
 
   @Test
   void test_IEncache() {
+    System.setProperty(IEncache.Factory.CACHE_DIR, "./build/cache");
     IEncache.Factory factory = IEncache.Factory.get();
     IEncache<String, String> cache = factory.getIfAbsentCreate("cache", String.class, String.class);
 

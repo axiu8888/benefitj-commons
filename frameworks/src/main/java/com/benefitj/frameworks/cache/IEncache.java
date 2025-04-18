@@ -2,6 +2,7 @@ package com.benefitj.frameworks.cache;
 
 
 import com.benefitj.core.JsonUtils;
+import com.benefitj.core.ShutdownHook;
 import com.benefitj.core.SingletonSupplier;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
@@ -85,7 +86,7 @@ public interface IEncache<K, V> extends Cache<K, V> {
     return CacheConfigurationBuilder.newCacheConfigurationBuilder(keyType, valueType
             , ResourcePoolsBuilder.newResourcePoolsBuilder()
                 .heap(10, MemoryUnit.MB)
-                .offheap(20, MemoryUnit.MB)
+                //.offheap(20, MemoryUnit.MB)
                 .disk(200, MemoryUnit.MB, true)
                 .build()
         )
@@ -112,8 +113,10 @@ public interface IEncache<K, V> extends Cache<K, V> {
 
   class Factory {
 
+    public static final String CACHE_DIR = "encache.cache";
+
     static final SingletonSupplier<Factory> singleton
-        = SingletonSupplier.of(() -> new Factory(new File("./cache")));
+        = SingletonSupplier.of(() -> new Factory(new File(System.getProperty(CACHE_DIR, "./cache"))));
 
     public static Factory get() {
       return singleton.get();
@@ -141,6 +144,7 @@ public interface IEncache<K, V> extends Cache<K, V> {
     public Factory(CacheManager cacheManager, CacheConfigurationBuilderFactory cacheConfigurationBuilderFactory) {
       this.cacheManager = cacheManager;
       this.cacheConfigurationBuilderFactory = cacheConfigurationBuilderFactory;
+      ShutdownHook.register(cacheManager::close);
     }
 
     public CacheManager getCacheManager() {
