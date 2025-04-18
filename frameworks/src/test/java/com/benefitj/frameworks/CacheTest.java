@@ -4,21 +4,74 @@ import com.benefitj.core.CatchUtils;
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.EventLoop;
 import com.benefitj.frameworks.cache.CaffeineCache;
+import com.benefitj.frameworks.cache.IEncache;
+import com.benefitj.frameworks.cache.ILoadingCache;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class CacheTest {
+class CacheTest {
 
   @Test
-  public void test_write() {
+  void test_LoadingCache() {
+    ILoadingCache<String, String> cache = ILoadingCache.wrap(CacheBuilder.<String, String>newBuilder()
+            .initialCapacity(1000)
+            .expireAfterWrite(Duration.ofMinutes(1))
+            .expireAfterAccess(Duration.ofMinutes(1))
+            .removalListener((RemovalListener<String, String>) notification -> {
+              // 移除
+              log.info("remove --> key: {}, value: {}, wasEvicted: {}, cause: {}"
+                  , notification.getKey()
+                  , notification.getValue()
+                  , notification.wasEvicted()
+                  , notification.getCause()
+              );
+            })
+        , new ConcurrentHashMap<>()
+        , (cacheLoader, key) -> cacheLoader.map().get(key));
+    for (int i = 0; i < 100; i++) {
+      cache.put("key" + i, "value" + i);
+    }
+    cache.asMap().forEach((k, v) -> log.info("{} --->: {}", k, v));
+
+
+    cache.invalidate("key22");
+
+  }
+
+  @Test
+  void test_IEncache() {
+    IEncache.Factory factory = IEncache.Factory.get();
+    IEncache<String, String> cache = factory.getIfAbsentCreate("cache", String.class, String.class);
+
+    log.info("[1] start --------------------------------- start");
+    for (org.ehcache.Cache.Entry<String, String> entry : cache) {
+      log.info("{} --->: {}", entry.getKey(), entry.getValue());
+    }
+    log.info("[1] end --------------------------------- end");
+
+    for (int i = 0; i < 100; i++) {
+      cache.put("key" + i, "value" + i);
+    }
+    log.info("[2] start --------------------------------- start");
+    for (org.ehcache.Cache.Entry<String, String> entry : cache) {
+      log.info("{} --->: {}", entry.getKey(), entry.getValue());
+    }
+    log.info("[2] end --------------------------------- end");
+  }
+
+  @Test
+  void test_write() {
     test_cache(CaffeineCache.<String, String>newBuilder()
         .expireAfterWrite(Duration.ofSeconds(5))
         .removalListener((key, value, cause) -> {
@@ -34,7 +87,7 @@ public class CacheTest {
   }
 
   @Test
-  public void test_access_write() {
+  void test_access_write() {
     test_cache(CaffeineCache.<String, String>newBuilder()
         //.expireAfterWrite(Duration.ofSeconds(5))
         .expireAfterAccess(Duration.ofSeconds(5))
@@ -44,11 +97,12 @@ public class CacheTest {
         })
         .build(new CacheLoader<String, String>() {
           @Override
-          public @Nullable String load(String o) throws Exception {
+          public @Nullable String load(String key) throws Exception {
             return null;
           }
         }));
   }
+
 
   static void test_cache(Cache<String, String> cache) {
     for (int i = 0; i < 100; i++) {

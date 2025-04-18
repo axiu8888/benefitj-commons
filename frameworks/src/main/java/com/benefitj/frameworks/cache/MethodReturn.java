@@ -1,4 +1,4 @@
-package com.benefitj.frameworks.ehcache;
+package com.benefitj.frameworks.cache;
 
 import com.benefitj.core.PlaceHolder;
 import com.benefitj.core.executable.Instantiator;

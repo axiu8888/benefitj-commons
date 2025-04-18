@@ -1,6 +1,7 @@
-package com.benefitj.frameworks.ehcache;
+package com.benefitj.frameworks.cache;
 
 
+import com.benefitj.core.JsonUtils;
 import com.benefitj.core.SingletonSupplier;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
@@ -9,9 +10,12 @@ import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.config.units.MemoryUnit;
+import org.ehcache.spi.serialization.Serializer;
+import org.ehcache.spi.serialization.SerializerException;
 
 import java.io.File;
 import java.lang.reflect.Proxy;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -151,19 +155,19 @@ public interface IEncache<K, V> extends Cache<K, V> {
       this.cacheConfigurationBuilderFactory = cacheConfigurationBuilderFactory;
     }
 
-    public <K, V> Cache<K, V> getCache(String name, Class<K> keyType, Class<V> valueType) {
-      return getCacheManager().getCache(name, keyType, valueType);
+    public  <K, V> Cache<K, V> getCache(String name) {
+      return cacheMap.get(name);
     }
 
-    public <K, V> IEncache<K, V> createIfAbsent(String name, Class<K> keyType, Class<V> valueType) {
-      return createIfAbsent(name, keyType, valueType, cacheConfigurationBuilderFactory);
+    public <K, V> IEncache<K, V> getIfAbsentCreate(String name, Class<K> keyType, Class<V> valueType) {
+      return getIfAbsentCreate(name, keyType, valueType, cacheConfigurationBuilderFactory);
     }
 
-    public <K, V> IEncache<K, V> createIfAbsent(String name, Class<K> keyType, Class<V> valueType, CacheConfigurationBuilderFactory cacheConfigurationBuilderFactory) {
+    public <K, V> IEncache<K, V> getIfAbsentCreate(String name, Class<K> keyType, Class<V> valueType, CacheConfigurationBuilderFactory cacheConfigurationBuilderFactory) {
       IEncache ICache = cacheMap.get(name);
       if (ICache != null) return ICache;
       return cacheMap.computeIfAbsent(name, k -> {
-        Cache<K, V> cache = getCache(name, keyType, valueType);
+        Cache<K, V> cache = getCacheManager().getCache(name, keyType, valueType);
         if (cache == null) {
           cache = getCacheManager().createCache(name, cacheConfigurationBuilderFactory.create(keyType, valueType));
         }
@@ -172,6 +176,42 @@ public interface IEncache<K, V> extends Cache<K, V> {
     }
 
   }
+
+
+  /**
+   * json 序列化
+   */
+  class JsonValueSerializer<T> implements Serializer<T> {
+
+    private final Class<T> clazz;
+
+    public JsonValueSerializer(Class<T> clazz) {
+      this.clazz = clazz;
+    }
+
+    @Override
+    public ByteBuffer serialize(T object) throws SerializerException {
+      if (object instanceof byte[]) return ByteBuffer.wrap((byte[]) object);
+      if (object instanceof String) return ByteBuffer.wrap(((String) object).getBytes());
+      return ByteBuffer.wrap(JsonUtils.toJsonBytes(object));
+    }
+
+    @Override
+    public T read(ByteBuffer binary) throws ClassNotFoundException, SerializerException {
+      byte[] bytes = new byte[binary.remaining()];
+      binary.get(bytes);
+      if (clazz == byte[].class) return (T) bytes;
+      if (clazz == String.class) return (T) new String(bytes);
+      return JsonUtils.fromJson(bytes, clazz);
+    }
+
+    @Override
+    public boolean equals(T object, ByteBuffer binary) throws SerializerException, ClassNotFoundException {
+      return object.equals(read(binary));
+    }
+
+  }
+
 
 }
 
