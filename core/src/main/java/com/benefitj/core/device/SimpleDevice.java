@@ -6,21 +6,21 @@ package com.benefitj.core.device;
 public class SimpleDevice extends AbstractDevice<String> {
 
   public SimpleDevice() {
+    setActive(true);// 默认是可用
   }
 
   public SimpleDevice(String id) {
-    super();
+    this();
     this.setId(id);
   }
 
   public SimpleDevice(String id, String name) {
-    this.setId(id);
+    this(id);
     this.setName(name);
   }
 
   public SimpleDevice(String id, String name, String type) {
-    this.setId(id);
-    this.setName(name);
+    this(id, name);
     this.setType(type);
   }
 
