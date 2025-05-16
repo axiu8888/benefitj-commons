@@ -50,4 +50,9 @@ public class UtilsTest extends BaseTest {
     }
   }
 
+  @Test
+  void test_md5Id() {
+    log.info("md5 hello -->: {}", IdUtils.md5Id("hello"));
+    log.info("md5 1 -->: {}", IdUtils.md5Id("1"));
+  }
 }

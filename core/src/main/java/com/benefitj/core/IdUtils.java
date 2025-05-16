@@ -1,6 +1,8 @@
 package com.benefitj.core;
 
 import java.lang.ref.SoftReference;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -294,7 +296,7 @@ public class IdUtils {
    */
   public static String checkAndGet(char[] chars, int len, Predicate<String> test) {
     String nextId;
-    for (; ; ) {
+    for (;;) {
       nextId = IdUtils.nextId(chars, len);
       if (test.test(nextId)) {
         return nextId;
@@ -304,6 +306,28 @@ public class IdUtils {
 
   private static String checkNotNull(String str) {
     return str != null ? str : "";
+  }
+
+  /**
+   * 字符串转换为 uuid 的形式
+   */
+  public static String md5Id(String input) {
+    try {
+      // 获取 MD5 摘要实例
+      MessageDigest md = MessageDigest.getInstance("MD5");
+      // 计算哈希值
+      byte[] hashBytes = md.digest(input.getBytes());
+      // 将字节数组转换为十六进制字符串
+      StringBuilder sb = new StringBuilder();
+      for (byte b : hashBytes) {
+        String hex = Integer.toHexString(0xff & b);
+        if (hex.length() == 1) sb.append('0');
+        sb.append(hex);
+      }
+      return sb.toString();
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException("MD5 algorithm not found", e);
+    }
   }
 
 }
