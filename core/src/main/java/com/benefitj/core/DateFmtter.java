@@ -67,6 +67,9 @@ public class DateFmtter {
   public static final long HOUR = 60 * MINUTE;
   public static final long DAY = 24 * HOUR;
 
+  public static final String[] PATTERN_OPTIONS = new String[]{_yMd, _yMdHm, _yMdHms, _yMdHmsS, _ms};
+  public static final String[] UTC_PATTERN_OPTIONS = new String[]{_yMd_UTC, _yMdHm_UTC, _yMdHms_UTC, _ms};
+
   /**
    * 缓存时间格式化
    */
@@ -140,6 +143,32 @@ public class DateFmtter {
   }
 
   /**
+   * 获取可选的时间格式
+   *
+   * @param time 时间
+   * @param utc  是否为UTC
+   * @return 返回可选的时间格式
+   */
+  public static String findPattern(String time, boolean utc) {
+    return findPattern(time, utc, _yMdHms);
+  }
+
+  /**
+   * 获取可选的时间格式
+   *
+   * @param time 时间
+   * @param utc  是否为UTC
+   * @return 返回可选的时间格式
+   */
+  public static String findPattern(String time, boolean utc, String defaultPattern) {
+    String[] array = utc ? UTC_PATTERN_OPTIONS : PATTERN_OPTIONS;
+    for (String opt : array) {
+      if (opt.length() == time.length()) return opt;
+    }
+    return defaultPattern;
+  }
+
+  /**
    * @return 当前时间
    */
   public static long now() {
@@ -180,7 +209,7 @@ public class DateFmtter {
    * @return 返回解析后的Date对象
    */
   private static Date parse(String time) {
-    return parse(time, _yMdHms);
+    return parse(time, findPattern(time, false, _yMdHms));
   }
 
   /**
