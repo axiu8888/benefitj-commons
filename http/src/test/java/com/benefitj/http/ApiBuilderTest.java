@@ -1,4 +1,4 @@
-package com.benefitj.network;
+package com.benefitj.http;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
@@ -6,7 +6,6 @@ import com.alibaba.fastjson2.JSONObject;
 import com.benefitj.core.*;
 import com.benefitj.core.file.IWriter;
 import com.benefitj.core.file.PathWatcher;
-import com.benefitj.http.*;
 import io.reactivex.rxjava3.core.Observable;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
