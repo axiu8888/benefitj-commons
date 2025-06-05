@@ -1,14 +1,20 @@
 package com.benefitj.http.sse;
 
 import com.benefitj.core.AutoConnectTimer;
+import com.benefitj.core.EventLoop;
+import com.benefitj.core.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import okio.BufferedSource;
 import okio.Okio;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.time.Duration;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -19,7 +25,14 @@ public interface SSEClient {
   /**
    * SSE地址
    */
-  String getSseUrl();
+  default String getSseUrl() {
+    return getRequest().url().toString();
+  }
+
+  /**
+   * SSE 请求
+   */
+  Request getRequest();
 
   /**
    * 获取监听
@@ -72,17 +85,42 @@ public interface SSEClient {
    */
   void setAutoReconnectInterval(Duration interval);
 
-  static Impl newClient(String sseUrl) {
-    return newClient(sseUrl, null);
-  }
+  /**
+   * 保活超时时长
+   */
+  Duration getKeepAliveTimeout();
+
+  /**
+   * 设置保活超时时长
+   *
+   * @param timeout 超时时长
+   */
+  void setKeepAliveTimeout(Duration timeout);
+
 
   static Impl newClient(String sseUrl, SSEEventListener eventListener) {
-    return new Impl(sseUrl, eventListener, Impl.DEFAULT_HTTP_CLIENT);
+    return newClient(new Request.Builder().url(sseUrl).build(), eventListener);
+  }
+
+  static Impl newClient(Request request, SSEEventListener eventListener) {
+    return new Impl(request, eventListener, Impl.DEFAULT_HTTP_CLIENT);
+  }
+
+  static Impl start(String sseUrl, boolean autoConnect, Duration autoConnectInterval, SSEEventListener eventListener) {
+    Request request = new Request.Builder().url(sseUrl).build();
+    return start(request, autoConnect, autoConnectInterval, eventListener);
+  }
+
+  static Impl start(Request request, boolean autoConnect, Duration autoConnectInterval, SSEEventListener eventListener) {
+    Impl impl = newClient(request, eventListener);
+    impl.setAutoReconnect(autoConnect);
+    impl.setAutoReconnectInterval(autoConnectInterval);
+    impl.connect();
+    return impl;
   }
 
   @Slf4j
   class Impl implements SSEClient, AutoConnectTimer.Connector {
-
     /**
      * 默认的客户端
      */
@@ -92,27 +130,31 @@ public interface SSEClient {
         .writeTimeout(120, TimeUnit.SECONDS)
         .build();
 
-    private final String sseUrl;
+    private final Request request;
     private SSEEventListener eventListener;
-    private OkHttpClient httpClient;
+    private OkHttpClient httpClient = DEFAULT_HTTP_CLIENT;
+    /**
+     * 保活超时时长
+     */
+    private Duration keepAliveTimeout = Duration.ofSeconds(120);
 
-    public Impl(String sseUrl) {
-      this(sseUrl, DEFAULT_HTTP_CLIENT);
+    public Impl(Request request) {
+      this(request, DEFAULT_HTTP_CLIENT);
     }
 
-    public Impl(String sseUrl, OkHttpClient httpClient) {
-      this(sseUrl, null, httpClient);
+    public Impl(Request request, OkHttpClient httpClient) {
+      this(request, null, httpClient);
     }
 
-    public Impl(String sseUrl, SSEEventListener eventListener, OkHttpClient httpClient) {
-      this.sseUrl = sseUrl;
+    public Impl(Request request, SSEEventListener eventListener, OkHttpClient httpClient) {
+      this.request = request;
       this.setEventListener(eventListener);
       this.setHttpClient(httpClient);
     }
 
     @Override
-    public String getSseUrl() {
-      return sseUrl;
+    public Request getRequest() {
+      return request;
     }
 
     @Override
@@ -154,6 +196,16 @@ public interface SSEClient {
     }
 
     @Override
+    public Duration getKeepAliveTimeout() {
+      return keepAliveTimeout;
+    }
+
+    @Override
+    public void setKeepAliveTimeout(Duration keepAliveTimeout) {
+      this.keepAliveTimeout = keepAliveTimeout;
+    }
+
+    @Override
     public boolean isConnected() {
       Call call = callRef.get();
       return call != null && !call.isCanceled();
@@ -183,6 +235,7 @@ public interface SSEClient {
     public void disconnect() {
       if (isConnected()) {
         synchronized (this) {
+          closed.set(true);
           Call call = this.callRef.getAndSet(null);
           if (call != null) {
             call.cancel();
@@ -200,6 +253,8 @@ public interface SSEClient {
      */
     private final AutoConnectTimer autoConnectTimer = new AutoConnectTimer(false, Duration.ofSeconds(30));
     private final AtomicReference<Call> callRef = new AtomicReference<>();
+    private final AtomicLong activeAt = new AtomicLong();
+    private final AtomicBoolean closed = new AtomicBoolean(false);
     private final SSEEventListener _el_ = new SSEEventListener() {
 
       boolean opened = false;
@@ -231,6 +286,7 @@ public interface SSEClient {
         } catch (Throwable e) {
           log.error("onFailure", e);
         }
+
         if (!opened) {
           onClosed(self());
         }
@@ -243,13 +299,18 @@ public interface SSEClient {
         try {
           getEventListener().onClosed(client);
         } catch (Throwable e) {
-          log.error("onClosed", e);
+          log.error("onClosed error -->>: " + e.getMessage(), e);
         }
-        autoConnectTimer.start(self());// 自动重连
+        if (!closed.get()) {
+          autoConnectTimer.start(self());// 自动重连
+        }
       }
     };
 
     private final Callback _cb_ = new Callback() {
+
+      final AtomicReference<ScheduledFuture<?>> keepAliveTask = new AtomicReference<>();
+
       @Override
       public void onFailure(Call call, IOException e) {
         _el_.onFailure(self(), e);
@@ -262,6 +323,17 @@ public interface SSEClient {
           el.onFailure(self(), new IOException("Unexpected code " + response));
           return;
         }
+        closed.set(false);//未关闭
+
+        // 保活检查
+        keepAliveTask.set(EventLoop.asyncIOFixedRate(() -> {
+          if (TimeUtils.diffNow(activeAt.get()) < getKeepAliveTimeout().toMillis()) return;
+          Call remove = callRef.getAndSet(null);
+          if (remove != null) {
+            remove.cancel();
+          }
+        }, 5, 5, TimeUnit.SECONDS));
+
         el.onOpen(self());
         try (final BufferedSource source = Okio.buffer(response.body().source())) {
           StringBuilder buf = new StringBuilder();
@@ -270,16 +342,29 @@ public interface SSEClient {
             if (line.isEmpty()) {
               // 空行表示一个事件结束
               if (buf.length() > 0) {
-                el.onEvent(self(), parseEvent(buf.toString()));
+                try {
+                  SSEEvent event = parseEvent(buf.toString());
+                  if (event.isKeepAlive()) {
+                    el.onKeepAlive(self(), event);
+                  } else {
+                    el.onEvent(self(), event);
+                  }
+                } catch (Exception e) {
+                  el.onFailure(self(), e);
+                }
                 buf.setLength(0); // 清空当前事件
               }
             } else {
               buf.append(line).append("\n");
             }
+            activeAt.set(System.currentTimeMillis());
           }
         } catch (Exception e) {
-          el.onFailure(self(), e);
+          if (!closed.get() && !(e instanceof SocketException)) {//不是主动关闭
+            el.onFailure(self(), e);
+          }
         } finally {
+          EventLoop.cancel(keepAliveTask.getAndSet(null));
           el.onClosed(self());
         }
       }
@@ -296,8 +381,19 @@ public interface SSEClient {
    * @return 返回 call
    */
   static Call newCall(OkHttpClient client, String url, Callback callback) {
-    Call call = client.newCall(new Request.Builder()
-        .url(url)
+    return newCall(client, new Request.Builder().url(url).get().build(), callback);
+  }
+
+  /**
+   * 调用
+   *
+   * @param client   客户端
+   * @param request  请求
+   * @param callback 回调
+   * @return 返回 call
+   */
+  static Call newCall(OkHttpClient client, Request request, Callback callback) {
+    Call call = client.newCall(request.newBuilder()
         .header("Accept", "text/event-stream") // 重要：告诉服务器我们需要事件流
         .build());
     call.enqueue(callback);
@@ -323,8 +419,11 @@ public interface SSEClient {
       } else if (line.startsWith("retry:")) {
         try {
           event.setRetry(Long.parseLong(line.substring(6).trim()));
-        } catch (NumberFormatException ignored) {
-        }
+        } catch (NumberFormatException ignored) {/*^_^*/}
+      } else if (line.startsWith(":keep-alive")) {
+        event.setKeepAlive(true);
+      } else {
+        event.setOther(line.trim());
       }
       // 忽略其他字段和注释
     }

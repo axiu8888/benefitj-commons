@@ -534,7 +534,7 @@ public class Utils {
    * @return 返回保留的数
    */
   public static double decimal(double v, int bitSize) {
-    return decimal(v, bitSize, RoundingMode.UP);
+    return decimal(v, bitSize, RoundingMode.DOWN);
   }
 
   /**

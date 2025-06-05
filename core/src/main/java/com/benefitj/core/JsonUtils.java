@@ -12,6 +12,7 @@ import java.lang.ref.SoftReference;
  */
 public class JsonUtils {
 
+  private static final ThreadLocal<Boolean> NON_NULL = ThreadLocal.withInitial(() -> false);
   private static final ThreadLocal<SoftReference<JsonMapper>> mapperCache =
       ThreadLocal.withInitial(() -> new SoftReference<>(new JsonMapper()));
 
@@ -24,6 +25,7 @@ public class JsonUtils {
       synchronized (JsonUtils.class) {
         mapper = new JsonMapper();
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        //mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapperCache.set(new SoftReference<>(mapper));
       }
     }

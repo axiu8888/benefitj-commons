@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,6 +29,17 @@ public class BodyUtils {
   public static final MediaType MEDIA_FORM_DATA = MediaType.parse("multipart/form-data;charset=UTF-8");
   public static final MediaType MEDIA_FORM_URLENCODED = MediaType.parse("application/x-www-form-urlencoded;charset=UTF-8");
 
+  /**
+   * 生成basic token
+   *
+   * @param username 用户名
+   * @param password 密码
+   * @return 返回token
+   */
+  public static String basicToken(String username, String password) {
+    byte[] bytes = (username + ":" + password).getBytes(StandardCharsets.UTF_8);
+    return "Basic " + Base64.getEncoder().encodeToString(bytes);
+  }
 
   /**
    * 判断是否为相同的媒体类型

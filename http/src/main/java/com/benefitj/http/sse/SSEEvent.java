@@ -1,15 +1,24 @@
 package com.benefitj.http.sse;
 
-
-import com.alibaba.fastjson2.JSON;
+import com.benefitj.core.JsonUtils;
 
 public class SSEEvent {
+
+  private String id;
   private String event;
   private String data;
-  private String id;
-  private long retry;
+  private boolean keepAlive;
+  private String other;
+  private Long retry;
 
-  // getters and setters
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
   public String getEvent() {
     return event;
   }
@@ -26,24 +35,32 @@ public class SSEEvent {
     this.data = data;
   }
 
-  public String getId() {
-    return id;
+  public boolean isKeepAlive() {
+    return keepAlive;
   }
 
-  public void setId(String id) {
-    this.id = id;
+  public void setKeepAlive(boolean keepAlive) {
+    this.keepAlive = keepAlive;
   }
 
-  public long getRetry() {
+  public String getOther() {
+    return other;
+  }
+
+  public void setOther(String other) {
+    this.other = other;
+  }
+
+  public Long getRetry() {
     return retry;
   }
 
-  public void setRetry(long retry) {
+  public void setRetry(Long retry) {
     this.retry = retry;
   }
 
   @Override
   public String toString() {
-    return JSON.toJSONString(this);
+    return JsonUtils.toJson(this);
   }
 }

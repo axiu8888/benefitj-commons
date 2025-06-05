@@ -23,6 +23,15 @@ public interface SSEEventListener {
   void onEvent(SSEClient client, SSEEvent event);
 
   /**
+   * 保持存活
+   *
+   * @param client 客户端
+   * @param event  事件
+   */
+  default void onKeepAlive(SSEClient client, SSEEvent event) {
+  }
+
+  /**
    * 出现异常
    *
    * @param client 客户端
