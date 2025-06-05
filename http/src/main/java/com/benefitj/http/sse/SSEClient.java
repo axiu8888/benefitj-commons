@@ -1,5 +1,6 @@
 package com.benefitj.http.sse;
 
+import com.benefitj.core.AttributeMap;
 import com.benefitj.core.AutoConnectTimer;
 import com.benefitj.core.EventLoop;
 import com.benefitj.core.TimeUtils;
@@ -11,6 +12,7 @@ import okio.Okio;
 import java.io.IOException;
 import java.net.SocketException;
 import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,6 +23,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * SSE 客户端
  */
 public interface SSEClient {
+
+  /**
+   * 属性值
+   */
+  AttributeMap attrs();
 
   /**
    * SSE地址
@@ -130,6 +137,7 @@ public interface SSEClient {
         .writeTimeout(120, TimeUnit.SECONDS)
         .build();
 
+    private final AttributeMap attrs = AttributeMap.wrap(new ConcurrentHashMap<>());
     private final Request request;
     private SSEEventListener eventListener;
     private OkHttpClient httpClient = DEFAULT_HTTP_CLIENT;
@@ -150,6 +158,11 @@ public interface SSEClient {
       this.request = request;
       this.setEventListener(eventListener);
       this.setHttpClient(httpClient);
+    }
+
+    @Override
+    public AttributeMap attrs() {
+      return attrs;
     }
 
     @Override

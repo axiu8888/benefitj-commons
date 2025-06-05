@@ -1,7 +1,6 @@
 package com.benefitj.core;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -21,8 +20,8 @@ public interface AttributeMap {
    * @param <T> 值类型
    * @return 返回获取的值或默认值
    */
-  default <T> T getAttribute(String key) {
-    return getAttribute(key, null);
+  default <T> T getAttr(String key) {
+    return getAttr(key, null);
   }
 
   /**
@@ -33,7 +32,7 @@ public interface AttributeMap {
    * @param <T>          值类型
    * @return 返回获取的值或默认值
    */
-  default <T> T getAttribute(String key, T defaultValue) {
+  default <T> T getAttr(String key, T defaultValue) {
     return (T) attrs().getOrDefault(key, defaultValue);
   }
 
@@ -44,7 +43,7 @@ public interface AttributeMap {
    * @param value 值
    * @return 返回旧的值，如果没有就是NULL
    */
-  default Object setAttribute(String key, Object value) {
+  default Object setAttr(String key, Object value) {
     return attrs().put(key, value);
   }
 
@@ -55,7 +54,7 @@ public interface AttributeMap {
    * @param value 值
    * @return 返回旧的值，如果没有就是NULL
    */
-  default Object setAttributeIfAbsent(String key, Object value) {
+  default Object setAttrIfAbsent(String key, Object value) {
     return attrs().putIfAbsent(key, value);
   }
 
@@ -66,7 +65,7 @@ public interface AttributeMap {
    * @param mappingFunction 自定义函数
    * @return 返回旧的值，如果没有就是NULL
    */
-  default Object setAttributeIfAbsent(String key, Function<String, Object> mappingFunction) {
+  default Object setAttrIfAbsent(String key, Function<String, Object> mappingFunction) {
     return attrs().computeIfAbsent(key, mappingFunction);
   }
 
@@ -75,7 +74,7 @@ public interface AttributeMap {
    *
    * @param map 属性
    */
-  default void setAttributeMap(Map<String, Object> map) {
+  default void putAttrAll(Map<String, Object> map) {
     attrs().putAll(map);
   }
 
@@ -86,14 +85,14 @@ public interface AttributeMap {
    * @param <T> 值类型
    * @return 返回被移除的值
    */
-  default <T> T removeAttribute(String key) {
+  default <T> T removeAttr(String key) {
     return (T) attrs().remove(key);
   }
 
   /**
    * 获取属性数量
    */
-  default int getAttributeSize() {
+  default int attrSize() {
     return attrs().size();
   }
 
@@ -103,7 +102,7 @@ public interface AttributeMap {
    * @param key 值
    * @return 返回是否包含键
    */
-  default boolean containsAttribute(String key) {
+  default boolean containsAttr(String key) {
     return attrs().containsKey(key);
   }
 
@@ -113,14 +112,14 @@ public interface AttributeMap {
    * @param value 值
    * @return 返回是否包含键
    */
-  default boolean containsAttributeValue(Object value) {
+  default boolean containsAttrValue(Object value) {
     return attrs().containsValue(value);
   }
 
   /**
    * 清空属性
    */
-  default void clearAttributes() {
+  default void clearAttrs() {
     attrs().clear();
   }
 
@@ -131,7 +130,7 @@ public interface AttributeMap {
    * @return 值
    */
   default Byte getByteAttr(String key) {
-    return getAttribute(key);
+    return getAttr(key);
   }
 
   /**
@@ -141,7 +140,7 @@ public interface AttributeMap {
    * @return 值
    */
   default byte[] getByteArrayAttr(String key) {
-    return getAttribute(key);
+    return getAttr(key);
   }
 
   /**
@@ -151,7 +150,7 @@ public interface AttributeMap {
    * @return 值
    */
   default Short getShortAttr(String key) {
-    return getAttribute(key);
+    return getAttr(key);
   }
 
   /**
@@ -161,7 +160,7 @@ public interface AttributeMap {
    * @return 值
    */
   default Integer getIntegerAttr(String key) {
-    return getAttribute(key);
+    return getAttr(key);
   }
 
   /**
@@ -171,7 +170,7 @@ public interface AttributeMap {
    * @return 值
    */
   default Long getLongAttr(String key) {
-    return getAttribute(key);
+    return getAttr(key);
   }
 
   /**
@@ -181,7 +180,7 @@ public interface AttributeMap {
    * @return 值
    */
   default Float getFloatAttr(String key) {
-    return getAttribute(key);
+    return getAttr(key);
   }
 
   /**
@@ -191,7 +190,7 @@ public interface AttributeMap {
    * @return 值
    */
   default Double getDoubleAttr(String key) {
-    return getAttribute(key);
+    return getAttr(key);
   }
 
   /**
@@ -201,36 +200,11 @@ public interface AttributeMap {
    * @return 值
    */
   default Boolean getBooleanAttr(String key) {
-    return getAttribute(key);
+    return getAttr(key);
   }
 
-
-  /**
-   * 创建 AttributeMap 对象
-   */
-  static AttributeMap newAttributeMap() {
-    return new ConcurrentAttributeMap();
-  }
-
-  /**
-   * 创建 AttributeMap 对象
-   */
-  static AttributeMap newAttributeMap(Map<String, Object> attrs) {
-    return () -> attrs;
-  }
-
-
-  class ConcurrentAttributeMap implements AttributeMap {
-
-    final Map<String, Object> attrs = new ConcurrentHashMap<>();
-
-    /**
-     * 属性集合
-     */
-    @Override
-    public Map<String, Object> attrs() {
-      return attrs;
-    }
+  static AttributeMap wrap(Map<String, Object> map) {
+    return () -> map;
   }
 
 }
