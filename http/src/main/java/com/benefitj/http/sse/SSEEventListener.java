@@ -47,4 +47,13 @@ public interface SSEEventListener {
    */
   default void onClosed(SSEClient client) {
   }
+
+  /**
+   * 重新连接前
+   *
+   * @param client 客户端
+   */
+  default void onReconnectBefore(SSEClient client) {
+  }
+
 }

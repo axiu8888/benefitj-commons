@@ -1,5 +1,7 @@
 package com.benefitj.http.sse;
 
+
+import com.alibaba.fastjson2.JSON;
 import com.benefitj.core.JsonUtils;
 
 public class SSEEvent {

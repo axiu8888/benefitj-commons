@@ -1,9 +1,6 @@
 package com.benefitj.http.sse;
 
-import com.benefitj.core.AttributeMap;
-import com.benefitj.core.AutoConnectTimer;
-import com.benefitj.core.EventLoop;
-import com.benefitj.core.TimeUtils;
+import com.benefitj.core.*;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import okio.BufferedSource;
@@ -104,6 +101,13 @@ public interface SSEClient {
    */
   void setKeepAliveTimeout(Duration timeout);
 
+  /**
+   * 关闭SSE
+   */
+  static void close(SSEClient sse) {
+    if (sse != null)
+      sse.disconnect();
+  }
 
   static Impl newClient(String sseUrl, SSEEventListener eventListener) {
     return newClient(new Request.Builder().url(sseUrl).build(), eventListener);
@@ -128,6 +132,7 @@ public interface SSEClient {
 
   @Slf4j
   class Impl implements SSEClient, AutoConnectTimer.Connector {
+
     /**
      * 默认的客户端
      */
@@ -138,7 +143,8 @@ public interface SSEClient {
         .build();
 
     private final AttributeMap attrs = AttributeMap.wrap(new ConcurrentHashMap<>());
-    private final Request request;
+
+    private Request request;
     private SSEEventListener eventListener;
     private OkHttpClient httpClient = DEFAULT_HTTP_CLIENT;
     /**
@@ -163,6 +169,10 @@ public interface SSEClient {
     @Override
     public AttributeMap attrs() {
       return attrs;
+    }
+
+    public void setRequest(Request request) {
+      this.request = request;
     }
 
     @Override
@@ -228,7 +238,8 @@ public interface SSEClient {
     public void doConnect() {
       synchronized (this) {
         if (callRef.get() == null) {
-          callRef.set(newCall(getHttpClient(), getSseUrl(), _cb_));
+          _el_.onReconnectBefore(this);//重连之前
+          callRef.set(newCall(getHttpClient(), getRequest(), _cb_));
         }
       }
     }
@@ -246,14 +257,22 @@ public interface SSEClient {
      * 断开
      */
     public void disconnect() {
-      if (isConnected()) {
+      if (!closed.get()) {
         synchronized (this) {
           closed.set(true);
           Call call = this.callRef.getAndSet(null);
           if (call != null) {
             call.cancel();
           }
+          closeResponse();
         }
+      }
+    }
+
+    private void closeResponse() {
+      Response prevResponse = responseRef.getAndSet(null);
+      if (prevResponse != null) {
+        prevResponse.close();
       }
     }
 
@@ -266,6 +285,7 @@ public interface SSEClient {
      */
     private final AutoConnectTimer autoConnectTimer = new AutoConnectTimer(false, Duration.ofSeconds(30));
     private final AtomicReference<Call> callRef = new AtomicReference<>();
+    private final AtomicReference<Response> responseRef = new AtomicReference<>();
     private final AtomicLong activeAt = new AtomicLong();
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final SSEEventListener _el_ = new SSEEventListener() {
@@ -309,6 +329,7 @@ public interface SSEClient {
       public void onClosed(SSEClient client) {
         opened = false;
         callRef.set(null);
+        closeResponse();
         try {
           getEventListener().onClosed(client);
         } catch (Throwable e) {
@@ -318,11 +339,18 @@ public interface SSEClient {
           autoConnectTimer.start(self());// 自动重连
         }
       }
+
+      @Override
+      public void onReconnectBefore(SSEClient client) {
+        try {
+          getEventListener().onReconnectBefore(client);
+        } catch (Throwable e) {
+          log.error("onReconnectBefore error -->>: " + e.getMessage(), e);
+        }
+      }
     };
 
     private final Callback _cb_ = new Callback() {
-
-      final AtomicReference<ScheduledFuture<?>> keepAliveTask = new AtomicReference<>();
 
       @Override
       public void onFailure(Call call, IOException e) {
@@ -337,13 +365,15 @@ public interface SSEClient {
           return;
         }
         closed.set(false);//未关闭
+        responseRef.set(response);
 
         // 保活检查
-        keepAliveTask.set(EventLoop.asyncIOFixedRate(() -> {
+        final AtomicReference<ScheduledFuture<?>> keepAliveTask = new AtomicReference<>(EventLoop.asyncIOFixedRate(() -> {
           if (TimeUtils.diffNow(activeAt.get()) < getKeepAliveTimeout().toMillis()) return;
           Call remove = callRef.getAndSet(null);
           if (remove != null) {
             remove.cancel();
+            el.onClosed(self());
           }
         }, 5, 5, TimeUnit.SECONDS));
 
@@ -351,7 +381,8 @@ public interface SSEClient {
         try (final BufferedSource source = Okio.buffer(response.body().source())) {
           StringBuilder buf = new StringBuilder();
           String line;
-          while ((line = source.readUtf8Line()) != null) {
+          while (!source.exhausted()) {
+            if ((line = source.readUtf8Line()) == null) continue;
             if (line.isEmpty()) {
               // 空行表示一个事件结束
               if (buf.length() > 0) {
@@ -363,7 +394,8 @@ public interface SSEClient {
                     el.onEvent(self(), event);
                   }
                 } catch (Exception e) {
-                  el.onFailure(self(), e);
+                  //el.onFailure(self(), e);
+                  log.error("throws: " + e.getMessage(), e);
                 }
                 buf.setLength(0); // 清空当前事件
               }
@@ -377,6 +409,7 @@ public interface SSEClient {
             el.onFailure(self(), e);
           }
         } finally {
+          IOUtils.closeQuietly(response, response.body());
           EventLoop.cancel(keepAliveTask.getAndSet(null));
           el.onClosed(self());
         }
