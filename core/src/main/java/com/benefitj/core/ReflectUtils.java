@@ -314,32 +314,16 @@ public class ReflectUtils {
   }
 
   /**
-   * 处理方法，如果出现
+   * 迭代 field
    *
-   * @param klass      类
-   * @param methodName 方法名
-   * @param consumer   处理
+   * @param type     类
+   * @param filter   过滤器，过滤出匹配的字段
+   * @param consumer 消费者，处理接收到的结果
    */
-  public static void opMethodIfPresent(Class<?> klass, String methodName, IConsumer<Method> consumer) {
-    opMethodIfPresent(klass, m -> m.getName().equalsIgnoreCase(methodName), consumer);
-  }
-
-  /**
-   * 处理方法，如果出现
-   *
-   * @param klass    类
-   * @param matcher  匹配器
-   * @param consumer 处理
-   */
-  public static void opMethodIfPresent(Class<?> klass, Predicate<Method> matcher, IConsumer<Method> consumer) {
-    Method m = getMethod(klass, matcher);
-    if (m != null) {
-      try {
-        consumer.accept(m);
-      } catch (Exception e) {
-        throw new IllegalStateException(CatchUtils.findRoot(e));
-      }
-    }
+  public static void findFields(Class<?> type,
+                                Predicate<Field> filter,
+                                Consumer<Field> consumer) {
+    findFields(type, filter, consumer, f -> false);
   }
 
   /**
@@ -348,7 +332,6 @@ public class ReflectUtils {
    * @param type        类
    * @param filter      过滤器，过滤出匹配的字段
    * @param consumer    消费者，处理接收到的结果
-   * @param interceptor 拦截器，返回true表示结束循环
    */
   public static void findFields(Class<?> type,
                                 Predicate<Field> filter,
@@ -539,6 +522,63 @@ public class ReflectUtils {
   }
 
   /**
+   * 处理方法，如果出现
+   *
+   * @param klass      类
+   * @param methodName 方法名
+   * @param consumer   处理
+   */
+  public static void opMethodIfPresent(Class<?> klass, String methodName, IConsumer<Method> consumer) {
+    opMethodIfPresent(klass, m -> m.getName().equalsIgnoreCase(methodName), consumer);
+  }
+
+  /**
+   * 处理方法，如果出现
+   *
+   * @param klass    类
+   * @param matcher  匹配器
+   * @param consumer 处理
+   */
+  public static void opMethodIfPresent(Class<?> klass, Predicate<Method> matcher, IConsumer<Method> consumer) {
+    Method m = getMethod(klass, matcher);
+    if (m != null) {
+      try {
+        consumer.accept(m);
+      } catch (Exception e) {
+        throw new IllegalStateException(CatchUtils.findRoot(e));
+      }
+    }
+  }
+
+  /**
+   * 迭代 method
+   *
+   * @param type     类
+   * @param filter   过滤器
+   * @param consumer 处理器
+   */
+  public static void findMethods(Class<?> type,
+                                 Predicate<Method> filter,
+                                 Consumer<Method> consumer) {
+    findMethods(type, filter, consumer, m -> false);
+  }
+
+  /**
+   * 迭代 method
+   *
+   * @param type        类
+   * @param filter      过滤器
+   * @param consumer    处理器
+   * @param interceptor 拦截器
+   */
+  public static void findMethods(Class<?> type,
+                                 Predicate<Method> filter,
+                                 Consumer<Method> consumer,
+                                 Predicate<Method> interceptor) {
+    findMethods(type, filter, consumer, interceptor, true, false);
+  }
+
+  /**
    * 迭代 method
    *
    * @param type            类
@@ -558,21 +598,6 @@ public class ReflectUtils {
   }
 
   /**
-   * 迭代 method
-   *
-   * @param type        类
-   * @param filter      过滤器
-   * @param consumer    处理器
-   * @param interceptor 拦截器
-   */
-  public static void findMethods(Class<?> type,
-                                 Predicate<Method> filter,
-                                 Consumer<Method> consumer,
-                                 Predicate<Method> interceptor) {
-    findMethods(type, filter, consumer, interceptor, true, false);
-  }
-
-  /**
    * 迭代方法，并返回处理的集合
    *
    * @param type     类型
@@ -581,7 +606,7 @@ public class ReflectUtils {
    * @param <T>      类型
    * @return 返回处理后的结果集
    */
-  public static <T> List<T> findMethods(Class<?> type, Predicate<Method> filter, Function<Method, T> function) {
+  public static <T> List<T> getMethods(Class<?> type, Predicate<Method> filter, Function<Method, T> function) {
     final List<T> list = new LinkedList<>();
     findMethods(type
         , filter

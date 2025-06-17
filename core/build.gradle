@@ -5,7 +5,15 @@ apply from: "${scriptFile}"
 ext.upload = true
 
 dependencies {
-  // spring
-  compileOnly 'org.springframework:spring-core:5.3.5'
+
+
+  [
+      // spring
+      'org.springframework:spring-core:5.3.5',
+      'com.cronutils:cron-utils:9.2.1',
+  ].forEach {
+    compileOnly(it)
+    testImplementation(it)
+  }
 
 }
