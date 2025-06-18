@@ -46,12 +46,12 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   private final AutoConnectTimer.Connector connector = new AutoConnectTimer.Connector() {
     @Override
     public boolean isConnected() {
-      return self_().isConnected();
+      return _self_().isConnected();
     }
 
     @Override
     public void doConnect() {
-      self_().reconnect();
+      _self_().reconnect();
     }
   };
 
@@ -85,7 +85,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
     return attrs;
   }
 
-  protected VertxMqttClient self_() {
+  protected VertxMqttClient _self_() {
     return this;
   }
 
@@ -106,34 +106,34 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
     this.setRaw(MqttClient.create(getVertx(), getOptions()));
 
     this.getRaw()
-        // 连接
-        .connect(getPort(), getHost(), event -> {
-          if (!event.succeeded())
-            getAutoConnectTimer().start(connector);
-          proxyHandler.onConnected(self_(), event, false);
-        })
         // ping 消息
-        .pingResponseHandler(ignore -> proxyHandler.onPingResponse(self_()))
+        .pingResponseHandler(ignore -> proxyHandler.onPingResponse(_self_()))
         // 订阅成功
-        .subscribeCompletionHandler(message -> proxyHandler.onSubscribeCompletion(self_(), message))
+        .subscribeCompletionHandler(message -> proxyHandler.onSubscribeCompletion(_self_(), message))
         // 取消订阅成功
-        .unsubscribeCompletionHandler(messageId -> proxyHandler.onUnsubscribeCompletion(self_(), messageId))
+        .unsubscribeCompletionHandler(messageId -> proxyHandler.onUnsubscribeCompletion(_self_(), messageId))
         // 发布消息
-        .publishHandler(message -> proxyHandler.onPublishMessage(self_(), message))
+        .publishHandler(message -> proxyHandler.onPublishMessage(_self_(), message))
         // 发布完成
-        .publishCompletionHandler(messageId -> proxyHandler.onPublishCompletion(self_(), messageId))
+        .publishCompletionHandler(messageId -> proxyHandler.onPublishCompletion(_self_(), messageId))
         // 发布超时
-        .publishCompletionExpirationHandler(messageId -> proxyHandler.onPublishCompletionExpiration(self_(), messageId))
+        .publishCompletionExpirationHandler(messageId -> proxyHandler.onPublishCompletionExpiration(_self_(), messageId))
         // 发布完成未知包ID
-        .publishCompletionUnknownPacketIdHandler(messageId -> proxyHandler.onPublishCompletionUnknownPacketId(self_(), messageId))
+        .publishCompletionUnknownPacketIdHandler(messageId -> proxyHandler.onPublishCompletionUnknownPacketId(_self_(), messageId))
         // 异常
-        .exceptionHandler(error -> proxyHandler.onException(self_(), error))
+        .exceptionHandler(error -> proxyHandler.onException(_self_(), error))
         // 关闭
         .closeHandler(ignore -> {
           // 重连
           getAutoConnectTimer().start(connector);
           // 连接断开
-          proxyHandler.onClose(self_());
+          proxyHandler.onClose(_self_());
+        })
+        .connect(getPort(), getHost())
+        .onComplete(res -> {// 连接
+          if (!res.succeeded())
+            getAutoConnectTimer().start(connector);
+          proxyHandler.onConnected(_self_(), res, false);
         })
     ;
   }
@@ -143,7 +143,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
     MqttClient client = this.getRaw();
     if (client != null) {
       this.setRaw(null);
-      client.disconnect(event ->
+      client.disconnect().onComplete(event ->
           log.trace("mqtt client disconnected, {}:{}, status: {}", getHost(), getPort(), event.succeeded()));
       getAutoConnectTimer().setAutoConnect(false).stop();
     }
@@ -155,7 +155,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
 
   public VertxMqttClient setRaw(MqttClient raw) {
     this.raw = raw;
-    return self_();
+    return _self_();
   }
 
   /**
@@ -164,14 +164,14 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   public VertxMqttClient reconnect() {
     if (!isConnected()) {
       // 连接
-      this.getRaw().connect(getPort(), getHost(), event -> {
+      this.getRaw().connect(getPort(), getHost()).onComplete(event -> {
         if (event.succeeded()) {
           // 重连成功
-          proxyHandler.onConnected(self_(), event, true);
+          proxyHandler.onConnected(_self_(), event, true);
         }
       });
     }
-    return self_();
+    return _self_();
   }
 
   public MqttClientOptions getOptions() {
@@ -180,7 +180,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
 
   public VertxMqttClient setOptions(MqttClientOptions options) {
     this.options = options;
-    return self_();
+    return _self_();
   }
 
   public String getHost() {
@@ -189,7 +189,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
 
   public VertxMqttClient setHost(String host) {
     this.host = host;
-    return self_();
+    return _self_();
   }
 
   public Integer getPort() {
@@ -198,7 +198,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
 
   public VertxMqttClient setPort(Integer port) {
     this.port = port;
-    return self_();
+    return _self_();
   }
 
   public VertxMqttClient setRemoteAddress(String host, Integer port) {
@@ -207,13 +207,13 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
 
   public VertxMqttClient removeHandler(VertxMqttClientHandler handler) {
     if (handler != null) ((List) proxyHandler).remove(handler);
-    return self_();
+    return _self_();
   }
 
   public VertxMqttClient addHandler(VertxMqttClientHandler handler) {
     if (handler != null && !((List) proxyHandler).contains(handler))
       ((List) proxyHandler).add(handler);
-    return self_();
+    return _self_();
   }
 
   public AutoConnectTimer getAutoConnectTimer() {
@@ -222,7 +222,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
 
   public VertxMqttClient setAutoConnectTimer(AutoConnectTimer autoConnectTimer) {
     this.autoConnectTimer = autoConnectTimer != null ? autoConnectTimer : AutoConnectTimer.NONE;
-    return self_();
+    return _self_();
   }
 
   public VerticleInitializer<VertxMqttClient> getInitializer() {
@@ -231,7 +231,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
 
   public VertxMqttClient setInitializer(VerticleInitializer<VertxMqttClient> initializer) {
     this.initializer = initializer;
-    return self_();
+    return _self_();
   }
 
   /**
@@ -274,8 +274,8 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
    * @return 返回MQTT客户端
    */
   public VertxMqttClient subscribe(String topic, MqttQoS qosLevel, Handler<AsyncResult<Integer>> subscribeSentHandler) {
-    getRaw().subscribe(topic, qosLevel.value(), subscribeSentHandler);
-    return self_();
+    getRaw().subscribe(topic, qosLevel.value()).onComplete(subscribeSentHandler);
+    return _self_();
   }
 
   /**
@@ -319,8 +319,8 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
    * @return 返回MQTT客户端
    */
   public VertxMqttClient subscribe(Map<String, Integer> topics, Handler<AsyncResult<Integer>> subscribeSentHandler) {
-    getRaw().subscribe(topics, subscribeSentHandler);
-    return self_();
+    getRaw().subscribe(topics).onComplete(subscribeSentHandler);
+    return _self_();
   }
 
   /**
@@ -342,9 +342,9 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
    */
   public VertxMqttClient unsubscribe(String topic, Handler<AsyncResult<Integer>> unsubscribeSentHandler) {
     if (StringUtils.isNotBlank(topic)) {
-      getRaw().unsubscribe(topic, unsubscribeSentHandler);
+      getRaw().unsubscribe(topic).onComplete(unsubscribeSentHandler);
     }
-    return self_();
+    return _self_();
   }
 
 
@@ -371,7 +371,7 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
         unsubscribe(topic, unsubscribeSentHandler);
       }
     }
-    return self_();
+    return _self_();
   }
 
   /**
@@ -473,11 +473,11 @@ public class VertxMqttClient extends AbstractVerticle implements AttributeMap {
   public VertxMqttClient publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, Handler<AsyncResult<Integer>> publishSentHandler) {
     MqttClient raw = getRaw();
     if (raw != null && raw.isConnected()) {
-      raw.publish(topic, payload, qosLevel, isDup, isRetain, publishSentHandler);
+      raw.publish(topic, payload, qosLevel, isDup, isRetain).onComplete(publishSentHandler);
     } else {
       throw new IllegalStateException("MQTT 未连接!");
     }
-    return self_();
+    return _self_();
   }
 
 }

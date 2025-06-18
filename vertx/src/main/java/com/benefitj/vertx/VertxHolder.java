@@ -53,6 +53,25 @@ public class VertxHolder {
   }
 
   /**
+   * 同步部署
+   */
+  public static <T extends Verticle> T deploySync(Vertx vertx, T verticle) {
+    final CountDownLatch latch = new CountDownLatch(1);
+    final AtomicReference<Throwable> errRef = new AtomicReference<>();
+    vertx
+        .deployVerticle(verticle)
+        .onComplete(event -> {
+          errRef.set(event.succeeded() ? null : event.cause());
+          latch.countDown();
+        });
+    CatchUtils.ignore(() -> latch.await());
+    if (errRef.get() != null) {
+      throw new IllegalStateException(CatchUtils.findRoot(errRef.get()));
+    }
+    return verticle;
+  }
+
+  /**
    * 取消部署
    *
    * @param verticle Verticle对象
@@ -120,31 +139,13 @@ public class VertxHolder {
     ref.set(
         new VertxMqttClient()
             .addHandler(dispatcher)
-            .setInitializer(verticle -> {})
+            .setInitializer(verticle -> {
+            })
             .setAutoConnectTimer(autoConnectTimer)
             .setRemoteAddress(remote.host(), remote.port())
     );
     deploy(ref.get());
     return ref.get();
-  }
-
-  /**
-   * 部署
-   */
-  public static <T extends Verticle> T deploy(Vertx vertx, T verticle) {
-    CountDownLatch latch = new CountDownLatch(1);
-    AtomicReference<Throwable> errRef = new AtomicReference<>();
-    vertx
-        .deployVerticle(verticle)
-        .onComplete(event -> {
-          errRef.set(event.succeeded() ? null : event.cause());
-          latch.countDown();
-        });
-    CatchUtils.ignore(() -> latch.await());
-    if (errRef.get() != null) {
-      throw new IllegalStateException(CatchUtils.findRoot(errRef.get()));
-    }
-    return verticle;
   }
 
 }

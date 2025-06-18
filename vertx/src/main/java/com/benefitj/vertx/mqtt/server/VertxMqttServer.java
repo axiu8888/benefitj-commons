@@ -97,19 +97,21 @@ public class VertxMqttServer extends AbstractVerticle {
     ;
     // 初始化
     getInitializer().onInitialize(this);
-    // 创见服务端
-    this.setMqttServer(MqttServer.create(getVertx(), getOptions()));
-    // 监听客户端连接
-    this.getMqttServer().endpointHandler(this::onEndpointHandle);
-    this.getMqttServer().exceptionHandler(this::onExceptionHandle);
-    // 监听
-    this.getMqttServer().listen(ar -> {
-      if (ar.succeeded()) {
-        log.trace("MQTT server started and listening on port {}", mqttServer.actualPort());
-      } else {
-        log.trace("MQTT server error on start: " + ar.cause().getMessage(), ar.cause());
-      }
-    });
+    this
+        // 创建服务端
+        .setMqttServer(MqttServer.create(getVertx(), getOptions()))
+        // 监听客户端连接
+        .getMqttServer()
+        .endpointHandler(this::onEndpointHandle)
+        .exceptionHandler(this::onExceptionHandle)
+        // 监听
+        .listen().onComplete(res -> {
+          if (res.succeeded()) {
+            log.trace("MQTT server started and listening on port {}", mqttServer.actualPort());
+          } else {
+            log.trace("MQTT server error on start: " + res.cause().getMessage(), res.cause());
+          }
+        });
   }
 
   @Override

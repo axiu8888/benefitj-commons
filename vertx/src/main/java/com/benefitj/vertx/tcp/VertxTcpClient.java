@@ -180,9 +180,9 @@ public class VertxTcpClient {
       this.latch.set(latch);
       if (remote == null)
         throw new IllegalStateException("未设置远程连接的地址!");
-      getRaw().connect(remote, rawConnectHandler);
+      getRaw().connect(remote).onComplete(rawConnectHandler);
     } else {
-      if(latch != null)
+      if (latch != null)
         latch.countDown();
     }
   }
@@ -206,10 +206,7 @@ public class VertxTcpClient {
     disconnected.set(true);
     NetSocket ns = getSocket();
     if (ns != null) {
-      if (handler != null)
-        ns.close(handler);
-      else
-        ns.close();
+      ns.close().onComplete(handler != null ? handler : res -> {/*^_^*/});
     }
     return self();
   }

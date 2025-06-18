@@ -4,7 +4,6 @@ import com.benefitj.vertx.mqtt.MqttTopic;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -231,8 +230,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint disconnectMessageHandler(Handler<MqttDisconnectMessage> handler) {
-    return getOriginal().disconnectMessageHandler(handler);
+  default VertxMqttEndpoint disconnectMessageHandler(Handler<MqttDisconnectMessage> handler) {
+    getOriginal().disconnectMessageHandler(handler);
+    return this;
   }
 
   @Override
@@ -260,8 +260,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publishAcknowledgeMessageHandler(Handler<MqttPubAckMessage> handler) {
-    return getOriginal().publishAcknowledgeMessageHandler(handler);
+  default VertxMqttEndpoint publishAcknowledgeMessageHandler(Handler<MqttPubAckMessage> handler) {
+    getOriginal().publishAcknowledgeMessageHandler(handler);
+    return this;
   }
 
   @Override
@@ -271,8 +272,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publishReceivedMessageHandler(Handler<MqttPubRecMessage> handler) {
-    return getOriginal().publishReceivedMessageHandler(handler);
+  default VertxMqttEndpoint publishReceivedMessageHandler(Handler<MqttPubRecMessage> handler) {
+    getOriginal().publishReceivedMessageHandler(handler);
+    return this;
   }
 
   @Override
@@ -282,8 +284,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publishReleaseMessageHandler(Handler<MqttPubRelMessage> handler) {
-    return getOriginal().publishReleaseMessageHandler(handler);
+  default VertxMqttEndpoint publishReleaseMessageHandler(Handler<MqttPubRelMessage> handler) {
+    getOriginal().publishReleaseMessageHandler(handler);
+    return this;
   }
 
   @Override
@@ -293,8 +296,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publishCompletionMessageHandler(Handler<MqttPubCompMessage> handler) {
-    return getOriginal().publishCompletionMessageHandler(handler);
+  default VertxMqttEndpoint publishCompletionMessageHandler(Handler<MqttPubCompMessage> handler) {
+    getOriginal().publishCompletionMessageHandler(handler);
+    return this;
   }
 
   @Override
@@ -328,8 +332,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint accept(boolean sessionPresent, MqttProperties properties) {
-    return getOriginal().accept(sessionPresent, properties);
+  default VertxMqttEndpoint accept(boolean sessionPresent, MqttProperties properties) {
+    getOriginal().accept(sessionPresent, properties);
+    return this;
   }
 
   @Override
@@ -339,8 +344,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint reject(MqttConnectReturnCode returnCode, MqttProperties properties) {
-    return getOriginal().reject(returnCode, properties);
+  default VertxMqttEndpoint reject(MqttConnectReturnCode returnCode, MqttProperties properties) {
+    getOriginal().reject(returnCode, properties);
+    return this;
   }
 
   @Override
@@ -350,8 +356,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint subscribeAcknowledge(int subscribeMessageId, List<MqttSubAckReasonCode> reasonCodes, MqttProperties properties) {
-    return getOriginal().subscribeAcknowledge(subscribeMessageId, reasonCodes, properties);
+  default VertxMqttEndpoint subscribeAcknowledge(int subscribeMessageId, List<MqttSubAckReasonCode> reasonCodes, MqttProperties properties) {
+    getOriginal().subscribeAcknowledge(subscribeMessageId, reasonCodes, properties);
+    return this;
   }
 
   @Override
@@ -361,8 +368,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint unsubscribeAcknowledge(int unsubscribeMessageId, List<MqttUnsubAckReasonCode> reasonCodes, MqttProperties properties) {
-    return getOriginal().unsubscribeAcknowledge(unsubscribeMessageId, reasonCodes, properties);
+  default VertxMqttEndpoint unsubscribeAcknowledge(int unsubscribeMessageId, List<MqttUnsubAckReasonCode> reasonCodes, MqttProperties properties) {
+    getOriginal().unsubscribeAcknowledge(unsubscribeMessageId, reasonCodes, properties);
+    return this;
   }
 
   @Override
@@ -372,8 +380,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publishAcknowledge(int publishMessageId, MqttPubAckReasonCode reasonCode, MqttProperties properties) {
-    return getOriginal().publishAcknowledge(publishMessageId, reasonCode, properties);
+  default VertxMqttEndpoint publishAcknowledge(int publishMessageId, MqttPubAckReasonCode reasonCode, MqttProperties properties) {
+    getOriginal().publishAcknowledge(publishMessageId, reasonCode, properties);
+    return this;
   }
 
   @Override
@@ -383,8 +392,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publishReceived(int publishMessageId, MqttPubRecReasonCode reasonCode, MqttProperties properties) {
-    return getOriginal().publishReceived(publishMessageId, reasonCode, properties);
+  default VertxMqttEndpoint publishReceived(int publishMessageId, MqttPubRecReasonCode reasonCode, MqttProperties properties) {
+    getOriginal().publishReceived(publishMessageId, reasonCode, properties);
+    return this;
   }
 
   @Override
@@ -394,8 +404,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publishRelease(int publishMessageId, MqttPubRelReasonCode reasonCode, MqttProperties properties) {
-    return getOriginal().publishRelease(publishMessageId, reasonCode, properties);
+  default VertxMqttEndpoint publishRelease(int publishMessageId, MqttPubRelReasonCode reasonCode, MqttProperties properties) {
+    getOriginal().publishRelease(publishMessageId, reasonCode, properties);
+    return this;
   }
 
   @Override
@@ -405,19 +416,14 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint publishComplete(int publishMessageId, MqttPubCompReasonCode reasonCode, MqttProperties properties) {
-    return getOriginal().publishComplete(publishMessageId, reasonCode, properties);
+  default VertxMqttEndpoint publishComplete(int publishMessageId, MqttPubCompReasonCode reasonCode, MqttProperties properties) {
+    getOriginal().publishComplete(publishMessageId, reasonCode, properties);
+    return this;
   }
 
   @Override
   default Future<Integer> publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain) {
     return getOriginal().publish(topic, payload, qosLevel, isDup, isDup);
-  }
-
-  @Override
-  default VertxMqttEndpoint publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, Handler<AsyncResult<Integer>> publishSentHandler) {
-    getOriginal().publish(topic, payload, qosLevel, isDup, isRetain, publishSentHandler);
-    return this;
   }
 
   @Override
@@ -431,14 +437,15 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default VertxMqttEndpoint publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, Handler<AsyncResult<Integer>> publishSentHandler) {
-    getOriginal().publish(topic, payload, qosLevel, isDup, isRetain, messageId, publishSentHandler);
+  default VertxMqttEndpoint authenticationExchangeHandler(Handler<MqttAuthenticationExchangeMessage> handler) {
+    getOriginal().authenticationExchangeHandler(handler);
     return this;
   }
 
   @Override
-  default MqttEndpoint publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, MqttProperties properties, Handler<AsyncResult<Integer>> publishSentHandler) {
-    return getOriginal().publish(topic, payload, qosLevel, isDup, isRetain, messageId, properties, publishSentHandler);
+  default VertxMqttEndpoint authenticationExchange(MqttAuthenticationExchangeMessage message) {
+    getOriginal().authenticationExchange(message);
+    return this;
   }
 
   @Override
@@ -448,8 +455,9 @@ public interface VertxMqttEndpoint extends MqttEndpoint {
   }
 
   @Override
-  default MqttEndpoint disconnect(MqttDisconnectReasonCode code, MqttProperties properties) {
-    return getOriginal().disconnect(code, properties);
+  default VertxMqttEndpoint disconnect(MqttDisconnectReasonCode code, MqttProperties properties) {
+    getOriginal().disconnect(code, properties);
+    return this;
   }
 
 }
