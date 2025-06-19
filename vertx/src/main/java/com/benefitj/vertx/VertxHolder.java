@@ -2,6 +2,7 @@ package com.benefitj.vertx;
 
 import com.benefitj.core.AutoConnectTimer;
 import com.benefitj.core.CatchUtils;
+import com.benefitj.core.CountDownLatch2;
 import com.benefitj.vertx.mqtt.client.VertxMqttClient;
 import com.benefitj.vertx.mqtt.client.VertxMqttMessageDispatcher;
 import io.vertx.core.*;
@@ -9,7 +10,6 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.*;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -56,7 +56,7 @@ public class VertxHolder {
    * 同步部署
    */
   public static <T extends Verticle> T deploySync(Vertx vertx, T verticle) {
-    final CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch2 latch = CountDownLatch2.ignore(1);
     final AtomicReference<Throwable> errRef = new AtomicReference<>();
     vertx
         .deployVerticle(verticle)
@@ -64,7 +64,7 @@ public class VertxHolder {
           errRef.set(event.succeeded() ? null : event.cause());
           latch.countDown();
         });
-    CatchUtils.ignore(() -> latch.await());
+    latch.await();
     if (errRef.get() != null) {
       throw new IllegalStateException(CatchUtils.findRoot(errRef.get()));
     }
@@ -135,17 +135,11 @@ public class VertxHolder {
   public static VertxMqttClient createMqttClient(SocketAddress remote,
                                                  VertxMqttMessageDispatcher dispatcher,
                                                  AutoConnectTimer autoConnectTimer) {
-    AtomicReference<VertxMqttClient> ref = new AtomicReference<>();
-    ref.set(
-        new VertxMqttClient()
-            .addHandler(dispatcher)
-            .setInitializer(verticle -> {
-            })
-            .setAutoConnectTimer(autoConnectTimer)
-            .setRemoteAddress(remote.host(), remote.port())
-    );
-    deploy(ref.get());
-    return ref.get();
+    return new VertxMqttClient()
+        .addHandler(dispatcher)
+        .setInitializer(verticle -> {/* ^_^ */})
+        .setAutoConnectTimer(autoConnectTimer)
+        .remoteAddress(remote);
   }
 
 }

@@ -1,5 +1,6 @@
 package com.benefitj.frameworks.cglib;
 
+import com.benefitj.core.annotation.MethodReturn;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -178,6 +179,36 @@ public class CGLibProxy implements MethodInterceptor {
    */
   public static MethodInterceptor newInvokeSuper() {
     return (obj, method, args, proxy) -> proxy.invokeSuper(obj, args);
+  }
+
+  /**
+   * 创建代理，自定义对象的返回值
+   *
+   * @param interfaceTypes 接口类型
+   * @param handler        处理器
+   * @param attrs          属性Map
+   * @param <T>            接口类型
+   * @return 返回代理对象
+   */
+  public static <T> T newProxyWithMethodReturn(Class[] interfaceTypes, MethodInterceptor handler, Map<String, Object> attrs) {
+    return newProxyWithMethodReturn(interfaceTypes, handler, new MethodReturn.DefaultHandler(attrs));
+  }
+
+  /**
+   * 创建代理，自定义对象的返回值
+   *
+   * @param interfaceTypes 接口类型
+   * @param handler        处理器
+   * @param resultHandler  返回处理器
+   * @param <T>            接口类型
+   * @return 返回代理对象
+   */
+  public static <T> T newProxyWithMethodReturn(Class[] interfaceTypes, MethodInterceptor handler, MethodReturn.Handler resultHandler) {
+    return newProxy(null, interfaceTypes, (obj, method, args, proxy) ->
+        method.isAnnotationPresent(MethodReturn.class)
+            ? resultHandler.process(obj, method, args, method.getAnnotation(MethodReturn.class))
+            : handler.intercept(proxy, method, args, proxy)
+    );
   }
 
 }

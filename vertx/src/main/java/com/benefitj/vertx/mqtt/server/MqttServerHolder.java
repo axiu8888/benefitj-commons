@@ -5,10 +5,6 @@ import com.benefitj.core.SingletonSupplier;
 import com.benefitj.core.log.ILogger;
 import com.benefitj.vertx.VertxHolder;
 import com.benefitj.vertx.VertxLogger;
-import io.vertx.mqtt.MqttServerOptions;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * MQTT 服务
@@ -66,47 +62,11 @@ public class MqttServerHolder {
   }
 
   public void start() {
-    synchronized (this) {
-      try {
-        VertxMqttServer vms = server;
-        final CountDownLatch latch = new CountDownLatch(1);
-        MqttServerOptions opts = vms.getOptions();
-        vms.deploy(VertxHolder.getVertx())
-            .onComplete(event -> {
-              log.trace("Successful start mqtt[{}] port: {}"
-                  , opts.isUseWebSocket() ? "ws" : "tcp"
-                  , opts.getPort()
-              );
-              latch.countDown();
-            })
-            .onFailure(event -> {
-              log.trace("Fail start mqtt[{}] port: {}, cause: {}"
-                  , opts.isUseWebSocket() ? "ws" : "tcp"
-                  , opts.getPort()
-                  , event.getMessage()
-              );
-              latch.countDown();
-            });
-        latch.await(5, TimeUnit.SECONDS);
-      } catch (Exception ex) {
-        log.trace(ex.getMessage(), ex);
-      }
-    }
+    server.deploy(VertxHolder.getVertx());
   }
 
   public void stop() {
-    synchronized (this) {
-      VertxMqttServer vms = server;
-      if (vms != null) {
-        vms.stop();
-        MqttServerOptions opts = vms.getOptions();
-        log.trace("stop mqtt[{}] port: {}"
-            , opts.isUseWebSocket() ? "ws" : "tcp"
-            , opts.getPort()
-        );
-        this.server = null;
-      }
-    }
+    server.undeploy();
   }
 
   /**

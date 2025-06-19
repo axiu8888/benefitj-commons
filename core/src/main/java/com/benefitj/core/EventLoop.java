@@ -503,4 +503,41 @@ public interface EventLoop extends ExecutorService, ScheduledExecutorService {
 
   }
 
+  interface Async {
+
+    EventLoop eventLoop();
+
+    default <T> ScheduledFuture<T> async(Callable<T> task) {
+      return async(task, 0, TimeUnit.MILLISECONDS);
+    }
+
+    default <T> ScheduledFuture<T> async(Callable<T> task, long delay, TimeUnit unit) {
+      return eventLoop().schedule(task, delay, unit);
+    }
+
+    default ScheduledFuture<?> async(Runnable task) {
+      return async(task, 0, TimeUnit.MILLISECONDS);
+    }
+
+    default ScheduledFuture<?> async(Runnable task, long delay, TimeUnit unit) {
+      return eventLoop().schedule(task, delay, unit);
+    }
+
+    default <T> IFuture<T> submit(Callable<T> task) {
+      return eventLoop().submit(task);
+    }
+
+    default Future<?> submit(Runnable task) {
+      return eventLoop().submit(task);
+    }
+
+    default ScheduledFuture<?> asyncAtFixedRate(Runnable command, long period, TimeUnit unit) {
+      return asyncAtFixedRate(command, 0, period, unit);
+    }
+
+    default ScheduledFuture<?> asyncAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
+      return eventLoop().scheduleAtFixedRate(command, initialDelay, period, unit);
+    }
+  }
+
 }

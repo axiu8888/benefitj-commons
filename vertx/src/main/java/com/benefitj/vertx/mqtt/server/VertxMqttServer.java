@@ -1,26 +1,9 @@
-/*
- * Copyright 2016 Red Hat Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.benefitj.vertx.mqtt.server;
 
-import com.benefitj.core.log.ILogger;
 import com.benefitj.vertx.VerticleInitializer;
-import com.benefitj.vertx.VertxLogger;
+import com.benefitj.vertx.VertxManager;
+import com.benefitj.vertx.VertxVerticle;
 import com.benefitj.vertx.mqtt.MqttTopic;
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.PemKeyCertOptions;
@@ -34,13 +17,12 @@ import java.util.stream.Collectors;
 /**
  * MQTT 服务端
  */
-public class VertxMqttServer extends AbstractVerticle {
+public class VertxMqttServer extends VertxVerticle<VertxMqttServer> {
 
   public static VerticleInitializer DISCARD = verticle -> { /* ignore */ };
 
   public static MqttAuthenticator NONE_MQTT_AUTHENTICATOR = endpoint -> true;
 
-  protected final ILogger log = VertxLogger.get();
   /**
    * 配置
    */
@@ -100,18 +82,19 @@ public class VertxMqttServer extends AbstractVerticle {
     this
         // 创建服务端
         .setMqttServer(MqttServer.create(getVertx(), getOptions()))
-        // 监听客户端连接
         .getMqttServer()
+        // 监听客户端连接
         .endpointHandler(this::onEndpointHandle)
-        .exceptionHandler(this::onExceptionHandle)
+        .exceptionHandler(this::onExceptionHandle);
+    VertxManager.get().safeLocalThread(() -> async(() -> await(
         // 监听
-        .listen().onComplete(res -> {
+        getMqttServer().listen(), res -> {
           if (res.succeeded()) {
             log.trace("MQTT server started and listening on port {}", mqttServer.actualPort());
           } else {
             log.trace("MQTT server error on start: " + res.cause().getMessage(), res.cause());
           }
-        });
+        })));
   }
 
   @Override
@@ -159,7 +142,7 @@ public class VertxMqttServer extends AbstractVerticle {
    */
   protected void onEndpointHandle(MqttEndpoint endpoint) {
     // 处理连接
-    getEndpointHandler().onConnect(VertxMqttServer.this, endpoint);
+    getEndpointHandler().onConnect(self, endpoint);
     VertxMqttEndpoint vme = getEndpointManager().getEndpoint(endpoint.clientIdentifier());
     endpoint
         // 订阅主题
@@ -169,33 +152,33 @@ public class VertxMqttServer extends AbstractVerticle {
               .stream()
               .map(Subscription::new)
               .collect(Collectors.toList());
-          getEndpointHandler().onSubscribe(VertxMqttServer.this, vme, message, subscriptions);
+          getEndpointHandler().onSubscribe(self, vme, message, subscriptions);
         })
         // specifing handlers for handling QoS 1 and 2
         .publishAcknowledgeHandler(messageId ->
-            getEndpointHandler().onPublishMessageState(VertxMqttServer.this, vme, messageId, PublishMessageState.ACKNOWLEDGE))
+            getEndpointHandler().onPublishMessageState(self, vme, messageId, PublishMessageState.ACKNOWLEDGE))
         .publishReceivedHandler(messageId ->
-            getEndpointHandler().onPublishMessageState(VertxMqttServer.this, vme, messageId, PublishMessageState.RECEIVED))
+            getEndpointHandler().onPublishMessageState(self, vme, messageId, PublishMessageState.RECEIVED))
         .publishReleaseHandler(messageId ->
-            getEndpointHandler().onPublishMessageState(VertxMqttServer.this, vme, messageId, PublishMessageState.RELEASE))
+            getEndpointHandler().onPublishMessageState(self, vme, messageId, PublishMessageState.RELEASE))
         .publishCompletionHandler(messageId ->
-            getEndpointHandler().onPublishMessageState(VertxMqttServer.this, vme, messageId, PublishMessageState.COMPLETION))
+            getEndpointHandler().onPublishMessageState(self, vme, messageId, PublishMessageState.COMPLETION))
         // 取消订阅
         .unsubscribeHandler(message -> {
           List<MqttTopic> topics = message.topics()
               .stream()
               .map(MqttTopic::get)
               .collect(Collectors.toList());
-          getEndpointHandler().onUnsubscribe(VertxMqttServer.this, vme, message, topics);
+          getEndpointHandler().onUnsubscribe(self, vme, message, topics);
         })
         // ping 消息
-        .pingHandler(v -> getEndpointHandler().onPingMessage(VertxMqttServer.this, vme))
+        .pingHandler(v -> getEndpointHandler().onPingMessage(self, vme))
         // 发送数据
-        .publishHandler(message -> getEndpointHandler().onPublishMessage(VertxMqttServer.this, vme, message))
+        .publishHandler(message -> getEndpointHandler().onPublishMessage(self, vme, message))
         // close
-        .closeHandler(event -> getEndpointHandler().onClose(VertxMqttServer.this, vme))
+        .closeHandler(event -> getEndpointHandler().onClose(self, vme))
         // disconnect
-        .disconnectHandler(event -> getEndpointHandler().onDisconnect(VertxMqttServer.this, vme))
+        .disconnectHandler(event -> getEndpointHandler().onDisconnect(self, vme))
     ;
   }
 

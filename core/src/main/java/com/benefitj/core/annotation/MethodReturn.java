@@ -1,10 +1,12 @@
-package com.benefitj.frameworks.cache;
+package com.benefitj.core.annotation;
 
 import com.benefitj.core.PlaceHolder;
+import com.benefitj.core.ProxyUtils;
 import com.benefitj.core.executable.Instantiator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +50,37 @@ public @interface MethodReturn {
      */
     Object process(Object target, Method method, Object[] args, MethodReturn annotation);
 
+
+
+    /**
+     * 创建代理，自定义对象的返回值
+     *
+     * @param interfaceType 接口类型
+     * @param handler       处理器
+     * @param attrs         属性Map
+     * @param <T>           接口类型
+     * @return 返回代理对象
+     */
+    public static <T> T newProxy(Class<T> interfaceType, InvocationHandler handler, Map<String, Object> attrs) {
+      return newProxy(interfaceType, handler, new MethodReturn.DefaultHandler(attrs));
+    }
+
+    /**
+     * 创建代理，自定义对象的返回值
+     *
+     * @param interfaceType 接口类型
+     * @param handler       处理器
+     * @param resultHandler 返回处理器
+     * @param <T>           接口类型
+     * @return 返回代理对象
+     */
+    public static <T> T newProxy(Class<T> interfaceType, InvocationHandler handler, MethodReturn.Handler resultHandler) {
+      return ProxyUtils.newProxy(interfaceType, (proxy, method, args) ->
+          method.isAnnotationPresent(MethodReturn.class)
+              ? resultHandler.process(proxy, method, args, method.getAnnotation(MethodReturn.class))
+              : handler.invoke(proxy, method, args)
+      );
+    }
   }
 
   /**

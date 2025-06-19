@@ -50,6 +50,47 @@ class CacheTest {
   }
 
   @Test
+  void test_LoadingCache2() {
+    ILoadingCache<String, String> cache = ILoadingCache.newCache(Duration.ofSeconds(5), (RemovalListener<String, String>) notification -> {
+      // 移除
+      log.info("remove --> key: {}, value: {}, wasEvicted: {}, cause: {}"
+          , notification.getKey()
+          , notification.getValue()
+          , notification.wasEvicted()
+          , notification.getCause()
+      );
+    });
+    for (int i = 0; i < 10; i++) {
+      cache.put("key" + i, "value" + i);
+    }
+    cache.asMap().forEach((k, v) -> log.info("{} --->: {}", k, v));
+    cache.invalidate("key22");
+    EventLoop.sleepSecond(6);
+    cache.put("key0012", "ping...");
+    EventLoop.sleepSecond(6);
+    log.info("cleanUp1.1 ----------------------------------- cleanUp before");
+    cache.put("key0012", "ping...");
+    cache.cleanUp();
+    log.info("cleanUp1.2 ----------------------------------- cleanUp after");
+    cache.put("key0012", "ping...");
+    cache.cleanUp();
+    log.info("cleanUp1.3 ----------------------------------- cleanUp after");
+    String key0012 = cache.getIfPresent("key0012");
+    log.info("key0012: {}", key0012);
+
+    log.info("put2 ----------------------------------- put2 before");
+    for (int i = 0; i < 10; i++) {
+      cache.put("key" + i, "value" + i);
+    }
+    log.info("put2 ----------------------------------- put2 after");
+    EventLoop.sleepSecond(3);
+    log.info("cleanUp2 ----------------------------------- cleanUp2 before");
+    cache.cleanUp();
+    log.info("cleanUp2 ----------------------------------- cleanUp2 after");
+
+  }
+
+  @Test
   void test_IEncache() {
     System.setProperty(IEncache.Factory.CACHE_DIR, "./build/cache");
     IEncache.Factory factory = IEncache.Factory.get();
@@ -61,7 +102,7 @@ class CacheTest {
     }
     log.info("[1] end --------------------------------- end");
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
       cache.put("key" + i, "value" + i);
     }
     log.info("[2] start --------------------------------- start");

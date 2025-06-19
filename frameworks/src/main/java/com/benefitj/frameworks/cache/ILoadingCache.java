@@ -2,11 +2,14 @@ package com.benefitj.frameworks.cache;
 
 import com.benefitj.core.ProxyUtils;
 import com.benefitj.core.ReflectUtils;
+import com.benefitj.core.annotation.MethodReturn;
 import com.benefitj.frameworks.cglib.CGLibProxy;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +27,34 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
   @MethodReturn(name = "loaderMap")
   Map<K, V> getLoaderMap();
 
+  /**
+   * 创建写入超时缓存
+   *
+   * @param writeExpired    写入超时
+   * @param removalListener 移除监听器
+   * @return 返回缓存
+   */
+  static <K, V> ILoadingCache<K, V> newWriteCache(Duration writeExpired, RemovalListener<K, V> removalListener) {
+    CacheBuilder<K, V> builder = CacheBuilder.<K, V>newBuilder()
+        .removalListener(removalListener)
+        .expireAfterWrite(writeExpired);
+    return wrap(builder, (kvMapCacheLoader, k) -> null);
+  }
+
+  /**
+   * 创建访问超时缓存
+   *
+   * @param writeExpired    写入超时
+   * @param removalListener 移除监听器
+   * @return 返回缓存
+   */
+  static <K, V> ILoadingCache<K, V> newAccessCache(Duration writeExpired, RemovalListener<K, V> removalListener) {
+    CacheBuilder<K, V> builder = CacheBuilder.<K, V>newBuilder()
+        .removalListener(removalListener)
+        .expireAfterAccess(writeExpired);
+    return wrap(builder, (kvMapCacheLoader, k) -> null);
+  }
+
   static <K, V> ILoadingCache<K, V> wrap(CacheBuilder<K, V> builder,
                                          BiFunction<MapCacheLoader<K, V>, K, V> fun) {
     return wrap(builder.build(newMapLoader(fun)), new ConcurrentHashMap<>(20));
@@ -36,13 +67,13 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
   }
 
   static <K, V> ILoadingCache<K, V> wrap(LoadingCache<K, V> cache, Map<K, V> loaderMap) {
-    final MethodReturn.Handler handler = new MethodReturn.DefaultHandler(new HashMap<String, Object>() {{
-      put("loaderMap", loaderMap);
-    }});
-    return ProxyUtils.newProxy(ILoadingCache.class
-        , (proxy, method, args) -> method.isAnnotationPresent(MethodReturn.class)
-            ? handler.process(proxy, method, args, method.getAnnotation(MethodReturn.class))
-            : ReflectUtils.invoke(cache, method, args));
+    return ProxyUtils.newProxyWithMethodReturn(ILoadingCache.class
+        , (proxy, method, args) -> ReflectUtils.invoke(cache, method, args)
+        , new HashMap<String, Object>() {{
+          put("cache", cache);
+          put("loaderMap", loaderMap);
+        }}
+    );
   }
 
   static <K, V> ILoadingCache<K, V> wrapCGLib(CacheBuilder<K, V> builder,
@@ -57,14 +88,11 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
   }
 
   static <K, V> ILoadingCache<K, V> wrapCGLib(LoadingCache<K, V> cache, Map<K, V> loaderMap) {
-    final MethodReturn.Handler handler = new MethodReturn.DefaultHandler(new HashMap<String, Object>() {{
-      put("loaderMap", loaderMap);
-    }});
-    return CGLibProxy.newProxy(null
-        , new Class[]{LoadingCache.class, ILoadingCache.class}
-        , (obj, method, args, proxy) -> method.isAnnotationPresent(MethodReturn.class)
-            ? handler.process(proxy, method, args, method.getAnnotation(MethodReturn.class))
-            : proxy.invoke(cache, args)
+    return CGLibProxy.newProxyWithMethodReturn(new Class[]{LoadingCache.class, ILoadingCache.class}
+        , (obj, method, args, proxy) -> proxy.invoke(cache, args)
+        , new HashMap<String, Object>() {{
+          put("loaderMap", loaderMap);
+        }}
     );
   }
 

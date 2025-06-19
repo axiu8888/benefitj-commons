@@ -4,6 +4,7 @@ package com.benefitj.frameworks.cache;
 import com.benefitj.core.JsonUtils;
 import com.benefitj.core.ShutdownHook;
 import com.benefitj.core.SingletonSupplier;
+import com.benefitj.core.annotation.MethodReturn;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -15,7 +16,6 @@ import org.ehcache.spi.serialization.Serializer;
 import org.ehcache.spi.serialization.SerializerException;
 
 import java.io.File;
-import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.HashMap;
@@ -34,25 +34,25 @@ public interface IEncache<K, V> extends Cache<K, V> {
   /**
    * 名称
    */
-  @MethodReturn
+  @MethodReturn(name = "name")
   String getName();
 
   /**
    * 键类型
    */
-  @MethodReturn
+  @MethodReturn(name = "keyType")
   Class<K> getKeyType();
 
   /**
    * 值类型
    */
-  @MethodReturn
+  @MethodReturn(name = "valueType")
   Class<V> getValueType();
 
   /**
    * 缓存
    */
-  @MethodReturn
+  @MethodReturn(name = "cache")
   Cache<K, V> getCache();
 
   /**
@@ -65,18 +65,14 @@ public interface IEncache<K, V> extends Cache<K, V> {
    * @return 返回代理
    */
   public static <K, V> IEncache<K, V> wrap(Cache<K, V> cache, String name, Class<K> keyType, Class<V> valueType) {
-    MethodReturn.Handler handler = new MethodReturn.DefaultHandler(new HashMap<String, Object>() {{
-      put("cache", cache);
-      put("name", name);
-      put("keyType", keyType);
-      put("valueType", valueType);
-    }});
-    return (IEncache<K, V>) Proxy.newProxyInstance(IEncache.class.getClassLoader(), new Class[]{IEncache.class, Cache.class}, (proxy, method, args) -> {
-      if (method.isAnnotationPresent(MethodReturn.class)) {
-        return handler.process(proxy, method, args, method.getAnnotation(MethodReturn.class));
-      }
-      return method.invoke(cache, args);
-    });
+    return MethodReturn.Handler.newProxy(IEncache.class
+        , (proxy, method, args) -> method.invoke(cache, args)
+        , new HashMap<String, Object>() {{
+          put("cache", cache);
+          put("name", name);
+          put("keyType", keyType);
+          put("valueType", valueType);
+        }});
   }
 
   /**
@@ -116,7 +112,7 @@ public interface IEncache<K, V> extends Cache<K, V> {
     public static final String CACHE_DIR = "encache.cache";
 
     static final SingletonSupplier<Factory> singleton
-        = SingletonSupplier.of(() -> new Factory(new File(System.getProperty(CACHE_DIR, "./cache"))));
+        = SingletonSupplier.of(() -> new Factory(new File(System.getProperty(CACHE_DIR, ".cache/encache"))));
 
     public static Factory get() {
       return singleton.get();
@@ -159,7 +155,7 @@ public interface IEncache<K, V> extends Cache<K, V> {
       this.cacheConfigurationBuilderFactory = cacheConfigurationBuilderFactory;
     }
 
-    public  <K, V> Cache<K, V> getCache(String name) {
+    public <K, V> Cache<K, V> getCache(String name) {
       return cacheMap.get(name);
     }
 
