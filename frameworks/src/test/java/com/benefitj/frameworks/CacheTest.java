@@ -51,7 +51,7 @@ class CacheTest {
 
   @Test
   void test_LoadingCache2() {
-    ILoadingCache<String, String> cache = ILoadingCache.newCache(Duration.ofSeconds(5), (RemovalListener<String, String>) notification -> {
+    ILoadingCache<String, String> cache = ILoadingCache.newWriteCache(Duration.ofSeconds(5), (RemovalListener<String, String>) notification -> {
       // 移除
       log.info("remove --> key: {}, value: {}, wasEvicted: {}, cause: {}"
           , notification.getKey()

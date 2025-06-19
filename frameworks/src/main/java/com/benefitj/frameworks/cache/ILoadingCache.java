@@ -67,7 +67,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
   }
 
   static <K, V> ILoadingCache<K, V> wrap(LoadingCache<K, V> cache, Map<K, V> loaderMap) {
-    return ProxyUtils.newProxyWithMethodReturn(ILoadingCache.class
+    return MethodReturn.Handler.newProxy(ILoadingCache.class
         , (proxy, method, args) -> ReflectUtils.invoke(cache, method, args)
         , new HashMap<String, Object>() {{
           put("cache", cache);
