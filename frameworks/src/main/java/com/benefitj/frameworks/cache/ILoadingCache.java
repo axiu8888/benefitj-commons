@@ -1,6 +1,5 @@
 package com.benefitj.frameworks.cache;
 
-import com.benefitj.core.ProxyUtils;
 import com.benefitj.core.ReflectUtils;
 import com.benefitj.core.annotation.MethodReturn;
 import com.benefitj.frameworks.cglib.CGLibProxy;
@@ -36,7 +35,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    */
   static <K, V> ILoadingCache<K, V> newWriteCache(Duration writeExpired, RemovalListener<K, V> removalListener) {
     CacheBuilder<K, V> builder = CacheBuilder.<K, V>newBuilder()
-        .removalListener(removalListener)
+        .removalListener(removalListener != null ? removalListener : (RemovalListener<K, V>) notification -> {/*^_^*/})
         .expireAfterWrite(writeExpired);
     return wrap(builder, (kvMapCacheLoader, k) -> null);
   }
@@ -50,7 +49,7 @@ public interface ILoadingCache<K, V> extends LoadingCache<K, V> {
    */
   static <K, V> ILoadingCache<K, V> newAccessCache(Duration writeExpired, RemovalListener<K, V> removalListener) {
     CacheBuilder<K, V> builder = CacheBuilder.<K, V>newBuilder()
-        .removalListener(removalListener)
+        .removalListener(removalListener != null ? removalListener : (RemovalListener<K, V>) notification -> {/*^_^*/})
         .expireAfterAccess(writeExpired);
     return wrap(builder, (kvMapCacheLoader, k) -> null);
   }
