@@ -6,6 +6,7 @@ import com.benefitj.core.functions.IConsumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
 import java.util.*;
@@ -13,6 +14,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 反射工具
@@ -737,6 +740,7 @@ public class ReflectUtils {
    */
   public static <T> T invoke(Object obj, Method method, Object... args) {
     try {
+      if (method.isDefault()) return invokeDefault(obj, method, args);
       setAccessible(method, true);
       return (T) method.invoke(obj, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
@@ -769,11 +773,10 @@ public class ReflectUtils {
    */
   public static <T> T invokeDefault(MethodHandles.Lookup lookup, Object obj, Method method, Object... args) {
     try {
-      return (T) lookup.unreflectSpecial(method, method.getDeclaringClass())
-          .bindTo(obj)
-          .invokeWithArguments(args);
+      MethodHandle methodHandle = lookup.unreflectSpecial(method, method.getDeclaringClass()).bindTo(obj);
+      return invokeMethodHandle(methodHandle, args);
     } catch (Throwable e) {
-      throw new IllegalStateException(CatchUtils.findRoot(e));
+      throw new IllegalStateException(getFullClassMethod(method) + " 调用失败, cause: " + e.getMessage());
     }
   }
 
@@ -789,15 +792,18 @@ public class ReflectUtils {
   public static <T> T invokeDefault(Object obj, Method method, Object... args) {
     if (!method.isDefault()) throw new IllegalArgumentException("不是默认方法!");
     try {
-      return (T) DefaultMethods.lookupMethodHandle(method)
-          .bindTo(obj)
-          .invokeWithArguments(args);
-      //MethodHandles.Lookup lookup = newInstance(MethodHandles.Lookup.class, method.getDeclaringClass());
-      //return invokeDefault(lookup, obj, method, args);
+      MethodHandle methodHandle = DefaultMethods.lookupMethodHandle(method).bindTo(obj);
+      return invokeMethodHandle(methodHandle, args);
     } catch (Throwable e) {
-      String parameterTypes = Arrays.toString(method.getParameterTypes());
-      throw new IllegalStateException(getClassMethodName(method) + "(" + parameterTypes.substring(1, parameterTypes.length() - 2) + ") 调用失败, cause: " + e.getMessage());
+      throw new IllegalStateException(getFullClassMethod(method) + " 调用失败, cause: " + e.getMessage());
     }
+  }
+
+  public static <T> T invokeMethodHandle(MethodHandle methodHandle, Object[] args) throws Throwable {
+    return (T) (args != null
+        ? methodHandle.invokeWithArguments(args)
+        : methodHandle.invoke()
+    );
   }
 
   /**
@@ -949,6 +955,14 @@ public class ReflectUtils {
 
   public static String getClassMethodName(Method method) {
     return method.getDeclaringClass().getName() + "." + method.getName();
+  }
+
+  public static String getFullClassMethod(Method method) {
+    String parameters = "";
+    if (method.getParameters().length > 0) {
+      parameters = Stream.of(method.getParameters()).map(p -> p.getType() + " " + p.getName()).collect(Collectors.joining(", "));
+    }
+    return getClassMethodName(method) + "(" + parameters + ")";
   }
 
   public interface FindMatcher {

@@ -90,8 +90,6 @@ class CacheTest {
 
   }
 
-
-
   @Test
   void test_LoadingCache3() {
     ILoadingCache<String, String> cache = ILoadingCache.newAccessCache(Duration.ofSeconds(3), (RemovalListener<String, String>) notification -> {
@@ -121,7 +119,38 @@ class CacheTest {
 
     log.info("size -->: {}", cache.size());
     EventLoop.sleepSecond(3);
+  }
 
+  @Test
+  void test_LoadingCache4() {
+    ILoadingCache<String, String> cache = ILoadingCache.newAccessCache(Duration.ofSeconds(3), (RemovalListener<String, String>) notification -> {
+      // 移除
+      log.info("remove --> key: {}, value: {}, wasEvicted: {}, cause: {}"
+          , notification.getKey()
+          , notification.getValue()
+          , notification.wasEvicted()
+          , notification.getCause()
+      );
+    });
+
+    cache.startCleanup();//开启调度
+
+    log.info("put 1 ----------------------------------- put2 before");
+    for (int i = 0; i < 10; i++) {
+      cache.put("key" + i, "value" + i);
+    }
+    log.info("put 1 ----------------------------------- put2 after");
+
+    EventLoop.sleepSecond(1);
+    for (int i = 0; i < 10; i++) {
+      String key = "key" + (i % 2);
+      String value = cache.getIfPresent(key);
+      log.info("{} -> {}", key, value);
+      EventLoop.sleepSecond(1);
+    }
+
+    log.info("size -->: {}", cache.size());
+    EventLoop.sleepSecond(3);
   }
 
   @Test
