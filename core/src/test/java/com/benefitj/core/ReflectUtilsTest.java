@@ -1,8 +1,11 @@
 package com.benefitj.core;
 
+import com.alibaba.fastjson2.JSON;
+import com.benefitj.core.executable.FieldProxy;
 import com.benefitj.core.lambda.LambdaMeta;
 import com.benefitj.core.lambda.LambdaUtils;
 import com.benefitj.core.reflection.FieldDescriptor;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.*;
@@ -10,6 +13,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+
+@Slf4j
 public class ReflectUtilsTest extends BaseTest {
 
   @Test
@@ -21,7 +26,7 @@ public class ReflectUtilsTest extends BaseTest {
     try {
       ReflectUtils.newInstance(TestA.class, 10, new Date());
     } catch (Exception e) {
-      System.err.println("抛异常了：" + e.getMessage());
+      log.info("抛异常了：" + e.getMessage());
     }
 
     ReflectUtils.newInstance(TestA.class, new Date(), "厉害2");
@@ -43,19 +48,19 @@ public class ReflectUtilsTest extends BaseTest {
 
 
     Field field;
-    field = ReflectUtils.getField(abb.getClass(), f -> f.getName().equals("point"));
+    field = ReflectUtils.findFirstField(abb.getClass(), f -> f.getName().equals("point"));
 //    field = ReflectUtils.getField(abb.getClass(), f -> f.getName().equals("value"));
 //    field = ReflectUtils.getField(abb.getClass(), f -> f.getName().equals("items"));
 //    field = ReflectUtils.getField(abb.getClass(), f -> f.getName().equals("items2"));
     FieldDescriptor fd = FieldDescriptor.of(field);
-    System.err.println("getActualType: " + fd.getActualType(abb));
-    System.err.println("getActualType: " + fd.getActualType(null));
-    System.err.println("getGenericTypeName: " + fd.getTypeName());
-//    System.err.println("isAssignableFrom: " + fieldType.isAssignableFrom(int.class));
+    log.info("getActualType: {}", fd.getActualType(abb));
+    log.info("getActualType: {}", fd.getActualType(null));
+    log.info("getGenericTypeName: {}", fd.getTypeName());
+//    log.info("isAssignableFrom: " + fieldType.isAssignableFrom(int.class));
 
 
-    System.err.println("1 " + (TestAbb.class.isAssignableFrom(TestAbbSon.class)));
-    System.err.println("2 " + (TestAbbSon.class.isAssignableFrom(TestAbb.class)));
+    log.info("1 {}", TestAbb.class.isAssignableFrom(TestAbbSon.class));
+    log.info("2 {}", TestAbbSon.class.isAssignableFrom(TestAbb.class));
 
 
   }
@@ -65,46 +70,62 @@ public class ReflectUtilsTest extends BaseTest {
   }
 
   public static void printType(String name, Type genericType) {
-    System.err.println("\n---------------- " + name + " ----------------");
+    log.info("\n---------------- " + name + " ----------------");
 
-    System.err.println(name + " ==>: " + genericType);
+    log.info("{} ==>: {}", name, genericType);
 
     if (genericType instanceof ParameterizedType) {
-      System.err.println(name + " ==>: ParameterizedType");
+      log.info("{} ==>: ParameterizedType", name);
       ParameterizedType pt = (ParameterizedType) genericType;
-      System.err.println(name + ".getTypeName ==>: " + (pt.getTypeName()));
-      System.err.println(name + ".getActualTypeArguments ==>: " + Arrays.toString(pt.getActualTypeArguments()));
-      System.err.println(name + ".getOwnerType ==>: " + (pt.getOwnerType()));
-      System.err.println(name + ".getRawType ==>: " + (pt.getRawType()));
+      log.info("{}.getTypeName ==>: {}", name, pt.getTypeName());
+      log.info("{}.getActualTypeArguments ==>: {}", name, Arrays.toString(pt.getActualTypeArguments()));
+      log.info("{}.getOwnerType ==>: {}", name, pt.getOwnerType());
+      log.info("{}.getRawType ==>: {}", name, pt.getRawType());
     }
 
     if (genericType instanceof TypeVariable) {
-      System.err.println(name + " ==>: TypeVariable");
+      log.info("{} ==>: TypeVariable", name);
       TypeVariable tv = (TypeVariable) genericType;
-      System.err.println(name + ".getName ==>: " + (tv.getName()));
-      System.err.println(name + ".getTypeName ==>: " + (tv.getTypeName()));
-      System.err.println(name + ".getBounds ==>: " + Arrays.toString(tv.getBounds()));
-      System.err.println(name + ".getAnnotatedBounds ==>: " + Arrays.toString(tv.getAnnotatedBounds()));
-      System.err.println(name + ".getGenericDeclaration ==>: " + (tv.getGenericDeclaration()));
+      log.info("{}.getName ==>: {}", name, tv.getName());
+      log.info("{}.getTypeName ==>: {}", name, tv.getTypeName());
+      log.info("{}.getBounds ==>: {}", name, Arrays.toString(tv.getBounds()));
+      log.info("{}.getAnnotatedBounds ==>: {}", name, Arrays.toString(tv.getAnnotatedBounds()));
+      log.info("{}.getGenericDeclaration ==>: {}", name, tv.getGenericDeclaration());
     }
 
     if (genericType instanceof WildcardType) {
-      System.err.println(name + " ==>: WildcardType");
+      log.info("{} ==>: WildcardType", name);
       WildcardType wt = (WildcardType) genericType;
-      System.err.println(name + ".getTypeName ==>: " + (wt.getTypeName()));
-      System.err.println(name + ".getUpperBounds ==>: " + Arrays.toString(wt.getUpperBounds()));
-      System.err.println(name + ".getLowerBounds ==>: " + Arrays.toString(wt.getLowerBounds()));
+      log.info("{}.getTypeName ==>: {}", name, wt.getTypeName());
+      log.info("{}.getUpperBounds ==>: {}", name, Arrays.toString(wt.getUpperBounds()));
+      log.info("{}.getLowerBounds ==>: {}", name, Arrays.toString(wt.getLowerBounds()));
     }
 
-    System.err.println("---------------- " + name + " ----------------\n");
+    log.info("---------------- {} ----------------\n", name);
   }
 
   @Test
   public void testSerializable() {
-    CatchUtils.tryThrow(() -> {
-      LambdaMeta lambda = LambdaUtils.getLambda(SysUser::getName);
-      System.err.println(lambda.getImplMethodName());
-    });
+    LambdaMeta lambda = LambdaUtils.getLambda(SysUser::getName);
+    log.info(lambda.getImplMethodName());
+  }
+
+  @Test
+  public void test_$etter() {
+
+    FieldProxy fp = FieldProxy.create(ReflectUtils.findFirstField(SysUser.class, "name"), false);
+    SysUser su = new SysUser();
+    log.info("su ->: {}", JSON.toJSONString(su));
+
+    fp.set(su, "你好");
+    log.info("su ->: {}", JSON.toJSONString(su));
+    log.info("name ->: {}", fp.<String>get(su));
+
+    fp.setMethodFirst(true);
+    fp.set(su, "你好222");
+    log.info("su ->: {}", JSON.toJSONString(su));
+    log.info("name ->: {}", fp.<String>get(su));
+
   }
 
 
@@ -119,6 +140,7 @@ public class ReflectUtilsTest extends BaseTest {
 
     public void setName(String name) {
       this.name = name;
+      log.info("setName方法被调用了...");
     }
   }
 
@@ -161,7 +183,6 @@ public class ReflectUtilsTest extends BaseTest {
 
 
   static class TestAcc<T extends Number> extends TestAbb<T> {
-
   }
 
 }

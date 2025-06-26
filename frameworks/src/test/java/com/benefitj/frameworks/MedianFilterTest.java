@@ -28,7 +28,7 @@ class MedianFilterTest extends BaseTest {
 //    File py = ClasspathUtils.getFile("influxdb.py");
 //    interpreter.execfile(py.getAbsolutePath());
     MedianFilter filter = new MedianFilter(30);
-    IWriter writer = IWriter.createWriter(dest, false);
+    IWriter writer = IWriter.create(dest, false);
     IOUtils.readLines(src, (line, lineNumber) -> {
       LineProtocol lineProtocol = parseLine(line);
       if (Objects.equals(lineProtocol.tags.get("type"), "bcg")) {

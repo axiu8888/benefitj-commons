@@ -64,7 +64,7 @@ class HttpTest {
 //    File destFile = IOUtils.createFile("D:/cache/.tmp/瑞超小肺/走-呼吸.txt");
 //    File destFile = IOUtils.createFile("D:/cache/.tmp/瑞超小肺/深-呼吸.txt");
     File destFile = IOUtils.createFile("D:/cache/.tmp/瑞超小肺/平静-呼吸__"+ DateFmtter.fmtNow("yyyyMMdd_HHmm") +".txt");
-    AtomicReference<IWriter> writerRef = new AtomicReference<>(IWriter.createWriter(destFile, false));
+    AtomicReference<IWriter> writerRef = new AtomicReference<>(IWriter.create(destFile, false));
     WebSocket socket = HttpClient.newWebSocket(url, new WebSocketListener() {
 
       @Override
@@ -135,7 +135,7 @@ class HttpTest {
   void test_ruichao22() {
     File lp = new File("D:\\code\\company\\python\\report-export\\report\\tmp\\smwt__3fd8897833d9461eb3c39865d15c0312");
     File txt = new File("D:\\tmp\\cache\\瑞超小肺\\平静-呼吸.txt");
-    IWriter writer = IWriter.createWriter(IOUtils.createFile(txt.getParentFile(), "new__" + txt.getName()), false);
+    IWriter writer = IWriter.create(IOUtils.createFile(txt.getParentFile(), "new__" + txt.getName()), false);
     LinkedList<JSONObject> buf = new LinkedList<>();
     AtomicLong startAt = new AtomicLong(-1);
     IOUtils.readLines(txt, (line, index) -> {
@@ -158,6 +158,60 @@ class HttpTest {
       }
     });
     writer.close();
+  }
+
+
+
+  @Test
+  void test_managementWS() {
+    String url = "ws://192.168.1.194/api/management/socket";
+    WebSocket socket = HttpClient.newWebSocket(url, new WebSocketListener() {
+
+      @Override
+      public void onOpen(WebSocket socket, Response response) {
+        log.info("onOpen...");
+
+        socket.send("{\n" +
+            "    \"op\": \"regist\",\n" +
+            "    \"wardCode\": \"1\"\n" +
+            "}");
+      }
+
+      @Override
+      public void onMessage(WebSocket socket, String text) {
+        log.info("onMessage ==>: {}", text);
+      }
+
+      @Override
+      public void onMessage(WebSocket socket, ByteString bytes) {
+        log.info("onMessage, {}", HexUtils.bytesToHex(bytes.toByteArray()));
+      }
+
+      @Override
+      public void onClosing(WebSocket socket, int code, String reason) {
+        log.info("onClosing, code: {}, reason: {}", code, reason);
+      }
+
+      @Override
+      public void onClosed(WebSocket socket, int code, String reason) {
+        log.info("onClosed, code: {}, reason: {}", code, reason);
+      }
+
+      @Override
+      public void onFailure(WebSocket socket, Throwable error, Response response) {
+        log.info("onFailure, error: {}", error.getMessage());
+        error.printStackTrace();
+      }
+    }, true, 5);
+    EventLoop.sleepSecond(3);
+
+    for(;;) {
+      if (!socket.isOpen()) {
+        socket.reconnect();
+      }
+      EventLoop.sleepSecond(10);
+    }
+
   }
 
 

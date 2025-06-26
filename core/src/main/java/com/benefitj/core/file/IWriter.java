@@ -165,8 +165,8 @@ public interface IWriter<T extends IWriter<T>> extends AutoCloseable, Appendable
    * @param append 是否在文件后拼接
    * @return 返回文件写入器
    */
-  static FileWriterImpl createWriter(String file, boolean append) {
-    return createWriter(new File(file), append);
+  static FileWriterImpl create(String file, boolean append) {
+    return create(new File(file), append);
   }
 
   /**
@@ -176,14 +176,14 @@ public interface IWriter<T extends IWriter<T>> extends AutoCloseable, Appendable
    * @param append 是否在文件后拼接
    * @return 返回文件写入器
    */
-  static FileWriterImpl createWriter(File file, boolean append) {
+  static FileWriterImpl create(File file, boolean append) {
     IOUtils.createFile(file.getAbsolutePath());
     return new FileWriterImpl(file, append);
   }
 
-  static BufferedOutputStream wrapOutput(File src, boolean append) {
+  static BufferedOutputStream wrapOut(File src, boolean append) {
     try {
-      return new BufferedOutputStream(new FileOutputStream(src, append));
+      return new BufferedOutputStream2(new FileOutputStream(src, append));
     } catch (IOException e) {
       throw new IllegalStateException(CatchUtils.findRoot(e));
     }
@@ -201,5 +201,31 @@ public interface IWriter<T extends IWriter<T>> extends AutoCloseable, Appendable
     }
   }
 
+
+  class BufferedOutputStream2 extends BufferedOutputStream {
+
+    protected volatile boolean closed;
+
+    public BufferedOutputStream2(OutputStream out) {
+      super(out);
+    }
+
+    public BufferedOutputStream2(OutputStream out, int size) {
+      super(out, size);
+    }
+
+    @Override
+    public void close() throws IOException {
+      synchronized (this) {
+        this.closed = true;
+        super.close();
+      }
+    }
+
+    public boolean isClosed() {
+      return closed;
+    }
+
+  }
 
 }

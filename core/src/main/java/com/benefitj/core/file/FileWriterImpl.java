@@ -36,12 +36,9 @@ public class FileWriterImpl implements IWriter<FileWriterImpl>, AttributeMap {
   public FileWriterImpl(File source, Charset charset, boolean append) {
     this.source = source;
     this.charset = charset;
-    this.out = IWriter.wrapOutput(source, append);
+    this.out = IWriter.wrapOut(source, append);
   }
 
-  /**
-   * 附加属性的集合
-   */
   @Override
   public Map<String, Object> attrs() {
     return attrs;

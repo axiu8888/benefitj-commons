@@ -48,8 +48,8 @@ public class CGLibMethodInvoker {
     if (target != null) {
       Method targetMethod = targetMethodRef.get();
       if (targetMethod == null) {
-        targetMethod = ReflectUtils.getMethod(target.getClass()
-            , standard.getName(), standard.getParameterTypes());
+        targetMethod = ReflectUtils.findFirstMethod(
+            target.getClass(), standard.getName(), standard.getParameterTypes());
         if (targetMethod != null) {
           targetMethodRef.set(targetMethod);
         }

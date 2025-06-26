@@ -306,7 +306,7 @@ public class ReflectUtils {
    * @param consumer 处理
    */
   public static void opFieldIfPresent(Class<?> klass, Predicate<Field> matcher, IConsumer<Field> consumer) {
-    Field field = getField(klass, matcher);
+    Field field = findFirstField(klass, matcher);
     if (field != null) {
       try {
         consumer.accept(field);
@@ -332,9 +332,9 @@ public class ReflectUtils {
   /**
    * 迭代 field
    *
-   * @param type        类
-   * @param filter      过滤器，过滤出匹配的字段
-   * @param consumer    消费者，处理接收到的结果
+   * @param type     类
+   * @param filter   过滤器，过滤出匹配的字段
+   * @param consumer 消费者，处理接收到的结果
    */
   public static void findFields(Class<?> type,
                                 Predicate<Field> filter,
@@ -406,22 +406,22 @@ public class ReflectUtils {
    * @return 返回获取的字段对象
    */
   @Nullable
-  public static Field getField(Class<?> type, String name) {
-    return getField(type, f -> f.getName().equals(name));
+  public static Field findFirstField(Class<?> type, String name) {
+    return findFirstField(type, f -> f.getName().equals(name));
   }
 
   /**
-   * 获取某个字段
+   * 查找第一个匹配的字段
    *
    * @param type    类型
    * @param matcher 匹配
    * @return 返回获取的字段对象
    */
   @Nullable
-  public static Field getField(Class<?> type, Predicate<Field> matcher) {
-    AtomicReference<Field> fieldRef = new AtomicReference<>();
-    findFields(type, matcher, fieldRef::set, f -> fieldRef.get() != null);
-    return fieldRef.get();
+  public static Field findFirstField(Class<?> type, Predicate<Field> matcher) {
+    final AtomicReference<Field> ref = new AtomicReference<>();
+    findFields(type, matcher, ref::set, f -> ref.get() != null);
+    return ref.get();
   }
 
   /**
@@ -455,7 +455,7 @@ public class ReflectUtils {
     if (obj == null) {
       return null;
     }
-    Field field = getField(obj.getClass(), matcher);
+    Field field = findFirstField(obj.getClass(), matcher);
     return field != null ? getFieldValue(field, obj) : null;
   }
 
@@ -485,7 +485,7 @@ public class ReflectUtils {
    */
   public static boolean setFieldValue(String field, Object obj, Object value) {
     Class<?> klass = obj.getClass();
-    Field f = getField(klass, field);
+    Field f = findFirstField(klass, field);
     if (f != null) {
       return setFieldValue(f, obj, value);
     }
@@ -520,7 +520,7 @@ public class ReflectUtils {
    * @return 返回是否设置成功
    */
   public static boolean setFieldValue(Object obj, Object value, Predicate<Field> matcher) {
-    Field filed = getField(obj.getClass(), matcher);
+    Field filed = findFirstField(obj.getClass(), matcher);
     return setFieldValue(filed, obj, value);
   }
 
@@ -543,7 +543,7 @@ public class ReflectUtils {
    * @param consumer 处理
    */
   public static void opMethodIfPresent(Class<?> klass, Predicate<Method> matcher, IConsumer<Method> consumer) {
-    Method m = getMethod(klass, matcher);
+    Method m = findFirstMethod(klass, matcher);
     if (m != null) {
       try {
         consumer.accept(m);
@@ -626,8 +626,8 @@ public class ReflectUtils {
    * @param name 方法名
    * @return 返回获取到的Method
    */
-  public static Method getMethod(Class<?> type, String name) {
-    return getMethod(type, m -> m.getName().equals(name));
+  public static Method findFirstMethod(Class<?> type, String name) {
+    return findFirstMethod(type, m -> m.getName().equals(name));
   }
 
   /**
@@ -637,10 +637,10 @@ public class ReflectUtils {
    * @param matcher 匹配器
    * @return 返回获取到的Method
    */
-  public static Method getMethod(Class<?> type, @Nonnull Predicate<Method> matcher) {
-    final AtomicReference<Method> method = new AtomicReference<>();
-    findMethods(type, matcher, method::set, m -> method.get() != null);
-    return method.get();
+  public static Method findFirstMethod(Class<?> type, @Nonnull Predicate<Method> matcher) {
+    final AtomicReference<Method> ref = new AtomicReference<>();
+    findMethods(type, matcher, ref::set, m -> ref.get() != null);
+    return ref.get();
   }
 
   /**
@@ -651,12 +651,12 @@ public class ReflectUtils {
    * @param parametersTypes 参数类型
    * @return 返回获取到的Method
    */
-  public static Method getMethod(Class<?> type, String name, Class<?>[] parametersTypes) {
+  public static Method findFirstMethod(Class<?> type, String name, Class<?>[] parametersTypes) {
     if (type != Object.class) {
       try {
         return type.getDeclaredMethod(name, parametersTypes);
       } catch (NoSuchMethodException e) {
-        return getMethod(type.getSuperclass(), name, parametersTypes);
+        return findFirstMethod(type.getSuperclass(), name, parametersTypes);
       }
     }
     return null;
@@ -758,7 +758,7 @@ public class ReflectUtils {
    * @return 返回返回值
    */
   public static <T> T invoke(Object obj, Predicate<Method> matcher, Object... args) {
-    Method method = getMethod(obj.getClass(), matcher);
+    Method method = findFirstMethod(obj.getClass(), matcher);
     return method != null ? invoke(obj, method, args) : null;
   }
 
@@ -867,7 +867,7 @@ public class ReflectUtils {
    * @return 返回创建的对象
    */
   public static MethodHandles.Lookup newLookup(Method method) {
-    Method newLookup = getMethod(MethodHandles.Lookup.class, "newLookup", new Class[]{Class.class, Class.class, int.class});
+    Method newLookup = findFirstMethod(MethodHandles.Lookup.class, "newLookup", new Class[]{Class.class, Class.class, int.class});
     if (newLookup != null && Modifier.isStatic(newLookup.getModifiers())) {
       return invoke(null, newLookup, new Object[]{method.getDeclaringClass(), null
           , MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC});
@@ -963,6 +963,90 @@ public class ReflectUtils {
       parameters = Stream.of(method.getParameters()).map(p -> p.getType() + " " + p.getName()).collect(Collectors.joining(", "));
     }
     return getClassMethodName(method) + "(" + parameters + ")";
+  }
+
+  /**
+   * 查找 getter 方法
+   *
+   * @param field 字段
+   * @param clazz 类
+   * @return 获取方法
+   */
+  public static Method getGetter(Field field, Class<?> clazz) {
+    return getGetter(field.getName(), clazz);
+  }
+
+  /**
+   * 查找 getter 方法
+   *
+   * @param field 字段
+   * @param clazz 类
+   * @return 获取方法
+   */
+  public static Method getGetter(String field, Class<?> clazz) {
+    return findMethod(field, "get", clazz);
+  }
+
+  /**
+   * 查找 setter 方法
+   *
+   * @param field 字段
+   * @param clazz 类
+   * @return 获取方法
+   */
+  public static Method getSetter(Field field, Class<?> clazz) {
+    return getSetter(field.getName(), clazz);
+  }
+
+  /**
+   * 查找 setter 方法
+   *
+   * @param field 字段
+   * @param clazz 类
+   * @return 获取方法
+   */
+  public static Method getSetter(String field, Class<?> clazz) {
+    return findMethod(field, "set", clazz);
+  }
+
+  /**
+   * 查找方法
+   *
+   * @param field  字段
+   * @param prefix 前缀
+   * @param clazz  类
+   * @return 返回查找到的方法
+   */
+  public static Method findMethod(Field field, String prefix, Class<?> clazz) {
+    return findMethod(field.getName(), prefix, clazz);
+  }
+
+  /**
+   * 查找方法
+   *
+   * @param fieldName 字段名
+   * @param prefix    前缀
+   * @param clazz     类
+   * @return 返回查找到的方法
+   */
+  public static Method findMethod(String fieldName, String prefix, Class<?> clazz) {
+    String name = prefix + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+    final List<Method> methods = new LinkedList<>();
+    findMethods(clazz
+        , m -> m.getParameterCount() == 0 && m.getName().equalsIgnoreCase(name)
+        , methods::add
+        , m -> false
+        , true
+        , false
+    );
+    if (methods.isEmpty()) return null;
+    if (methods.size() == 1) return methods.get(0);
+    for (Method m : methods) {
+      if (m.getName().equals(name)) {
+        return m;
+      }
+    }
+    return methods.get(0);
   }
 
   public interface FindMatcher {

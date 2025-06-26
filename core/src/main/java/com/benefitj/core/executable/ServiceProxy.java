@@ -62,11 +62,11 @@ public class ServiceProxy implements InvocationHandler {
 
   protected MethodInvoker createInvoker(Object proxy, Method method) {
     Object target = getTarget();
-    Method targetMethod = ReflectUtils.getMethod(target.getClass(), method.getName(), method.getParameterTypes());
+    Method targetMethod = ReflectUtils.findFirstMethod(target.getClass(), method.getName(), method.getParameterTypes());
     if (targetMethod != null) {
       return new NormalMethodInvoker(target, targetMethod);
     } else {
-      targetMethod = ReflectUtils.getMethod(getInterfaceType(), method.getName(), method.getParameterTypes());
+      targetMethod = ReflectUtils.findFirstMethod(getInterfaceType(), method.getName(), method.getParameterTypes());
     }
     if (targetMethod == null) {
       throw new IllegalStateException("无法发现方法所在的类!");

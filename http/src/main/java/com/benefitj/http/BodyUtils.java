@@ -235,7 +235,7 @@ public class BodyUtils {
    * @param listener 进度监听
    */
   public static void progressResponseBody(ResponseBody body, File dest, ProgressListener listener) {
-    try (final IWriter writer = IWriter.createWriter(IOUtils.createFile(dest), false)) {
+    try (final IWriter writer = IWriter.create(IOUtils.createFile(dest), false)) {
       progressResponseBody(body, (buf, len) -> writer.write(buf, 0, len), listener);
     }
   }

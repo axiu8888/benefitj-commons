@@ -40,7 +40,7 @@ public interface PahoMqttV5Client extends IMqttClient {
     Class<? extends MqttClient> type = client.getClass();
     return ProxyUtils.newProxy(PahoMqttV5Client.class, (proxy, m, args) -> {
       try {
-        Method method = ReflectUtils.getMethod(type, m.getName(), m.getParameterTypes());
+        Method method = ReflectUtils.findFirstMethod(type, m.getName(), m.getParameterTypes());
         return ReflectUtils.invoke(client, method, args);
       } catch (Throwable e) {
         throw CatchUtils.throwing(e.getCause() != null ? e.getCause() : e, MqttPahoClientException.class);

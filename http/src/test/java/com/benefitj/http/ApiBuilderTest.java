@@ -73,7 +73,7 @@ public class ApiBuilderTest {
     api.getImg()
         .subscribe(body -> {
           log.info("线程: {}", EventLoop.getThreadName());
-          final IWriter img = IWriter.createWriter("D:/tmp/ew4nf5737jvn.jpg_760w.png", false);
+          final IWriter img = IWriter.create("D:/tmp/ew4nf5737jvn.jpg_760w.png", false);
           BodyUtils.progressResponseBody(body
               , (buf, len) -> img.write(buf, 0, len)
               , (totalLength, progress, done) ->

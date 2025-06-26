@@ -147,7 +147,7 @@ public class PahoMqttV3Client implements IPahoMqttV3Client {
     Class<? extends IMqttClient> type = source.getClass();
     this.raw = ProxyUtils.newProxy(IPahoMqttV3Client.class, (proxy, m, args) -> {
       try {
-        Method method = ReflectUtils.getMethod(type, m.getName(), m.getParameterTypes());
+        Method method = ReflectUtils.findFirstMethod(type, m.getName(), m.getParameterTypes());
         return ReflectUtils.invoke(source, method, args);
       } catch (Throwable e) {
         throw new MqttPahoClientException(CatchUtils.findRoot(e));
