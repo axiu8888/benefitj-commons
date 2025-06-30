@@ -28,7 +28,7 @@ public @interface JavaStructField {
 
   /**
    * 如果是数组，可以指定数组长度
-   * 当配合 {@link this#size()}
+   * 当配合 {@link #size()}
    */
   int arrayLength() default 0;
 
