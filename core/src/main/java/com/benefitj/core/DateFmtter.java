@@ -515,7 +515,7 @@ public class DateFmtter {
       Date date = parseOrThrows(dateStr, srcPattern);
       return fmt(date, destPattern);
     } catch (ParseException e) {
-      throw CatchUtils.throwing(e, IllegalStateException.class);
+      throw CatchUtils.throwing(e, RuntimeException.class);
     }
   }
 

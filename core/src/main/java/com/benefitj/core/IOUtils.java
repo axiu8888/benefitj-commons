@@ -1184,6 +1184,15 @@ public class IOUtils {
   }
 
   /**
+   * 获取文件后缀
+   * @param filename 文件名
+   * @return 返回后缀
+   */
+  public static String getFileSuffix(String filename) {
+    return filename.lastIndexOf(".") >= 0 ? filename.substring(filename.lastIndexOf(".") + 1) : "";
+  }
+
+  /**
    * 是否为文件
    *
    * @param f 文件
@@ -1216,19 +1225,18 @@ public class IOUtils {
   /**
    * 清空缓存区
    */
-  public static void flush(OutputStream out) {
+  public static void flush(Flushable target) {
     try {
-      out.flush();
+      target.flush();
     } catch (IOException e) {/*^_^*/}
   }
 
   /**
-   * 清空缓存区
+   * 刷新缓存，并关闭
    */
-  public static void flush(Writer out) {
-    try {
-      out.flush();
-    } catch (IOException e) {/*^_^*/}
+  public static void flushAndClose(Object target) {
+    if (target instanceof Flushable) flush((Flushable) target);
+    if (target instanceof AutoCloseable) closeQuietly((AutoCloseable) target);
   }
 
   /**

@@ -41,6 +41,8 @@ public class CatchUtils {
   public static RuntimeException throwing(Throwable e, Class<?> type) {
     Throwable root = findRoot(e);
     return root.getClass().isAssignableFrom(type)
+        || e instanceof IllegalStateException//非法状态异常直接忽略
+        || e instanceof NullPointerException//空指针需要直接抛出
         ? (RuntimeException) root
         : (RuntimeException) Instantiator.get().create(type, root);
   }
@@ -49,7 +51,7 @@ public class CatchUtils {
    * try{} catch(e){}
    */
   public static <T> T tryThrow(Callable<T> call) {
-    return tryThrow(call, IllegalStateException.class);
+    return tryThrow(call, RuntimeException.class);
   }
 
   /**
@@ -78,7 +80,7 @@ public class CatchUtils {
    * try{} catch(e){}
    */
   public static void tryThrow(IRunnable r) {
-    tryThrow(r, IllegalStateException.class);
+    tryThrow(r, RuntimeException.class);
   }
 
   /**
