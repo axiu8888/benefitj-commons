@@ -4,6 +4,8 @@ import com.benefitj.core.functions.IBiConsumer;
 
 import javax.annotation.Nullable;
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -24,6 +26,45 @@ public class IOUtils {
   public static final long GB = 1024L * MB;
   public static final long TB = 1024L * GB;
 
+
+  /**
+   * 取小数点后几位
+   *
+   * @param v 数值
+   * @return 返回对应的MB
+   */
+  public static String fmtSize(long v) {
+    return fmtSize(v, 3, RoundingMode.HALF_UP);
+  }
+
+  /**
+   * 取小数点后几位
+   *
+   * @param v     数值
+   * @param scale 保留的小数点位数
+   * @param mode  取整模式，默认为四舍五入
+   * @return 返回对应的MB
+   */
+  public static String fmtSize(long v, int scale, RoundingMode mode) {
+    if (v >= TB) return ofTB(v, scale, mode) + "TB";
+    else if (v >= GB) return ofGB(v, scale, mode) + "GB";
+    else if (v >= MB) return ofMB(v, scale, mode) + "MB";
+    else if (v >= KB) return ofKB(v, scale, mode) + "KB";
+    else return v + "B";
+  }
+
+  /**
+   * 取小数点后几位
+   *
+   * @param v     数值
+   * @param scale 保留的小数点位数
+   * @param mode  取整模式，默认为四舍五入
+   * @return 返回对应的MB
+   */
+  public static double scale(double v, int scale, RoundingMode mode) {
+    return new BigDecimal(v).setScale(scale, mode).doubleValue();
+  }
+
   /**
    * 计算KB大小
    *
@@ -31,7 +72,19 @@ public class IOUtils {
    * @return 返回对应的KB
    */
   public static double ofKB(long len) {
-    return (len * 1.0) / KB;
+    return ofKB(len, 3, RoundingMode.HALF_UP);
+  }
+
+  /**
+   * 计算KB大小
+   *
+   * @param len   长度
+   * @param scale 保留的小数点位数
+   * @param mode  取整模式，默认为四舍五入
+   * @return 返回对应的KB
+   */
+  public static double ofKB(long len, int scale, RoundingMode mode) {
+    return scale(len * 1.0 / KB, scale, mode);
   }
 
   /**
@@ -41,7 +94,19 @@ public class IOUtils {
    * @return 返回对应的MB
    */
   public static double ofMB(long len) {
-    return (len * 1.0) / MB;
+    return ofMB(len, 3, RoundingMode.HALF_UP);
+  }
+
+  /**
+   * 计算MB大小
+   *
+   * @param len   长度
+   * @param scale 保留的小数点位数
+   * @param mode  取整模式，默认为四舍五入
+   * @return 返回对应的MB
+   */
+  public static double ofMB(long len, int scale, RoundingMode mode) {
+    return scale(len * 1.0 / MB, scale, mode);
   }
 
   /**
@@ -51,7 +116,19 @@ public class IOUtils {
    * @return 返回对应的GB
    */
   public static double ofGB(long len) {
-    return (len * 1.0) / GB;
+    return ofGB(len, 3, RoundingMode.HALF_UP);
+  }
+
+  /**
+   * 计算GB大小
+   *
+   * @param len   长度
+   * @param scale 保留的小数点位数
+   * @param mode  取整模式，默认为四舍五入
+   * @return 返回对应的GB
+   */
+  public static double ofGB(long len, int scale, RoundingMode mode) {
+    return scale(len * 1.0 / GB, scale, mode);
   }
 
   /**
@@ -61,7 +138,19 @@ public class IOUtils {
    * @return 返回对应的TB
    */
   public static double ofTB(long len) {
-    return (len * 1.0) / TB;
+    return ofTB(len, 3, RoundingMode.HALF_UP);
+  }
+
+  /**
+   * 计算TB大小
+   *
+   * @param len   长度
+   * @param scale 保留的小数点位数
+   * @param mode  取整模式，默认为四舍五入
+   * @return 返回对应的TB
+   */
+  public static double ofTB(long len, int scale, RoundingMode mode) {
+    return scale(len * 1.0 / TB, scale, mode);
   }
 
   /**
