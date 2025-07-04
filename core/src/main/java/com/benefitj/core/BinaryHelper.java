@@ -1,5 +1,6 @@
 package com.benefitj.core;
 
+import java.lang.reflect.Array;
 import java.nio.ByteOrder;
 
 /**
@@ -21,6 +22,9 @@ public class BinaryHelper {
         ? BinaryHelper.LITTLE_ENDIAN
         : BinaryHelper.BIG_ENDIAN;
   }
+
+
+  public static final byte[] EMPTY_BYTES = new byte[0];
 
   /**
    * 16进制和2进制转换
@@ -1080,6 +1084,44 @@ public class BinaryHelper {
       array[i] = bytesToLong(copy.copy(data, start + i * size, size, true), signed);
     }
     return array;
+  }
+
+  /**
+   * 数组转换为字节数组
+   *
+   * @param array   数组
+   * @param bitSize 比特位数 8/16/32/64
+   * @return 返回转换后的数组
+   */
+  public byte[] arrayToBytes(Object array, int bitSize) {
+    return arrayToBytes(array, 0, Array.getLength(array), bitSize);
+  }
+
+  /**
+   * 数组转换为字节数组
+   *
+   * @param array   数组
+   * @param start   开始的位置
+   * @param len     长度
+   * @param bitSize 比特位数 8/16/32/64
+   * @return 返回转换后的数组
+   */
+  public byte[] arrayToBytes(Object array, int start, int len, int bitSize) {
+    if (array == null) throw new IllegalArgumentException("数组不能为null");
+    if (array.getClass().isArray()) throw new IllegalArgumentException("传入的参数不是数组: " + array.getClass());
+    if (Array.getLength(array) <= 0) return EMPTY_BYTES;
+
+    NumberType type = NumberType.of((Number) Array.get(array, 0));
+    if (type == null) throw new IllegalArgumentException("不支持的数组类型: " + array.getClass());
+    //心电波形数据 1~50
+    int byteCount = Math.max(1, bitSize / 8);
+    byte[] buf = getCache(len * byteCount);
+    for (int i = 0, j = 0; i < len; i++, j += byteCount) {
+      Number v = (Number) Array.get(array, start + i);
+      byte[] bytes = type.toBytes(v, getOrder());
+      System.arraycopy(bytes, 0, buf, j, byteCount);
+    }
+    return buf;
   }
 
   private boolean isNotEmpty(String s) {

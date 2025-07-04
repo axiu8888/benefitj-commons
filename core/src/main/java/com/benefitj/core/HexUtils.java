@@ -687,4 +687,28 @@ public class HexUtils {
     return BinaryHelper.get(order).parseLongArray(data, start, len, size, signed);
   }
 
+  /**
+   * 数组转换为字节数组
+   *
+   * @param array   数组
+   * @param bitSize 比特位数 8/16/32/64
+   * @return 返回转换后的数组
+   */
+  public static byte[] arrayToBytes(Object array, int bitSize) {
+    return getHelper().arrayToBytes(array, bitSize);
+  }
+
+  /**
+   * 数组转换为字节数组
+   *
+   * @param array   数组
+   * @param start   开始的位置
+   * @param len     长度
+   * @param bitSize 比特位数 8/16/32/64
+   * @return 返回转换后的数组
+   */
+  public static byte[] arrayToBytes(Object array, int start, int len, int bitSize) {
+    return getHelper().arrayToBytes(array, start, len, bitSize);
+  }
+
 }
