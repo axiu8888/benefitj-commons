@@ -1119,7 +1119,8 @@ public class BinaryHelper {
     for (int i = 0, j = 0; i < len; i++, j += byteCount) {
       Number v = (Number) Array.get(array, start + i);
       byte[] bytes = type.toBytes(v, getOrder());
-      System.arraycopy(bytes, 0, buf, j, byteCount);
+      int srcPos = getOrder() == ByteOrder.BIG_ENDIAN ? Math.min(bytes.length, byteCount) : 0;//大端字节序需要拷贝后面的字节
+      System.arraycopy(bytes, srcPos, buf, j, byteCount);
     }
     return buf;
   }
