@@ -1018,7 +1018,7 @@ public class BinaryHelper {
     for (int i = 0; i < len; i++) {
       if (src[start + i] == find[0]) {
         int index = start + i;
-        for (int j = 0; j < find.length; j++) {
+        for (int j = 0; j < find.length - 1; j++) {
           if (src[start + i + j] != find[j]) {
             index = -1;
             break;
