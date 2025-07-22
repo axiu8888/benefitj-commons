@@ -124,7 +124,7 @@ public class ConfUtils {
           if (StringUtils.isNotBlank(line) && !(line.startsWith("#") || line.startsWith(";"))) {
             int commentAt = line.indexOf('#');
             line = commentAt >= 0 ? line.substring(0, commentAt).trim() : line;
-            if (ctxMultiLines.isEmpty()) {
+            if (ctxMultiLines.length() <= 0) {
               if (line.startsWith("[") && line.endsWith("]")) {
                 // 新的上下文
                 String ctxName = line.substring(1, line.length() - 1).trim();

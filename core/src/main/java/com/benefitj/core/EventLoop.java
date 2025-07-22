@@ -2,10 +2,13 @@ package com.benefitj.core;
 
 import com.benefitj.core.concurrent.IFuture;
 import com.benefitj.core.concurrent.IScheduledFuture;
+import com.benefitj.core.cron.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -103,6 +106,57 @@ public interface EventLoop extends ExecutorService, ScheduledExecutorService {
   @Override
   default void execute(Runnable command) {
     executor().execute(wrap(command));
+  }
+
+
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+  /* ******************************************************************************************************* */
+
+  /**
+   * 执行cron调度
+   *
+   * @param cronExpression cron表达式
+   * @param task           任务
+   * @return 返回调度
+   */
+  default ScheduledFuture<?> scheduleCron(String cronExpression, Runnable task) {
+    try {
+      return scheduleCron(new CronExpression(cronExpression), task, false);
+    } catch (ParseException e) {
+      throw new IllegalArgumentException("无效的Cron表达式: " + cronExpression, e);
+    }
+  }
+
+  /**
+   * 执行cron调度
+   *
+   * @param cron     cron表达式
+   * @param task     任务
+   * @param startNow 是否立即执行一次
+   * @return 返回调度
+   */
+  default ScheduledFuture<?> scheduleCron(final CronExpression cron, Runnable task, boolean startNow) {
+    final AtomicInteger index = new AtomicInteger(0);
+    return schedule(new Runnable() {
+      @Override
+      public void run() {
+        final Date afterTime = new Date();
+        Date nextTime = cron.getNextValidTimeAfter(afterTime);
+        if (nextTime != null) {
+          long delay = nextTime.getTime() - afterTime.getTime();
+          schedule(this, delay, TimeUnit.MILLISECONDS);
+        }
+        try {
+          if (index.incrementAndGet() == 1 && !startNow) return;//首次不调用
+          task.run();
+        } catch (Throwable e) {
+          Global.log.error(e.getMessage(), e);
+        }
+      }
+    }, 0, TimeUnit.MILLISECONDS);
   }
 
   /* ******************************************************************************************************* */

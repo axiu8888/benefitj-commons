@@ -1,5 +1,6 @@
 package com.benefitj.core;
 
+import com.benefitj.core.cron.CronExpression;
 import com.cronutils.model.Cron;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
@@ -10,8 +11,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.text.ParseException;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,6 +48,36 @@ class EventLoopTest {
     EventLoop.sleepSecond(Integer.MAX_VALUE);
 
   }
+
+
+
+  @Test
+  void testCron2() {
+    String cron = "0 15 10 * * ?"; // 每天10:15执行
+    try {
+      CronExpression cronExpression = new CronExpression(cron);
+
+      // 计算下次执行时间
+      Date now = new Date();
+      Date nextTime = cronExpression.getNextValidTimeAfter(now);
+      log.info("下次执行时间: {}", DateFmtter.fmtS(nextTime));
+
+      EventLoop.io().scheduleCron("0/1 * * * * ?", new Runnable() {
+        @Override
+        public void run() {
+          log.info("{} exec cron: {}", Integer.toHexString(this.hashCode()), DateFmtter.fmtNowS());
+        }
+      });
+
+    } catch (ParseException e) {
+      log.warn("无效的Cron表达式: {}", e.getMessage());
+    }
+
+    EventLoop.sleepSecond(10000);
+
+  }
+
+
 
   public static class CronRun implements Runnable {
 
