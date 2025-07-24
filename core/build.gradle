@@ -11,6 +11,7 @@ dependencies {
       // spring
       'org.springframework:spring-core:5.3.5',
       'com.cronutils:cron-utils:9.2.1',
+      //'org.quartz-scheduler:quartz:2.3.2',
   ].forEach {
     compileOnly(it)
     testImplementation(it)

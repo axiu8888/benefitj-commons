@@ -9,10 +9,15 @@ import com.benefitj.vertx.mqtt.client.VertxMqttClient;
 import com.benefitj.vertx.mqtt.client.VertxMqttMessageDispatcher;
 import com.benefitj.vertx.mqtt.server.MqttServerHolder;
 import com.benefitj.vertx.tcp.client.VertxTcpClient;
-import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.*;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.proxy.handler.ProxyHandler;
+import io.vertx.httpproxy.HttpProxy;
+import io.vertx.httpproxy.ProxyOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +62,7 @@ class VertxHolderTest {
 
     for (int i = 0; i < 1000; i++) {
       // 发布
-      if(client.isConnected()) client.publish("/device/123456", i + " test...");
+      if (client.isConnected()) client.publish("/device/123456", i + " test...");
       EventLoop.sleepSecond(1);
     }
 
@@ -105,54 +110,68 @@ class VertxHolderTest {
   void createHttpServer() {
 //    VertxHolder.deploy(new HttpProxyVerticle());
 
+
+    Vertx vertx = VertxHolder.getVertx();
+
     HttpServerOptions serverOptions = new HttpServerOptions()
-        .setPort(8080)
+        .setPort(80)
         .setReusePort(true)
         .setMaxHeaderSize(10 * (1024 << 10))//最大10兆
         .setCompressionLevel(1)
         .setCompressionSupported(true)
         .setReceiveBufferSize(4 * (1024 << 10));
-    HttpServer server = VertxHolder.createHttpServer(serverOptions)
-        .connectionHandler(new Handler<HttpConnection>() {
-          @Override
-          public void handle(HttpConnection event) {
-          }
-        })
-        .exceptionHandler(new Handler<Throwable>() {
-          @Override
-          public void handle(Throwable e) {
-            log.error("throw: " + e.getMessage(), e);
-          }
-        })
-        .requestHandler(new Handler<HttpServerRequest>() {
-          @Override
-          public void handle(HttpServerRequest serverRequest) {
-            HttpServerResponse serverResponse = serverRequest.response();
-          }
-        })
-        .webSocketHandshakeHandler(new Handler<ServerWebSocketHandshake>() {
-          @Override
-          public void handle(ServerWebSocketHandshake event) {
-          }
-        })
-        .invalidRequestHandler(new Handler<HttpServerRequest>() {
-          @Override
-          public void handle(HttpServerRequest event) {
 
-          }
-        })
-        //
-        ;
-    server.listen().onComplete(res -> {
-      if (res.succeeded()) {
-        log.info("start http server success, port: {}", res.result().actualPort());
-      } else {
-        log.info("start http server fail, port: {}, cause: {}", res.result().actualPort(), res.cause().getMessage());
-      }
+    Router router = Router.router(vertx);
+    // 设置路由处理
+    router.get("/api/ping").handler(ctx -> {
+      HttpServerRequest request = ctx.request();
+      ctx.response()
+          .putHeader("content-type", "text/plain")
+          .end("Pong from Vert.x on Android!")
+          .onComplete(result -> {
+            log.info("{} -> {}, success: {}", request.method(), request.absoluteURI(), result.succeeded());
+          });
     });
 
 
-    EventLoop.sleepSecond(1000);
+    // 1. 创建代理处理器
+    HttpClientAgent clientAgent = vertx.httpClientBuilder()
+        .with(new PoolOptions())
+        .with(new HttpClientOptions())
+        .build();
+    HttpProxy proxy = HttpProxy
+        .reverseProxy(new ProxyOptions().setSupportWebSocket(true), clientAgent)
+        .origin(80, "192.168.1.198");
+    // ✅ /support/api/* → 代理转发
+    // 2. 注册代理路由 - 匹配 /support/api 开头的请求
+    router.route("/support/api/*").handler(ProxyHandler.create(proxy));
+
+    String staticDir = "E:/.tmp/cache/support/web-front/support";
+    router.routeWithRegex("/support(?!/api).*").handler(ctx -> {
+      ctx.response().sendFile(staticDir + "/index.html");
+    });
+    // 配置静态资源处理器，指向复制后的目录
+    // 注意：这里我们设置根目录为内部存储的www目录，因此可以通过/support/...访问
+    StaticHandler staticHandler = StaticHandler.create(staticDir);
+    //staticHandler.setCachingEnabled(false); // 开发时禁用缓存
+    // 将静态资源处理器挂载到路由上，比如所有以/support开头的请求
+    router.route("/support/*").handler(staticHandler);
+
+
+    HttpServer server = VertxHolder.createHttpServer(serverOptions);
+    server
+        .requestHandler(router)
+        .listen(serverOptions.getPort())
+        .onComplete(http -> {
+          if (http.succeeded()) {
+            log.info("start http server success, port: {}", http.result().actualPort());
+          } else {
+            log.warn("start http server fail, port: {}, cause: {}", http.result().actualPort(), http.cause().getMessage());
+          }
+        });
+
+    EventLoop.sleepSecond(Integer.MAX_VALUE);
   }
+
 
 }

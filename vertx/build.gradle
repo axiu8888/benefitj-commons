@@ -10,7 +10,8 @@ dependencies {
       "io.vertx:vertx-core:${vertxVersion}",
       "io.vertx:vertx-codegen:${vertxVersion}",
       "io.vertx:vertx-web:${vertxVersion}",
-      "io.vertx:vertx-web-client:${vertxVersion}",
+      //"io.vertx:vertx-web-client:${vertxVersion}",
+      "io.vertx:vertx-web-proxy:${vertxVersion}",
       "io.vertx:vertx-mqtt:${vertxVersion}",
   ].forEach {
     api(it)
