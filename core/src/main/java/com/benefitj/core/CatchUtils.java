@@ -4,6 +4,10 @@ import com.benefitj.core.executable.Instantiator;
 import com.benefitj.core.functions.IRunnable;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
@@ -148,6 +152,28 @@ public class CatchUtils {
     } catch (Throwable e) {
       return mappedFunc.apply(e);
     }
+  }
+
+  public static String getStackTraceString(@Nullable Throwable tr) {
+    if (tr == null) {
+      return "";
+    }
+
+    // This is to reduce the amount of log spew that apps do in the non-error
+    // condition of the network being unavailable.
+    Throwable t = tr;
+    while (t != null) {
+      if (t instanceof UnknownHostException) {
+        return "";
+      }
+      t = t.getCause();
+    }
+
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    tr.printStackTrace(pw);
+    pw.flush();
+    return sw.toString();
   }
 
 }
