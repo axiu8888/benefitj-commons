@@ -18,5 +18,12 @@ dependencies {
     testImplementation(it)
   }
 
+  [
+      // spring
+      'org.springframework:spring-core:5.3.5',
+  ].forEach {
+    testImplementation(it)
+  }
+
 }
 

@@ -3,6 +3,7 @@ package com.benefitj.vertx;
 import com.benefitj.core.AutoConnectTimer;
 import com.benefitj.core.DateFmtter;
 import com.benefitj.core.EventLoop;
+import com.benefitj.core.file.JarFileCopy;
 import com.benefitj.core.log.Slf4jLevel;
 import com.benefitj.core.log.Slf4jLogger;
 import com.benefitj.vertx.mqtt.client.VertxMqttClient;
@@ -14,19 +15,27 @@ import io.vertx.core.http.*;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.FileSystemAccess;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.proxy.handler.ProxyHandler;
 import io.vertx.httpproxy.HttpProxy;
 import io.vertx.httpproxy.ProxyOptions;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ClassPathUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.commons.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -107,7 +116,7 @@ class VertxHolderTest {
   }
 
   @Test
-  void createHttpServer() {
+  void createHttpServer() throws IOException {
 //    VertxHolder.deploy(new HttpProxyVerticle());
 
 
@@ -144,19 +153,37 @@ class VertxHolderTest {
         .origin(80, "192.168.1.198");
     // ✅ /support/api/* → 代理转发
     // 2. 注册代理路由 - 匹配 /support/api 开头的请求
-    router.route("/support/api/*").handler(ProxyHandler.create(proxy));
+    router.route("/support/api/*").handler(ProxyHandler.create(proxy));    // 2. 注册代理路由 - 匹配 /support/api 开头的请求
+    router.route("/support/mqtt/*").handler(ProxyHandler.create(proxy));
 
-    String staticDir = "E:/.tmp/cache/support/web-front/support";
-    router.routeWithRegex("/support(?!/api).*").handler(ctx -> {
-      ctx.response().sendFile(staticDir + "/index.html");
-    });
+
+    ClassPathResource resource = new ClassPathResource("tmp/support");
+    //String staticDir = "E:/.tmp/cache/support/web-front/support";
+    String staticDir = resource.getFile().getPath();
+    log.warn("staticDir -->: {}", staticDir);
     // 配置静态资源处理器，指向复制后的目录
     // 注意：这里我们设置根目录为内部存储的www目录，因此可以通过/support/...访问
-    StaticHandler staticHandler = StaticHandler.create(staticDir);
-    //staticHandler.setCachingEnabled(false); // 开发时禁用缓存
+    StaticHandler staticHandler = StaticHandler.create(FileSystemAccess.ROOT, staticDir)
+        .setFilesReadOnly(true)
+        .setIncludeHidden(true)
+        .setIndexPage("/support/index.html");
+    List<String> ignoredSuffixList = Arrays.stream(
+        "|.js.css.png.jpg.jpeg.ico.gif.pdf.txt.svg.woff.ttf.woff2.eot.map".split("\\.")
+    ).map(v -> "." + v).collect(Collectors.toList());
     // 将静态资源处理器挂载到路由上，比如所有以/support开头的请求
-    router.route("/support/*").handler(staticHandler);
-
+    router.route("/support/*")
+        .handler(ctx -> {
+          String path = ctx.normalizedPath();
+          String suffix = path.lastIndexOf(".") > 0 ? path.substring(path.lastIndexOf(".")) : "";
+          log.info("[static 222] --->: {}, suffix: {}", ctx.normalizedPath(), suffix);
+          if (StringUtils.isNotBlank(suffix) && ignoredSuffixList.stream().anyMatch(path::endsWith)) {
+            staticHandler.handle(ctx);// 交给 StaticHandler
+          } else {
+            ctx.response()
+                .putHeader("Content-Type", "text/html")
+                .sendFile(staticDir + "/index.html");
+          }
+        });
 
     HttpServer server = VertxHolder.createHttpServer(serverOptions);
     server
