@@ -154,7 +154,7 @@ public class CatchUtils {
     }
   }
 
-  public static String getStackTraceString(@Nullable Throwable tr) {
+  public static String getLogStackTrace(@Nullable Throwable tr) {
     if (tr == null) {
       return "";
     }

@@ -2,6 +2,7 @@ package com.benefitj.core;
 
 import com.benefitj.core.cron.CronExpression;
 import com.benefitj.core.cron.CronExpressionGenerator;
+import com.benefitj.core.cron.CronTimeUnit;
 import com.cronutils.model.Cron;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
@@ -41,12 +42,9 @@ class EventLoopTest {
       log.info("execute at: {}", DateFmtter.fmtNowS());
     };
 
-
     EventLoop loop = EventLoop.io();
-
     final CronRun run = new CronRun(cronExpress, loop, myTask) ;
     run.run();
-
     EventLoop.sleepSecond(Integer.MAX_VALUE);
   }
 
@@ -57,7 +55,6 @@ class EventLoopTest {
     String cron = "0 15 10 * * ?"; // 每天10:15执行
     try {
       CronExpression cronExpression = new CronExpression(cron);
-
       // 计算下次执行时间
       Date now = new Date();
       Date nextTime = cronExpression.getNextValidTimeAfter(now);
@@ -80,34 +77,34 @@ class EventLoopTest {
   @Test
   void testCronGenerate() {
     // 示例1：每天8:30执行
-    log.info("【 0 30 8 * * ? * 】 ===>: {}", CronExpressionGenerator.generateCron(Map.of(
-        "hour", "8",
-        "minute", "30"
+    log.info("【 0 30 8 * * ? * 】 ===>: {}", CronExpressionGenerator.generate(Map.of(
+        CronTimeUnit.hour, "8",
+        CronTimeUnit.minute, "30"
     ))); // 0 30 8 * * ? *
 
     // 示例2：每周一9:00执行
-    log.info("【 0 0 9 ? * 2 * 】 ===>: {}", CronExpressionGenerator.generateCron(Map.of(
-        "dayOfWeek", "MON", // 或"2"或"周一"
-        "hour", "9"
+    log.info("【 0 0 9 ? * 2 * 】 ===>: {}", CronExpressionGenerator.generate(Map.of(
+        CronTimeUnit.dayOfWeek, "MON", // 或"2"或"周一"
+        CronTimeUnit.hour, "9"
     ))); // 0 0 9 ? * 2 *
 
     // 示例3：每月最后一天23:59执行
-    log.info("【 0 59 23 L * ? * 】 ===>: {}", CronExpressionGenerator.generateCron(Map.of(
-        "special", "last",
-        "hour", "23",
-        "minute", "59"
+    log.info("【 0 59 23 L * ? * 】 ===>: {}", CronExpressionGenerator.generate(Map.of(
+        CronTimeUnit.special, "last",
+        CronTimeUnit.hour, "23",
+        CronTimeUnit.minute, "59"
     ))); // 0 59 23 L * ? *
 
     // 示例4：2025年每月第一个工作日12:00执行
-    log.info("【 0 0 12 W * ? 2025 】 ===>: {}", CronExpressionGenerator.generateCron(Map.of(
-        "special", "workday",
-        "hour", "12",
-        "year", "2025"
+    log.info("【 0 0 12 W * ? 2025 】 ===>: {}", CronExpressionGenerator.generate(Map.of(
+        CronTimeUnit.special, "workday",
+        CronTimeUnit.hour, "12",
+        CronTimeUnit.year, "2025"
     ))); // 0 0 12 W * ? 2025
 
     // 示例5：每5分钟执行一次
-    log.info("【 0 0/5 * * * ? * 】 ===>: {}", CronExpressionGenerator.generateCron(Map.of(
-        "minute", "0/5"
+    log.info("【 0 0/5 * * * ? * 】 ===>: {}", CronExpressionGenerator.generate(Map.of(
+        CronTimeUnit.minute, "0/5"
     ))); // 0 0/5 * * * ? *
   }
 

@@ -22,15 +22,15 @@ public class CronExpressionGenerator {
    *               - "special": 特殊标识 ("last"=最后一天, "workday"=工作日, "lastWorkday"=最后一个工作日)
    * @return 标准Cron表达式
    */
-  public static String generateCron(Map<String, String> params) {
-    String second = params.getOrDefault("second", "0");
-    String minute = params.getOrDefault("minute", "0");
-    String hour = params.getOrDefault("hour", "0");
-    String day = params.getOrDefault("day", "*");
-    String month = params.getOrDefault("month", "*");
-    String year = params.getOrDefault("year", "*");
-    String dayOfWeek = params.getOrDefault("dayOfWeek", "?");
-    String special = params.getOrDefault("special", "");
+  public static String generate(Map<CronTimeUnit, String> params) {
+    String second = params.getOrDefault(CronTimeUnit.second, "0");
+    String minute = params.getOrDefault(CronTimeUnit.minute, "0");
+    String hour = params.getOrDefault(CronTimeUnit.hour, "0");
+    String day = params.getOrDefault(CronTimeUnit.day, "*");
+    String month = params.getOrDefault(CronTimeUnit.month, "*");
+    String year = params.getOrDefault(CronTimeUnit.year, "*");
+    String dayOfWeek = params.getOrDefault(CronTimeUnit.dayOfWeek, "?");
+    String special = params.getOrDefault(CronTimeUnit.special, "");
 
     // 处理特殊日期标识
     switch (special.toLowerCase()) {

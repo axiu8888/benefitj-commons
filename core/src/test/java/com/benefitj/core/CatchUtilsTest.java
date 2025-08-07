@@ -19,7 +19,7 @@ class CatchUtilsTest {
 
   @Test
   void test_getStackTraceString() {
-    String msg = CatchUtils.getStackTraceString(new Exception("呵呵"));
+    String msg = CatchUtils.getLogStackTrace(new Exception("呵呵"));
     log.info(msg);
   }
 
