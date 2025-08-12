@@ -4,6 +4,7 @@ import com.benefitj.core.CatchUtils;
 import com.benefitj.core.IOUtils;
 import com.benefitj.core.file.IWriter;
 import com.benefitj.core.functions.IBiConsumer;
+import com.benefitj.core.functions.Pair;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,9 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -105,6 +104,18 @@ public class BodyUtils {
    */
   public static MultipartBody formBody(Map<String, String> parameters, File file, String name) {
     return formBody(parameters, new File[]{file}, name);
+  }
+
+  /**
+   * 表单请求体
+   *
+   * @param parameters 参数
+   * @param file       文件
+   * @param name       文件对应的参数名
+   * @return 返回请求体
+   */
+  public static MultipartBody formBody(List<Pair<String, String>> parameters, File file, String name) {
+    return formBody(new HashMap<String, String>(){{parameters.forEach(p -> put(p.getKey(), p.getValue()));}}, new File[]{file}, name);
   }
 
   /**
