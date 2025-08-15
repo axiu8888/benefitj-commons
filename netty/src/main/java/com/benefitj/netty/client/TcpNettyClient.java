@@ -26,10 +26,6 @@ import java.util.Map;
 public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
 
   /**
-   * 远程服务器
-   */
-  private InetSocketAddress remoteAddress;
-  /**
    * 是否自动重连
    */
   private boolean autoReconnect = false;
@@ -46,21 +42,12 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   }
 
   public TcpNettyClient(InetSocketAddress remoteAddress) {
-    this.remoteAddress = remoteAddress;
+    this(remoteAddress, false);
   }
 
   public TcpNettyClient(InetSocketAddress remoteAddress, boolean autoReconnect) {
-    this.remoteAddress = remoteAddress;
+    this.remoteAddress(remoteAddress);
     this.autoReconnect = autoReconnect;
-  }
-
-  public InetSocketAddress getRemoteAddress() {
-    return remoteAddress;
-  }
-
-  public TcpNettyClient setRemoteAddress(InetSocketAddress remoteAddress) {
-    this.remoteAddress = remoteAddress;
-    return _self_();
   }
 
   @Override
@@ -172,10 +159,10 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
   }
 
   ChannelFuture connect(Bootstrap bootstrap, GenericFutureListener<? extends Future<Void>> ...listeners) {
-    if (NetworkUtils.isConnectable(getRemoteAddress(), 500)) {
+    if (NetworkUtils.isConnectable(remoteAddress(), 500)) {
       try {
         autoConnectTimer.setAutoConnect(autoReconnect);
-        ChannelFuture future = bootstrap.connect(getRemoteAddress());
+        ChannelFuture future = bootstrap.connect(remoteAddress());
         future.addListener(f -> autoConnectTimer.start(connector)).sync().addListeners(listeners);
         if (future.isSuccess()) {
           setMainChannel(future.channel());

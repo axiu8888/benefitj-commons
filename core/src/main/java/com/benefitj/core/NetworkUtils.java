@@ -56,7 +56,7 @@ public class NetworkUtils {
    * @param timeout 超时时长
    * @return 是否可连接
    */
-  public static boolean isConnectable(InetSocketAddress address, int timeout) {
+  public static boolean isConnectable(SocketAddress address, int timeout) {
     try (final Socket sock = new Socket()) {
       sock.connect(address, timeout);
       return sock.isConnected();
