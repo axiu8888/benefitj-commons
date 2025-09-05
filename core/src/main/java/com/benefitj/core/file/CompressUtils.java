@@ -5,9 +5,11 @@ import com.benefitj.core.IOUtils;
 
 import javax.annotation.Nullable;
 import java.io.*;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import java.util.zip.*;
 
 /**
@@ -15,6 +17,58 @@ import java.util.zip.*;
  */
 public class CompressUtils {
 
+  public static final List<Charset> CHARSETS = Collections.unmodifiableList(Arrays.asList(
+      Charset.defaultCharset(),
+      StandardCharsets.UTF_8,
+      Charset.forName("GBK"),
+      StandardCharsets.ISO_8859_1,
+      StandardCharsets.US_ASCII,
+      StandardCharsets.UTF_16
+  ));
+
+  /**
+   * 检查是否支持要求字符集
+   *
+   * @param zip 压缩文件
+   * @param charset 字符集
+   * @return 返回是否支持 true/false
+   */
+  public static boolean isCharset(File zip, Charset charset) {
+    try (final ZipInputStream input = new ZipInputStream(new FileInputStream(zip), charset);) {
+      ZipEntry entry;
+      while ((entry = input.getNextEntry()) != null) {
+        //ignore entry
+      }
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
+   * 获取默认的字符集
+   *
+   * @param zip 压缩文件
+   * @return 返回默认字符集
+   */
+  public static Charset getDefaultCharset(File zip) {
+    for (Charset charset : CHARSETS) {
+      if (isCharset(zip, charset)) return charset;
+    }
+    return Charset.defaultCharset();
+  }
+
+  /**
+   * 获取支持的字符集
+   *
+   * @param zip 压缩文件
+   * @return 返回字符集列表
+   */
+  public static List<Charset> getCharsets(File zip) {
+    return CHARSETS.stream()
+        .filter(charset -> isCharset(zip, charset))
+        .collect(Collectors.toList());
+  }
   /**
    * 压缩文件或目录
    *
@@ -137,7 +191,8 @@ public class CompressUtils {
    * @param consumer 消费者
    */
   public static void zipIterator(File zip, BiConsumer<ZipInputStream, ZipEntry> consumer) {
-    try (final ZipInputStream input = new ZipInputStream(new FileInputStream(zip));) {
+    Charset charset = getDefaultCharset(zip);
+    try (final ZipInputStream input = new ZipInputStream(new FileInputStream(zip), charset);) {
       ZipEntry entry;
       while ((entry = input.getNextEntry()) != null) {
         consumer.accept(input, entry);
