@@ -1,7 +1,10 @@
 package com.benefitj.netty.server;
 
 import com.benefitj.core.EventLoop;
+import com.benefitj.core.HexUtils;
+import com.benefitj.core.PlaceHolder;
 import com.benefitj.netty.NettyFactory;
+import com.benefitj.netty.TcpServer;
 import com.benefitj.netty.handler.InboundHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -19,6 +22,28 @@ public class TcpNettyServerTest {
 
   @Before
   public void setUp() throws Exception {
+  }
+
+  @After
+  public void tearDown() throws Exception {
+  }
+
+  @Test
+  public void testTcpServer() {
+    TcpServer server = new TcpServer(7004)
+        .setChannelInitializer(ch -> {
+          ch.pipeline()
+              .addLast(InboundHandler.newByteBufHandler((handler, ctx, msg) -> {
+                byte[] data = handler.copy(msg);
+                System.err.println(PlaceHolder.get().format("data[{}] ===>: {}", data.length, HexUtils.bytesToHex(data)));
+              }));
+        })
+        .start(f -> log.info("tcp server start ...."));
+
+    EventLoop.sleep(10, TimeUnit.SECONDS);
+    server.stop(f -> log.info("tcp server stop ...."));
+    EventLoop.sleep(10, TimeUnit.SECONDS);
+
   }
 
   @Test
@@ -62,10 +87,6 @@ public class TcpNettyServerTest {
         .start(f -> log.info("start http server"));
     EventLoop.sleep(300, TimeUnit.SECONDS);
     server.stop(f -> log.info("stop http server, {}", EventLoop.getThreadName()));
-  }
-
-  @After
-  public void tearDown() throws Exception {
   }
 
 

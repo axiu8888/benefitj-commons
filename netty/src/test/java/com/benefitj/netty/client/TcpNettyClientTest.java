@@ -20,7 +20,7 @@ public class TcpNettyClientTest {
   @Test
   public void testTcpClientAutoReconnect() throws Exception {
     TcpNettyClient client = new TcpNettyClient()
-        .setRemoteAddress(new InetSocketAddress("127.0.0.1", 62014))
+        //.setRemoteAddress(new InetSocketAddress("127.0.0.1", 62014))
         .autoReconnect(true, Duration.ofSeconds(5))
         .setSoSndBuf(8 * (1024 << 10))
         .setSoRcvBuf(8 * (1024 << 10))
