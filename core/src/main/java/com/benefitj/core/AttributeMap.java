@@ -1,6 +1,7 @@
 package com.benefitj.core;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -205,6 +206,10 @@ public interface AttributeMap {
 
   static AttributeMap wrap(Map<String, Object> map) {
     return () -> map;
+  }
+
+  static AttributeMap newAttributeMap() {
+    return wrap(new ConcurrentHashMap<>());
   }
 
 }
