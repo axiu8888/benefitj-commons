@@ -4,6 +4,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
+import io.netty.util.ReferenceCountUtil;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * 处理的消息
@@ -96,6 +99,23 @@ public abstract class InboundHandler<I> extends SimpleCopyHandler<I> {
    */
   public static InboundHandler<DatagramPacket> newDatagramHandler(InboundConsumer<DatagramPacket> consumer) {
     return newHandler(DatagramPacket.class, consumer);
+  }
+
+  /**
+   * 将消息转换为 byte[]
+   */
+  public static InboundHandler<Object> msgToBytesHandler() {
+    return newHandler(Object.class, (handler, ctx, msg) -> {
+      if (msg instanceof ByteBuf) {
+        ctx.fireChannelRead(handler.copy((ByteBuf) msg));
+      } else if (msg instanceof DatagramPacket) {
+        ctx.fireChannelRead(handler.copy((DatagramPacket) msg));
+      } else if (msg instanceof CharSequence) {
+        ctx.fireChannelRead(msg.toString().getBytes(StandardCharsets.UTF_8));
+      } else {
+        ctx.fireChannelRead(ReferenceCountUtil.touch(msg));
+      }
+    });
   }
 
 }
