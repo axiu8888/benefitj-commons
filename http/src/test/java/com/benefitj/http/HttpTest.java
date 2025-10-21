@@ -18,7 +18,10 @@ import retrofit2.http.POST;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,6 +37,21 @@ class HttpTest {
 
   @AfterEach
   void tearDown() {
+  }
+
+  @Test
+  void test_che_upload() throws IOException {
+    File zip = new File("E:\\.tmp\\cache\\CHE\\11001310-2025_02_11-23_56_17.zip");
+    String url = "http://192.168.1.198/support/api/che/upload?patientId=21ba42c5345b44dc9d3d3e0edd132ce5";
+    Map<String, String> headers = new HashMap<String, String>(){{
+      put("x-access-token", "eyJhbGciOiJIUzUxMiJ9.eyJvcmdJZCI6IjhhYzE4ZGMwMTZmODQ2NGI4ZGZiMjIzZWQ4YTljZmFkIiwicm9vdE9yZ0lkIjoiZjYyMmNlN2M3YWEwNGY2Mjk2OWVhZWQ5MTViMGRkMGMiLCJpc0FkbWluIjpmYWxzZSwianRpIjoiMzRhNzkwZDM4MzZiNDUxMjg1ZTM2MzY2ZTZmMGYxNDEiLCJzdWIiOiI0NTZlNmMxNWUyNGE1NjcwYmUxMmZkMjA3YTkxOTU3NSIsImlzcyI6ImhzcmciLCJpYXQiOjE3NTU0OTkxMjUsImV4cCI6MTc1NjEwMzkyNX0.sLQYQg_8pttQQt6ywL_K0wbZdnkCX8kzaTrybxUWq00fE0fPjW9vP10eBoqR2tyEaOcSH7yQ9h05VLZc-eft9w");
+    }};
+    Response response = HttpHelper.get().post(url, headers, zip, "ches");
+    if(response.isSuccessful()) {
+      log.info("code: {}, msg: {}", response.code(), response.body().string());
+    } else {
+      log.warn("code: {}, error: {}", response.code(), response.message());
+    }
   }
 
   @Test

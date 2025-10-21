@@ -196,7 +196,7 @@ public class HttpHelper {
    * @return 返回响应
    */
   public Response post(String url, Map<String, String> headers, File file, String name) {
-    return post(url, BodyUtils.formBody(headers, file, name));
+    return post(url, BodyUtils.formBody(Collections.emptyMap(), file, name), headers);
   }
 
   /**

@@ -1,5 +1,9 @@
 rootProject.name = 'benefitj-commons'
 
+include(
+    ":commons"
+)
+
 /**
  * 常用工具的依赖
  */

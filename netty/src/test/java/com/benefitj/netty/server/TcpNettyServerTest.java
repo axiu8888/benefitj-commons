@@ -38,7 +38,7 @@ public class TcpNettyServerTest {
               .addLast(InboundHandler.newBytesHandler((handler, ctx, msg) -> {
                 byte[] data = msg;
                 log.info("data[{}] ===>: {}", data.length, HexUtils.bytesToHex(data));
-                ctx.writeAndFlush(data);
+                //ctx.writeAndFlush(data);
               }));
         })
         .start(f -> log.info("tcp server start ...."));

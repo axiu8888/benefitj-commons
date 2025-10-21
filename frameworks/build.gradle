@@ -31,8 +31,10 @@ dependencies {
       'commons-net:commons-net:3.11.1',
 
       // 图片处理
-      "com.benefitj.github:image4j:1.0.0-SNAPSHOT",
-      "com.benefitj.github:imgscalr:1.0.0-SNAPSHOT",
+      //"com.benefitj.github:image4j:1.0.0-SNAPSHOT",
+      //"com.benefitj.github:imgscalr:1.0.0-SNAPSHOT",
+      //"com.benefitj.github:image-filters:1.0.0-SNAPSHOT",
+      project(":commons")
 
   ].forEach {
     api(it)
