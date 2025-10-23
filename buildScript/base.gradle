@@ -199,6 +199,7 @@ dependencies {
   [
       "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
       "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}",
+      "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}",
       "org.springframework.boot:spring-boot-starter:${springbootVersion}",
   ].forEach {
     compileOnly(it)
