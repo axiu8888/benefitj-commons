@@ -805,7 +805,19 @@ public class IOUtils {
    * @return 返回读取的字符串
    */
   public static String readAsString(InputStream in, Charset charset) {
-    ByteArrayOutputStream baos = readFully(in);
+    return readAsString(in, charset, true);
+  }
+
+  /**
+   * 读取文件
+   *
+   * @param in      要读取的文件
+   * @param charset 编码类型
+   * @param close   是否关闭流
+   * @return 返回读取的字符串
+   */
+  public static String readAsString(InputStream in, Charset charset, boolean close) {
+    ByteArrayOutputStream baos = readFully(in, close);
     return new String(baos.toByteArray(), charset);
   }
 
