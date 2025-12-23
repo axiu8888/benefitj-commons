@@ -13,6 +13,10 @@ public class PlaceHolder {
     return single.get();
   }
 
+  public static String fmt(String template, Object... args) {
+    return get().format(template, args);
+  }
+
   /**
    * 格式化
    *

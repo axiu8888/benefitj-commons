@@ -35,23 +35,7 @@ class EventLoopTest {
   }
 
   @Test
-  void execCron() {
-//    final String cronExpress = "*/5 * * * * ?";
-    final String cronExpress = "*/1 * * * * ?";
-    final Runnable myTask = () -> {
-      log.info("execute at: {}", DateFmtter.fmtNowS());
-    };
-
-    EventLoop loop = EventLoop.io();
-    final CronRun run = new CronRun(cronExpress, loop, myTask) ;
-    run.run();
-    EventLoop.sleepSecond(Integer.MAX_VALUE);
-  }
-
-
-
-  @Test
-  void testCron2() {
+  void testCron() {
     String cron = "0 15 10 * * ?"; // 每天10:15执行
     try {
       CronExpression cronExpression = new CronExpression(cron);
@@ -60,7 +44,7 @@ class EventLoopTest {
       Date nextTime = cronExpression.getNextValidTimeAfter(now);
       log.info("下次执行时间: {}", DateFmtter.fmtS(nextTime));
 
-      EventLoop.single().scheduleCron("0/1 * * * * ?", new Runnable() {
+      EventLoop.io().scheduleCron("0/1 * * * * ?", new Runnable() {
         @Override
         public void run() {
           log.info("{} exec cron: {}", Integer.toHexString(this.hashCode()), DateFmtter.fmtNowS());
@@ -107,51 +91,5 @@ class EventLoopTest {
         CronTimeUnit.minute, "0/5"
     ))); // 0 0/5 * * * ? *
   }
-
-
-
-  public static class CronRun implements Runnable {
-
-    private final String cronExpress;
-    private final EventLoop loop;
-    private final Runnable task;
-
-    private CronParser parser;
-    private Cron cron;
-    private ExecutionTime executionTime;
-
-    final AtomicBoolean lock = new AtomicBoolean(false);
-    final AtomicReference<ZonedDateTime> now = new AtomicReference<>();
-
-    public CronRun(String cronExpress, EventLoop loop, Runnable task) {
-      this.cronExpress = cronExpress;
-      this.loop = loop;
-      this.task = task;
-      this.parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
-      this.cron = parser.parse(cronExpress);// "*/5 * * * * ?"
-      this.executionTime = ExecutionTime.forCron(cron);
-    }
-
-    @Override
-    public void run() {
-      if (lock.compareAndSet(false, true)) {
-        if (now.get() == null) now.set(ZonedDateTime.now());
-        executionTime.nextExecution(now.get()).ifPresent(nextAt -> {
-          long delay = Duration.between(now.get(), nextAt).toMillis();
-          log.info("nextAt: {}, delay, {}", nextAt, delay);
-          loop.schedule(() -> {
-            //now.set(ZonedDateTime.now());
-            try {
-              task.run();
-            } finally {
-              lock.set(false);
-              this.run();
-            }
-          }, delay, TimeUnit.MILLISECONDS);
-        });
-      }
-    }
-  }
-
 
 }
