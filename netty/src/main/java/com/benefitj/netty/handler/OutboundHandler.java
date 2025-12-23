@@ -7,6 +7,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.DatagramPacket;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * 处理简单的消息
  *
@@ -69,13 +72,26 @@ public abstract class OutboundHandler<I> extends SimpleCopyHandler<I> {
    * @return 返回创建的 Handler
    */
   public static OutboundHandler<Object> msgToByteBufHandler() {
+    return msgToByteBufHandler(false, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * 创建将消息转换为ByteBuf的Handler
+   *
+   * @return 返回创建的 Handler
+   */
+  public static OutboundHandler<Object> msgToByteBufHandler(boolean strToBytes, Charset charset) {
     return newHandler(Object.class, (handler, ctx, msg, promise) -> {
       if (msg instanceof DatagramPacket) {
         ctx.write(((DatagramPacket) msg).content(), promise);
       } else if (msg instanceof byte[]) {
         ctx.write(Unpooled.wrappedBuffer((byte[]) msg), promise);
       } else {
-        ctx.write(msg, promise);
+        if (strToBytes && msg instanceof CharSequence) {
+          ctx.write(Unpooled.wrappedBuffer(msg.toString().getBytes(charset)), promise);
+        } else {
+          ctx.write(msg, promise);
+        }
       }
     });
   }
@@ -86,13 +102,26 @@ public abstract class OutboundHandler<I> extends SimpleCopyHandler<I> {
    * @return 返回创建的 Handler
    */
   public static OutboundHandler<Object> msgToBytesHandler() {
+    return msgToBytesHandler(false, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * 创建将消息转换为Bytes的Handler
+   *
+   * @return 返回创建的 Handler
+   */
+  public static OutboundHandler<Object> msgToBytesHandler(boolean strToBytes, Charset charset) {
     return newHandler(Object.class, (handler, ctx, msg, promise) -> {
       if (msg instanceof DatagramPacket) {
         ctx.write(handler.copy((DatagramPacket) msg), promise);
       } else if (msg instanceof ByteBuf) {
         ctx.write(handler.copy((ByteBuf) msg), promise);
       } else {
-        ctx.write(msg, promise);
+        if (strToBytes && msg instanceof CharSequence) {
+          ctx.write(msg.toString().getBytes(charset), promise);
+        } else {
+          ctx.write(msg, promise);
+        }
       }
     });
   }

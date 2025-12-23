@@ -76,7 +76,7 @@ public class TcpNettyClient extends AbstractNettyClient<TcpNettyClient> {
     options.put(ChannelOption.AUTO_READ, true);
     options.put(ChannelOption.AUTO_CLOSE, true);
     options.put(ChannelOption.ALLOW_HALF_CLOSURE, true);
-    options.put(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000);
+    options.put(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000);
     this.options(options);
 
     if (autoReconnect()) {

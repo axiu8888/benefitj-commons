@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -29,7 +30,9 @@ public class AutoConnectTimer {
 
 
 
-  private final AtomicReference<ScheduledFuture<?>> timerRef = new AtomicReference<>();
+  private volatile long systemTime = System.currentTimeMillis();
+
+  private final AtomicReference<ScheduledFuture<?>> timer = new AtomicReference<>();
   /**
    * 是否自动重连
    */
@@ -38,6 +41,22 @@ public class AutoConnectTimer {
    * 尝试间隔
    */
   private Duration interval;
+  /**
+   * 尝试因子
+   */
+  private Duration factor;
+  /**
+   * 最大间隔
+   */
+  private Duration maxInterval;
+  /**
+   * 自动计算下一次的间隔
+   */
+  private volatile Duration nextInterval;
+  /**
+   * 执行时间
+   */
+  private final AtomicLong nextTime = new AtomicLong();
   /**
    * 连接锁
    */
@@ -52,8 +71,18 @@ public class AutoConnectTimer {
   }
 
   public AutoConnectTimer(boolean autoConnect, Duration interval) {
+    this(autoConnect, interval, Duration.ofSeconds(3));
+  }
+
+  public AutoConnectTimer(boolean autoConnect, Duration interval, Duration factor) {
+    this(autoConnect, interval, factor, Duration.ofMinutes(5));
+  }
+
+  public AutoConnectTimer(boolean autoConnect, Duration interval, Duration factor, Duration maxInterval) {
     this.autoConnect = autoConnect;
     this.interval = interval;
+    this.factor = factor;
+    this.maxInterval = maxInterval;
   }
 
   /**
@@ -63,17 +92,33 @@ public class AutoConnectTimer {
    */
   public void start(Connector socket) {
     if (isAutoConnect()) {
-      if (timerRef.get() != null) return;
+      if (timer.get() != null) return;
       synchronized (this) {
-        if (timerRef.get() == null) {
-          EventLoop.cancel(this.timerRef.getAndSet(EventLoop.asyncIOFixedRate(() -> {
+        if (timer.get() == null) {
+          this.nextInterval = null;
+          EventLoop.cancel(this.timer.getAndSet(EventLoop.asyncIOFixedRate(() -> {
             if (lock.compareAndSet(false, true)) {
               try {
                 if (!isAutoConnect() || socket.isConnected()) {//不需要重连或已经连接了
-                  EventLoop.cancel(timerRef.getAndSet(null));
+                  EventLoop.cancel(timer.getAndSet(null));
+                  this.nextInterval = null;
                   return;
                 }
-                socket.doConnect();
+
+                long now = System.currentTimeMillis();
+                if (nextTime.get() <= now || (systemTime - now) >= 5 * 60_000L) {//5分钟以上的差异就忽略
+                  try {
+                    socket.doConnect();
+                  } catch (Throwable e) {
+                    System.err.println("doConnect --->: \n" + CatchUtils.getLogStackTrace(e));
+                  } finally {
+                    systemTime = System.currentTimeMillis();
+                    //计算下一次的间隔
+                    Duration current = (nextInterval != null ? nextInterval : getInterval());
+                    nextInterval = Duration.ofMillis(Math.min(current.toMillis() + getFactor().toMillis(), getMaxInterval().toMillis()));
+                    nextTime.set(System.currentTimeMillis() + nextInterval.toMillis());
+                  }
+                }
               } finally {
                 lock.set(false);
               }
@@ -86,7 +131,7 @@ public class AutoConnectTimer {
 
   public void stop() {
     synchronized (this) {
-      EventLoop.cancel(timerRef.getAndSet(null));
+      EventLoop.cancel(timer.getAndSet(null));
     }
   }
 
@@ -108,8 +153,37 @@ public class AutoConnectTimer {
     return this;
   }
 
+  public Duration getFactor() {
+    return factor;
+  }
+
+  public AutoConnectTimer setFactor(Duration factor) {
+    this.factor = factor;
+    return this;
+  }
+
+  public Duration getMaxInterval() {
+    return maxInterval;
+  }
+
+  public AutoConnectTimer setMaxInterval(Duration maxInterval) {
+    this.maxInterval = maxInterval;
+    return this;
+  }
+
   public AutoConnectTimer setAutoConnect(boolean autoConnect, Duration interval) {
-    return setAutoConnect(autoConnect).setInterval(interval);
+    return setAutoConnect(autoConnect, interval, null);
+  }
+
+  public AutoConnectTimer setAutoConnect(boolean autoConnect, Duration interval, Duration factor) {
+    return setAutoConnect(autoConnect, interval, factor, null);
+  }
+
+  public AutoConnectTimer setAutoConnect(boolean autoConnect, Duration interval, Duration factor, Duration maxInterval) {
+    return setAutoConnect(autoConnect)
+        .setInterval(interval != null ? interval : Duration.ofSeconds(10))
+        .setFactor(factor != null ? factor : Duration.ofSeconds(3))
+        .setMaxInterval(maxInterval != null ? maxInterval : Duration.ofMinutes(5));
   }
 
   public static final AutoConnectTimer NONE = new AutoConnectTimer(false) {

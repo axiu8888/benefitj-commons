@@ -1,21 +1,34 @@
 package com.benefitj.netty.client;
 
+import com.benefitj.core.CatchUtils;
 import com.benefitj.core.EventLoop;
+import com.benefitj.netty.TcpClient;
 import com.benefitj.netty.handler.InboundHandler;
+import com.benefitj.netty.handler.OutboundHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 @Slf4j
-public class TcpNettyClientTest {
+class TcpNettyClientTest {
+
+  @BeforeEach
+  void setup() {
+  }
+
+  @AfterEach
+  void tearDown() {
+  }
 
   @Test
   public void testTcpClientAutoReconnect() throws Exception {
@@ -28,8 +41,7 @@ public class TcpNettyClientTest {
           @Override
           protected void initChannel(Channel ch) throws Exception {
             ch.pipeline()
-                .addLast(new StringDecoder(StandardCharsets.UTF_8))
-                .addLast(new StringEncoder(StandardCharsets.UTF_8))
+                .addLast(InboundHandler.msgToStringHandler(StandardCharsets.UTF_8))
                 .addLast(InboundHandler.newHandler(String.class, (handler, ctx, msg) -> {
                   log.info("receive[{}], remote: {}, data: {}"
                       , ctx.channel().id().asShortText()
@@ -52,8 +64,33 @@ public class TcpNettyClientTest {
     client.stop();
   }
 
-  @After
-  public void after() {
+  @Test
+  void test_TcpClient() throws Exception {
+    TcpClient client = new TcpClient()
+        .setRemoteAddress(new InetSocketAddress("127.0.0.1", 80))
+        .setAutoConnect(true, Duration.ofSeconds(5))
+        .setChannelInitializer(ch -> {
+              ch.pipeline()
+                  .addLast(new LoggingHandler(LogLevel.INFO))// 添加日志处理器
+                  .addLast(new IdleStateHandler(120, 0, 0))// 添加空闲状态检测
+                  .addLast(OutboundHandler.msgToByteBufHandler(true, StandardCharsets.UTF_8))
+              ;
+        })
+        .start(f -> log.info("tcp client started... ｛｝", f.isSuccess()));
+
+    for (int i = 0; i < 1000; i++) {
+      if (client.isActive()) {
+        client.write("send ==>: " + i, (success, cause) -> {
+          log.info("send: {}, cause: {}", success, cause != null ? CatchUtils.getLogStackTrace(cause) : null);
+        });
+      }
+      // wait
+      EventLoop.sleepSecond(1);
+    }
+
+    EventLoop.sleepSecond(5);
+    client.stop();
   }
+
 
 }

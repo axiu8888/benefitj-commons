@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.util.ReferenceCountUtil;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -112,6 +113,25 @@ public abstract class InboundHandler<I> extends SimpleCopyHandler<I> {
         ctx.fireChannelRead(handler.copy((DatagramPacket) msg));
       } else if (msg instanceof CharSequence) {
         ctx.fireChannelRead(msg.toString().getBytes(StandardCharsets.UTF_8));
+      } else {
+        ctx.fireChannelRead(ReferenceCountUtil.touch(msg));
+      }
+    });
+  }
+
+  /**
+   * 将消息转换为 byte[]
+   */
+  public static InboundHandler<Object> msgToStringHandler(Charset charset) {
+    return newHandler(Object.class, (handler, ctx, msg) -> {
+      if (msg instanceof ByteBuf) {
+        ctx.fireChannelRead(new String(handler.copy((ByteBuf) msg), charset));
+      } else if (msg instanceof DatagramPacket) {
+        ctx.fireChannelRead(new String(handler.copy((DatagramPacket) msg), charset));
+      } else if (msg instanceof byte[]) {
+        ctx.fireChannelRead(new String((byte[]) msg, charset));
+      } else if (msg instanceof CharSequence) {
+        ctx.fireChannelRead(msg.toString());
       } else {
         ctx.fireChannelRead(ReferenceCountUtil.touch(msg));
       }
