@@ -1,5 +1,8 @@
 package com.benefitj.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +31,8 @@ public class AutoConnectTimer {
     void doConnect();
   }
 
+
+  static final Logger log = LoggerFactory.getLogger(AutoConnectTimer.class);
 
 
   private volatile long systemTime = System.currentTimeMillis();
@@ -110,7 +115,7 @@ public class AutoConnectTimer {
                   try {
                     socket.doConnect();
                   } catch (Throwable e) {
-                    System.err.println("doConnect --->: \n" + CatchUtils.getLogStackTrace(e));
+                    log.warn("[ WARNING ] doConnect --->: \n{}", CatchUtils.getLogStackTrace(e));
                   } finally {
                     systemTime = System.currentTimeMillis();
                     //计算下一次的间隔
