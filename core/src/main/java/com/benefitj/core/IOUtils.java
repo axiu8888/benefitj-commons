@@ -26,6 +26,11 @@ public class IOUtils {
   public static final long GB = 1024L * MB;
   public static final long TB = 1024L * GB;
 
+  /**
+   * 临时目录
+   */
+  public static final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+
 
   /**
    * 取小数点后几位
