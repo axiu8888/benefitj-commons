@@ -272,7 +272,14 @@ public class IdUtils {
    * 获取一个 SnowflakeId
    */
   public static long snowflakeId() {
-    return SnowflakeIdWorker.get().nextId();
+    return snowflakeId(false);
+  }
+
+  /**
+   * 获取一个 SnowflakeId
+   */
+  public static long snowflakeId(boolean forbiddenBack) {
+    return SnowflakeIdWorker.get().nextId(forbiddenBack);
   }
 
   /**

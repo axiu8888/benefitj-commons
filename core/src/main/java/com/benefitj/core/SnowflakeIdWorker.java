@@ -1,5 +1,11 @@
 package com.benefitj.core;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * Twitter_Snowflake<br>
  * SnowFlake的结构如下(每部分用-分开):<br>
@@ -14,10 +20,27 @@ package com.benefitj.core;
  */
 public class SnowflakeIdWorker {
 
-  static SingletonSupplier<SnowflakeIdWorker> singleton = SingletonSupplier.of(() -> new SnowflakeIdWorker(0, 0));
+  static final SingletonSupplier<List<SnowflakeIdWorker>> singleton = SingletonSupplier.of(() -> {
+    Integer[] ids = new Integer[31 * 3];
+    for (int i = 0; i < ids.length; i++) {
+      ids[i] = i;
+    }
+    return Stream.of(ids)
+        .map(id -> new SnowflakeIdWorker(id / 31, id % 31))
+        .collect(Collectors.toCollection(CopyOnWriteArrayList::new));
+  });
+
+  static final AtomicLong idIndex = new AtomicLong(0);
 
   public static SnowflakeIdWorker get() {
-    return singleton.get();
+    long next = idIndex.getAndIncrement();
+    if (next > 1000_0000) { idIndex.set(0);}
+    return get(next);
+  }
+
+  public static SnowflakeIdWorker get(long index) {
+    List<SnowflakeIdWorker> list = singleton.get();
+    return list.get((int) (index % list.size()));
   }
 
   // ==============================Fields===========================================
@@ -85,13 +108,23 @@ public class SnowflakeIdWorker {
    * 获得下一个ID (该方法是线程安全的)
    * @return SnowflakeId
    */
-  public synchronized long nextId() {
+  public long nextId() {
+    return nextId(true);
+  }
+
+  /**
+   * 获得下一个ID (该方法是线程安全的)
+   *
+   * @param forbiddenBack 是否禁止时钟回拨，如果禁止，发现时间回退后会抛出异常
+   * @return SnowflakeId
+   */
+  public synchronized long nextId(boolean forbiddenBack) {
     long timestamp = timeGen();
 
     //如果当前时间小于上一次ID生成的时间戳，说明系统时钟回退过这个时候应当抛出异常
-    if (timestamp < lastTimestamp) {
+    if (forbiddenBack && timestamp < lastTimestamp) {
       throw new IllegalArgumentException(
-          String.format("Clock moved backwards.  Refusing to generate id for %d milliseconds", lastTimestamp - timestamp));
+          String.format("[时钟回拨] Clock moved backwards.  Refusing to generate id for %d milliseconds", lastTimestamp - timestamp));
     }
 
     //如果是同一时间生成的，则进行毫秒内序列
