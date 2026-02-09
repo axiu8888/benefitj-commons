@@ -8,6 +8,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.ReferenceCountUtil;
+import io.netty.util.ReferenceCounted;
 import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -74,10 +76,11 @@ public class TcpClient {
         .handler(new ChannelInitializer<SocketChannel>() {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
-            ch
-                .pipeline()
-                .addLast(new Watchdog());
-            getChannelInitializer().accept(ch);
+            try {
+              getChannelInitializer().accept(ch);
+            } finally {
+              ch.pipeline().addLast(new Watchdog());
+            }
           }
         })
         .remoteAddress(remoteAddress)
@@ -190,7 +193,13 @@ public class TcpClient {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-      //ignore...
+      try {
+        if (msg instanceof ReferenceCounted) {
+          ((ReferenceCounted) msg).touch();
+        }
+      } finally {
+        ReferenceCountUtil.release(msg);
+      }
     }
   }
 
