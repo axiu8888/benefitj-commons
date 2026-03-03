@@ -3,24 +3,14 @@ package com.benefitj.core;
 import com.benefitj.core.cron.CronExpression;
 import com.benefitj.core.cron.CronExpressionGenerator;
 import com.benefitj.core.cron.CronTimeUnit;
-import com.cronutils.model.Cron;
-import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.model.time.ExecutionTime;
-import com.cronutils.parser.CronParser;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
-import java.time.Duration;
-import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 @Slf4j
