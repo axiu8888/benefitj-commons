@@ -1,48 +1,37 @@
 package com.benefitj.core.json;
 
-
-import com.alibaba.fastjson2.JSONReader;
-import com.alibaba.fastjson2.reader.ObjectReader;
+import com.alibaba.fastjson2.JSONWriter;
+import com.alibaba.fastjson2.writer.ObjectWriter;
 import com.benefitj.core.HexUtils;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
-
 
 /**
  * 自定义序列化器：将 byte[] 转为十六进制字符串
  */
-public class HexBytesSerializer implements ObjectReader<byte[]> {
+public class HexBytesSerializer extends JsonSerializer<byte[]> implements ObjectWriter<byte[]> {
 
-  public static final HexBytesSerializer INSTANCE = new HexBytesSerializer();
+    public static final HexBytesSerializer INSTANCE = new HexBytesSerializer();
 
-  @Override
-  public byte[] readObject(JSONReader jsonReader, Type fieldType, Object fieldName, long features) {
-    if (jsonReader.nextIfNull()) {
-      return null;
+    public void write(JSONWriter jsonWriter, Object object, Object fieldName, Type fieldType, long features) {
+        if (object == null) {
+            jsonWriter.writeNull();
+            return;
+        }
+        byte[] bytes = (byte[]) object;
+        jsonWriter.writeString(HexUtils.bytesToHex(bytes));
     }
-    // 读取字符串值（即我们写入的十六进制字符串）
-    String hexString = jsonReader.readString();
-    // 将十六进制字符串转换为 byte[]
-    return HexUtils.hexToBytes(hexString);
-  }
 
+    @Override
+    public void serialize(byte[] value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        if (value == null) {
+            gen.writeNull();
+            return;
+        }
+        gen.writeString(HexUtils.bytesToHex(value));
+    }
 }
-
-/// **
-// * 自定义序列化器：将 byte[] 转为十六进制字符串
-// */
-//public class HexBytesSerializer implements ObjectSerializer {
-//
-//  public static final HexBytesSerializer INSTANCE = new HexBytesSerializer();
-//
-//  @Override
-//  public void write(JSONSerializer serializer, Object object, Object fieldName, Type fieldType, int features) throws IOException {
-//    if (object == null) {
-//      serializer.writeNull();
-//      return;
-//    }
-//    byte[] bytes = (byte[]) object;
-//    String hex = HexUtils.bytesToHex(bytes);
-//    serializer.write(hex); // 直接输出字符串
-//  }
-//}

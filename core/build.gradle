@@ -10,6 +10,10 @@ dependencies {
   [
       // spring
       'org.springframework:spring-core:5.3.5',
+      "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
+      "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}",
+      "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}",
+      "com.alibaba.fastjson2:fastjson2:${fastjson2Version}",
       //'com.cronutils:cron-utils:9.2.1',
       //'org.quartz-scheduler:quartz:2.3.2',
   ].forEach {
