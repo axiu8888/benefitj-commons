@@ -1,13 +1,14 @@
-package com.benefitj.core.concurrent;
+package com.hsrg.core.concurrent;
 
 
-import com.benefitj.core.EventLoop;
-import com.benefitj.core.EventLoop.Single;
-import com.benefitj.core.TimeUtils;
+import com.hsrg.core.EventLoop;
+import com.hsrg.core.EventLoop.Single;
+import com.hsrg.core.TimeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
@@ -20,8 +21,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * 绑定到固定的EventLoop上
  */
 public class EventLoopBinder<K> {
-  static final Single SINGLE = EventLoop.newSingle(EventLoop.generateNamePrefix(), true);
 
+  private static final boolean DEFAULT_SLOW_MONITOR = Boolean.parseBoolean(
+      System.getProperty("eventloop.binder.slow.monitor", "false"));
+  private static final long DEFAULT_SLOW_THRESHOLD_MS = Long.getLong("eventloop.binder.slow.thresholdMs", 3000L);
+
+  static final Single SINGLE = EventLoop.newSingle(EventLoop.generateNamePrefix(), true);
   /**
    * 线程ID生成
    */
@@ -54,11 +59,19 @@ public class EventLoopBinder<K> {
    * 线程超时释放
    */
   private Duration expired;
+  /**
+   * 本实例是否监控 bind().inLoop 慢任务（各 EventLoopBinder 实例相互独立）
+   */
+  private volatile boolean slowMonitorEnabled = DEFAULT_SLOW_MONITOR;
+  /**
+   * 本实例慢任务阈值（毫秒）
+   */
+  private volatile long slowMonitorThresholdMs = DEFAULT_SLOW_THRESHOLD_MS;
 
   private AtomicReference<ScheduledFuture<?>> releaseTimer = new AtomicReference<>();
 
   public EventLoopBinder() {
-    this(null, 50, 3, Duration.ofSeconds(30));
+    this(null, 50, 3, Duration.ofSeconds(120));
   }
 
   /**
@@ -69,16 +82,29 @@ public class EventLoopBinder<K> {
    * @param expired     线程超时释放
    */
   public EventLoopBinder(String namePrefix, int maxBindSize, int cacheSize, Duration expired) {
+    this(namePrefix, maxBindSize, cacheSize, expired, DEFAULT_SLOW_MONITOR, DEFAULT_SLOW_THRESHOLD_MS);
+  }
+
+  /**
+   * 构造函数
+   *
+   * @param namePrefix  线程名前缀
+   * @param maxBindSize 线程绑定的最大设备数
+   * @param expired     线程超时释放
+   */
+  public EventLoopBinder(String namePrefix, int maxBindSize, int cacheSize, Duration expired, boolean slowMonitorEnabled, long slowMonitorThresholdMs) {
     this.namePrefix = namePrefix;
     this.maxBindSize = maxBindSize;
     this.cacheSize = cacheSize;
     this.expired = expired;
+    this.slowMonitorEnabled = slowMonitorEnabled;
+    this.slowMonitorThresholdMs = slowMonitorThresholdMs;
     // 释放资源
     releaseTimer.set(SINGLE.scheduleAtFixedRate(this::releaseLoop, 10, 10, TimeUnit.SECONDS));
   }
 
   private void releaseLoop() {
-    Set<Holder> set = loops;
+    Set<Holder> set = getLoops();
     if (set.size() <= getCacheSize()) return;
     final long expiredMillis = getExpired().toMillis();
     final List<Holder> removed = new LinkedList<>();
@@ -99,18 +125,20 @@ public class EventLoopBinder<K> {
    * 绑定线程
    *
    * @param key 键
-   * @return 返回线程池
+   * @return 绑定后的执行入口（支持 inLoop；开启慢监控时会采样栈）
    */
-  public Single bind(K key) {
+  public BoundLoop bind(K key) {
     Holder holder = getBindMap().get(key);
     if (holder == null) {
       synchronized (this) {
         Map<K, Holder> bps = getBindMap();
-        if ((holder = bps.get(key)) != null) return holder.executor;
-        holder = loops.stream().min(Comparator.comparingInt(o -> o.sizer.get())).orElse(null);//查找绑定数量最少的一个
+        if ((holder = bps.get(key)) != null) {
+          return new BoundLoop(holder.executor, key);
+        }
+        holder = getLoops().stream().min(Comparator.comparingInt(o -> o.sizer.get())).orElse(null);//查找绑定数量最少的一个
         if (holder != null && holder.size() < getMaxBindSize()) {
           bps.put(key, holder.increment());
-          return holder.executor;
+          return new BoundLoop(holder.executor, key);
         }
         ThreadFactory factory = threadFactory.get();
         if (factory == null) {
@@ -118,13 +146,14 @@ public class EventLoopBinder<K> {
           threadFactory.set(factory = EventLoop.newThreadFactory(prefix, true));
         }
         holder = new Holder(EventLoop.newSingle(factory));
-        loops.add(holder);
+        getLoops().add(holder);
         holder.increment();// 分配线程
         bps.put(key, holder);
+        return new BoundLoop(holder.executor, key);
       }
     }
     holder.setActiveAt(System.currentTimeMillis());
-    return holder.executor;
+    return new BoundLoop(holder.executor, key);
   }
 
   public Single unbind(K key) {
@@ -170,6 +199,72 @@ public class EventLoopBinder<K> {
 
   public void setExpired(Duration expired) {
     this.expired = expired;
+  }
+
+  /**
+   * 是否对本实例的 inLoop 做慢任务监控
+   */
+  public boolean isSlowMonitorEnabled() {
+    return slowMonitorEnabled;
+  }
+
+  public void setSlowMonitorEnabled(boolean slowMonitorEnabled) {
+    this.slowMonitorEnabled = slowMonitorEnabled;
+  }
+
+  /**
+   * 本实例慢任务阈值（毫秒）
+   */
+  public long getSlowMonitorThresholdMs() {
+    return slowMonitorThresholdMs;
+  }
+
+  public void setSlowMonitorThresholdMs(long slowMonitorThresholdMs) {
+    this.slowMonitorThresholdMs = Math.max(slowMonitorThresholdMs, 1L);
+  }
+
+  /**
+   * bind 后的执行入口；慢任务监控仅覆盖此处的 inLoop。
+   */
+  public final class BoundLoop {
+    private final Single executor;
+    private final K key;
+
+    BoundLoop(Single executor, K key) {
+      this.executor = executor;
+      this.key = key;
+    }
+
+    public Single executor() {
+      return executor;
+    }
+
+    public K key() {
+      return key;
+    }
+
+    public IFuture<?> inLoop(Runnable task) {
+      if (!slowMonitorEnabled) {
+        return executor.inLoop(task);
+      }
+      final String taskName = taskName();
+      final EventLoopBinder<K> binder = EventLoopBinder.this;
+      return executor.inLoop(() -> EventLoopSlowTaskMonitor.run(binder, task, taskName));
+    }
+
+    public <V> IFuture<V> inLoop(Callable<V> task) {
+      if (!slowMonitorEnabled) {
+        return executor.inLoop(task);
+      }
+      final String taskName = taskName();
+      final EventLoopBinder<K> binder = EventLoopBinder.this;
+      return executor.inLoop(() -> EventLoopSlowTaskMonitor.call(binder, task, taskName));
+    }
+
+    private String taskName() {
+      String prefix = StringUtils.defaultString(getNamePrefix());
+      return prefix + String.valueOf(key);
+    }
   }
 
   static class Holder {
