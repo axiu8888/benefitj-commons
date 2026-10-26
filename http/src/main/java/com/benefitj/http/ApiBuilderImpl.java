@@ -60,6 +60,8 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
 
   private boolean useDefault = true;
 
+  private boolean ignoreSSLExpired = false;
+
   public ApiBuilderImpl() {
   }
 
@@ -209,6 +211,17 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
   }
 
   @Override
+  public boolean isIgnoreSSLExpired() {
+    return ignoreSSLExpired;
+  }
+
+  @Override
+  public ApiBuilderImpl<T> setIgnoreSSLExpired(boolean ignoreSSLExpired) {
+    this.ignoreSSLExpired = ignoreSSLExpired;
+    return this;
+  }
+
+  @Override
   public T build(Consumer<Retrofit.Builder> consumer) {
     String url = getBaseUrl();
     if (url == null || url.trim().isEmpty()) {
@@ -242,6 +255,10 @@ public class ApiBuilderImpl<T> implements ApiBuilder<T> {
     Interceptor gzipInterceptor = getGzipInterceptor();
     if (isGzipEnable() && gzipInterceptor != null) {
       clientBuilder.addInterceptor(gzipInterceptor);
+    }
+    if (isIgnoreSSLExpired()) {
+      clientBuilder.sslSocketFactory(SSL.getSSLSocketFactory(), SSL.X_509_TRUST_MANAGER);
+      clientBuilder.hostnameVerifier(SSL.DO_NOT_VERIFY); // 跳过主机名验证
     }
     builder.client(clientBuilder.build());
 

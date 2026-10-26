@@ -208,6 +208,19 @@ public interface ApiBuilder<T> {
   ApiBuilder<T> setUseDefault(boolean useDefault);
 
   /**
+   * 是否忽略SSL证书过期
+   */
+  boolean isIgnoreSSLExpired();
+
+  /**
+   * 设置是否忽略SSL证书过期
+   *
+   * @param ignore 是否添加默认对象
+   * @return 返回 RetrofitApi
+   */
+  ApiBuilder<T> setIgnoreSSLExpired(boolean ignore);
+
+  /**
    * 创建API对象
    */
   T build(Consumer<Retrofit.Builder> consumer);
