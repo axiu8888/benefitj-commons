@@ -1,9 +1,9 @@
-package com.hsrg.core.concurrent;
+package com.benefitj.core.concurrent;
 
 
-import com.hsrg.core.EventLoop;
-import com.hsrg.core.EventLoop.Single;
-import com.hsrg.core.TimeUtils;
+import com.benefitj.core.EventLoop;
+import com.benefitj.core.EventLoop.Single;
+import com.benefitj.core.TimeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Duration;

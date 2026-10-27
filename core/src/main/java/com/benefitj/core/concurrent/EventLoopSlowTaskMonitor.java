@@ -1,4 +1,4 @@
-package com.hsrg.core.concurrent;
+package com.benefitj.core.concurrent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
